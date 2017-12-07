@@ -1,6 +1,6 @@
 export PATH:=/opt/bin/:$(PATH)
-PYTHON=python2.7
 DATA_FILE=/tmp/aws.txt
+LAST_CP=$(shell ls -t ./cv/*.t7 | head -n1)
 GPU=-1
 
 all : train 
@@ -14,5 +14,9 @@ train : data.json data.h5
 	@echo "Training"
 	th ./train.lua -input_h5 data.h5 -input_json data.json -gpu $(GPU)
 
-sample : 
-	th ./sample.lua put_h5 -gpu $(GPU)
+generate_sample : 
+	echo "Using checkpoint $(LAST_CP)"
+	th ./sample.lua -gpu $(GPU) -checkpoint $(LAST_CP)
+
+
+sample : generate_samples 
