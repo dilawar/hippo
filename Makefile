@@ -3,14 +3,9 @@ GPU=-1
 
 all : train 
 
-
-data.json : $(DATA_FILE)
+data.h5 data.json : $(DATA_FILE)
 	python ./scripts/preprocess.py --input_txt $(DATA_FILE) \
-	    --output_json $@
-
-data.h5 : $(DATA_FILE)
-	python ./scripts/preprocess.py --input_txt $(DATA_FILE) \
-	    --output_h5 $@
+	    --output_h5 data.h5 --output_json data.json
 
 
 train : data.json data.h5
