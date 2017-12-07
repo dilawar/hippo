@@ -1,10 +1,12 @@
-DATA_FILE=../../hippo/aws.txt
+export PATH:=/opt/bin/:$(PATH)
+PYTHON=python2.7
+DATA_FILE=/tmp/aws.txt
 GPU=-1
 
 all : train 
 
 data.h5 data.json : $(DATA_FILE)
-	python ./scripts/preprocess.py --input_txt $(DATA_FILE) \
+	$(PYTHON) ./scripts/preprocess.py --input_txt $(DATA_FILE) \
 	    --output_h5 data.h5 --output_json data.json
 
 
