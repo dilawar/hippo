@@ -2,7 +2,7 @@ DATA_FILE=../../hippo/aws.txt
 LAST_CP=$(shell ls -t ./cv/*.t7 | head -n1)
 GPU=-1
 
-all : train 
+all : sample
 
 data.h5 data.json : $(DATA_FILE)
 	python ./scripts/preprocess.py --input_txt $(DATA_FILE) \
@@ -18,4 +18,4 @@ generate_sample :
 	th ./sample.lua -gpu $(GPU) -checkpoint $(LAST_CP)
 
 
-sample : generate_samples 
+sample : generate_sample
