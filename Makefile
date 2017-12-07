@@ -15,7 +15,6 @@ train : data.json data.h5
 	th ./train.lua -input_h5 data.h5 -input_json data.json -gpu $(GPU)
 
 generate_sample : 
-	echo "Using checkpoint $(LAST_CP)"
 	th ./sample.lua -gpu $(GPU) -checkpoint $(LAST_CP)
 
 
