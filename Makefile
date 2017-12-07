@@ -1,9 +1,12 @@
 export PATH:=/opt/bin/:$(PATH)
-DATA_FILE=/tmp/aws.txt
+DATA_FILE=/tmp/data.txt
 LAST_CP=$(shell ls -t ./cv/*.t7 | head -n1)
 GPU=-1
 
 all : sample
+
+$(DATA_FILE) : ./get_data_to_train.py
+	python $<
 
 data.h5 data.json : $(DATA_FILE)
 	$(PYTHON) ./scripts/preprocess.py --input_txt $(DATA_FILE) \
@@ -11,7 +14,6 @@ data.h5 data.json : $(DATA_FILE)
 
 
 train : data.json data.h5
-	@echo "Training"
 	th ./train.lua -input_h5 data.h5 -input_json data.json -gpu $(GPU)
 
 generate_sample : 
