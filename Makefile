@@ -1,4 +1,5 @@
 export PATH:=/opt/bin/:$(PATH)
+PYTHON=`which python`
 DATA_FILE=/tmp/data.txt
 LAST_CP=$(shell ls -t ./cv/*.t7 | head -n1)
 GPU=-1
@@ -6,7 +7,7 @@ GPU=-1
 all : sample
 
 $(DATA_FILE) : ./get_data_to_train.py
-	python $<
+	$(PYTHON) $<
 
 data.h5 data.json : $(DATA_FILE)
 	$(PYTHON) ./scripts/preprocess.py --input_txt $(DATA_FILE) \
