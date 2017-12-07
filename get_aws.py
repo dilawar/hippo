@@ -27,6 +27,9 @@ def main( ):
     cur.execute( 'SELECT title, abstract FROM annual_work_seminars' )
     for a in cur.fetchall( ):
         aws_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['abstract'] )
+    cur.execute( 'SELECT title, abstract FROM talks' )
+    for a in cur.fetchall( ):
+        aws_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['abstract'] )
 
     aws = html2other.tomd( ' '.join( aws_ ) )
     with open( '/tmp/aws.txt', 'w' ) as f:
