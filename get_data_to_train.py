@@ -18,7 +18,7 @@ import os
 import html2other
 from db_connect import db_
 
-aws_ = [ ]
+data_ = [ ]
 
 def main( ):
     global db_
@@ -26,16 +26,13 @@ def main( ):
     cur = db_.cursor( dictionary = True )
     cur.execute( 'SELECT title, abstract FROM annual_work_seminars' )
     for a in cur.fetchall( ):
-        aws_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['abstract'] )
-    cur.execute( 'SELECT title, abstract FROM talks' )
-    for a in cur.fetchall( ):
-        aws_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['abstract'] )
+        data_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['abstract'] )
 
     cur.execute( 'SELECT title, description FROM talks' )
     for a in cur.fetchall( ):
-        aws_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['description'] )
+        data_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['description'] )
 
-    aws = html2other.tomd( ' '.join( aws_ ) )
+    aws = html2other.tomd( ' '.join( data_ ) )
     with open( '/tmp/data.txt', 'w' ) as f:
         f.write( aws )
 
