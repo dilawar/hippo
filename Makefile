@@ -1,11 +1,12 @@
-DATA_FILE=../../hippo/aws.txt
+export PATH:=/opt/bin/:$(PATH)
+DATA_FILE=/tmp/aws.txt
 LAST_CP=$(shell ls -t ./cv/*.t7 | head -n1)
 GPU=-1
 
 all : sample
 
 data.h5 data.json : $(DATA_FILE)
-	python ./scripts/preprocess.py --input_txt $(DATA_FILE) \
+	$(PYTHON) ./scripts/preprocess.py --input_txt $(DATA_FILE) \
 	    --output_h5 data.h5 --output_json data.json
 
 
