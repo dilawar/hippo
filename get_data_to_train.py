@@ -28,8 +28,12 @@ def main( ):
     for a in cur.fetchall( ):
         aws_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['abstract'] )
 
+    cur.execute( 'SELECT title, description FROM talks' )
+    for a in cur.fetchall( ):
+        aws_.append( '<br> %s </br>' % a[ 'title' ] + '<br>' + a['description'] )
+
     aws = html2other.tomd( ' '.join( aws_ ) )
-    with open( '/tmp/aws.txt', 'w' ) as f:
+    with open( '/tmp/data.txt', 'w' ) as f:
         f.write( aws )
 
 if __name__ == '__main__':
