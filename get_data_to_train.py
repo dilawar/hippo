@@ -44,6 +44,11 @@ def main( ):
             )
 
     aws = html2other.tomd( ' '.join( data_ ) )
+    aws = aws.replace( r'\\', '' )
+    words = set( re.findall( r'\w+', aws ) )
+    with open( '_words', 'w' ) as f:
+        f.write( '\n'.join( words ) )
+
     with open( '/tmp/data.txt', 'w' ) as f:
         f.write( aws )
 
