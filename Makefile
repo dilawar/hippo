@@ -16,7 +16,7 @@ data.h5 data.json : $(DATA_FILE)
 
 train : data.json data.h5
 	th ./train.lua -input_h5 data.h5 -input_json data.json -gpu $(GPU) \
-	    -num_layers 3 -max_epochs 100
+	    -num_layers 3 -max_epochs 200
 
 generate_sample : 
 	th ./sample.lua -gpu $(GPU) -checkpoint $(LAST_CP) | tee _sample.txt
