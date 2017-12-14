@@ -3,7 +3,6 @@ require 'nn'
 
 require 'LanguageModel'
 
-
 local cmd = torch.CmdLine()
 cmd:option('-checkpoint', 'cv/checkpoint_4000.t7')
 cmd:option('-length', 2000)
