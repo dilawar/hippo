@@ -1,0 +1,36 @@
+Institute,Type,Name,capcity,floor,Building name,Video Conference,Projector
+NCBS,AUDITORIUM,Dasheri,200,0, SLC, VC,Yes
+NCBS,AUDITORIUM,Malgova,70,1, SLC, VC,Yes
+NCBS,LECTURE HALL,Haapus (LH1),108,0, ELC, VC,Yes
+NCBS,LECTURE HALL,Himsagar (LH3),30, 2, ELC, Skype,Yes
+NCBS,LECTURE HALL,Langra (LH2),70, 1, ELC, Skype,Yes
+NCBS,LECTURE HALL,Raspuri (Workshop),72,0,SLC,Skype,Yes
+NCBS,LECTURE HALL,Safeda,50, 2,SLC,Skype,Yes
+NCBS,MEETING ROOM,Axon,15, 2, Admin Block, VC,Yes
+NCBS,MEETING ROOM,Bleb,8, 0, Admin Block,No,No
+NCBS,MEETING ROOM,Chloroplast,25, 2, ELC, Skype,Yes
+NCBS,MEETING ROOM,Director\'s Annex,8, 2, Admin Block, VC,Yes
+NCBS,MEETING ROOM,Endosome,12, 1,SLC,Skype,Yes
+NCBS,MEETING ROOM,Faculty Lounge,63, 2, SLC, VC,Yes
+NCBS,MEETING ROOM,Golgi,25, 1, ELC, Skype,Yes
+NCBS,MEETING ROOM,Mitochondrion,12, 2, SLC, Skype,Yes
+NCBS,MEETING ROOM,Nucleus,25, 0,ELC,Skype,Yes
+NCBS,MEETING ROOM,Synapse,12, 0,SLC,Skype,Yes
+NCBS,OPEN AIR,Amphitheatre,40, 0, SLC,,No
+NCBS,OPEN AIR,Plasmid,15, 2, ELC,,No
+NCBS,OPEN AIR,Sausage Tree,12, 0, Near Main Gate,,No
+NCBS,OPEN AIR,Simons Centre Terrace,30, 2, ELC,,No
+NCBS,MEETING ROOT,Simon Center Ground Floor,20,0,ELC,,Yes
+NCBS,OPEN AIR,SLC Colonnade,150, 2, SLC,,No
+NCBS,OPEN AIR,Vacuole,15, 2, ELC,,No
+NCBS,OPEN AIR,Vesicle,12, 1, ELC,,No
+NCBS,SPORTS,INSTEM sports complex,100, 0, INSTEM,,No
+NCBS,SPORTS,NCBS Sports complex,50, 0, NCBS,,No
+NCBS,CAFETERIA,Cafeteria,20, 2, Admin Block,,No
+NCBS,CAFETERIA,Cafeteria,50, 1, ELC,,No
+NCBS,CAFETERIA, Parkside Canteen,50, 0, Near Main Parking,,No
+NCBS,CAFETERIA,Glass Roof Canteen,36, 1, Near SLC,,No
+NCBS,CAFETERIA,Main Canteen 0,120, 0, NCBS,,No
+NCBS,CAFETERIA,Main Canteen 1,157, 1, NCBS,,No
+NCBS,CENTER,Medical Centre,20, 0, NCBS,,No
+UNIVERSE,UNKNOWN, Virtual Room,-1,-1,UNIVERSE,,No
