@@ -217,7 +217,7 @@ function loginForm()
     $conf = $_SESSION['conf'];
     /* Check if ldap server is alive. */
     $table = "";
-    $table .= '<form action="login.php" method="post">';
+    $table .= '<form action="welcome/login" method="post">';
     $table .= '<table class="login_main">';
     $table .= '<tr><td><input type="text" name="username" id="username"
         placeholder="NCBS/Instem Username" /> </td></tr>';
