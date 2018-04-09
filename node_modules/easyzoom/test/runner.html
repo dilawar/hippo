@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" />
+
+	<title>QUnit</title>
+
+	<link rel="stylesheet" href="../css/example.css" />
+	<link rel="stylesheet" href="../css/easyzoom.css" />
+	<link rel="stylesheet" href="lib/qunit-2.1.1.css" />
+
+</head>
+<body>
+
+	<div class="container">
+
+		<div class="easyzoom" data-inline-option="true">
+			<a href="../example-images/1_zoom.jpg">
+				<img src="../example-images/1_standard.jpg" alt="" width="640" height="360" />
+			</a>
+			<div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 999; background: rgba(255, 255, 255, .5);"></div>
+		</div>
+
+		<hr />
+
+		<div id="qunit"></div>
+
+	</div>
+
+	<script src="lib/jquery-3.1.1.min.js"></script>
+	<script src="lib/qunit-2.1.1.js"></script>
+	<script src="lib/sinon-1.17.6.js"></script>
+	<script src="../src/easyzoom.js"></script>
+	<script src="spec/easyzoom.js"></script>
+
+</body>
+</html>
