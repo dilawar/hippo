@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" />
+
+	<title>EasyZoom, jQuery image zoom plugin</title>
+
+	<link rel="stylesheet" href="css/example.css" />
+	<link rel="stylesheet" href="css/pygments.css" />
+	<link rel="stylesheet" href="css/easyzoom.css" />
+
+	<!--
+	EasyZoom by Matt Hinchliffe <http://maketea.co.uk>
+	Find out more at GitHub <http://github.com/i-like-robots/EasyZoom>
+	-->
+
+	<!-- Google Analytics tracking code -->
+	<script>
+		var _gaq=[['_setAccount','UA-2508361-9'],['_trackPageview']];
+		(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+		g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+		s.parentNode.insertBefore(g,s)}(document,'script'));
+	</script>
+
+</head>
+<body>
+
+	<div class="container">
+
+		<!-- Introduction -->
+		<section id="introduction">
+
+			<header>
+				<h1>
+					EasyZoom
+				</h1>
+				<p>
+					jQuery image zoom plugin
+				</p>
+			</header>
+
+			<p>
+				EasyZoom is an elegant, highly optimised <a href="http://www.jquery.com">jQuery</a> image zoom and panning plugin based on the <a href="http://cssglobe.com/lab/easyzoom/easyzoom.html">original work</a> by <a href="http://grakalic.com/">Alen Grakalic</a>. EasyZoom supports touch-enabled devices and is easily customisable with CSS.
+			</p>
+
+			<p style="text-align:center;">
+				<a class="button" href="https://github.com/i-like-robots/EasyZoom/zipball/master">Download</a>
+				<a class="button" href="https://github.com/i-like-robots/EasyZoom">View project on GitHub</a>
+			</p>
+
+		</section>
+
+		<!-- Example -->
+		<section id="example">
+
+			<h2>
+				Examples
+			</h2>
+
+			<p style="text-align: center;">
+				Use your mouse cursor or finger to zoom and pan the images below.
+			</p>
+
+			<h3>
+				Overlay
+			</h3>
+
+			<div class="easyzoom easyzoom--overlay">
+				<a href="example-images/1_zoom.jpg">
+					<img src="example-images/1_standard.jpg" alt="" width="640" height="360" />
+				</a>
+			</div>
+
+			<h3>
+				Adjacent
+			</h3>
+
+			<!-- Placeholder for demo purposes only -->
+			<div style="float: right; width: 310px; height: 400px; background: #EEE;"></div>
+
+			<div class="easyzoom easyzoom--adjacent">
+				<a href="example-images/2_zoom.jpg">
+					<img src="example-images/2_standard.jpg" alt="" width="310" height="400" />
+				</a>
+			</div>
+
+			<h3>
+				With thumbnail images
+			</h3>
+
+			<div class="easyzoom easyzoom--overlay easyzoom--with-thumbnails">
+				<a href="example-images/3_zoom_1.jpg">
+					<img src="example-images/3_standard_1.jpg" alt="" width="640" height="360" />
+				</a>
+			</div>
+
+			<ul class="thumbnails">
+				<li>
+					<a href="example-images/3_zoom_1.jpg" data-standard="example-images/3_standard_1.jpg">
+						<img src="example-images/3_thumbnail_1.jpg" alt="" />
+					</a>
+				</li>
+				<li>
+					<a href="example-images/3_zoom_2.jpg" data-standard="example-images/3_standard_2.jpg">
+						<img src="example-images/3_thumbnail_2.jpg" alt="" />
+					</a>
+				</li>
+				<li>
+					<a href="example-images/3_zoom_3.jpg" data-standard="example-images/3_standard_3.jpg">
+						<img src="example-images/3_thumbnail_3.jpg" alt="" />
+					</a>
+				</li>
+				<li>
+					<a href="example-images/3_zoom_4.jpg" data-standard="example-images/3_standard_4.jpg">
+						<img src="example-images/3_thumbnail_4.jpg" alt="" />
+					</a>
+				</li>
+			</ul>
+
+			<h3>
+				Active/Inactive toggle
+			</h3>
+
+			<div class="easyzoom easyzoom--overlay easyzoom--with-toggle">
+				<a href="example-images/3_zoom_1.jpg">
+					<img src="example-images/3_standard_1.jpg" alt="" width="640" height="360" />
+				</a>
+			</div>
+			<button class="toggle" data-active="true">Switch off</button>
+
+			<p style="text-align: center;">
+				<small>Photos all by <a href="http://www.flickr.com/photos/opedal/">Dag Endre Opedal</a>.</small>
+			</p>
+
+		</section>
+
+		<!-- Setup -->
+		<section id="setup">
+
+			<h2>
+				Setup
+			</h2>
+
+			<h3>
+				HTML
+			</h3>
+
+			<p>
+				EasyZoom does not rely on a specific markup structure but it is important that the EasyZoom target element (<code>&lt;div class="easyzoom"&gt;</code>) only contains a link to the large image and the smaller image. Any other elements within the EasyZoom target must not affect its layout, E.G. elements that are positioned absolutely.
+			</p>
+
+			<figure>
+<pre class="highlight"><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"easyzoom"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"images/zoom.jpg"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">"images/standard.jpg"</span> <span class="na">alt=</span><span class="s">""</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/div&gt;</span></pre>
+			</figure>
+
+			<h3>
+				CSS
+			</h3>
+
+			<p>
+				The EasyZoom target element must 'shrink wrap' the smaller image, this can be achieved either by <a href="http://www.w3.org/TR/CSS2/visudet.html#shrink-to-fit-float">floating</a> it or by displaying it as an <a href="http://www.w3.org/TR/CSS2/visudet.html#inlineblock-width">inline block</a>. Extra white space below the image (usually caused by the <a href="http://www.w3.org/TR/CSS2/visuren.html#line-box">line box</a> the image sits within) can be removed either by displaying it at block level or changing its position within the line box.
+			</p>
+
+			<p>
+				Take a look at the included <code>easyzoom.css</code> for more information on styling EasyZoom.
+			</p>
+
+			<figure>
+<pre class="highlight"><span class="c">/* Shrink wrap strategy 1 */</span>
+<span class="nc">.easyzoom</span> <span class="p">{</span>
+    <span class="k">float</span><span class="o">:</span> <span class="k">left</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nc">.easyzoom</span> <span class="nt">img</span> <span class="p">{</span>
+    <span class="k">display</span><span class="o">:</span> <span class="k">block</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="c">/* Shrink wrap strategy 2 */</span>
+<span class="nc">.easyzoom</span> <span class="p">{</span>
+    <span class="k">display</span><span class="o">:</span> <span class="k">inline</span><span class="o">-</span><span class="k">block</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nc">.easyzoom</span> <span class="nt">img</span> <span class="p">{</span>
+    <span class="k">vertical-align</span><span class="o">:</span> <span class="k">bottom</span><span class="p">;</span>
+<span class="p">}</span></pre>
+			</figure>
+
+			<h3>
+				JavaScript
+			</h3>
+
+			<p>
+				The EasyZoom plugin is instantiated as any other jQuery plugin and an instances API can be accessed via element data. EasyZoom is also AMD and CommonJS compatible.
+			</p>
+
+			<figure>
+<pre class="highlight"><span class="c1">// Instantiate EasyZoom instances</span>
+<span class="kd">var</span> <span class="nx">$easyzoom</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'.easyzoom'</span><span class="p">).</span><span class="nx">easyZoom</span><span class="p">();</span>
+
+<span class="c1">// Get an instance API</span>
+<span class="kd">var</span> <span class="nx">api</span> <span class="o">=</span> <span class="nx">$easyzoom</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">'easyZoom'</span><span class="p">);</span></pre>
+			</figure>
+
+		</section>
+
+		<!-- Options -->
+		<section id="options">
+
+			<h2>
+				Options
+			</h2>
+
+			<p>
+				Global options can be specified via the standard jQuery plugin interface or as data attributes on individual EasyZoom elements. Remember that <tt>camelCase</tt> options should be written as hyphen-separated attributes, for example the <code>preventClicks</code> option would be defined on the element with the <code>data-prevent-clicks</code> attribute.
+			</p>
+
+			<table>
+				<thead>
+					<tr>
+						<th>Option</th>
+						<th>Default value</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><var>loadingNotice</var></td>
+						<td><code>"Loading image"</code></td>
+						<td>
+							The text to display within the notice box while loading the zoom image.
+						</td>
+					</tr>
+					<tr>
+						<td><var>errorNotice</var></td>
+						<td><code>"The image could not be loaded"</code></td>
+						<td>The text to display within the notice box if an error occurs when loading the zoom image.</td>
+					</tr>
+					<tr>
+						<td><var>errorDuration</var></td>
+						<td><code>2500</code></td>
+						<td>The time (in milliseconds) to display the error notice</td>
+					</tr>
+					<tr>
+						<td><var>linkAttribute</var></td>
+						<td><code>"href"</code></td>
+						<td>Attribute to retrieve the zoom image URL from.</td>
+					</tr>
+					<tr>
+						<td><var>preventClicks</var></td>
+						<td><code>true</code></td>
+						<td>Prevent clicks on the zoom image link.</td>
+					</tr>
+					<tr>
+						<td><var>onShow</var></td>
+						<td><code>$.noop</code></td>
+						<td>Callback function to execute when the flyout is displayed.</td>
+					</tr>
+					<tr>
+						<td><var>onMove</var></td>
+						<td><code>$.noop</code></td>
+						<td>Callback function to execute when the cursor is moved while over the image.</td>
+					</tr>
+					<tr>
+						<td><var>onHide</var></td>
+						<td><code>$.noop</code></td>
+						<td>Callback function to execute when the flyout is removed.</td>
+					</tr>
+				</tbody>
+			</table>
+
+		</section>
+
+		<!-- API -->
+		<section id="api">
+
+			<h2>
+				API
+			</h2>
+
+			<dl>
+				<dt>
+					<code>.show(<var>[MouseEvent|TouchEvent]</var>, <var>[Boolean]</var>)</code>
+				</dt>
+				<dd>
+					Displays the zoom image flyout. Optionally takes an instance of a
+					<a href="https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent">mouse</a> or
+					<a href="https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent">touch event</a>
+					and can be set to only display the flyout if the mouse is over the target.
+				</dd>
+				<dt>
+					<code>.hide()</code>
+				</dt>
+				<dd>
+					Removes the zoom image flyout.
+				</dd>
+				<dt>
+					<code>.teardown()</code>
+				</dt>
+				<dd>
+					Removes all events and elements created and attached by EasyZoom.
+				</dd>
+				<dt>
+					<code>.swap(<var>standardSrc</var>, <var>zoomSrc</var>, <var>[srcset]</var>)</code>
+				</dt>
+				<dd>
+					Easily switch the standard and zoom image sources. To display retina images via the srcset attribute, use the optional <var>srcset</var> argument.
+				</dd>
+			</dl>
+
+		</section>
+
+	</div>
+
+	<a href="https://github.com/i-like-robots/EasyZoom">
+		<img style="position:absolute; top:0; right:0; border:0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
+	</a>
+
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+	<script src="dist/easyzoom.js"></script>
+	<script>
+		// Instantiate EasyZoom instances
+		var $easyzoom = $('.easyzoom').easyZoom();
+
+		// Setup thumbnails example
+		var api1 = $easyzoom.filter('.easyzoom--with-thumbnails').data('easyZoom');
+
+		$('.thumbnails').on('click', 'a', function(e) {
+			var $this = $(this);
+
+			e.preventDefault();
+
+			// Use EasyZoom's `swap` method
+			api1.swap($this.data('standard'), $this.attr('href'));
+		});
+
+		// Setup toggles example
+		var api2 = $easyzoom.filter('.easyzoom--with-toggle').data('easyZoom');
+
+		$('.toggle').on('click', function() {
+			var $this = $(this);
+
+			if ($this.data("active") === true) {
+				$this.text("Switch on").data("active", false);
+				api2.teardown();
+			} else {
+				$this.text("Switch off").data("active", true);
+				api2._init();
+			}
+		});
+	</script>
+
+</body>
+</html>

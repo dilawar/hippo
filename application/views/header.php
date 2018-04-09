@@ -1,20 +1,6 @@
 <?php
 ob_start();
 
-// calendar url.
-
-/**
- *  * @brief Return link to calendar.
- *  * @return
- *    
- */
-function calendarURL( )
-{
-    $conf = getConfigFromDB( );
-    return __get__( $conf, 'CALENDAR_URL', '' );
-}
-
-
 if(!isset($_SESSION))
     session_start();
 
@@ -130,7 +116,6 @@ $symbBell           = '&#128365';
 
 <script src="./node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js"></script>
 
-<link href="hippo.css" rel="stylesheet" type="text/css" />
 
 <!-- Disable favicon requests -->
 <link rel="icon" href="data:,">
@@ -248,4 +233,4 @@ function toggleShowHide( button, eid )
   })();
 </script>
 
-
+<link href="assests/css/hippo.css" rel="stylesheet" type="text/css" />

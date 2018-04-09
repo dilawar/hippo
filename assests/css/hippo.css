@@ -1,0 +1,864 @@
+:root {
+    --background : rgba(255,255,251,0.8);
+    --tabletdcolor: rgba(200,255,200,0.9);
+    --maxwidth : 800px
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family : 'EB Garamond';
+    line-height: 140%;
+}
+
+body {
+    font-family: "Libre Baskerville";
+    font-size: 16px;
+    line-height: 140%;
+    max-width: var(--maxwidth);
+    min-width : 80%;
+    display:block;
+    background-color:var(--background);
+    background-size: 800px;
+    background-position:0 140px;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+}
+
+
+h1.title {
+    line-height: 1.35;
+    font-size: large;
+    text-align: center;
+}
+
+pre {
+    display : inline;
+}
+
+.editable {
+    min-width : 300px;
+}
+
+input.long {
+    min-width: 80%;
+    max-width: 500px;
+}
+
+
+img.login_picture {
+    height : auto;
+    max-height : 300px;
+}
+
+
+div.header {
+    max-width : var(--maxwidth);
+}
+
+div.aws_preference {
+    font-size : x-small;
+}
+
+div.human_readable {
+    width: 600px;
+    text-align: justify;
+    line-height: 1.5;
+}
+
+div.bottom {
+    font-size : xx-small;
+    float: bottom;
+    top-margin: 95%;
+}
+
+div.cell_content {
+    min-width : 10%;
+    max-height : 200px;
+    overflow : auto;
+}
+
+div.goback {
+
+}
+
+div.public_calendar {
+    margin-top : 500px;
+    background: transparent;
+}
+
+div.justify {
+    max-width: 600px;
+    min-width: 400px;
+    text-align: justify;
+}
+
+table {
+    font-family : 'Ubuntu';
+}
+
+table tr td {
+    border: 0px;
+}
+
+
+table.user_float {
+    position : fixed;
+    top : 1%;
+    left : 70%;
+    max-width: 25%;
+    border : 1px solid red;
+    font-size : small;
+}
+
+table.show_user {
+    max-width : var(--maxwidth);
+    min-width : 100%;
+}
+
+table.show_user tr td
+{
+    /*border : 0.5px dotted; */
+    min-width : 20%;
+}
+
+
+table.public_links {
+    max-width: var(--maxwidth);
+    min-width: 80%;
+}
+
+table.public_links tr td {
+    border-right: 1px solid;
+    width: 80px;
+}
+
+table.show_info {
+    max-width: var(--maxwidth);
+}
+
+table.show_info tr td:nth-child(1)
+{
+    max-width : 25%;
+}
+table.show_info tr td
+{
+    background-color: var(--tabletdcolor);
+}
+
+table.table_in_table {
+}
+
+table.table_in_table tr td
+{
+    border: 1pt dotted lightblue;
+    vertical-align: bottom;
+    font-size: small;
+    font-family: "Fira Sans";
+}
+
+/* Show course */
+table.show_course {
+    max-width: var(--maxwidth);
+    width: 600px;
+}
+
+table.show_course tr td:nth-child(1)
+{
+    width : 50%;
+}
+table.show_course tr td
+{
+    background-color: var(--tabletdcolor);
+    width: 20%;
+}
+
+
+table.show_db_entry_long {
+    max-width: var(--maxwidth);
+    min-width: 500px;
+    font-size: small;
+}
+
+table.show_db_entry_long th {
+    font-size: xx-small;
+}
+
+table.show_db_entry_long tr td {
+    border: 1px dotted;
+    background-color: var(--tabletdcolor);
+}
+
+table.show_speaker tr td  {
+}
+
+
+table.show_aws {
+    max-width : var(--maxwidth);
+    min-width : 100%;
+}
+
+table.show_aws tr td
+{
+    border : 0.5px dotted;
+    text-align : left;
+    max-width : 500px;
+    max-height: 3cm;
+    background-color:var(--tabletdcolor);
+}
+
+table.show_calendar {
+    max-width : var(--maxwidth);
+    min-width : 100%;
+    margin: 20px;
+}
+
+table.show_calendar tr td:nth-child(1)
+{
+    border : 0.5px dotted;
+    max-width : 20%;
+    text-align : right;
+}
+
+table.show_aws_summary {
+    max-width : 1000px;
+    min-width : 100%;
+}
+
+
+table.show_aws_summary tr td
+{
+    background-color:var(--tabletdcolor);
+    border : 1px dotted;
+}
+
+table.show_schedule {
+    min-width : 600px;
+    width : 800px;
+    max-width : 80%;
+}
+
+table.show_schedule tr td
+{
+    font-family: Fira Sans;
+    background-color: var(--tabletdcolor);
+    border : 1px dotted;
+    width: 50%;
+    font-size: small;
+}
+
+
+table.tasks
+{
+    width: 600px;
+    max-width: 700px;
+    min-width : 500px;
+    text-align: top;
+}
+
+
+table.tasks tr td
+{
+    background-color: var(--tabletdcolor);
+    width: 50%;
+    text-align: top;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+table.standout {
+    max-width : var(--maxwidth);
+}
+
+table.standout tr td
+{
+    border : 1px dotted;
+    background-color:var(--tabletdcolor);
+}
+
+table.timetable 
+{
+}
+
+table.timetable tr td {
+    /* border: 1px dotted; */
+    min-width : 5px;
+    max-width : 100px;
+    /* background-color:var(--tabletdcolor); */
+    vertical-align: top;
+}
+
+table.venue_slot {
+    max-width: var(--maxwidth);
+    border : 0px dotted;
+    border-collapse: collapse;
+}
+
+table.venue_slot tr td {
+    border : 0px;
+    width: 400px;
+    background-color:var(--tabletdcolor);
+}
+
+table.chart {
+    max-width: 100%;
+}
+
+table.chart tr dt  {
+    max-width: 50%;
+}
+
+
+div.info {
+    /*border : 1px solid #73AD21;*/
+    max-width : var(--maxwidth);
+}
+
+button.invisible {
+    border : 1px dotted;
+    font-size : small;
+    padding: 0px;
+    margin: 0px;
+    min-width:20px;
+    min-height:20px;
+}
+
+button.sort {
+    font-size: x-small;
+    width: 2px;
+}
+
+
+button.add_event {
+    width : 20px;
+    height : 20px;
+    border-style : none;
+    min-height : 20px;
+    min-width : 20px;
+}
+
+button.display_event {
+    min-height : 20px;
+    min-width : 20px;
+    border-style : none;
+}
+
+button.add_event_with_public_event {
+    width : 20px;
+    height : 20px;
+    border-style : none;
+    min-height : 20px;
+    min-width : 20px;
+}
+button.display_event_with_public_event {
+    min-height : 20px;
+    min-width : 20px;
+    border-style : none;
+}
+
+button.add_event_past {
+    width : 20px;
+    height : 20px;
+    border-style : none;
+    min-height : 20px;
+    min-width : 20px;
+}
+
+button.display_request {
+    min-height : 20px;
+    min-width : 20px;
+    /*border-radius : 50%;*/
+    border-style : none;
+    /*alignment : right;*/
+    /*vertical-align: text-top;*/
+}
+
+button.submit {
+    float : right;
+    font-size: x-large;
+}
+
+button.courseInfo {
+    border: none;
+    background: none;
+    min-width : 200px;
+    /* font-variant: small-caps; */
+    text-align : left;
+    /* font-weight: bold; */
+}
+
+button.show_as_link {
+    background: none;
+    border: none;
+    padding: 0px;
+    border-bottom: 1px solid;
+    min-width:20px;
+    min-height:10px;
+    cursor: pointer;
+}
+
+button {
+    /* font-size: large; */
+    font-family: "Fira Sans";
+    min-width : 80px;
+    min-height: 40px;
+    background: rgba(100,200,200,0.5);
+    border-radius: 8px;
+    padding-left padding-right: 5px;
+}
+
+/*button.courseInfo:hover {*/
+    /*border : 1px dotted;*/
+    /*text-decoration: none;*/
+/*}*/
+
+
+table.input {
+    text-align : left;
+    min-width : 400px;
+    max-width : var(--maxwidth);
+}
+
+table.input tr td:nth-child(odd) {
+    text-align : right;
+    min-width : 30%;
+    vertical-align : top;
+    font-size : small;
+}
+
+table.input tr td:nth-child(even) {
+    text-align : left;
+    min-width : 70%;
+}
+
+table.request {
+    width : 100%;
+}
+
+table.show_requests {
+    text-align : left;
+    border-collapse : separate;
+    width : 100%;
+}
+
+table.show_events {
+    max-width : var(--maxwidth);
+    min-width : 80%;
+}
+
+table.show_events tr td  {
+    text-align : left;
+    background-color: var( --tabletdcolor );
+}
+
+
+table.submit_request tr {
+    width : 90%;
+}
+
+table.submit_request.tr td {
+    border-width : 0.5px;
+}
+
+table.event {
+    text-align : left;
+    border-collapse : separate;
+    border : 1px dotted;
+    max-width : 90%;
+}
+
+table.show_venue {
+    text-align : left;
+    border-collapse : separate;
+    border : 1px dotted;
+    max-width : 90%;
+    font-size: x-small;
+}
+
+table[class*='editable_'] {
+    text-align: left;
+    background: rgba(250,250,250,1);
+    margin:10px;
+}
+
+table[class*='editable_'] tr td {
+    text-align: left;
+    padding:2px;
+    border : 1px rgba(200,100,200,1) dotted;
+}
+
+table.editable_events {
+    text-align : left;
+}
+
+table.editable_jc_presentations {
+    text-align : left;
+}
+table.editable_jc_presentations tr td {
+    background-color: var(--tabletdcolor);
+}
+
+table.event_sticker
+{
+    width : 100px;
+}
+
+table.event_sticker tr td
+{
+    border : 1px dotted;
+    background-color:var(--tabletdcolor);
+}
+
+table.editable_logins {
+    min-width: 80%;
+    max-width: var(--maxwidth);
+}
+
+table.editable_logins tr td {
+    text-align: left;
+    word-wrap: break-word;
+    background-color:var(--tabletdcolor);
+}
+
+table.editable_faculty {
+    text-align : left;
+    min-width : 500px;
+}
+
+table.sortable thead {
+    background-color: rgba(100,100,100,0.8);
+    cursor: default;
+    /* cursor:s-resize; */
+    /* text-decoration: underline; */
+}
+
+table.editable_faculty tr td
+{
+    /*border : 0.5px dotted; */
+    /*min-width : 20%;*/
+}
+
+div.image {
+    max-width: 100%;
+}
+
+table.login_main {
+    position:relative;
+    margin-left: 600px;
+    margin-top: 10px;
+}
+
+table.login_main tr td {
+}
+
+table.eventline  {
+    table-layout : fixed;
+    text-align : left;
+}
+
+table.eventline tr td  {
+    padding : 1px;
+}
+
+table.hourtable {
+    table-layout : fixed;
+}
+
+table.hourtable tr td {
+    width : 30px;
+}
+
+
+table.request tr:nth-of-type( odd ) {
+    background: #eee;
+}
+
+/* This implements auto row number in table */
+/* https://stackoverflow.com/a/28320927/1805129 */
+table.info {
+    max-width : 90%;
+    min-width : 600px;
+    /*counter-reset: rowNumber;*/
+}
+
+
+table.info tr td {
+    font-family : 'Fira Sans';
+    font-size: 12px;
+    padding-bottom: 10px;
+    vertical-align:top;
+}
+
+table.info tr:nth-of-type( odd ) {
+    background-color: #eee;
+}
+
+table.infolarge {
+    max-width : var(--maxwidth);
+    min-width : 800px;
+}
+
+table.infolarge tr td 
+{
+    font-family : 'Fira Sans';
+    font-size: small;
+    padding-bottom: 10px;
+    vertical-align:top;
+    min-width : 100px;
+}
+
+table.infolarge tr:nth-of-type( odd )
+{
+    background-color: #eee;
+}
+
+table.tiles {
+    min-width: 100px;
+    max-width: var(--maxwidth);
+}
+
+table.tiles tr td {
+    max-width: 20%px;
+    min-width: 50px;
+    font-size: x-small;
+    border: 1px dotted;
+}
+
+table.show_card {
+    max-width : 50%;
+    min-width : 300px;
+    border: 1px dotted;
+}
+
+table.show_card tr td {
+    font-size: x-small;
+    vertical-align:top;
+}
+
+table.sticker {
+    background-color: lightblue;
+    width: 100%;
+    height: 150px;
+    display: block;
+
+}
+
+table.sticker tr td {
+    border: 0px none lightblue;
+    background-color: lightblue;
+    max-width: 100px;
+}
+
+table.admin {
+    min-width : 500px;
+    max-width : var(--maxwidth);
+    /* width : 80%; */
+}
+
+table.admin tr:nth-of-type( odd ) {
+
+}
+
+table.admin tr td {
+    width : 50%;
+    background-color: var( --tabletdcolor );
+    vertical-align: top;
+    /* border: 1px dotted; */
+    border-radius: 20px;
+    padding:10px;
+}
+
+
+.goback {
+}
+
+.update {
+    position : absolute;
+    left : 440px;
+}
+
+.submit {
+    position : absolute;
+    left : 440px;
+}
+
+/* paragraphs */
+
+p  {
+    min-width : 100%;
+    max-width : 500px;
+}
+
+p.justify {
+    max-width: var(--maxwidth);
+    text-align: justify;
+}
+
+
+p.info {
+    min-width : 700px;
+    max-width: var(--maxwidth);
+}
+
+p.warn {
+    color : red;
+    font-size : large;
+}
+
+p.note_to_user {
+    font-size : small;
+    color : darkred;
+    max-width : 80%;
+}
+
+p.note {
+    font-size : small;
+    color : darkred;
+    max-width : 80%;
+}
+
+
+div.alert_user {
+   max-width : var(--maxwidth);
+   min-width: inherit;
+   max-width : inherit;
+   width: 80%;
+   margin: 10px;
+}
+
+div.fa_note {
+   max-width : var(--maxwidth);
+   border: 1px dotted;
+   border-radius: 20px;
+   background: rgba(200,200,250,1);
+   min-width: 500px;
+   width: 80%;
+   padding-left: 10px;
+   margin-top:10px;
+}
+
+td.db_table_fieldname {
+    font-size : x-small;
+    text-transform : uppercase;
+}
+
+
+div.bordered {
+    border: 1px dotted blue;
+}
+
+div.show_aws {
+    width: 600px;
+}
+
+
+table.summary {
+    font-size : small;
+    min-width : 50%;
+    max-width : 500px;
+    width : 500px;
+}
+
+table.summary tr td  {
+    border : 0px dotted;
+}
+
+table.index {
+    min-width : 50%;
+}
+
+table.index tr td {
+    min-width : 250px;
+}
+
+table.repeat_pat {
+    border: 1px dotted;
+    min-width: 500px;
+    max-width : var(--maxwidth);
+}
+
+table.repeat_pat tr td  {
+    min-width: 200px;
+    max-width : 30%;
+}
+
+/* SELECT */
+select.supervisors {
+    min-width : 300px;
+}
+
+
+ul {
+    width : 500px;
+    text-align: justify;
+}
+
+
+address {
+    display: block;
+}
+
+
+a[href^="mailto:"] {
+  text-decoration: none;
+  font-family : monospace;
+  font-size: x-small;
+}
+
+a[href^="mailto:"]::before {
+    content: "\2709";
+    font-size: large;
+}
+
+a:link {
+    text-decoration: none;
+}
+
+a:visited {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    /*font-variant: small-caps; */
+}
+
+a:active {
+    text-decoration: underline;
+}
+
+a.link_as_button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+    padding: 5px;
+}
+
+a.clickable {
+    font-size: x-large;
+    font-weight: bold;
+    text-decoration: underline;
+    font-variant: small-caps;
+    cursor: url;
+    padding-bottom: 50 px;
+    margin-bottom: 20px;
+}
+
+a.clickable_small {
+    font-size:large;
+    font-weight: bold;
+    text-decoration: underline;
+    font-variant: small-caps;
+    cursor: url;
+    padding-bottom: 50 px;
+    margin-bottom: 20px;
+}
+
+a {
+    max-width : var(--maxwidth);
+    cursor: url;
+}
+
+
+footer {
+    position: fixed;
+    top: 94%;
+}
