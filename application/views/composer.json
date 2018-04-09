@@ -1,0 +1,41 @@
+{
+  "name": "serhioromano/bootstrap-calendar",
+  "description": "Bootstrap full view calendar.",
+  "keywords": ["bootstrap", "calendar"],
+  "homepage": "http://bootstrap-calendar.azurewebsites.net/",
+  "authors": [
+    {
+      "name": "Sergey Romanov",
+      "email": "serg4172@mail.ru",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/Serhioromano/bootstrap-calendar/issues"
+  },
+  "license": "BSD",
+  "require": {
+    "components/jquery": "~1",
+    "components/underscore": "~1",
+    "twbs/bootstrap": ">2.0.0",
+    "moment/moment": "~2",
+    "google/apiclient": "^2.2",
+    "spipu/html2pdf": "^4.6",
+    "guzzlehttp/psr7": "1.3.1"
+  },
+  "extra" : {
+    "component" : {
+      "scripts" : [
+        "js/calendar.min.js"
+      ],
+      "styles" : [
+        "css/calendar.min.css"
+      ],
+      "files" : [
+        "js/language/*.js",
+        "tmpls/*.*",
+        "img/*.*"
+      ]
+    }
+  }
+}

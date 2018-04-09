@@ -1,20 +1,19 @@
 <?php 
 
-include_once( "header.php" );
-include_once( "methods.php" );
-include_once( "database.php" );
-include_once( "ldap.php" );
-
-include_once "./helper/imap.php";
+require_once __DIR__ . '/header.php';
+require_once BASEPATH. "extra/methods.php" ;
+require_once BASEPATH. "extra/ldap.php" ;
+require_once BASEPATH. "database.php" ;
+require_once BASEPATH. "extra/helper/imap.php";
 
 $conf = $_SESSION['conf'];
-$login = $_POST['username'];
+$login = __get__( $_POST, 'username', '' );
 
 // If user use @instem.ncbs.res.in or @ncbs.res.in, ignore it.
 $ldap = explode( '@', $login);
 $ldap = $ldap[0];
 
-$pass = $_POST['pass'];
+$pass = __get__($_POST, 'pass' );
 
 $_SESSION['AUTHENTICATED'] = FALSE;
 
@@ -59,22 +58,13 @@ if( $auth )
     // If user title is unspecified then redirect him/her to edit user info
     $userInfo = getUserInfo( $ldap );
 
-    // NOTE: This is not NEEDED. Un-neccessary for sending user to info page.
-    // They should be sent directly to their HOME ASAP.
-    //if( $userInfo['title'] == 'UNSPECIFIED' )
-    //{
-    //   echo printInfo( "Please review your details " );
-    //   goToPage( "user_info.php", 1 );
-    //   exit;
-    //}
-
-    goToPage( "user.php", 0 );
+    goToPage( "user/home", 0 );
     exit;
 }
 else 
 {
     echo printWarning( "Loging unsucessful. Going back" );
-    goToPage( "index.php", 3 );
+    goToPage( "welcome", 3 );
     exit;
 }
 

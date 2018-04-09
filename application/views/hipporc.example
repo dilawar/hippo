@@ -1,0 +1,17 @@
+; Example of hipporc file.
+; It should be moved to /etc/hipporc 
+
+[mysql]
+host = localhost
+port = -1
+user = hippouser
+password = hippodippo
+database = hippo
+send_emails = false
+
+[ldap]
+host = my.ldap.com
+
+
+[data]
+user_imagedir = /srv/hippo/imagedir
