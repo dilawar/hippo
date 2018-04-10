@@ -36,6 +36,7 @@ function anyOfTheseRoles( $roles )
         return false;
 
     $userRoles = getRoles( $_SESSION['user'] );
+
     foreach( $roles as $role )
         if( in_array( $role, $userRoles ) )
             return true;
@@ -69,8 +70,7 @@ function mustHaveAnyOfTheseRoles( $roles )
     else
     {
         echo printWarning( "You don't have permission to access this page" );
-        goToPage( "index.php", 3 );
-        exit( 0 );
+        redirect( site_url() . "/welcome" );
     }
 }
 
