@@ -1,8 +1,7 @@
 <?php
 
-include_once 'header.php';
-include_once 'database.php' ;
-include_once 'methods.php';
+include_once BASEPATH. 'database.php' ;
+include_once BASEPATH. 'extra/methods.php';
 
 function loginOrIntranet( )
 {
