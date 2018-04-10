@@ -31,16 +31,14 @@ class Welcome extends CI_Controller {
         public function login( )
         {
             $data = $this->input->post();
-            $this->load->view( 'login', $data );
 
-            $conf = $_SESSION['conf'];
             $login = __get__( $data, 'username', '' );
+            $pass = __get__($data, 'pass' );
 
             // If user use @instem.ncbs.res.in or @ncbs.res.in, ignore it.
             $ldap = explode( '@', $login);
             $ldap = $ldap[0];
 
-            $pass = __get__($data, 'pass' );
 
             $_SESSION['AUTHENTICATED'] = FALSE;
 
@@ -56,7 +54,7 @@ class Welcome extends CI_Controller {
                 if( ! $auth )
                 {
                     echo printErrorSevere("Error: Username/password is incorrect. Try again...");
-                    goToPage( 'index.php', 2 );
+                    redirect( 'welcome', 'refresh' );
                     $auth = null;
                 }
             }

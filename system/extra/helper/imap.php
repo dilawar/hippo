@@ -2,6 +2,9 @@
 
 function authenticateUsingIMAP( $ldap, $pass )
 {
+    assert( $ldap );
+    assert( $pass );
+
     /* continue */
     $conn = imap_open( 
         "{imap.ncbs.res.in:993/ssl/readonly}INBOX"

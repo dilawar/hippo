@@ -29,7 +29,7 @@ else
     if( ! $auth )
     {
         echo printErrorSevere("Error: Username/password is incorrect. Try again...");
-        goToPage( 'index.php', 2 );
+        //goToPage( 'index.php', 2 );
         $auth = null;
     }
 }
@@ -57,15 +57,14 @@ if( $auth )
 
     // If user title is unspecified then redirect him/her to edit user info
     $userInfo = getUserInfo( $ldap );
-
-    goToPage( "user/home", 0 );
-    exit;
+    //goToPage( "user/home", 0 );
+    //exit;
 }
 else 
 {
     echo printWarning( "Loging unsucessful. Going back" );
-    goToPage( "welcome", 3 );
-    exit;
+    //goToPage( "welcome", 3 );
+    //exit;
 }
 
 ?>
