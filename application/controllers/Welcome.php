@@ -36,11 +36,10 @@ class Welcome extends CI_Controller {
             $pass = __get__($data, 'pass' );
 
             // If user use @instem.ncbs.res.in or @ncbs.res.in, ignore it.
-            $ldap = explode( '@', $login);
-            $ldap = $ldap[0];
+            $ldap = explode( '@', $login)[0];
 
 
-            $_SESSION['AUTHENTICATED'] = FALSE;
+            $_SESSION['AUTHENTICATED'] = false;
 
             // Check if ldap is available. If it is use LDAP else fallback to imap based 
             // authentication.
@@ -54,7 +53,7 @@ class Welcome extends CI_Controller {
                 if( ! $auth )
                 {
                     echo printErrorSevere("Error: Username/password is incorrect. Try again...");
-                    redirect( 'welcome', 'refresh' );
+                    redirect( site_url() . '/welcome' );
                     $auth = null;
                 }
             }
@@ -83,12 +82,12 @@ class Welcome extends CI_Controller {
                 // If user title is unspecified then redirect him/her to edit user info
                 $userInfo = getUserInfo( $ldap );
 
-                redirect( "user/home", 'refresh' );
+                redirect( site_url() . "/user/home", 'refresh' );
             }
             else 
             {
                 echo printWarning( "Loging unsucessful. Going back" );
-                redirect( "welcome", 'refresh' );
+                redirect( site_url() . "/welcome" );
             }
         }
 }
