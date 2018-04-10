@@ -22,7 +22,7 @@ function serviceping($host, $port=389, $timeout=1)
     }
 }
 
-function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" )
+function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" ) : array
 {
     $ldap_ip = $ldap_ip or getConfigValue( 'LDAP_QUERY_SERVER' );
     $port = getConfigValue( 'LDAP_QUERY_SERVER_PORT' );
@@ -35,7 +35,7 @@ function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" )
     if( 0 == serviceping( $ldap_ip, $port, 2 ) )
     {
         error_log( "Could not connect to $ldap_ip : $port . Timeout ... " );
-        return NULL;
+        return array();
     }
 
     $ds = @ldap_connect($ldap_ip, $port );
@@ -45,7 +45,7 @@ function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" )
     if( ! $r )
     {
         echo "LDAP binding failed. TODO: Ask user to edit details ";
-        return null;
+        return array();
     }
 
     $base_dn = "dc=ncbs,dc=res,dc=in";
@@ -92,8 +92,8 @@ function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" )
 
     if( count( $result ) > 0 )
         return $result[0];
-    else
-        return null;
+
+    return array( );
 }
 
 
