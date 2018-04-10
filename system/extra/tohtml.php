@@ -2136,6 +2136,7 @@ function courseToHTMLRow( $c, $slot, $sem, $year, &$enrollments )
 }
 
 
+/*
 function mailto( $email, $text = '' )
 {
     if( ! $text )
@@ -2144,6 +2145,7 @@ function mailto( $email, $text = '' )
     $html = "<a href=\"mailto:" . $email . "\"> $text </a>";
     return $html;
 }
+ */
 
 function piSpecializationHTML( $pi, $specialization )
 {
