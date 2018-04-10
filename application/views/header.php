@@ -27,39 +27,13 @@ else
     die( "Config file is not found. Can't continue" );
     exit;
 }
-
-$symbEdit           = "&#x270d";                // Writing hand
-$symbCalendar       = "&#128197";          // Does not work on chromium
-$symbCalendar       = "Schedule It";
-$symbDelete         = "&#10008";
-$symbDelete         = '<i class="fa fa-trash-o"></i>';
-$symbCancel         = "&#10008";
-
-$symbReject         = "Reject";
-$symbApprove        = "Approve";
-$symbAccept         = "Accept";
-
-$symbScan           = "&#8981";
-$symbThumbsDown     = "&#128078";
-$symbPerfect        = "&#128076";
-$symbReview         = 'Review';
-$symbUpload         = "&#8682";
-$symbWarn           = "&#9888";
-$symbCheck          = "&#10003";
-$symbSubmit         = $symbCheck;
-$symbUpdate         = $symbCheck;
-$symbRupee          = '&#8377';
-$symbStuckOutTounge = "&#9786";
-$symbBell           = '&#128365';
-
 ?>
 
 <!DOCTYPE html>
 <html>
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-
+<link href="<?= base_url() ?>/assests/css/hippo.css" rel="stylesheet" type="text/css" />
 <div class="header">
-
 <title>NCBS Hippo</title>
 
 <h1><a href="/hippo">NCBS Hippo</a></h1>
@@ -233,4 +207,3 @@ function toggleShowHide( button, eid )
   })();
 </script>
 
-<link href="assests/css/hippo.css" rel="stylesheet" type="text/css" />
