@@ -1,10 +1,10 @@
 <?php
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'methods.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
+include_once __DIR__ . '/header.php';
+include_once BASEPATH. 'database.php';
+include_once BASEPATH. 'extra/methods.php';
+include_once BASEPATH. 'extra/tohtml.php';
+include_once BASEPATH. 'extra/check_access_permissions.php';
 
 mustHaveAnyOfTheseRoles(
     array( 'USER', 'ADMIN', 'BOOKMYVENUE_ADMIN' , 'AWS_ADMIN' )
