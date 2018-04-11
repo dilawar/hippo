@@ -1,34 +1,3 @@
-<?php
-ob_start();
-
-if(!isset($_SESSION))
-    session_start();
-
-// If this is not a index.php page. check if access is valid.
-if( ! $_SERVER['PHP_SELF'] == 'index.php' )
-    include_once( 'is_valid_access.php' );
-
-ini_set( 'date.timezone', 'Asia/Kolkata' );
-
-// Always parse the config file and save it in the session.
-$inifile = '/etc/hipporc';
-if(file_exists($inifile))
-{
-    $conf = parse_ini_file($inifile, $process_section = true );
-    if( ! $conf )
-    {
-        echo "Could not parse cofiguration file. Wake up the admin of this site." ;
-        exit;
-    }
-    $_SESSION[ 'conf' ] = $conf;
-}
-else
-{
-    die( "Config file is not found. Can't continue" );
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html>
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
@@ -208,13 +177,18 @@ function toggleShowHide( button, eid )
 </script>
 
 
-<div class="alert alert-success">
-  <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-    <strong><?php echo $_SESSION['success']; ?></strong>
-</div>
-
-<div class="alert alert-danger">
+<?php 
+if( isset( $_SESSION['success'] ) )
+{
+    echo '<div class="alert alert-success">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+        <strong>' . $_SESSION['success'] . '</strong>
+        </div>';
+}
+else if( isset( $_SESSION['error'] ) )
+{
+    echo '<div class="alert alert-danger">
     <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-    <strong><?php echo $_SESSION['error']; ?></strong>
-</div>
-
+    <strong>' . $_SESSION['error'] . '</strong></div>';
+}
+?>

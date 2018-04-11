@@ -11,8 +11,7 @@ if( array_key_exists( 'AUTHENTICATED', $_SESSION) && $_SESSION[ 'AUTHENTICATED' 
 {
     if( $_SESSION[ 'user' ] != 'anonymous' )
     {
-        echo printInfo( "Already logged-in" );
-        goToPage( 'user.php', 0 );
+        redirect( '/user/home' );
         exit;
     }
 }
