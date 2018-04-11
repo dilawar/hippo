@@ -214,7 +214,6 @@ function summaryTable( )
 
 function loginForm()
 {
-    $conf = $_SESSION['conf'];
     /* Check if ldap server is alive. */
     $table = "";
     $table .= '<form action="welcome/login" method="post">';
@@ -223,7 +222,9 @@ function loginForm()
         placeholder="NCBS/Instem Username" /> </td></tr>';
     $table .= '<tr><td> <input type="password"  name="pass" id="pass"
             placeholder="Password" > </td></tr>';
-    $table .= '<tr><td> <input style="float: right" type="submit" name="response" value="Login" /> </td></tr>';
+    $table .= '<tr><td> 
+        <input style="float: right" type="submit" name="response" value="Login" /> 
+        </td></tr>';
     $table .= '</table>';
     $table .= '</form>';
     return $table;
@@ -718,30 +719,19 @@ function arrayToHtmlTableOfLogins( $logins )
 
 function userHTML( )
 {
-    $html = "<table class=\"user_float\">";
-    $html .= "<tr colspan=\"2\"><th>Hi " . $_SESSION['user'] . "</th>";
-    $html .= '<th><a href="logout.php"><i class="fa fa-sign-out"></i>SignOut</a></th>';
+    $html = '<table class="user_float">';
+    $html .= '<tr colspan="2"><th>Hi ' . $_SESSION['user'] . "</th>";
+    $html .= '<th><a href="' . site_url('/user/logout') . '">
+                    <i class="fa fa-sign-out"></i>SignOut</a></th>';
     $html .= '</tr>';
-    $html .= "<tr><td><a href=\"quickbook.php\"><i class=\"fa fa-hand-pointer-o\"></i>QuickBook</a>";
-    $html .= "<td><a href=\"user.php\"><i class=\"fa fa-home\"></i>My Home</a>";
-    $html .= "</tr>";
-    $html .= "</table>";
+    $html .= '<tr><td><a href="' . site_url( '/user/book' ) . '">
+                    <i class="fa fa-hand-pointer-o"></i>QuickBook</a>';
+    $html .= '<td><a href="' . site_url( '/user/home' ) . '">
+                    <i class="fa fa-home"></i>My Home</a>';
+    $html .= '</tr>';
+    $html .= '</table>';
     return $html;
 }
-
-/*
-function venuesToCheckButtons( $venues )
-{
-    $html = "<table>";
-    foreach( $venues as $venue )
-    {
-        $html .= '<tr><td><input type="radio" name="venue[]" value="' . $venue['id']
-            . '">' . $venue['id'] .  "</td></tr>";
-    }
-    $html .= "</table>";
-    return $html;
-}
- */
 
 function venuesToHTMLCheck( $groupedVenues, $grouped )
 {
