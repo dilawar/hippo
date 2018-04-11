@@ -1599,7 +1599,7 @@ function splitAtCommonDelimeters( $text, $ext = '')
     return $res;
 }
 
-function removeAWSSpeakerFromList( $speaker )
+function removeAWSSpeakerFromList( string $speaker )
 {
     $data = array( 'eligible_for_aws' => 'NO', 'login' => $speaker );
     $res = updateTable( 'logins', 'login', 'eligible_for_aws', $data );

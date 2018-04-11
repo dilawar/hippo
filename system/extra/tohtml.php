@@ -857,8 +857,8 @@ function editor_script( $id, $default = '' )
     *
     * @return  An html table. You need to wrap it in a form.
  */
-function dbTableToHTMLTable( $tablename, $defaults=Array()
-    , $editables = '', $button_val = 'submit', $hide = '' )
+function dbTableToHTMLTable( string $tablename, array $defaults = array()
+    , $editables = '', $button_val = 'submit', $hide = '' ) 
 {
     global $dbChoices;
     global $useCKEditor;
@@ -932,7 +932,7 @@ function dbTableToHTMLTable( $tablename, $defaults=Array()
         if( preg_match( '/^varchar\((.*)\)$/', $ctype ) )
         {
             $classKey = $tablename . '.' . $keyName;
-            if( array_key_exists( $classKey, $dbChoices ) )
+            if(isset($dbChoices[$classKey]))
             {
                 $val = "<select name=\"$keyName\">";
                 $choices = getChoicesFromGlobalArray( $dbChoices, $classKey );
@@ -1934,7 +1934,7 @@ function coursesTable( $editable = false, $with_form = true )
         if( $editable )
         {
             if( $with_form )
-                $html .= ' <form action="#" method="post" accept-charset="utf-8">';
+                $html .= '<form action="#" method="post" accept-charset="utf-8">';
 
             $html .= '<td> <button name="response" value="Edit">Edit</button>';
             $html .= '<input type="hidden" name="id" value="' . $c['id'] . '">';
@@ -2142,14 +2142,14 @@ function piSpecializationHTML( $pi, $specialization )
     return "$specialization <br /> PI OR HOST: $pi";
 }
 
-function goBackToPageLink( $url, $title = "Go back" )
+function goBackToPageLink( $url, $title = "Go back" ) : string
 {
 
-    $html = "<div class=\"goback\">";
-    $html .= "<a style=\"float: left\" href=\"$url\">
-            <i class=\"fa fa-step-backward fa-3x\"></i>
-            <font color=\"blue\" size=\"5\">$title</font>
-        </a></div><br/><br/>";
+    $html = '<div class="goback">';
+    $html .= '<a style="float: left" href="' . site_url( $url ) . '">
+                <i class="fa fa-step-backward fa-3x"></i>
+                <font color="blue" size="5">' . $title . '</font>
+            </a></div><br/><br/>';
     return $html;
 }
 

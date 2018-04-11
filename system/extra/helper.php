@@ -313,7 +313,7 @@ function getEventsBeteen( $from , $duration )
 
 
 // Fetch entries from database response object
-function fetchEntries( $res, $how = PDO::FETCH_ASSOC )
+function fetchEntries( $res, $how = PDO::FETCH_ASSOC ) : array
 {
     $array = Array( );
     if( $res ) {
@@ -1058,27 +1058,21 @@ function getLoginIds( )
     *
     * @return Array.
  */
-function getUserInfo( $user, $query_ldap = false )
+function getUserInfo( string $user, bool $query_ldap = false ) : array
 {
     $res = getTableEntry( 'logins', 'login', array( 'login' => $user ) );
-
     $title = '';
     if( is_array($res) )
         $title = __get__( $res, 'title', '' );
 
-    if( ! $res )
-        $res = array( );
-
     // Fetch ldap as well.
-    $ldap = null;
+    $ldap = array( );
     if( $query_ldap )
         $ldap = getUserInfoFromLdap( $user );
 
     if( is_array($ldap) && is_array( $res ) && $ldap  )
-    {
         foreach( $ldap as $key => $val )
             $res[ $key ] = $val;
-    }
 
     // If title was found in database, overwrite ldap info.
     if( $title )
@@ -1087,7 +1081,7 @@ function getUserInfo( $user, $query_ldap = false )
     return $res;
 }
 
-function getLoginInfo( $login_name, $query_ldap = false )
+function getLoginInfo( string $login_name, bool $query_ldap = false ) : array
 {
     return getUserInfo( $login_name, $query_ldap );
 }
@@ -1583,8 +1577,14 @@ function deleteFromTable( $tablename, $keys, $data )
     *
     * @return
  */
-function updateTable( $tablename, $wherekeys, $keys, $data )
+function updateTable( $tablename, $wherekeys, $keys, array $data )
 {
+    if( ! $data )
+    {
+        echo printWarning( "Empty data." );
+        return null;
+    }
+
     $hippoDB = initDB();;
     $query = "UPDATE $tablename SET ";
 
@@ -1599,8 +1599,8 @@ function updateTable( $tablename, $wherekeys, $keys, $data )
 
     $whereclause = implode( " AND ", $whereclause );
 
-    $values = Array( );
-    $cols = Array();
+    $values = array( );
+    $cols = array();
     foreach( $keys as $k )
     {
         // If values for this key in $data is null then don't use it here.
@@ -1628,7 +1628,8 @@ function updateTable( $tablename, $wherekeys, $keys, $data )
 
     $res = $stmt->execute( );
     if( ! $res )
-        echo printWarning( "<pre>Failed to execute $query </pre>" );
+        echo printWarning( "Failed to execute <pre> $query </pre>" );
+
     return $res;
 }
 
@@ -2856,7 +2857,7 @@ function getCoursesAtThisVenueSlotBetweenDates( $venue, $slot, $start, $end )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getAllSpecialization( )
+function getAllSpecialization( ) : array
 {
     $hippoDB = initDB();;
     $res = $hippoDB->query( 'SELECT DISTINCT(specialization) FROM faculty' );

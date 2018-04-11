@@ -16,7 +16,8 @@ $userInfo = getLoginInfo( $_SESSION[ 'user' ] );
 $html = '<table class="admin">';
 $html .= '<tr>
       <td>
-        <i class="fa fa-user fa-3x"></i><a  class="clickable" href=/user/info"> My Profile</a>
+        <i class="fa fa-user fa-3x"></i><a  class="clickable" 
+                href="' . site_url( '/user/info' ) . '"> My Profile</a>
         <br /> See and edit (most of) your details.
       </td>
         <td>
