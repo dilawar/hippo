@@ -5,26 +5,30 @@ include_once BASEPATH. 'extra/tohtml.php' ;
 include_once BASEPATH. 'extra/methods.php' ;
 include_once BASEPATH. 'calendar/calendar.php' ;
 
-// If user is already authenticated, redirect him to user.php
-// NOTE: DO NOT put this block before loading configuration files.
-if( array_key_exists( 'AUTHENTICATED', $_SESSION) && $_SESSION[ 'AUTHENTICATED' ] )
+function loginForm()
 {
-    if( $_SESSION[ 'user' ] != 'anonymous' )
-    {
-        redirect( '/user/home' );
-        exit;
-    }
+    /* Check if ldap server is alive. */
+    $table = "";
+    $table .= '<form action="welcome/login" method="post" >';
+    $table .= '<table class="login_main">';
+    $table .= '<tr><td><input type="text" name="username" id="username"
+        placeholder="NCBS/Instem Username" /> </td></tr>';
+    $table .= '<tr><td> <input type="password"  name="pass" id="pass"
+            placeholder="Password" > </td></tr>';
+    $table .= '<tr><td> 
+        <input style="float: right" type="submit" name="response" value="Login" /> 
+        </td></tr>';
+    $table .= '</table>';
+    $table .= '</form>';
+    return $table;
 }
 
+
 $_SESSION['user'] = 'anonymous';
-$_SESSION[ 'timezone' ] = 'Asia/Kolkata';
 
 // Now create a login form.
-echo "<table class=\"index\">";
-echo '</tr>';
 echo loginForm();
-echo '</tr>';
-echo "</table>";
+
 
 // Show background image only on index.php page.
 $thisPage = basename( $_SERVER[ 'PHP_SELF' ] );
@@ -35,13 +39,11 @@ if( strpos( $thisPage, 'index.php' ) !== false )
     $background = random_jpeg( "./_backgrounds" );
     if( $background )
     {
-        echo "<body style=\" background-image:url($background);
-        filter:alpha(Opactity=30);opacity=0.3;
-        width:800px;
-        \">";
+        echo "<body style=\"background-image:url($background);
+            filter:alpha(Opactity=30);opacity=0.3; width:800px; \">";
     }
 }
 
-require_once 'footer.php';
+require_once __DIR__ . '/footer.php';
 
 ?>
