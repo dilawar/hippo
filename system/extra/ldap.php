@@ -107,7 +107,7 @@ function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" ) : array
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function authenticateUsingLDAP( $user, $pass )
+function authenticateUsingLDAP( string $user, string $pass ) : bool
 {
     if( strlen( trim($user) ) < 1 )
         return false;
