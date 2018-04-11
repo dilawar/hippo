@@ -1,17 +1,10 @@
 <?php
 
-include_once 'header.php';
-include_once 'tohtml.php' ;
-include_once './check_access_permissions.php';
+require_once __DIR__ . '/header.php';
+require_once BASEPATH . 'extra/tohtml.php' ;
+require_once BASEPATH . 'extra/check_access_permissions.php';
 
 echo userHTML( );
-
-if( ! isAuthenticated( ) )
-{
-    echo printWarning( "Session expired!" );
-    goBack( "index.php", 2 );
-    exit;
-}
 
 $conf = getConf( );
 $picPath = $conf['data']['user_imagedir'] . '/' . $_SESSION['user'] . '.jpg';
@@ -19,18 +12,15 @@ $picPath = $conf['data']['user_imagedir'] . '/' . $_SESSION['user'] . '.jpg';
 ///////////////////////////////////////////////////////////////////////////
 // PICTURE OF SPEAKER
 ///////////////////////////////////////////////////////////////////////////
-echo '<table class="">';
-echo '<tr><td>';
+$tab = '<table class="">';
+$tab .= '<tr><td>';
 
 if( file_exists( $picPath ) )
-    echo showImage( $picPath );
+    $tab .= showImage( $picPath );
 else
-{
-    echo printInfo( "I could not find your picture in my database.
-        Please upload one."
-    );
-}
-echo '</td></tr><tr><td>';
+    $tab .= printInfo( "I could not find your picture in my database.  Please upload one.");
+
+$tab .= '</td></tr><tr><td>';
 
 // Form to upload a picture
 $picAction = '<form action="user_upload_picture.php"
@@ -48,20 +38,23 @@ $picAction .=  '</form>';
 $picAction .=  '</td></tr>';
 $picAction .=  '</table>';
 $picAction .=  '<br>';
-echo $picAction;
+
+$tab .= $picAction;
+echo $tab;
 
 $info = getUserInfo( $_SESSION['user'] );
+
 echo '<h1>Your profile </h1>';
-$editables = Array( 'title', 'first_name', 'last_name', 'alternative_email'
-    , 'institute', 'valid_until', 'joined_on', 'pi_or_host', 'specialization'
-    );
+
+$editables = 'title,first_name,last_name,alternative_email,institute' . 
+    ',valid_until,joined_on,pi_or_host,specialization';
 
 $specializations = array_map(
     function( $x ) { return $x['specialization']; }, getAllSpecialization( )
 );
 
 $info[ 'specialization' ] = arrayToSelectList( 'specialization'
-    , $specializations, array(), false, $info[ 'specialization' ]
+    , $specializations, array(), false, __get__($info, 'specialization', '')
     );
 
 // Prepare select list of faculty.
@@ -74,12 +67,12 @@ foreach( $faculty as $fac )
     $facMap[ $fac['email'] ] = arrayToName( $fac, $with_email = true );
 }
 
-$info[ 'pi_or_host' ] = arrayToSelectList(
-    'pi_or_host'
-    , $facultyEmails, $facMap, false, $info[ 'pi_or_host' ]
-    );
+$info[ 'pi_or_host' ] = arrayToSelectList('pi_or_host'
+    , $facultyEmails, $facMap, false
+    , __get__($info, 'pi_or_host', '' )
+);
 
-echo "<form method=\"post\" action=\"user_info_action.php\">";
+echo '<form method="post" action="' . site_url('/user/info/action') . '" >';
 echo dbTableToHTMLTable( 'logins', $info, $editables );
 echo "</form>";
 
@@ -88,6 +81,8 @@ if( strtoupper( $info['eligible_for_aws'] ) == "NO" )
         "If you are 'ELIGIBLE FOR AWS', please write to academic office."
     );
 
+
+// TODO: ENABLE IS LATER.
 //echo '<h3>Submit request to academic office</h3>';
 //$form = ' <form method="post" action="user_aws_request.php">';
 //if( strtoupper( $info['eligible_for_aws'] ) == "YES" )
