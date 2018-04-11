@@ -4,6 +4,7 @@ function printErrorSevere($msg)
 {
     $err = "<font size=\"4\" color=\"blue\">".$msg."</font><br>";
     error_log( $msg );
+    ob_flush();
     return $err;
 }
 
@@ -12,6 +13,7 @@ function printWarning($msg)
 {
     $warn ="<p class=\"warn\"><i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</p>";
     error_log( $msg );
+    ob_flush( );
     return $warn;
 }
 
@@ -20,6 +22,7 @@ function printInfo( $msg )
 {
     error_log( $msg );
     $info ="<p class=\"info\">".$msg."<br></p>";
+    ob_flush( );
     return $info;
 }
 

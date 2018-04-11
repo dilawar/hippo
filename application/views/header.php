@@ -207,3 +207,14 @@ function toggleShowHide( button, eid )
   })();
 </script>
 
+
+<div class="alert alert-success">
+  <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    <strong><?php echo $_SESSION['success']; ?></strong>
+</div>
+
+<div class="alert alert-danger">
+    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    <strong><?php echo $_SESSION['error']; ?></strong>
+</div>
+

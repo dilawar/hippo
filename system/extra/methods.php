@@ -237,14 +237,18 @@ function appURL( )
 }
 
 /* Go to a page relative to base dir. */
-function goToPage($page="index.php", $delay = 3)
+function goToPage($page="/welcome", $delay = 3)
 {
-    echo alertUser( "Moving to $page in $delay seconds" );
-    try {
-        header("Refresh: $delay, url=$page");
+    $url = site_url() . $page;
 
-    } catch (Exception $e) {
-        echo printWarning( "Failed to redirect" );
+    // echo alertUser( "Sending you to $page... Please wait!" );
+    try 
+    {
+        header("Refresh: $delay, url=$url");
+    }
+    catch (Exception $e) 
+    {
+        echo printWarning( "Failed to redirect!" );
     }
 }
 
