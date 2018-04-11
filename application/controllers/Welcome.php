@@ -67,7 +67,7 @@ class Welcome extends CI_Controller {
         else 
         {
             $this->session->set_flashdata( 'error', "Loging unsucessful. Try again!" );
-            redirect( "/welcome" );
+            redirect( "/welcome/login" );
         }
     }
 }

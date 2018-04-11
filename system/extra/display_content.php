@@ -13,7 +13,6 @@ function printWarning($msg)
 {
     $warn ="<p class=\"warn\"><i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</p>";
     error_log( $msg );
-    ob_flush( );
     return $warn;
 }
 
