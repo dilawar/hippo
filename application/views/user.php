@@ -29,7 +29,7 @@ $html .= '<tr>
     </tr>';
 
 $html .= '<tr>';
-if( $userInfo[ 'eligible_for_aws' ] == 'YES' )
+if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
 {
     $html .=  '<td> <i class="fa fa-graduation-cap fa-3x"></i>
         <a class="clickable" href="'. site_url("/user/aws"). '">My AWS</a> <br />

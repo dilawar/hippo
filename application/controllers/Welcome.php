@@ -15,10 +15,8 @@ class Welcome extends CI_Controller {
 
     public function login( )
     {
-        $data = $this->input->post();
-
-        $login = __get__( $data, 'username', '' );
-        $pass = __get__($data, 'pass' );
+        $login = __get__( $_POST, 'username', '' );
+        $pass = __get__($_POST, 'pass' );
 
         // If user use @instem.ncbs.res.in or @ncbs.res.in, ignore it.
         $ldap = explode( '@', $login)[0];
@@ -42,7 +40,7 @@ class Welcome extends CI_Controller {
 
         if( $auth )
         {
-            $_SESSION['AUTHENTICATED'] = TRUE;
+            $_SESSION['AUTHENTICATED'] = true;
             $_SESSION['user'] = $ldap;
 
             $ldapInfo = getUserInfoFromLdap( $ldap );
@@ -61,13 +59,14 @@ class Welcome extends CI_Controller {
                 );
             }
 
+            echo printInfo( "Loging successful!" );
             $this->session->set_flashdata( 'success', "Loging sucessful.!" );
             redirect( "/user/home" );
         }
         else 
         {
             $this->session->set_flashdata( 'error', "Loging unsucessful. Try again!" );
-            redirect( "/welcome/login" );
+            redirect( "/welcome" );
         }
     }
 }

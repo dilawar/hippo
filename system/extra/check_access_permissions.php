@@ -28,14 +28,20 @@ function requiredPrivilege( $role )
 
 function anyOfTheseRoles( $roles )
 {
+    if( is_string( $roles ))
+        $roles = explode( ',', $roles );
+
+    if( in_array( 'USER', $roles ) )
+        return true;
+
     if( is_string( $roles ) )
         $roles = explode( ',', $roles );
 
-    $user = __get__( $_SESSION, 'user', '' );
+    $user = whoAmI( );
     if( ! $user )
         return false;
 
-    $userRoles = getRoles( $_SESSION['user'] );
+    $userRoles = getRoles( $user );
 
     foreach( $roles as $role )
         if( in_array( $role, $userRoles ) )
@@ -65,6 +71,9 @@ function allOfTheseRoles( $roles )
 
 function mustHaveAnyOfTheseRoles( $roles )
 {
+    if( is_string( $roles ))
+        $roles = explode( ',', $roles );
+
     if( anyOfTheseRoles( $roles ) )
         return true;
     else
@@ -76,6 +85,9 @@ function mustHaveAnyOfTheseRoles( $roles )
 
 function mustHaveAllOfTheseRoles( $roles )
 {
+    if( is_string( $roles ))
+        $roles = explode( ',', $roles );
+
     if( allOfTheseRoles( $roles ) )
         return true;
     else

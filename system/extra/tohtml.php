@@ -212,23 +212,6 @@ function summaryTable( )
     return $html;
 }
 
-function loginForm()
-{
-    /* Check if ldap server is alive. */
-    $table = "";
-    $table .= '<form action="welcome/login" method="post">';
-    $table .= '<table class="login_main">';
-    $table .= '<tr><td><input type="text" name="username" id="username"
-        placeholder="NCBS/Instem Username" /> </td></tr>';
-    $table .= '<tr><td> <input type="password"  name="pass" id="pass"
-            placeholder="Password" > </td></tr>';
-    $table .= '<tr><td> 
-        <input style="float: right" type="submit" name="response" value="Login" /> 
-        </td></tr>';
-    $table .= '</table>';
-    $table .= '</form>';
-    return $table;
-}
 
 function sanitiesForTinyMCE( $text )
 {
