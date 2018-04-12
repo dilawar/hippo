@@ -44,20 +44,23 @@ class Welcome extends CI_Controller {
             $_SESSION['user'] = $ldap;
 
             $ldapInfo = getUserInfoFromLdap( $ldap );
+
+            $email = '';
+            $type = 'UNKNOWN';
             if( $ldapInfo )
             {
                 $email = $ldapInfo[ 'email' ];
                 $_SESSION['email'] = $email;
                 $type = __get__( $ldapInfo, 'title', 'UNKNOWN' );
-
-                // In any case, create a entry in database.
-                createUserOrUpdateLogin( $ldap, $ldapInfo, $type );
-
-                // Update email id.
-                $res = updateTable( 'logins', 'login', 'email'
-                    , array( 'login' => $ldap, 'email' => $email )
-                );
             }
+
+            // In any case, create a entry in database.
+            createUserOrUpdateLogin( $ldap, $ldapInfo, $type );
+
+            // Update email id.
+            $res = updateTable( 'logins', 'login', 'email'
+                , array( 'login' => $ldap, 'email' => $email )
+            );
 
             echo printInfo( "Loging successful!" );
             $this->session->set_flashdata( 'success', "Loging sucessful.!" );

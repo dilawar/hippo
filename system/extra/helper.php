@@ -1026,8 +1026,9 @@ function createUserOrUpdateLogin( $userid, $ldapInfo = Array() )
     if( ! $ldapInfo )
         $ldapInfo = @getUserInfoFromLdap( $userid );
 
-    if( $ldapInfo[ 'last_name' ] == 'NA' )
-        $ldapInfo[ 'last_name' ] = '';
+    if( isset($ldapInfo['last_name']) )
+       if($ldapInfo[ 'last_name' ] == 'NA' )
+           $ldapInfo[ 'last_name' ] = '';
 
     $stmt = $hippoDB->prepare(
        "INSERT IGNORE INTO logins
