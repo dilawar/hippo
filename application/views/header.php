@@ -176,6 +176,13 @@ function toggleShowHide( button, eid )
   })();
 </script>
 
+<!-- Fade in -->
+<script type="text/javascript" charset="utf-8">
+$(document).ready(function(){
+    $('div#fadein').fadeIn(3000).delay(3000).fadeOut(2000);
+});
+</script>
+
 
 <?php 
 if( isset( $_SESSION['success'] ) )

@@ -41,13 +41,47 @@ $dbChoices = array(
 $hippoDB = new BMVPDO( "localhost" );
 $hippoDB->initialize( );
 
+
+
+/**
+ * Replaces any parameter placeholders in a query with the value of that
+ * parameter. Useful for debugging. Assumes anonymous parameters from 
+ * $params are are in the same order as specified in $query
+ *
+ * @param string $query The sql query with parameter placeholders
+ * @param array $params The array of substitution parameters
+ * @return string The interpolated query
+ *
+ * This is from https://stackoverflow.com/a/8403150/1805129
+ */
+function interpolateQuery($query, $params) 
+{
+    $keys = array();
+
+    # build a regular expression for each parameter
+    foreach ($params as $key => $value) {
+        if (is_string($key)) {
+            $keys[] = '/:'.$key.'/';
+        } else {
+            $keys[] = '/[?]/';
+        }
+    }
+
+    $query = preg_replace($keys, $params, $query, 1, $count);
+
+    #trigger_error('replaced '.$count.' keys');
+
+    return $query;
+}
+
+
 function initDB( )
 {
     global $hippoDB;
     if( ! $hippoDB )
     {
         // Construct the PDO
-        $hippoDB = new BMVPDO( "localhost" );
+        $hippoDB = new BMVPDO( );
         $hippoDB->initialize( );
     }
     return $hippoDB;
@@ -1314,7 +1348,8 @@ function getTableEntries( $tablename, $orderby = '', $where = '' ) : array
 /* ----------------------------------------------------------------------------*/
 function getTableEntry( $tablename, $whereKeys, $data ) : array
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+
     if( is_string( $whereKeys ) )
         $whereKeys = explode( ",", $whereKeys );
 
@@ -1342,7 +1377,6 @@ function getTableEntry( $tablename, $whereKeys, $data ) : array
         echo printWarning( "Failed to fetch. Error was " . $e->getMessage( ) );
         return array();
     }
-
     return array();
 }
 
@@ -1582,20 +1616,23 @@ function updateTable( $tablename, $wherekeys, $keys, array $data )
     if( ! $data )
     {
         echo printWarning( "Empty data." );
-        return null;
+        return false;
     }
 
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    $hippoDB->beginTransaction();
+
     $query = "UPDATE $tablename SET ";
 
     if( is_string( $wherekeys ) )
         $wherekeys = explode( ",", $wherekeys );
+
     if( is_string( $keys ) )
         $keys = explode(",",  $keys );
 
     $whereclause = array( );
     foreach( $wherekeys as $wkey )
-        array_push( $whereclause, "$wkey=:$wkey" );
+        $whereclause[] = "$wkey=:$wkey";
 
     $whereclause = implode( " AND ", $whereclause );
 
@@ -1627,10 +1664,10 @@ function updateTable( $tablename, $wherekeys, $keys, array $data )
         $stmt->bindValue( ":$wherekey", $data[$wherekey] );
 
     $res = $stmt->execute( );
-    if( ! $res )
-        echo printWarning( "Failed to execute <pre> $query </pre>" );
+    if( $res )
+        $hippoDB->commit();
 
-    return $res;
+    return true;
 }
 
 
