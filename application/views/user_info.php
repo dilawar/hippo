@@ -23,7 +23,7 @@ else
 $tab .= '</td></tr><tr><td>';
 
 // Form to upload a picture
-$picAction = '<form action="user_upload_picture.php"
+$picAction = '<form action="' . site_url( "/user/info/upload_picture" ) . '" 
     method="post" enctype="multipart/form-data">';
 
 $picAction .=  '<p><small>
