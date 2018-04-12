@@ -25,6 +25,12 @@ function printInfo( $msg )
     return $info;
 }
 
+function msg_fade_out( $msg , $class = "info" )
+{
+    $info ='<div id="fadein"><p class="' . $class . "\">$msg </p></div>";
+    return $info;
+}
+
 function alertUser( $msg )
 {
     $info ="<div class=\"alert_user\">

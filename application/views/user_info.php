@@ -42,7 +42,7 @@ $picAction .=  '<br>';
 $tab .= $picAction;
 echo $tab;
 
-$info = getUserInfo( $_SESSION['user'] );
+$info = getUserInfo( whoAmI() );
 
 echo '<h1>Your profile </h1>';
 
@@ -76,11 +76,13 @@ echo '<form method="post" action="' . site_url('/user/info/action') . '" >';
 echo dbTableToHTMLTable( 'logins', $info, $editables );
 echo "</form>";
 
-if( strtoupper( $info['eligible_for_aws'] ) == "NO" )
-    echo alertUser(
-        "If you are 'ELIGIBLE FOR AWS', please write to academic office."
+if(__get__($info, 'eligible_for_aws', 'NO') =="NO")
+{
+    echo alertUser( 
+        "If you are <tt>ELIGIBLE FOR AWS</tt>, please write to academic office to include 
+        your name."
     );
-
+}
 
 // TODO: ENABLE IS LATER.
 //echo '<h3>Submit request to academic office</h3>';
@@ -95,6 +97,6 @@ if( strtoupper( $info['eligible_for_aws'] ) == "NO" )
 //$form .= '</form>';
 //echo $form;
 
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "/user/home", "Go back" );
 
 ?>
