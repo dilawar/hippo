@@ -10,30 +10,13 @@
 <div style="font-size:small">
 <table class="public_links">
     <tr>
-    <td>
-    <a href="allevents.php" target="hippo_popup">Bookings</a>
-    </td>
-    <td>
-    <a href="aws.php" target="hippo_popup">AWSs</a>
-    </td>
-    <td>
-    <a href="events.php" target="hippo_popup">Talks</a>
-    </td>
-    <td>
-    <a href="jc.php" target="hippo_popup">JCs</a>
-    </td>
-    <!-- <td> <a href="user_aws_search.php" target="hippo_popup">Search AWS</a> </td> -->
-    <td> <a href="statistics.php" target="hippo_popup" >Statistics </a> </td>
-    <!-- <td> <a href="active_speakers.php" target="hippo_popup" >AWS speakers</a></td> -->
-    <td> <a href="courses.php" target="hippo_popup" >Courses</a></td>
-    <td> <a href="map.php" target="hippo_popup" >Map</a></td>
-    <!--
-    RSS has been thorougly abused to make it work with NCBS screen.
-    <td> <a href="rss.php" target="hippo_popup" >
-            <img src="data/feed-icon-14x14.2168a573d0d4.png"
-                alt="Subscribe to public events">
-            </a></td>
-    -->
+    <td> <a href="'. site_url('public/allevents') .'" target="hippo_popup">Bookings</a> </td>
+    <td> <a href="'. site_url('public/aws'). '" target="hippo_popup">AWSs</a></td>
+    <td> <a href="'. site_url('public/events'). '" target="hippo_popup">Talks</a></td>
+    <td> <a href="'. site_url('public/jc'). '" target="hippo_popup">JCs</a> </td>
+    <td> <a href="'. site_url('public/statistics') .'" target="hippo_popup" >Statistics </a> </td>
+    <td> <a href="'. site_url('public/courses') .'" target="hippo_popup" >Courses</a></td>
+    <td> <a href="'. site_url('public/map'). '" target="hippo_popup" >Map</a></td>
     <td> <a href="https://dilawar.github.io/Hippo" target="_blank" >Docs</a></td>
     </tr>
 </table>
