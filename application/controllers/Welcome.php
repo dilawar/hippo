@@ -1,16 +1,15 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-require_once BASEPATH. "extra/methods.php" ;
-require_once BASEPATH. "extra/ldap.php" ;
-require_once BASEPATH. "database.php" ;
-require_once BASEPATH. "extra/helper/imap.php";
+require_once BASEPATH. "autoload.php" ;
 
-class Welcome extends CI_Controller {
+class Welcome extends CI_Controller 
+{
 
     public function index()
     {
-        $this->load->view('index');
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load('index');
     }
 
     public function login( )

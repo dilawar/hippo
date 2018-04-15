@@ -2,27 +2,22 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-require_once BASEPATH . 'autoload.php';
+require_once BASEPATH.'autoload.php';
 
 class User extends CI_Controller
 {
-    
-    public function __construct()
-    {
-        parent::__construct();
-        $this->load->view( 'header' );
-    }
-
     // Show user home.
     public function home()
     {
-        $this->load->view( 'user' );
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'user' );
     }
 
     // BOOKING
     public function book( $arg = '' )
     {
-        $this->load->view( 'quickbook' );
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load('quickbook');
     }
 
     // USER EDITING PROFILE INFO
@@ -91,21 +86,50 @@ class User extends CI_Controller
             }
         }
 
-        $this->load->view( 'user_info' );
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load('user_info' );
     }
 
     public function booking_request( $args = null )
     {
         log_message( 'info', 'Creating booking requests' );
-        $this->load->view( 'user_submit_booking_request' );
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'user_submit_booking_request' );
     }
 
     // Show courses.
     public function courses( $arg = '' )
     {
         $this->session->set_flashdata( 'info', "With argument $arg." );
-        $this->load->view( 'user_manages_courses' );
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'user_manages_courses' );
         
+    }
+
+    // Edit update courses.
+    public function manage_course( $action = '' )
+    {
+        // There must be a course id.
+        if( ! __get__( $_POST, 'course_id', '' ) )
+        {
+            $this->session->set_flashdata( 'info', 'No course selected' );
+            redirect( 'user/courses' );
+        }
+
+        if( $action == 'register' )
+        {
+            $_POST[ 'last_modified_on' ] = dbDateTime( 'now' );
+            $_POST[ 'registered_on' ] = dbDateTime( 'now' );
+
+            $res = insertIntoTable( 'course_registration'
+                , 'student_id,semester,year,type,course_id,registered_on,last_modified_on'
+                , $_POST 
+            );
+
+            if( $res )
+                echo printInfo( "You are successfully registered for the course" );
+
+        }
     }
 
 

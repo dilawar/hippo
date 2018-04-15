@@ -29,7 +29,7 @@ class HippoHooks
         }
         else
         {
-            echo "Not yet authenticated";
+            // echo "Not yet authenticated";
         }
     }
 }

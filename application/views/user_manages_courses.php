@@ -1,4 +1,5 @@
 <?php
+
 require_once BASEPATH . 'autoload.php';
 
 echo userHTML( );
@@ -103,13 +104,13 @@ $default = array( 'student_id' => $_SESSION[ 'user' ]
                 );
 
 // TODO: Custom table for registration.
-echo '<form method="post" action="user_manages_courses_action.php">';
+echo '<form method="post" action="manage_course/register">';
 echo dbTableToHTMLTable( 'course_registration'
     , $default
     , 'course_id:required,type'
     , 'Submit'
     , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
-);
+    );
 echo '</form>';
 
 
@@ -156,8 +157,7 @@ foreach( $myCourses as $c )
         echo '</tr><tr>';
 
     echo '<td>';
-    echo '<form method="post" action="user_manages_courses_action.php">';
-
+    echo '<form method="post" action="manages_course/update">';
     $cid = $c[ 'course_id' ];
     $course = getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
     if( ! $course )
