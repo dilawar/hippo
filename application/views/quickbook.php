@@ -5,12 +5,11 @@
  * the external_id _GET variable.
  */
 
-include_once 'database.php';
-include_once 'methods.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
-
-mustHaveAnyOfTheseRoles( array( "USER" ) );
+require_once __DIR__ . '/header.php';
+include_once BASEPATH . 'database.php';
+include_once BASEPATH . 'extra/methods.php';
+include_once BASEPATH . 'extra/tohtml.php';
+include_once BASEPATH . 'extra/check_access_permissions.php';
 
 echo userHTML( );
 
@@ -96,7 +95,6 @@ else
 
 
 /* PAGE */
-
 echo '<br />';
 echo '<table style="min-width:300px;max-width:500px",border="0">';
 echo '<form action="" method="post" accept-charset="utf-8">';
