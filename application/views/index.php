@@ -1,6 +1,5 @@
 <?php
 
-include_once __DIR__. '/header.php';
 include_once BASEPATH. 'extra/tohtml.php' ;
 include_once BASEPATH. 'extra/methods.php' ;
 include_once BASEPATH. 'calendar/calendar.php' ;
