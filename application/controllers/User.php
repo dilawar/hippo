@@ -103,7 +103,7 @@ class User extends CI_Controller
     // Show courses.
     public function courses( $arg = '' )
     {
-        $this->session->set_flashdata( 'info', "With argument $arg." );
+        // $this->session->set_flashdata( 'info', "With argument $arg." );
         $this->load->view( 'user_manages_courses' );
         
     }
