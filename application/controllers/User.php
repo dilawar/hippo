@@ -10,8 +10,14 @@ class User extends CI_Controller {
 
     public function home()
     {
-        echo "User home";
+        log_message( "info", "User home" );
         $this->load->view('user');
+    }
+
+    public function book( $args = null )
+    {
+        log_message( 'info', 'Booking page' );
+        $this->load->view( 'quickbook' );
     }
 
 }
