@@ -45,17 +45,11 @@
 </html>
 
 <!--  REQUIRED -->
-<script src="./node_modules/jquery/dist/jquery.js"></script>
-
-<script src="./node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
-<link href="./node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-
-<!--
-<link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css"/>
--->
-
-<script src="./node_modules/jquery-timepicker/jquery.timepicker.js"></script>
-<link href="./node_modules/jquery-timepicker/jquery.timepicker.css" rel="stylesheet" type="text/css" />
+<script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
+<script src="node_modules/jquery-timepicker/jquery.timepicker.js"></script>
+<link href="node_modules/jquery-timepicker/jquery.timepicker.css" rel="stylesheet" type="text/css" />
+<link href="node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
 
 <script src="./node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js"></script>
 
@@ -64,10 +58,10 @@
 <link rel="icon" href="data:,">
 
 <!-- Font awesome -->
-<link rel="stylesheet" href="./node_modules/font-awesome/css/font-awesome.css"/>
+<link rel="stylesheet" href="<?= site_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
 
 <!-- sort table. -->
-<script src="./node_modules/sorttable/sorttable.js"></script>
+<script src="<?= site_url() ?>/node_modules/sorttable/sorttable.js"></script>
 <script type="text/javascript" charset="utf-8">
     $(".sortable").sortable( );
 </script>
