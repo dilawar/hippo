@@ -204,4 +204,5 @@ else if( isset( $_SESSION['info'] ) )
     <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
     <strong>' . $_SESSION['info'] . '</strong></div>';
 }
+
 ?>
