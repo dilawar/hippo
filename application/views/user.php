@@ -22,7 +22,7 @@ $html .= '<tr>
       </td>
         <td>
             <i class="fa fa-book fa-3x"></i>
-            <a class="clickable" href="'. site_url('/user/manages/courses' ) . '">My Courses</a>
+            <a class="clickable" href="'. site_url('/user/courses' ) . '">My Courses</a>
             <br /> Manage courses for semester  (' . $thisSem . ' ) 
                 <small>Register/deregister courses for this semster. </small>
         </td>

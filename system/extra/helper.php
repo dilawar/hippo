@@ -2236,10 +2236,16 @@ function addOrUpdateSpeaker( $data )
 }
 
 
-function getCourseName( $cexpr )
+function getCourseName( string $cexpr ) : string
 {
     $cid = explode( '-', $cexpr )[0];
     $c =  getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
+    if( ! $c )
+    {
+        echo printWarning( "No course information found for $cexpr" );
+        return '';
+    }
+
     return $c['name'];
 }
 

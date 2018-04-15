@@ -1,16 +1,9 @@
 <?php
-include_once 'header.php';
-include_once 'database.php';
-include_once 'methods.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
+require_once BASEPATH . 'autoload.php';
 
-mustHaveAnyOfTheseRoles('USER' );
 echo userHTML( );
-
 $sem = getCurrentSemester( );
 $year = getCurrentYear( );
-
 
 $runningCourses = array( );
 $semCourses = getSemesterCourses( $year, $sem );
@@ -23,7 +16,7 @@ foreach( $semCourses as $rc )
 }
 
 // User courses and slots.
-$myCourses = getMyCourses( $sem, $year, $user = $_SESSION[ 'user' ] );
+$myCourses = getMyCourses( $sem, $year, $user = whoAmI() );
 
 $mySlots = array( );
 foreach( $myCourses as $c )
@@ -209,7 +202,7 @@ echo '</div>';
 // echo slotTable( );
 
 echo ' <br /> ';
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 
 echo '<h1> My courses </h1>';
 
@@ -239,6 +232,6 @@ else
     echo printInfo( "I could not find any course belonging to '$user' in my database." );
 }
 
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 
 ?>
