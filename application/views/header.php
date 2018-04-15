@@ -10,7 +10,7 @@
 <div style="font-size:small">
 <table class="public_links">
     <tr>
-    <td> <a href="<?= site_url('info/allevents') ?>" target="hippo_popup">Bookings</a> </td>
+    <td> <a href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
     <td> <a href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
     <td> <a href="<?= site_url('info/events') ?>" target="hippo_popup">Talks</a></td>
     <td> <a href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
@@ -168,18 +168,21 @@ if( isset( $_SESSION['success'] ) )
         <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
         <strong>' . $_SESSION['success'] . '</strong>
         </div>';
+    unset( $_SESSION['success'] );
 }
 else if( isset( $_SESSION['error'] ) )
 {
     echo '<div class="alert alert-danger">
     <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
     <strong>' . $_SESSION['error'] . '</strong></div>';
+    unset( $_SESSION['error'] );
 }
 else if( isset( $_SESSION['info'] ) )
 {
     echo '<div class="alert alert-info">
     <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
     <strong>' . $_SESSION['info'] . '</strong></div>';
+    unset( $_SESSION['info'] );
 }
 
 ?>

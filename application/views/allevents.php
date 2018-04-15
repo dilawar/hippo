@@ -1,23 +1,8 @@
 <meta http-equiv="refresh" content="180">
 <?php
 
-include_once 'header.php';
-include_once 'methods.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
+require_once BASEPATH . 'autoload.php';
 
-// Show it only if accessed from intranet or user have logged in.
-if( ! (isIntranet( ) || isAuthenticated( ) ) )
-{
-    echo printWarning( "To access this page, either use Intranet or log-in first" );
-    echo closePage( );
-    exit;
-}
-
-if( isAuthenticated( ) )
-{
-}
 
 // This page displays all events on campus. Select all venues.
 $venues = getVenues( $sortby = 'id' );
@@ -37,7 +22,8 @@ echo '<form action="" method="get" accept-charset="utf-8">
     <tr>
         <td> <input  class="datepicker" name="date" value="' .
             $defaults[ 'date' ] . '" /> </td>
-            <td> <button name="response">' . $symbScan . '</button> </td>
+            <td> <button name="response"> <i class="fa fa-check fa-1x"></i>
+            </button> </td>
     </tr>
     </table>
     </form>';
@@ -100,7 +86,8 @@ echo '<br />';
 
 if( isAuthenticated( ) )
 {
-    echo '<a style="float:left;padding-left:500px"  class="clickable" href="quickbook.php">Create New Booking</a>';
+    echo '<a style="float:left;padding-left:500px"  class="clickable" 
+        href="' . site_url('user/book') . '">Create New Booking</a>';
     echo '<br />';
 }
 

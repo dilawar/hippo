@@ -2,6 +2,8 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+require_once BASEPATH . 'autoload.php';
+
 class User extends CI_Controller
 {
     
@@ -42,10 +44,11 @@ class User extends CI_Controller
                 // Now send an email to user.
                 $info = getUserInfo( whoAmI( ) );
                 if( isset( $info['email'] ) )
+                {
                     sendHTMLEmail( arrayToVerticalTableHTML( $info, "details" )
                         , "Your details have been updated successfully."
-                        , $info[ 'email' ]
-                    );
+                        , $info[ 'email' ]);
+                }
             }
             else
                 echo printWarning( "Could not update user details " );
@@ -86,10 +89,6 @@ class User extends CI_Controller
                     }
                 }
             }
-        }
-        else if( $arg )
-        {
-            $this->session->set_userdata( 'info', "Unknown task $arg" );
         }
 
         $this->load->view( 'user_info' );

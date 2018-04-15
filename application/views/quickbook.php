@@ -392,7 +392,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 }
 
 
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 echo "</body>";
 
 ?>
