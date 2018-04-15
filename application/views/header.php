@@ -5,18 +5,18 @@
 <div class="header">
 <title>NCBS Hippo</title>
 
-<h1><a href="/hippo">NCBS Hippo</a></h1>
+<h1><a href="<?= site_url( 'welcome' ) ?>" >NCBS Hippo</a></h1>
 
 <div style="font-size:small">
 <table class="public_links">
     <tr>
-    <td> <a href="'. site_url('public/allevents') .'" target="hippo_popup">Bookings</a> </td>
-    <td> <a href="'. site_url('public/aws'). '" target="hippo_popup">AWSs</a></td>
-    <td> <a href="'. site_url('public/events'). '" target="hippo_popup">Talks</a></td>
-    <td> <a href="'. site_url('public/jc'). '" target="hippo_popup">JCs</a> </td>
-    <td> <a href="'. site_url('public/statistics') .'" target="hippo_popup" >Statistics </a> </td>
-    <td> <a href="'. site_url('public/courses') .'" target="hippo_popup" >Courses</a></td>
-    <td> <a href="'. site_url('public/map'). '" target="hippo_popup" >Map</a></td>
+    <td> <a href="<?= site_url('info/allevents') ?>" target="hippo_popup">Bookings</a> </td>
+    <td> <a href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
+    <td> <a href="<?= site_url('info/events') ?>" target="hippo_popup">Talks</a></td>
+    <td> <a href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
+    <td> <a href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
+    <td> <a href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
+    <td> <a href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>
     <td> <a href="https://dilawar.github.io/Hippo" target="_blank" >Docs</a></td>
     </tr>
 </table>

@@ -1,9 +1,6 @@
 <?php
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'html2text.php';
+require_once BASEPATH.'autoload.php';
 
 echo '<table class="info">
 <tr>
