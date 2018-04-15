@@ -5,35 +5,18 @@
 <div class="header">
 <title>NCBS Hippo</title>
 
-<h1><a href="/hippo">NCBS Hippo</a></h1>
+<h1><a href="<?= site_url( 'welcome' ) ?>" >NCBS Hippo</a></h1>
 
 <div style="font-size:small">
 <table class="public_links">
     <tr>
-    <td>
-    <a href="allevents.php" target="hippo_popup">Bookings</a>
-    </td>
-    <td>
-    <a href="aws.php" target="hippo_popup">AWSs</a>
-    </td>
-    <td>
-    <a href="events.php" target="hippo_popup">Talks</a>
-    </td>
-    <td>
-    <a href="jc.php" target="hippo_popup">JCs</a>
-    </td>
-    <!-- <td> <a href="user_aws_search.php" target="hippo_popup">Search AWS</a> </td> -->
-    <td> <a href="statistics.php" target="hippo_popup" >Statistics </a> </td>
-    <!-- <td> <a href="active_speakers.php" target="hippo_popup" >AWS speakers</a></td> -->
-    <td> <a href="courses.php" target="hippo_popup" >Courses</a></td>
-    <td> <a href="map.php" target="hippo_popup" >Map</a></td>
-    <!--
-    RSS has been thorougly abused to make it work with NCBS screen.
-    <td> <a href="rss.php" target="hippo_popup" >
-            <img src="data/feed-icon-14x14.2168a573d0d4.png"
-                alt="Subscribe to public events">
-            </a></td>
-    -->
+    <td> <a href="<?= site_url('info/allevents') ?>" target="hippo_popup">Bookings</a> </td>
+    <td> <a href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
+    <td> <a href="<?= site_url('info/events') ?>" target="hippo_popup">Talks</a></td>
+    <td> <a href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
+    <td> <a href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
+    <td> <a href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
+    <td> <a href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>
     <td> <a href="https://dilawar.github.io/Hippo" target="_blank" >Docs</a></td>
     </tr>
 </table>
@@ -45,29 +28,23 @@
 </html>
 
 <!--  REQUIRED -->
-<script src="./node_modules/jquery/dist/jquery.js"></script>
+<script src="<?= base_url() ?>/node_modules/jquery/dist/jquery.js"></script>
+<script src="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
+<script src="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
+<link  href="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.css" rel="stylesheet" type="text/css" />
+<link  href="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
 
-<script src="./node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
-<link href="./node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-
-<!--
-<link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css"/>
--->
-
-<script src="./node_modules/jquery-timepicker/jquery.timepicker.js"></script>
-<link href="./node_modules/jquery-timepicker/jquery.timepicker.css" rel="stylesheet" type="text/css" />
-
-<script src="./node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js"></script>
+<script src="<?= base_url() ?>/node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js"></script>
 
 
 <!-- Disable favicon requests -->
 <link rel="icon" href="data:,">
 
 <!-- Font awesome -->
-<link rel="stylesheet" href="./node_modules/font-awesome/css/font-awesome.css"/>
+<link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
 
 <!-- sort table. -->
-<script src="./node_modules/sorttable/sorttable.js"></script>
+<script src="<?= base_url() ?>/node_modules/sorttable/sorttable.js"></script>
 <script type="text/javascript" charset="utf-8">
     $(".sortable").sortable( );
 </script>
@@ -117,7 +94,7 @@ $( function() {
 </script>
 
 
-<script src="./node_modules/tinymce/tinymce.min.js"></script>
+<script src="<?= base_url() ?>/node_modules/tinymce/tinymce.min.js"></script>
 
 <!-- confirm on delete -->
 <script type="text/javascript" charset="utf-8">
@@ -204,4 +181,5 @@ else if( isset( $_SESSION['info'] ) )
     <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
     <strong>' . $_SESSION['info'] . '</strong></div>';
 }
+
 ?>

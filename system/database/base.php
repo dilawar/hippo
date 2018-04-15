@@ -19,21 +19,17 @@ class BMVPDO extends PDO
         if( $port == -1 )
             $port = 3306;
 
-        try 
-        {
+        try {
             parent::__construct( 'mysql:host=' . $host . ";dbname=$dbname"
                 , $user, $password, $options
             );
-        } 
-        catch( PDOException $e) 
-        {
+        } catch( PDOException $e) {
             echo minionEmbarrassed(
                 "failed to connect to database: ".  $e->getMessage()
             );
             $this->error = $e->getMessage( );
             throw $e;
         }
-
 
     }
 
@@ -578,7 +574,7 @@ class BMVPDO extends PDO
                 , status ENUM( 'EXECUTED', 'INVALID', 'PENDING' ) DEFAULT 'PENDING'
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
-                , UNIQUE KEY (who_can_execute,external_id,status)
+                , UNIQUE KEY (who_can_execute,query,status)
                 )"
             );
 
@@ -586,5 +582,10 @@ class BMVPDO extends PDO
     }
 }
 
+
+// Construct the PDO
+// And initiaze the database.
+$hippoDB = new BMVPDO( "localhost" );
+$hippoDB->initialize();
 
 ?>
