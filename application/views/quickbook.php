@@ -4,7 +4,6 @@
  * talks page. If a user creates a talk and we come here for a booking; we use
  * the external_id _GET variable.
  */
-require_once __DIR__ . '/header.php';
 require_once BASEPATH . 'autoload.php';
 
 echo userHTML( );
@@ -56,12 +55,10 @@ if( array_key_exists( 'external_id', $_GET ) )
 }
 else
 {
-    echo alertUser( '<p style="font-size:large;width:700px;">
-        <i class="fa fa-flag fa-2x"></i>
-        For booking <strong><tt>TALK</tt>s, <tt>SEMINAR</tt>, <tt>THESIS SEMINAR</tt>s, <tt>LECTURE</tt>s</strong> etc.,
-        <a href="user_register_talk.php"> <i class="fa fa-spinner fa-spin"></i> click here</a>.
-        Otherwise NO EMAIL will be sent to <tt>Academic</tt> community.
-        </p>'
+    echo alertUser( '
+        If your event requires email to be send out to academic community (e.g. 
+        <strong><tt>TALK</tt>s, <tt>SEMINAR</tt>, <tt>THESIS SEMINAR</tt>s, <tt>LECTURE</tt>s</strong> ),
+        <a href="' . site_url( 'user/register_talk') . '"> <i class="fa fa-spinner fa-spin"></i> click here</a>.'
     );
 }
 
@@ -94,7 +91,7 @@ else
 
 echo '<br />';
 echo '<table style="min-width:300px;max-width:500px",border="0">';
-echo '<form action="" method="post" accept-charset="utf-8">';
+echo '<form action="' .site_url( 'user/book' ) . '" method="post" accept-charset="utf-8">';
 echo '
     <tr>
         <td>Pick a date</td>
@@ -144,7 +141,7 @@ echo '
         <td style="text-align:right">
         <button title="Scan for venues"
             style="font-size:large" name="Response" value="scan">
-                Show me <br> available venues</button>
+                Show <br />available venues</button>
         </td>
     </tr>
     ';
@@ -196,8 +193,18 @@ $jcAndMeets = getLabmeetAndJC( );
 if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 {
     $date = humanReadableDate( $_POST[ 'date' ] );
+    if( strtotime($_POST['end_time']) < strtotime($_POST['start_time'])  )
+    {
+        echo printWarning( 
+            'Event is ending before starting. This will violate causality. Fix 
+            it now or I wont let you continue booking! ' 
+        );
+    }
 
-    echo "<h2> Following venues are available on $date </h2>";
+    $startTime = humanReadableTime( $_POST[ 'start_time' ] );
+    $endTime = humanReadableTime( $_POST[ 'end_time' ] );
+
+    echo "<h2> Available venues on $date between $startTime & $endTime </h2>";
 
     $venues = getVenues( $sortby = 'name' );
 
@@ -329,7 +336,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
                 $date, $startTime, $endTime, $venueId, $jcAndMeets
             );
 
-        $block = '<form method="post" action="user_submit_booking_request.php">';
+        $block = '<form method="post" action="' . site_url( 'user/booking_request' ) . '">';
         $block .= '<div><tr>';
         if( count( $jclabmeets ) > 0 )
         {
@@ -377,7 +384,6 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 
         if( ! $venueIsTaken )
             $table .= $block;
-
 
     }
     $table .= '</table>';

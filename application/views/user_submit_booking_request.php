@@ -1,13 +1,8 @@
 <?php 
-include_once( "header.php" );
-include_once( "methods.php" );
-include_once( "database.php" );
-include_once( "check_access_permissions.php" );
-include_once( "tohtml.php" );
+
+require_once BASEPATH .'autoload.php';
 
 echo userHTML( );
-
-mustHaveAnyOfTheseRoles( array( 'USER', 'BOOKMYVENUE_ADMIN' ) );
 
 echo alertUser( '
     1. Set <tt>IS PUBLIC EVENT</tt>  to <tt>YES</tt> if you want your event to appear 
@@ -90,20 +85,20 @@ $default[ 'end_time' ] = $defaultEndTime;
 
 $default = array_merge( $default, $_POST );
 
-echo '<form method="post" action="user_submit_booking_request_action.php">';
+echo '<form method="post" action="' . site_url('user/booking_request/submit') . '">';
 echo dbTableToHTMLTable( 'bookmyvenue_requests'
         , $default
         , 'class,title,description,url,is_public_event,end_time' 
         , ''
         , $hide = 'gid,rid,external_id,modified_by,timestamp,status'
         );
+
 echo '<input type="hidden" name="external_id" value="' . $external_id . '" >';
 // I need to add repeat pattern here.
 echo "<br>";
 echo repeatPatternTable( 'repeat_pat' );
 echo '<br>';
-echo '<button class="submit" name="response" value="submit">' 
-        . $symbSubmit . '</button>';
+echo '<button class="submit" name="response" value="submit"> <i class="fa fa-check fa-1x"></i> </button>';
 echo '</form>';
 
 echo '<br><br>';
