@@ -2242,7 +2242,7 @@ function getCourseName( string $cexpr ) : string
     $c =  getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
     if( ! $c )
     {
-        echo printWarning( "No course information found for $cexpr" );
+        // echo printWarning( "No course information found for $cexpr" );
         return '';
     }
 

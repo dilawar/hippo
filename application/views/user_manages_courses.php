@@ -1,4 +1,5 @@
 <?php
+
 require_once BASEPATH . 'autoload.php';
 
 echo userHTML( );
@@ -86,7 +87,6 @@ foreach( $runningCourses as $c )
     }
 }
 
-
 // Get the list of valid courses.
 echo noteWithFAIcon(
     "Courses will be visible in registration form from -2 weeks to +2 weeks from the
@@ -103,27 +103,20 @@ $default = array( 'student_id' => $_SESSION[ 'user' ]
                 );
 
 // TODO: Custom table for registration.
-echo '<form method="post" action="user_manages_courses_action.php">';
-echo dbTableToHTMLTable( 'course_registration'
-    , $default
-    , 'course_id:required,type'
-    , 'Submit'
-    , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
-);
-echo '</form>';
+$form = '<form method="post" action="user_manages_courses_action.php">';
+$form .= dbTableToHTMLTable( 'course_registration'
+            , $default
+            , 'course_id:required,type'
+            , 'Submit'
+            , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
+        );
+$form .= '</form>';
+echo $form;
 
-
-/**
-    * @name Show the registered courses.
-    * @{ */
-/**  @} */
-
+/* @name Show the registered courses. */
 $tofilter = 'student_id';
-echo '<div style="font-size:small">';
-echo '<table class="1">';
-echo '<tr>';
-$action = 'drop';
 
+$action = 'drop';
 if( count( $myCourses ) > 0 )
 {
     echo "<h1>You are registered for following courses for $sem $year</h1>";
@@ -148,15 +141,17 @@ if( count( $myCourses ) > 0 )
 }
 
 $count = 0;
+$table = '<table class="1">';
+$table .= '<tr>';
 foreach( $myCourses as $c )
 {
     $action = 'drop';
     // Break at 3 courses.
     if( $count % 3 == 0 )
-        echo '</tr><tr>';
+        $table .= '</tr><tr>';
 
-    echo '<td>';
-    echo '<form method="post" action="user_manages_courses_action.php">';
+    $table .= '<td>';
+    $table .= '<form method="post" action="user_manages_courses_action.php">';
 
     $cid = $c[ 'course_id' ];
     $course = getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
@@ -173,36 +168,15 @@ foreach( $myCourses as $c )
     if( strlen( $c[ 'grade' ] ) == 0 )
         $tofilter .= ',grade,grade_is_given_on';
 
-    echo dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
-    echo '</form>';
-    echo '</td>';
+    $table .= dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
+    $table .= '</form>';
+    $table .= '</td>';
 
     $count += 1;
 }
-
-echo '</tr></table>';
-echo '</div>';
-
-// if( $runningCourses )
-// {
-//     echo '<h1> Running courses </h1>';
-//     echo '<div style="font-size:small">';
-//     echo '<table class="info">';
-//     $ignore = 'id,semester,year,comment,ignore_tiles,slot';
-//     $cs = array_values( $runningCourses );
-//     echo arrayHeaderRow( $cs[0], 'info', $ignore );
-//     foreach( $cs as $rc )
-//         echo arrayToRowHTML( $rc, 'info', $ignore );
-//     echo '</table>';
-//     echo '</div>';
-// }
-//
-//
-// echo '<h1>Slots </h1>';
-// echo slotTable( );
-
+$table .= '</tr></table>';
+echo $table;
 echo ' <br /> ';
-echo goBackToPageLink( "user/home", "Go back" );
 
 echo '<h1> My courses </h1>';
 
@@ -216,21 +190,20 @@ $hide = 'student_id,status,last_modified_on';
 
 if( count( $myAllCourses ) > 0 )
 {
-    echo '<table class="info sorttable">';
-    echo arrayToTHRow( $myAllCourses[0], 'info', $hide );
+    $table = '<table class="info sorttable">';
+    // echo arrayToTHRow( $myAllCourses[0], 'info', $hide );
     foreach( $myAllCourses as $course )
     {
         $cid = $course[ 'course_id' ];
         $cname = getCourseName( $cid );
         $course[ 'course_id' ] .= " <br /> $cname";
-        echo arrayToRowHTML( $course, 'info', $hide );
+        $table .= arrayToRowHTML( $course, 'info', $hide );
     }
-    echo "</table>";
+    $table .= "</table>";
+    echo $table;
 }
 else
-{
-    echo printInfo( "I could not find any course belonging to '$user' in my database." );
-}
+    echo printInfo( "I could not find any course." );
 
 echo goBackToPageLink( "user/home", "Go back" );
 
