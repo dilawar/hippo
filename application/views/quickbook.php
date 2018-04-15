@@ -4,13 +4,8 @@
  * talks page. If a user creates a talk and we come here for a booking; we use
  * the external_id _GET variable.
  */
-
-include_once 'database.php';
-include_once 'methods.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
-
-mustHaveAnyOfTheseRoles( array( "USER" ) );
+require_once __DIR__ . '/header.php';
+require_once BASEPATH . 'autoload.php';
 
 echo userHTML( );
 
@@ -159,15 +154,15 @@ echo '</table>';
 
 $date = __get__( $_POST, 'date', dbDate(strtotime( 'today' )) );
 
-// Force this only if user is not admin.
-if( ! anyOfTheseRoles( array( 'BOOKMYVENUE_ADMIN', 'AWS_ADMIN' ) ) )
-{
-    if( strtotime( $date ) >= (strtotime( 'today' ) + 60 * 24 * 3600 ) )
-    {
-        echo alertUser( "You can not book more than 60 days in advance" );
-        exit;
-    }
-}
+// // Force this only if user is not admin.
+// if( ! anyOfTheseRoles( array( 'BOOKMYVENUE_ADMIN', 'AWS_ADMIN' ) ) )
+// {
+//     if( strtotime( $date ) >= (strtotime( 'today' ) + 60 * 24 * 3600 ) )
+//     {
+//         echo alertUser( "You can not book more than 60 days in advance" );
+//         exit;
+//     }
+// }
 
 // Get list of public events on user request day and show them to him. So he can
 // decides if some other timeslot should be used.
@@ -376,7 +371,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
             name="venue" value="' . $venue[ 'id' ] . '" >';
         $venueT = venueSummary( $venue );
         $block .= "<td>$venueT</td>";
-        $block .= '<td> <button type="submit" title="Book this venue">' . $symbCheck . '</button></td>';
+        $block .= '<td> <button type="submit" title="Book this venue">Book</button></td>';
         $block .= '</tr></div>';
         $block .= '</form>';
 
