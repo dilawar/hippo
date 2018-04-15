@@ -1,13 +1,11 @@
 <?php
 
-require_once __DIR__ . '/header.php';
-require_once BASEPATH . 'extra/tohtml.php' ;
-require_once BASEPATH . 'extra/check_access_permissions.php';
+require_once BASEPATH . 'autoload.php';
 
 echo userHTML( );
 
 $conf = getConf( );
-$picPath = $conf['data']['user_imagedir'] . '/' . $_SESSION['user'] . '.jpg';
+$picPath = $conf['data']['user_imagedir'] . '/' . whoAmI() . '.jpg';
 
 ///////////////////////////////////////////////////////////////////////////
 // PICTURE OF SPEAKER

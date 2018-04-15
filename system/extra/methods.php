@@ -21,7 +21,7 @@ $phpFileUploadErrors = array(
 
 function whoAmI( )
 {
-    return $_SESSION[ 'user' ];
+    return __get__( $_SESSION, 'user', 'UNKNOWN' );
 }
 
 /**

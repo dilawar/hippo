@@ -62,14 +62,13 @@ class Welcome extends CI_Controller {
                 , array( 'login' => $ldap, 'email' => $email )
             );
 
-            echo printInfo( "Loging successful!" );
             $this->session->set_flashdata( 'success', "Loging sucessful.!" );
-            redirect( "/user/home" );
+            redirect( "user/home" );
         }
         else 
         {
             $this->session->set_flashdata( 'error', "Loging unsucessful. Try again!" );
-            redirect( "/welcome" );
+            redirect( "welcome" );
         }
     }
 }

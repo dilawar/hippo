@@ -4,6 +4,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class User extends CI_Controller
 {
+    
+    public function __construct()
+    {
+        parent::__construct();
+        $this->load->view( 'header' );
+    }
 
     // Show user home.
     public function home()
@@ -14,10 +20,7 @@ class User extends CI_Controller
     // BOOKING
     public function book( $arg = '' )
     {
-
-
         $this->load->view( 'quickbook' );
-
     }
 
     // USER EDITING PROFILE INFO
@@ -28,24 +31,24 @@ class User extends CI_Controller
         {
             // Not all login can be queried from ldap. Let user edit everything.
             $where = "valid_until,first_name,last_name,title,pi_or_host,specialization" . 
-",institute,laboffice,joined_on,alternative_email";
+                        ",institute,laboffice,joined_on,alternative_email";
 
-$_POST['login'] = whoAmI();
-$res = updateTable("logins", "login", $where, $_POST);
-if( $res )
-{
-    echo msg_fade_out( "User details have been updated sucessfully" );
+            $_POST['login'] = whoAmI();
+            $res = updateTable("logins", "login", $where, $_POST);
+            if( $res )
+            {
+                echo msg_fade_out( "User details have been updated sucessfully" );
 
-    // Now send an email to user.
-    $info = getUserInfo( whoAmI( ) );
-    if( isset( $info['email'] ) )
-        sendHTMLEmail( arrayToVerticalTableHTML( $info, "details" )
-        , "Your details have been updated successfully."
-        , $info[ 'email' ]
-    );
-}
-else
-    echo printWarning( "Could not update user details " );
+                // Now send an email to user.
+                $info = getUserInfo( whoAmI( ) );
+                if( isset( $info['email'] ) )
+                    sendHTMLEmail( arrayToVerticalTableHTML( $info, "details" )
+                        , "Your details have been updated successfully."
+                        , $info[ 'email' ]
+                    );
+            }
+            else
+                echo printWarning( "Could not update user details " );
         }
         else if( $arg == 'upload_picture' && $_POST )
         {
@@ -85,27 +88,11 @@ else
             }
         }
         else if( $arg )
-            echo printWarning( "Unknown task $arg !" );
+        {
+            $this->session->set_userdata( 'info', "Unknown task $arg" );
+        }
 
         $this->load->view( 'user_info' );
-    }
-
-    public function logout( )
-    {
-        $_SESSION[ 'AUTHENTICATED' ] = false;
-        session_unset( );
-        redirect( '/welcome' );
-    }
-
-    public function home()
-    {
-        $this->load->view('user');
-    }
-
-    public function book( $args = null )
-    {
-        log_message( 'info', 'Booking page' );
-        $this->load->view( 'quickbook' );
     }
 
     public function booking_request( $args = null )
@@ -118,7 +105,7 @@ else
     public function logout( )
     {
         $this->session->sess_destroy();
-        redirect( '' );
+        redirect( 'welcome' );
     }
 }
 
