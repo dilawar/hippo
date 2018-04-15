@@ -171,9 +171,10 @@ if( isset( $_SESSION['success'] ) )
 }
 else if( isset( $_SESSION['error'] ) )
 {
-    echo '<div class="alert alert-danger">
-    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-    <strong>' . $_SESSION['error'] . '</strong></div>';
+    $msg = $_SESSION[ 'error' ];
+    $warn ="<p class=\"warn\"><i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</p>";
+    echo $warn;
+
     unset( $_SESSION['error'] );
 }
 else if( isset( $_SESSION['info'] ) )

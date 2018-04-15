@@ -112,7 +112,7 @@ class User extends CI_Controller
         // There must be a course id.
         if( ! __get__( $_POST, 'course_id', '' ) )
         {
-            $this->session->set_flashdata( 'info', 'No course selected' );
+            $this->session->set_flashdata( 'error', 'No course selected!' );
             redirect( 'user/courses' );
         }
 
@@ -126,8 +126,8 @@ class User extends CI_Controller
                 , $_POST 
             );
 
-            if( $res )
-                echo printInfo( "You are successfully registered for the course" );
+            if( ! $res )
+                $this->session->set_flashdata( 'error', "Could not register" );
 
         }
     }
