@@ -25,11 +25,19 @@ class HippoHooks
             }
             else if($page == 'login' )
                 return;
-
         }
         else
         {
-            // echo "Not yet authenticated";
+            echo "Not yet authenticated";
+            $page = basename( $_SERVER[ 'PHP_SELF'] );
+            if( $page == 'index.php' || $page == 'welcome' || $page = 'login' )
+            {
+
+            }
+            else
+            {
+                redirect( 'welcome' );
+            }
         }
     }
 }
