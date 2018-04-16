@@ -1,11 +1,6 @@
 <?php
 
-include_once( "header.php" );
-include_once( "methods.php" );
-include_once( 'tohtml.php' );
-include_once( "check_access_permissions.php" );
-
-mustHaveAnyOfTheseRoles( Array( 'USER' ) );
+require_once BASEPATH.'autoload.php';
 
 echo userHTML( );
 
@@ -35,8 +30,8 @@ if( $scheduledAWS )
         " );
     }
 
-    echo "
-        <form method=\"post\" action=\"user_acknowledge_aws_schedule_action.php\">
+    echo '
+        <form method="post" action="' . site_url( 'user/aws/acknowledge' ) . "\">
         <button $disabled name=\"acknowledged\" value=\"YES\">Acknowledge schedule</button>
         <input type=\"hidden\" name=\"id\" value=\"" . $scheduledAWS[ 'id' ] . "\" >
         </form>
@@ -64,7 +59,7 @@ else
             "
             );
 
-        echo '<form method="post" action="user_aws_scheduling_request.php">';
+        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest' ) . '">';
         echo '<button type="submit">Create preference</button>';
         echo '<input type="hidden" name="speaker" value="' . $_SESSION[ 'user' ] . '">';
         echo '</form>';
@@ -76,14 +71,14 @@ else
             this request. We usually wait for two days before approving.
             " );
 
-        echo '<form method="post" action="user_aws_scheduling_request.php">';
+        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest' ) . '">';
         echo dbTableToHTMLTable( 'aws_scheduling_request', $prefs, '', 'edit' );
         echo '<input type="hidden" name="created_on"
                 value="' . dbDateTime( 'now' ) . '" >';
         echo '</form>';
         // Cancel goes directly to cancelling the request. Only non-approved
         // requests can be cancelled.
-        echo '<form method="post" action="user_aws_scheduling_request_submit.php">';
+        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/submit') . '">';
         echo '<button onclick="AreYouSure(this)"
                 name="response" title="Cancel this request"
                 type="submit">' . $symbCancel . '</button>';
@@ -98,15 +93,12 @@ else
             changed to <tt>APPROVED</tt>. </strong>';
 
         // Form to revoke the approved preference.
-        echo ' <form method="post" action="user_revoke_aws_preference.php">';
+        echo ' <form method="post" action="' . site_url( 'user/aws/revokepreference' ) . '">';
         echo arrayToTableHTML( $approved, 'info' );
         echo '<button name="response" value="delete_preference">Revoke</button> ';
         echo '<input type="hidden" name="id" value="' . $approved['id'] . '" />';
         echo '</form>';
-
-
     }
-
 }
 echo '</div>';
 
@@ -196,7 +188,7 @@ foreach( $awses as $aws )
     echo arrayToVerticalTableHTML( $aws, 'aws', NULL
     , Array( 'speaker', 'id' ));
     echo "<button title=\"Edit this entry\"
-            name=\"response\" value=\"edit\">" . $symbEdit . "</button>";
+            name=\"response\" value=\"edit\"> <i class=\"fa fa-edit\"></i> </button>";
     echo "<input type=\"hidden\" name=\"id\" value=\"$id\" />";
     echo "</form>";
     echo "<br /><br />";

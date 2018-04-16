@@ -3,9 +3,18 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
+require_once __DIR__ . '/AWS.php';
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  There are traits AWS, Courses etc. which this class can use;
+    * since multiple inherihence is not very straightforward in php.
+ */
+/* ----------------------------------------------------------------------------*/
 class User extends CI_Controller
 {
+    use AWS;
+
     // Show user home.
     public function home()
     {
@@ -100,10 +109,9 @@ class User extends CI_Controller
     // Show courses.
     public function courses( $arg = '' )
     {
-        $this->session->set_flashdata( 'info', "With argument $arg." );
+        // $this->session->set_flashdata( 'info', "With argument $arg." );
         $this->template->set( 'header', 'header.php' );
         $this->template->load( 'user_manages_courses' );
-        
     }
 
     // Edit update courses.
@@ -130,8 +138,10 @@ class User extends CI_Controller
                 $this->session->set_flashdata( 'error', "Could not register" );
 
         }
-    }
 
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'user_manages_courses' );
+    }
 
     public function logout( )
     {
