@@ -53,6 +53,7 @@ img.login_picture {
 div.header {
     max-width : var(--maxwidth);
     padding-bottom: 20px;
+    float: top;
 }
 
 div.aws_preference {

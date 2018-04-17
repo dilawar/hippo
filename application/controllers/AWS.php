@@ -10,7 +10,6 @@ trait AWS
         {
             if( $arg2 == 'create' )
             {
-                echo 'Creating new prefrence';
                 $this->template->load( 'header.php' );
                 $this->template->load( 'user_aws_scheduling_request' );
             }
@@ -92,10 +91,7 @@ trait AWS
 
                 $email = getLoginEmail( $login );
                 sendHTMLEmail( $msg, $subject, $email, 'hippo@lists.ncbs.res.in' );
-
-                // Now when done. Send back to AWS page.
-                $this->template->load( 'header.php' );
-                $this->template->load( 'user_aws' );
+                redirect( 'user/aws' );
             }
             else if( strtolower(trim($arg2)) == 'delete' )
             {
@@ -112,8 +108,8 @@ trait AWS
                 {
                     $subject = "You have cancelled your AWS preference";
                     $this->session->set_flashdata( 'success', "Successfully cancelled" );
-                    redirect( 'user/aws' );
                 }
+                redirect( 'user/aws' );
             }
             else if( $arg2 )
             {

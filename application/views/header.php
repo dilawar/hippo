@@ -1,16 +1,26 @@
  <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
 <!-- jQuery library -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
 <!-- Latest compiled JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
 
 <!-- MAIN STYPE -->
 <link href="<?= base_url() ?>/assests/css/hippo.css" rel="stylesheet" type="text/css" />
 
+
 <!--  REQUIRED -->
+<script src="<?= base_url() ?>/node_modules/jquery/dist/jquery.js"></script>
+<script src="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
 <script src="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
 <link  href="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.css" rel="stylesheet" type="text/css" />
+<link  href="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+<script src="<?= base_url() ?>/node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js"></script>
+ 
+
+
 
 <!-- Font awesome -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
@@ -149,29 +159,3 @@ $(document).ready(function(){
 </div>
 
 
-<?php 
-if( isset( $_SESSION['success'] ) )
-{
-    echo '<div class="alert alert-success">
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-        <strong>' . $_SESSION['success'] . '</strong>
-        </div>';
-    unset( $_SESSION['success'] );
-}
-else if( isset( $_SESSION['error'] ) )
-{
-    $msg = $_SESSION[ 'error' ];
-    $warn ="<p class=\"warn\"><i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</p>";
-    echo $warn;
-
-    unset( $_SESSION['error'] );
-}
-else if( isset( $_SESSION['info'] ) )
-{
-    echo '<div class="alert alert-info">
-    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-    <strong>' . $_SESSION['info'] . '</strong></div>';
-    unset( $_SESSION['info'] );
-}
-
-?>
