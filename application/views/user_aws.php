@@ -59,7 +59,7 @@ else
             "
             );
 
-        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest' ) . '">';
+        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/create' ) . '">';
         echo '<button type="submit">Create preference</button>';
         echo '<input type="hidden" name="speaker" value="' . $_SESSION[ 'user' ] . '">';
         echo '</form>';

@@ -1,43 +1,16 @@
-<!DOCTYPE html>
-<html>
-<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+ <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+
+<!-- MAIN STYPE -->
 <link href="<?= base_url() ?>/assests/css/hippo.css" rel="stylesheet" type="text/css" />
-<div class="header">
-
-<h1><a href="<?= site_url( 'welcome' ) ?>" >NCBS Hippo</a></h1>
-
-<div style="font-size:small">
-<table class="public_links">
-    <tr>
-    <td> <a href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
-    <td> <a href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
-    <td> <a href="<?= site_url('info/events') ?>" target="hippo_popup">Talks</a></td>
-    <td> <a href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
-    <td> <a href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
-    <td> <a href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
-    <td> <a href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>
-    <td> <a href="https://dilawar.github.io/Hippo" target="_blank" >Docs</a></td>
-    </tr>
-</table>
-</div>
-
-</div>
-<br />
-<br />
-</html>
 
 <!--  REQUIRED -->
-<script src="<?= base_url() ?>/node_modules/jquery/dist/jquery.js"></script>
-<script src="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
 <script src="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
 <link  href="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.css" rel="stylesheet" type="text/css" />
-<link  href="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-
-<script src="<?= base_url() ?>/node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js"></script>
-
-
-<!-- Disable favicon requests -->
-<link rel="icon" href="data:,">
 
 <!-- Font awesome -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
@@ -47,7 +20,6 @@
 <script type="text/javascript" charset="utf-8">
     $(".sortable").sortable( );
 </script>
-
 
 <script>
 $( function() {
@@ -159,6 +131,23 @@ $(document).ready(function(){
 });
 </script>
 
+<h1><a href="<?= site_url( 'welcome' ) ?>" >NCBS Hippo</a></h1>
+
+<div style="font-size:small" class="header">
+<table class="public_links">
+    <tr>
+    <td> <a href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
+    <td> <a href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
+    <td> <a href="<?= site_url('info/events') ?>" target="hippo_popup">Talks</a></td>
+    <td> <a href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
+    <td> <a href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
+    <td> <a href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
+    <td> <a href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>
+    <td> <a href="https://dilawar.github.io/Hippo" target="_blank" >Docs</a></td>
+    </tr>
+</table>
+</div>
+
 
 <?php 
 if( isset( $_SESSION['success'] ) )
@@ -171,9 +160,10 @@ if( isset( $_SESSION['success'] ) )
 }
 else if( isset( $_SESSION['error'] ) )
 {
-    echo '<div class="alert alert-danger">
-    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-    <strong>' . $_SESSION['error'] . '</strong></div>';
+    $msg = $_SESSION[ 'error' ];
+    $warn ="<p class=\"warn\"><i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</p>";
+    echo $warn;
+
     unset( $_SESSION['error'] );
 }
 else if( isset( $_SESSION['info'] ) )

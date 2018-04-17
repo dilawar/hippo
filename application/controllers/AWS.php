@@ -8,7 +8,13 @@ trait AWS
     {
         if( strtolower($arg) == 'schedulingrequest' )
         {
-            if( $arg2 == 'submit' )
+            if( $arg2 == 'create' )
+            {
+                echo 'Creating new prefrence';
+                $this->template->load( 'header.php' );
+                $this->template->load( 'user_aws_scheduling_request' );
+            }
+            else if( $arg2 == 'submit' )
             {
                 // Submit the given request.
                 $_POST[ 'speaker' ] = whoAmI();
@@ -86,6 +92,10 @@ trait AWS
 
                 $email = getLoginEmail( $login );
                 sendHTMLEmail( $msg, $subject, $email, 'hippo@lists.ncbs.res.in' );
+
+                // Now when done. Send back to AWS page.
+                $this->template->load( 'header.php' );
+                $this->template->load( 'user_aws' );
             }
             else if( strtolower(trim($arg2)) == 'delete' )
             {

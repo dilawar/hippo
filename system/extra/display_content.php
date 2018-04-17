@@ -2,7 +2,7 @@
 
 function printErrorSevere($msg)
 {
-    $err = "<font size=\"4\" color=\"blue\">".$msg."</font><br>";
+    $err = "<div class=\"alert alert-danger\">$msg></div>";
     error_log( $msg );
     return $err;
 }
@@ -10,7 +10,7 @@ function printErrorSevere($msg)
 
 function printWarning($msg)
 {
-    $warn ="<p class=\"warn\"><i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</p>";
+    $warn ="<div class=\"alert alert-warning\"><i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</div>";
     error_log( $msg );
     return $warn;
 }
@@ -19,7 +19,7 @@ function printWarning($msg)
 function printInfo( $msg )
 {
     error_log( $msg );
-    $info ="<p class=\"info\">".$msg."<br></p>";
+    $info ="<div class=\"alert alert-info\">".$msg."</div>";
     return $info;
 }
 
@@ -31,8 +31,7 @@ function msg_fade_out( $msg , $class = "info" )
 
 function alertUser( $msg )
 {
-    $info ="<div class=\"alert_user\">
-            <i class=\"fa fa-exclamation-circle fa-1x\"></i> " . $msg . "</div>";
+    $info ="<div class=\"alert alert-warning\"> <i class=\"fa fa-exclamation-circle fa-1x\"></i> " . $msg . "</div>";
     return $info;
 }
 
