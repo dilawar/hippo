@@ -114,7 +114,7 @@ if( $scheduledAWS )
          <small> (Note: We will not store the old version).</small>
          ' );
     $id = $scheduledAWS[ 'id' ];
-    echo "<form method=\"post\" action=\"user_aws_update_upcoming_aws.php\">";
+    echo "<form method=\"post\" action=\"" . site_url( 'user/aws/update_upcoming_aws' ) . "\">";
     echo arrayToVerticalTableHTML( $scheduledAWS, 'aws', NULL
         , Array( 'speaker', 'id' ));
     echo "<button class=\"submit\" name=\"response\"
@@ -130,7 +130,7 @@ if( count( $awsRequests ) > 0 )
 foreach( $awsRequests as $awsr )
 {
     $id = $awsr['id'];
-    echo "<form method=\"post\" action=\"user_aws_request.php\">";
+    echo "<form method=\"post\" action=\"".site_url( 'user/aws/request' ) . "\">";
     echo arrayToVerticalTableHTML( $awsr, 'aws' );
     echo "<button name=\"response\" value=\"edit\">Edit</button>";
     echo "<button name=\"response\" value=\"cancel\">Cancel</button>";
@@ -184,7 +184,7 @@ foreach( $awses as $aws )
     $id = $aws['id'];
     echo "<div>";
     // One can submit an edit request to AWS.
-    echo "<form method=\"post\" action=\"user_aws_edit_request.php\">";
+    echo "<form method=\"post\" action=\"".site_url("user/aws/edit_request" )."\">";
     echo arrayToVerticalTableHTML( $aws, 'aws', NULL
     , Array( 'speaker', 'id' ));
     echo "<button title=\"Edit this entry\"

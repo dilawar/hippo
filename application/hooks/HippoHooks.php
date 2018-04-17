@@ -28,14 +28,10 @@ class HippoHooks
         }
         else
         {
-            echo "Not yet authenticated";
             $page = basename( $_SERVER[ 'PHP_SELF'] );
-            if( $page == 'index.php' || $page == 'welcome' || $page = 'login' )
+            if( ! ( $page == 'index.php' || $page == 'welcome' || $page == 'login') )
             {
-
-            }
-            else
-            {
+                $this->CI->session->set_flashdata('error', "You are not authenticated yet." );
                 redirect( 'welcome' );
             }
         }
