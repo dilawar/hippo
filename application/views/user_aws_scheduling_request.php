@@ -1,17 +1,11 @@
 <?php
-include_once 'database.php';
-include_once 'mail.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
 
-mustHaveAnyOfTheseRoles( array( 'USER' ) );
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
-echo alertUser( "<small>If Monday is not chosen as preference
-    , I will pick first monday next to chosen date while scheduling.
-    </small>" 
-    );
+echo alertUser( " <small>
+    If chosen date is not a monday, I will pick first monday next to chosen date while scheduling.
+    </small>" );
 
 if( ! __get__( $_POST, 'created_on', null ) )
     $_POST[ 'created_on' ] = dbDateTime( 'now' );
@@ -27,7 +21,7 @@ if( ! $prefs )
 
 $prefs = array_merge( $prefs, $_POST );
 
-echo '<form method="post" action="user_aws_scheduling_request_submit.php">';
+echo '<form method="post" action="' .site_url('user/aws/schedulingrequest/submit'). '">';
 echo dbTableToHTMLTable( 'aws_scheduling_request'
         , $prefs, 'first_preference,second_preference,reason'
         , 'submit' 
@@ -36,6 +30,6 @@ echo dbTableToHTMLTable( 'aws_scheduling_request'
 echo '<input type="hidden" name="created_on" value="' . dbDateTime( 'now' ) . '">';
 echo '</form>';
 
-echo goBackToPageLink( 'user_aws.php', 'Go back' );
+echo goBackToPageLink('user/aws', 'Go back' );
 
 ?>

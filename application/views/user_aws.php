@@ -81,7 +81,8 @@ else
         echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/submit') . '">';
         echo '<button onclick="AreYouSure(this)"
                 name="response" title="Cancel this request"
-                type="submit">' . $symbCancel . '</button>';
+                type="submit">  <i class="fa fa-trash "></i>
+                  </button>';
         echo '<input type="hidden" name="id" value="'. $prefs[ 'id' ].'">';
         echo '</form>';
     }
