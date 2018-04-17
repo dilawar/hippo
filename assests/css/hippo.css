@@ -52,6 +52,7 @@ img.login_picture {
 
 div.header {
     max-width : var(--maxwidth);
+    padding-bottom: 20px;
 }
 
 div.aws_preference {
@@ -647,10 +648,12 @@ table.sticker tr td {
     max-width: 100px;
 }
 
-table.admin {
+table.admin 
+{
     min-width : 500px;
     max-width : var(--maxwidth);
-    /* width : 80%; */
+    border-spacing: 2px;
+    border-collapse: separate;
 }
 
 table.admin tr:nth-of-type( odd ) {
