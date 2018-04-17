@@ -1,11 +1,5 @@
 <?php
-
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'html2text.php';
-include_once 'methods.php';
-include_once './check_access_permissions.php';
+require_once BASEPATH.'autoload.php';
 
 if( ! (isIntranet() || isAuthenticated( ) ) )
 {
@@ -16,8 +10,9 @@ if( ! (isIntranet() || isAuthenticated( ) ) )
 ?>
 
 <!-- Sweet alert -->
-<script src="./node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
-<link rel="stylesheet" type="text/css" href="./node_modules/sweetalert2/dist/sweetalert.css">
+<script src="<?=base_url()?>/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<link rel="stylesheet" type="text/css" 
+    href="<?=site_url()?>/node_modules/sweetalert2/dist/sweetalert.css">
 
 
 <?php

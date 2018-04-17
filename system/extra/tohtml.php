@@ -1487,12 +1487,12 @@ function speakerName( $speaker, $with_email = false )
     if( $name )
         $name .= ' ';
 
-    $name .= __ucwords__( $speaker[ 'first_name' ] );
+    $name .= __ucwords__( __get__($speaker, 'first_name', 'NA') );
 
     if( __get__( $speaker, 'middle_name', '' ) )
         $name .= ' ' . __ucwords__( $speaker[ 'middle_name' ] );
 
-    $name .= ' ' . __ucwords__( $speaker[ 'last_name' ] );
+    $name .= ' ' . __ucwords__(__get__($speaker,'last_name', 'NA'));
 
     if( $with_email )
     {

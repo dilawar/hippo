@@ -53,6 +53,12 @@ class Info extends CI_Controller
     {
         $this->template->set('header', 'header.php' );
         $this->template->load('statistics' );
+    }
+
+    public function courses( )
+    {
+        $this->template->set('header', 'header.php' );
+        $this->template->load('courses' );
 
     }
 }
