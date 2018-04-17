@@ -3,9 +3,9 @@
 require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
-echo alertUser( " <small>
-    If chosen date is not a monday, I will pick first monday next to chosen date while scheduling.
-    </small>" );
+echo ' <h1>You are creating preferences for your upcoming AWS schedule.</h1>';
+
+echo alertUser( "If chosen date is not a monday, I will pick first monday next to chosen date while scheduling." );
 
 if( ! __get__( $_POST, 'created_on', null ) )
     $_POST[ 'created_on' ] = dbDateTime( 'now' );
@@ -26,7 +26,6 @@ echo dbTableToHTMLTable( 'aws_scheduling_request'
         , $prefs, 'first_preference,second_preference,reason'
         , 'submit' 
     );
-
 echo '<input type="hidden" name="created_on" value="' . dbDateTime( 'now' ) . '">';
 echo '</form>';
 
