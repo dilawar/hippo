@@ -24,6 +24,15 @@ else if( isset( $_SESSION['info'] ) )
     <strong>' . $_SESSION['info'] . '</strong></div>';
     unset( $_SESSION['info'] );
 }
+else if( isset( $_SESSION['error'] ) )
+{
+    echo '<div class="alert alert-error">
+        <i class="fa fa-exclamation-circle fa-2x"></i>
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+        <strong>' . $_SESSION['error'] . '</strong></div>
+        ';
+    unset( $_SESSION['error'] );
+}
 
 ?>
     <div id="contents"><?= $contents ?></div>

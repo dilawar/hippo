@@ -1,12 +1,6 @@
 <?php
 
-require_once 'header.php';
-require_once 'database.php';
-require_once 'tohtml.php';
-require_once 'methods.php';
-require_once 'check_access_permissions.php';
-
-mustHaveAnyOfTheseRoles( array( 'USER' ) );
+require_once BASEPATH.'autoload.php';
 
 echo userHTML( );
 
@@ -92,7 +86,7 @@ $talk = array( 'created_by' => $_SESSION[ 'user' ]
 // Form to upload a picture
 
 echo '<form method="post" enctype="multipart/form-data"
-        action="user_register_talk_action.php">';
+        action="' . site_url( 'user/register_talk/submit' ) . '">';
 
 echo "<h2>Speaker details</h2>";
 echo printInfo( "Email id of speaker is desirable but not required.  ");
@@ -153,6 +147,7 @@ echo '<button class="submit" title="Submit talk" name="response" value="submit">
 echo '</form>';
 
 echo "<br/><br/>";
-echo goBackToPageLink( 'user.php', 'Go back' );
+
+echo goBackToPageLink( 'user/home' );
 
 ?>

@@ -37,6 +37,27 @@ class User extends CI_Controller
         $this->template->load('quickbook');
     }
 
+    public function register_talk( $arg = '' )
+    {
+        if( $arg == 'submit' )
+        {
+            $msg = register_talk_and_optionally_book( $_POST );
+            if( "OK" != $msg )
+            {
+                $msg .= arrayToVerticalTableHTML( $data, "request" );
+                $this->session->set_flashdata( 'error', $msg );
+                redirect( 'user/register_talk' );
+            }
+            else
+                redirect( 'user/home' );
+        }
+        else
+        {
+            $this->template->set( 'header', 'header.php' );
+            $this->template->load('user_register_talk');
+        }
+    }
+
     // USER EDITING PROFILE INFO
     public function info( $arg = '' )
     {
@@ -107,11 +128,18 @@ class User extends CI_Controller
         $this->template->load('user_info' );
     }
 
-    public function booking_request( $args = null )
+    public function booking_request( $arg = '' )
     {
-        log_message( 'info', 'Creating booking requests' );
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'user_submit_booking_request' );
+        if( $arg == 'submit' )
+        {
+
+        }
+        else 
+        {
+            log_message( 'info', 'Creating booking requests' );
+            $this->template->set( 'header', 'header.php' );
+            $this->template->load( 'user_submit_booking_request' );
+        }
     }
 
     // Show courses.

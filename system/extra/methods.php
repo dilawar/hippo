@@ -1058,6 +1058,10 @@ function verifyRequest( $request )
     if( ! isset( $request ) )
         return "Empty request";
 
+    foreach( array( "start_time", "end_time", "date", "venue" ) as $k )
+        if( ! isset( $request[$k] ) ) 
+            return "Neccessary value $k not found";
+
     // Check the end_time must be later than start_time .
     // At least 15 minutes event
     if( strtotime( $request['end_time'] ) - strtotime( $request['start_time'] ) < 900 )

@@ -39,6 +39,11 @@ function purifyHTML( $html )
     return $html;
 }
 
+function alert( $msg )
+{
+    echo "<script type='text/javascript'>alert('$msg');</script>";
+}
+
 function fontWithStyle( $msg, $style = "" )
 {
     return "<font style=\"$style;\">$msg</font>";

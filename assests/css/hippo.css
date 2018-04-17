@@ -130,7 +130,9 @@ table.public_links {
 
 table.public_links tr td {
     border-right: 1px solid;
-    width: 80px;
+    min-width: 10%;
+    max-width: 20%;
+    text-align: justify;
 }
 
 table.show_info {
