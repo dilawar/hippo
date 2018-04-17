@@ -68,17 +68,17 @@ else
     {
         echo printInfo( "You preference for AWS schedule is pending. If you have
             changed your mind, cancel it. After approval, you wont be able to modify
-            this request. We usually wait for two days before approving.
-            " );
+            this request. " 
+            );
 
         echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest' ) . '">';
         echo dbTableToHTMLTable( 'aws_scheduling_request', $prefs, '', 'edit' );
-        echo '<input type="hidden" name="created_on"
-                value="' . dbDateTime( 'now' ) . '" >';
+        echo '<input type="hidden" name="created_on" value="' . dbDateTime( 'now' ) . '" >'; 
         echo '</form>';
+
         // Cancel goes directly to cancelling the request. Only non-approved
         // requests can be cancelled.
-        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/submit') . '">';
+        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/delete') . '">';
         echo '<button onclick="AreYouSure(this)"
                 name="response" title="Cancel this request"
                 type="submit">  <i class="fa fa-trash "></i>
@@ -94,7 +94,7 @@ else
             changed to <tt>APPROVED</tt>. </strong>';
 
         // Form to revoke the approved preference.
-        echo ' <form method="post" action="' . site_url( 'user/aws/revokepreference' ) . '">';
+        echo ' <form method="post" action="' . site_url( 'user/aws/schedulingrequest/revoke' ) . '">';
         echo arrayToTableHTML( $approved, 'info' );
         echo '<button name="response" value="delete_preference">Revoke</button> ';
         echo '<input type="hidden" name="id" value="' . $approved['id'] . '" />';

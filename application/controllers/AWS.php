@@ -68,7 +68,8 @@ trait AWS
                 }
 
                 $updateKeys .= ',status';
-                $_POST[ 'status' ] = 'PENDING';
+                $_POST['status'] = 'PENDING';
+                $_POST['created_on'] = dbDateTime( 'now' );
                 $res = insertOrUpdateTable( 'aws_scheduling_request', $keys, $updateKeys, $_POST);
 
                 if( $res )
@@ -86,29 +87,35 @@ trait AWS
                 $email = getLoginEmail( $login );
                 sendHTMLEmail( $msg, $subject, $email, 'hippo@lists.ncbs.res.in' );
             }
-            else if( $arg2 == 'delete' )
+            else if( strtolower(trim($arg2)) == 'delete' )
             {
+                // Cancel the scheduling request.
                 $table = getTableEntry( 'aws_scheduling_request', 'id', $_POST );
                 if( $table )
                     $_POST = array_merge( $_POST, $table );
+                else
+                    echo "No entry found";
 
                 $_POST[ 'status' ] = 'CANCELLED';
-                $res = updateTable( 'aws_scheduling_request', 'id'
-                            , 'status', $_POST );
+                $res = updateTable( 'aws_scheduling_request', 'id', 'status', $_POST );
                 if( $res )
+                {
                     $subject = "You have cancelled your AWS preference";
-                else
-                    $sendEmail = false;
+                    $this->session->set_flashdata( 'success', "Successfully cancelled" );
+                    redirect( 'user/aws' );
+                }
             }
             else if( $arg2 )
             {
                 // Unknown action 2.
                 echo "Unknown action $arg2";
             }
-
-            // All action are done. Send user back to aws page.
-            $this->template->load( 'header.php' );
-            $this->template->load( 'user_aws' );
+            else
+            {
+                // All action are done. Send user back to aws page.
+                $this->template->load( 'header.php' );
+                $this->template->load( 'user_aws' );
+            }
         }
         else
         {
