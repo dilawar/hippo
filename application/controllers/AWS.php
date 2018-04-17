@@ -100,10 +100,10 @@ trait AWS
                 else
                     $sendEmail = false;
             }
-            else if( $args2 )
+            else if( $arg2 )
             {
                 // Unknown action 2.
-                echo "Unknown action $args2";
+                echo "Unknown action $arg2";
             }
 
             // All action are done. Send user back to aws page.
@@ -112,7 +112,9 @@ trait AWS
         }
         else
         {
-            $this->session->set_flashdata( 'error', "Unknown action $args" );
+            if( $arg )
+                $this->session->set_flashdata( 'error', "Unknown action $arg" );
+
             $this->template->load( 'header.php' );
             $this->template->load( 'user_aws' );
         }
