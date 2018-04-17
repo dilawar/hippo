@@ -1,11 +1,6 @@
 <?php
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-
-echo "<h1>Annual Work Seminars Summary</h1>";
+require_once BASEPATH.'autoload.php';
 
 echo ' <h2>Upcoming AWS</h2> ';
 $upcomingAWS = getUpcomingAWS( );
@@ -60,6 +55,6 @@ foreach( $speakers as $i => $speaker )
 $table .= '</table>';
 echo $table;
 
-echo goBackToPageLink( "admin_acad.php", "Go back" );
+echo goBackToPageLink( "info/aws", "Go back" );
 
 ?>
