@@ -2040,7 +2040,7 @@ function queryAWS( $query )
 
     $hippoDB = initDB();;
     $stmt = $hippoDB->query( "SELECT * FROM annual_work_seminars
-        WHERE LOWER(abstract) LIKE LOWER('%$query%')"
+        WHERE LOWER(abstract) LIKE LOWER('%$query%') ORDER BY date DESC"
     );
     $stmt->execute( );
     return fetchEntries( $stmt );

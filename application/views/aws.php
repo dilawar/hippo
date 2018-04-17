@@ -2,17 +2,18 @@
 
 require_once BASEPATH.'autoload.php';
 
-echo '<table class="info">
-<tr>
-    <td>
-        <a href="user_aws_search.php" target="_blank">Click to search AWS database.</a>
-    </td>
-    <td>
-        <a href="summary_aws.php" target="_blank">List of AWS speakers</a>
-    </td>
-</tr>
-</table>';
-echo '<br />';
+$table = '<table class="info">
+        <tr>
+            <td>
+                <a href="'.site_url('info/aws/search'). '">Click to search AWS database.</a>
+            </td>
+            <td>
+                <a href="'.site_url( 'info/aws/roster'). '"> List of AWS speakers</a>
+            </td>
+        </tr>
+        </table>';
+
+echo "$table <br />";
 
 if( strtotime( 'today' ) == strtotime( 'this monday' ) )
     $today = dbDate( 'this monday' );

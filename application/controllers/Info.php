@@ -16,22 +16,44 @@ class Info extends CI_Controller
             exit;
         }
 
-        $this->load->view('header' );
     }
 
-    public function aws( )
+    public function aws( $arg = '' )
     {
-        $this->load->view('aws' );
+        if( $arg == 'search' )
+        {
+            $this->template->set( 'header', 'header.php' );
+            $this->template->load( 'user_aws_search' );
+        }
+        else if( $arg == 'roster' )
+        {
+            $this->template->set( 'header', 'header.php' );
+            $this->template->load( 'aws_roster' );
+        }
+        else
+        {
+            $this->template->set('header', 'header.php' );
+            $this->template->load('aws' );
+        }
     }
 
     public function events( )
     {
-        $this->load->view('events' );
+        $this->template->set('header', 'header.php' );
+        $this->template->load('events' );
     }
 
     public function booking( )
     {
-        $this->load->view('allevents');
+        $this->template->set('header', 'header.php' );
+        $this->template->load('allevents' );
+    }
+
+    public function statistics( )
+    {
+        $this->template->set('header', 'header.php' );
+        $this->template->load('statistics' );
+
     }
 }
 

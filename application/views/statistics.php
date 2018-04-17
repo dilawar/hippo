@@ -1,12 +1,10 @@
 <!-- <script src="http://code.highcharts.com/highcharts.js"></script> -->
-<script src="./node_modules/highcharts/highcharts.js"></script>
-<script src="./node_modules/highcharts/modules/exporting.js"></script>
+<script src="<?= base_url() ?>/node_modules/highcharts/highcharts.js"></script>
+<script src="<?= base_url() ?>/node_modules/highcharts/modules/exporting.js"></script>
 
 <?php
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'methods.php';
+require_once BASEPATH.'autoload.php';
 
 
 $upto = dbDate( 'tomorrow' );

@@ -1142,6 +1142,8 @@ function loginToText( $login, $withEmail = true, $autofix = true ) : string
     if( ! $login )
         return '';
 
+    $email = '';
+
     // If only login name is give, query database to get the array. Otherwise
     // assume that an array has been given to use.
     // Find email in text. Sometimes people write the whole name with email. So 
@@ -1153,7 +1155,6 @@ function loginToText( $login, $withEmail = true, $autofix = true ) : string
             $email = extract_emails_from( $login );
             if( $email )
                 $login = explode( '@', $email )[0];
-            // echo printWarning( "Found email $login. Extracted $email -> $login" );
         }
         if( strlen( trim($login) ) < 1 )
             return '';
@@ -1165,10 +1166,7 @@ function loginToText( $login, $withEmail = true, $autofix = true ) : string
         $user = $login;
     }
     else
-    {
         $user = $login;
-        $email = '';
-    }
 
     if( __get__( $user, 'first_name', '' ) == __get__( $user, 'last_name', ''))
     {
