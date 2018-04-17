@@ -153,7 +153,6 @@ $(document).ready(function(){
     <td> <a href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td> <a href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
     <td> <a href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>
-    <td> <a href="https://dilawar.github.io/Hippo" target="_blank" >Docs</a></td>
     </tr>
 </table>
 </div>
