@@ -1,5 +1,7 @@
 <?php
 
+require_once BASEPATH.'autoload.php';
+
 class BMVPDO extends PDO
 {
     function __construct( $host = 'localhost'  )
