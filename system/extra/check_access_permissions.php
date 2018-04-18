@@ -93,8 +93,7 @@ function mustHaveAllOfTheseRoles( $roles )
     else
     {
         echo printWarning( "You don't have permission to access this page" );
-        goToPage( "index.php", 3 );
-        exit( 0 );
+        redirect( site_url('welcome') );
     }
 }
 
