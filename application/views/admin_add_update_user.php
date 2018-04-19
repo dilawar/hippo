@@ -1,10 +1,7 @@
 <?php 
 
-include_once 'header.php' ;
-include_once 'check_access_permissions.php' ;
-include_once 'tohtml.php' ;
-include_once 'ldap.php';
-include_once './snippets/pi_specialization.php';
+require_once BASEPATH.'autoload.php';
+require_once __DIR__.'/snippets/pi_specialization.php';
 
 mustHaveAnyOfTheseRoles( Array( 'ADMIN', 'AWS_ADMIN' ) );
 
@@ -28,7 +25,7 @@ if( ! $default )
         echo printWarning( 
             "Invalid username. I did not find anyone named " .
             $_POST[ 'login' ] . " on LDAP server" );
-        echo goBackToPageLink( 'admin.php', 'Go back' );
+        echo goBackToPageLink( 'admin', 'Go back' );
         exit;
     }
 
@@ -36,7 +33,7 @@ if( ! $default )
     $buttonVal = 'Add New';
 }
 
-echo '<form method="post" action="admin_add_update_user_submit.php">';
+echo '<form method="post" action="'. site_url('admin/updateuser/submit').'">';
 echo dbTableToHTMLTable(
     'logins', $default
     , Array( 'alternative_email', 'roles', 'status'
@@ -50,6 +47,6 @@ echo  '<br/><br/>';
 echo '<button type="submit" name="response" value="Delete">Delete User!</button>';
 echo '</form>';
 
-echo goBackToPageLink( 'admin.php', 'Go back' );
+echo goBackToPageLink( 'admin', 'Go back' );
 
 ?>

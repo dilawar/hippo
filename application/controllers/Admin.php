@@ -25,6 +25,12 @@ class Admin extends CI_Controller
         $this->template->load( 'admin' );
     }
 
+
+    public function updateuser()
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'admin_add_update_user' );
+    }
 }
 
 ?>
