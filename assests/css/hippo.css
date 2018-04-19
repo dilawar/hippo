@@ -168,17 +168,26 @@ table.table_in_table tr td
 /* Show course */
 table.show_course {
     max-width: var(--maxwidth);
-    width: 600px;
+    width: 650px;
+    border-spacing: 1px 10px;
+    border-collapse: separate;
+}
+
+table.show_course tr{
+    border-radius:10px;
 }
 
 table.show_course tr td:nth-child(1)
 {
-    width : 50%;
+    width : 40%;
 }
 table.show_course tr td
 {
     background-color: var(--tabletdcolor);
     width: 20%;
+    padding:10px;
+    font-size:small;
+    vertical-align: top;
 }
 
 

@@ -218,6 +218,7 @@ foreach( $slotCourses as $slot => $courses )
 }
 
 $table .= "</table>";
+
 echo '<div style="font-size:small">';
 echo $table;
 echo '</div>';
