@@ -1883,7 +1883,7 @@ function slotTable( $width = "15px" )
 
                 $html .= "<td id=\"slot_$id\" style=\"background:$bgColor\" colspan=\"$ncols\">
                          <button onClick=\"showRunningCourse(this)\"
-                          id=\"slot_$gid\" value=\"$id\" class=\"invisible\"> $id </button>
+                          id=\"slot_$gid\" value=\"$id\" class=\"tiles\"> $id </button>
                          <br> <small> <tt>$text</tt> </small> </td>";
 
                 $i += $ncols;

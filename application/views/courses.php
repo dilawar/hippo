@@ -1,4 +1,5 @@
 <?php
+
 require_once BASEPATH.'autoload.php';
 
 if( ! (isIntranet() || isAuthenticated( ) ) )
@@ -118,7 +119,7 @@ function showRunningCourse( x )
 <?php
 
 echo alertUser(
-    "Click on tile <button class=\"invisible\" disabled>1A</button> etc to see the
+    "Click on tile <button class=\"tiles\" disabled>1A</button> etc to see the
     list of courses running at this time.");
 
 $table = slotTable(  );

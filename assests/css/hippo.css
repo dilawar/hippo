@@ -286,14 +286,16 @@ table.standout tr td
 
 table.timetable 
 {
+    /*  Gap between td    */
+    border-spacing: 2px;
+    border-collapse: separate;
 }
 
 table.timetable tr td {
-    /* border: 1px dotted; */
     min-width : 5px;
     max-width : 100px;
-    /* background-color:var(--tabletdcolor); */
     vertical-align: top;
+    padding: 5px;
 }
 
 table.venue_slot {
@@ -322,7 +324,7 @@ div.info {
     max-width : var(--maxwidth);
 }
 
-button.invisible {
+button.tiles {
     border : 1px dotted;
     font-size : small;
     padding: 0px;
