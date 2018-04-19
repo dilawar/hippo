@@ -23,6 +23,7 @@ $html .= '<tr>
     </tr>';
 
 $html .= '<tr>';
+
 if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
 {
     $html .=  '<td> <i class="fa fa-graduation-cap fa-3x"></i>
@@ -34,10 +35,8 @@ if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
         <a href="'. site_url("/user/update/supervisors"). '">Update TCM Members/Supervisors</a>
         </td>';
 }
-$html .= '<td>
-    <i class="fa fa-hand-pointer-o fa-3x"></i>
-    <a class="clickable" href="'. site_url("/user/book/venue"). '">Quickbook</a>
-    </td>';
+
+$html .= '<td> </td>';
 
 $html .= '</tr></table>';
 echo $html;
@@ -83,31 +82,30 @@ $html .= '
     <tr>
     <td>
         <i class="fa fa-hand-pointer-o fa-3x"></i>
-         <a class="clickable" href="'. site_url("/user/book/venue"). '">Quickbook</a>
+         <a class="clickable" href="'. site_url("/user/book/venue"). '">Book Private Event</a>
          <br />
-         Book non-public events i.e. no email needs to be sent to Academic community.
-         Otherwise use <tt>BOOK TALK/SEMINAR</tt> link below.
+         No email needs to be sent to Academic community e.g. Labmeets,meeting,interview etc.
+         Otherwise use <tt>Book Public Event</tt> link below.
     </td>
     <td>
-        <a href="'. site_url("/user/book/show_requests") . '" class="clickable">My booking requests</a> <br />
-        You can see your unapproved requests. You can modify their description, and
-        cancel them if neccessary.
+        <a href="'. site_url("/user/book/show_requests") . '" class="clickable">
+            Manage My Private Events</a>
         <br />
-        <a class="clickable" href="'. site_url("/user/book/show_events"). '">My approved events</a> <br />
-        Cancels already approved requests.
+        You can see your private bookings. You can modify their description, and
+        cancel them if neccessary.
     </td>
     </tr>
    <tr>
     <td>
         <i class="fa fa-comments fa-3x"></i>
-        <a class="clickable" href="'. site_url("/user/book/talk"). '">Book Talk/Seminar</a>
+        <a class="clickable" href="'. site_url("/user/book/register_talk"). '">Book Public Event</a>
         <br />
         Register a new talk, seminar, or a thesis seminar.
         <small>Keep the email and photograph of speaker handy, not neccessary but highly recommended.</small>
     </td>
     <td>
-        <a class="clickable" href="'. site_url("/user/book/talk/edit"). '">Manage my talks</a> <br />
-        Edit/update a previously registered talk and book a venue for it
+        <a class="clickable" href="'. site_url("/user/book/talk/edit"). '">Manage My Public Events</a> <br />
+        Edit/update a previously registered public event and book a venue for it.
     </td>
    </tr>
    </table>';
