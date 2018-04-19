@@ -91,10 +91,8 @@ function mustHaveAllOfTheseRoles( $roles )
     if( allOfTheseRoles( $roles ) )
         return true;
     else
-    {
-        echo printWarning( "You don't have permission to access this page" );
-        redirect( site_url('welcome') );
-    }
+        return false;
+        // redirect( site_url('welcome') );
 }
 
 

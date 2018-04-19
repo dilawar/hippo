@@ -2,7 +2,12 @@
 
 require_once BASEPATH.'autoload.php';
 
-mustHaveAllOfTheseRoles( Array( 'ADMIN' ) );
+if( ! mustHaveAllOfTheseRoles( Array( 'ADMIN' ) ) ) 
+{
+    echo printWarning( "You don't have admin privileges." );
+    echo goBackToPageLink( "/welcome", "Go back" );
+    exit;
+}
 
 // Get logins. We'll use them to autocomplete the list of users while modifying
 // the privileges.
@@ -36,7 +41,7 @@ echo '
         <small>Type a login name and press the button.</small>
     </td>
         <td>
-            <form method="post" action="admin_add_update_user.php">
+            <form method="post" action="'.site_url('admin/updateuser').'">
             <input id="autocomplete_user" name="login" placeholder="I will autocomplete " >
             <button name="response" value="edit">Add/Update/Delete user</button>
             </form>
@@ -45,7 +50,7 @@ echo '
     <tr>
         <td>Users Info</td>
         <td>
-        <a href="admin_show_users.php" target="_blank">Show all users</a>
+        <a href="'.site_url('admin/showusers') .'" target="_blank">Show all users</a>
         </td>
     </tr>
     ';
@@ -58,7 +63,7 @@ echo '
     <tr>
         <td>Manage email templates</td>
         <td>
-            <a href="admin_manages_email_templates.php">Manage Email template</a>
+            <a href="'.site_url("admin/emailtemplates").'">Manage Email template</a>
         </td>
     </tr>
     </table>
@@ -72,13 +77,13 @@ echo '
         <tr>
             <td>Add/Update faculty</td>
             <td>
-                <a href="admin_manages_faculty.php">Manage faculty</a>
+                <a href="'. site_url( 'admin/faculty' ) . '">Manage faculty</a>
             </td>
         </tr>
         <tr>
             <td>Add/Update holidays</td>
             <td>
-                <a href="admin_manages_holidays.php">Manage holidays</a>
+                <a href="'.site_url( 'admin/holidays') . '">Manage holidays</a>
             </td>
         </tr>
     </table>
@@ -93,7 +98,8 @@ echo '<table><tr><td>';
 echo '<h1>Update the config table</h1>';
 $editable = 'id,value,comment';
 $default = array( );
-echo ' <form action="admin_action.php" method="post" accept-charset="utf-8">';
+
+echo ' <form action="'.site_url('admin/configration') .'" method="post">';
 echo dbTableToHTMLTable( 'config', $default, $editable, 'Add Configuration' );
 echo '</form>';
 
@@ -103,6 +109,6 @@ echo showConfigTableHTML( );
 
 echo '</td></tr></table>';
 
-echo goBackToPageLink( 'user.php', 'Go back' );
+echo goBackToPageLink( 'user', 'Go back' );
 
 ?>

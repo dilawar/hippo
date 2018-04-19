@@ -16,11 +16,9 @@ class User extends CI_Controller
 {
     use AWS;
 
-    public function __construct( )
+    public function index( )
     {
-        parent::__construct( );
-
-        // If not authenticated then send the user back.
+        $this->home();
     }
 
     // Show user home.
