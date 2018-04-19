@@ -710,7 +710,10 @@ function userHTML( )
     $user = __get__( $_SESSION, 'user', 'UNKNOWN' );
 
     $html = '<table class="user_float">';
-    $html .= '<tr colspan="2"><th>Hi ' . $user . "</th>";
+    $html .= '<tr colspan="2"><th>Hi 
+        <i class="fa fa-user"></i><a href="' . site_url( '/user/info' ) . 
+        '">' . $user.' </a> </td>';
+
     $html .= '<th><a href="' . site_url('/user/logout') . '">
                     <i class="fa fa-sign-out"></i>SignOut</a></th>';
     $html .= '</tr>';

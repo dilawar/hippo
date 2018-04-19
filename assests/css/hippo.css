@@ -111,6 +111,12 @@ table.user_float {
     font-size : small;
 }
 
+table.user_float tr td {
+    padding: 5px;
+    text-align: right;
+    vertical-align:bottom;
+}
+
 table.show_user {
     max-width : var(--maxwidth);
     min-width : 100%;

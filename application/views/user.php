@@ -8,21 +8,12 @@ $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
 $userInfo = getLoginInfo( $_SESSION[ 'user' ] );
 
 $html = '<table class="admin">';
-$html .= '<tr>
-      <td>
-        <i class="fa fa-user fa-3x"></i><a  class="clickable" 
-                href="' . site_url( '/user/info' ) . '"> My Profile</a>
-        <br /> See and edit (most of) your details.
-      </td>
-        <td>
+$html .= '<tr><td>
             <i class="fa fa-book fa-3x"></i>
             <a class="clickable" href="'. site_url('/user/courses' ) . '">My Courses</a>
             <br /> Manage courses for semester  (' . $thisSem . ' ) 
                 <small>Register/deregister courses for this semster. </small>
-        </td>
-    </tr>';
-
-$html .= '<tr>';
+        </td>';
 
 if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
 {
@@ -35,10 +26,10 @@ if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
         <a href="'. site_url("/user/update/supervisors"). '">Update TCM Members/Supervisors</a>
         </td>';
 }
-
-$html .= '<td> </td>';
-
+else
+    $html .= ' <td></td> ';
 $html .= '</tr></table>';
+
 echo $html;
 
 // Journal club entry.
@@ -89,8 +80,7 @@ $html .= '
     </td>
     <td>
         <a href="'. site_url("/user/book/show_requests") . '" class="clickable">
-            Manage My Private Events</a>
-        <br />
+            Manage My Private Events</a> <br />
         You can see your private bookings. You can modify their description, and
         cancel them if neccessary.
     </td>
