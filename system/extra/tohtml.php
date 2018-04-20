@@ -2154,6 +2154,16 @@ function goBackToPageLinkInline( $url, $title = "Go back" ) : string
     return $html;
 }
 
+function goBackInline( )
+{
+    $url = __get__( $_SERVER, 'HTTP_REFERER', 'index.php' );
+    $html = '<a href="' . $url . '"> 
+            <i class="fa fa-step-backward fa-2x"></i>
+            <font color="blue" size="5">Go back</font>
+            </a>';
+    return $html;
+}
+
 
 /**
     * @brief Go back to referer page.

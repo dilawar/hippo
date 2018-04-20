@@ -20,10 +20,31 @@ class Admin extends CI_Controller
     }
 
 
-    public function updateuser()
+    public function updateuser( $user )
     {
+
+        $user = $_POST[ 'login' ];
         $this->template->set( 'header', 'header.php' );
         $this->template->load( 'admin_updateuser' );
+    }
+
+    public function deleteuser( $user )
+    {
+        $res = deleteFromTable( 'logins', 'login', array( 'login' => $user ) ); 
+        if( $res )
+        {
+            echo flashMessage( "Successfully deleted $user." );
+            if( $this->agent->is_referral() )
+                redirect( $this->agent->referrer() );
+            else
+                redirect( 'admin' );
+        }
+    }
+
+    public function showusers( $arg = '' )
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'admin_showusers' );
     }
 }
 
