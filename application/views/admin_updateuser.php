@@ -7,7 +7,6 @@ mustHaveAnyOfTheseRoles( Array( 'ADMIN', 'AWS_ADMIN' ) );
 
 echo userHTML( );
 
-echo ' <h1>Update user profile</h1> ';
 
 if( ! array_key_exists( 'login', $_POST ) )
 {
@@ -16,10 +15,10 @@ if( ! array_key_exists( 'login', $_POST ) )
     exit;
 }
 
-/*
 // Update $_POST 
 if( $_POST[ 'response' ] == "Add New" )
 {
+    echo ' <h1>Creating new user profile</h1> ';
     $_POST[ 'created_on' ] = dbDateTime( 'now' );
     $res = insertIntoTable( 'logins'
         , "id,title,roles,joined_on,eligible_for_aws,status,first_name,last_name"
@@ -27,28 +26,27 @@ if( $_POST[ 'response' ] == "Add New" )
         , $_POST );
     if( $res )
     {
-        echo printInfo( "Successfully added a new login" );
+        echo flashMessage( "Successfully added a new login" );
+        redirect('admin');
     }
     else
-    {
-        echo printWarning( "Failed to add a new user" );
-        exit;
-    }
+        echo printWarning( "Failed to add a new user. " . goBackToPageLinkInline('admin') );
+
 }
- */
-if( $_POST[ 'response' ] == 'Delete' )
+else if( $_POST[ 'response' ] == 'Delete' )
 {
     $user = $_POST[ 'login' ];
     echo printInfo( "Deleting $user" );
     $res = deleteFromTable( 'logins', 'login', array( 'login' => $user ) ); 
     if( $res )
     {
-        echo printInfo( "Successfully deleted a login" );
+        echo flashMessage( "Successfully deleted $user." );
         redirect( 'admin' );
     }
 }
 else if( $_POST['response'] == 'Update' )
 {
+    echo ' <h1>Update user profile</h1> ';
     // When updating the table, remain here on this page. Admin may wants to
     // update more.
     $toUpdate = array( 'roles', 'title', 'joined_on', 'eligible_for_aws'
@@ -69,11 +67,10 @@ if( ! $default )
     $default = getUserInfoFromLdap( $_POST[ 'login' ] );
     if( ! $default )
     {
-        echo printWarning( 
-            "Invalid username. I did not find anyone named " .
-            $_POST[ 'login' ] . " on LDAP server" );
-        echo goBackToPageLink( 'admin', 'Go back' );
-        exit;
+        echo printWarning( "Invalid username. I did not find anyone named " .
+            $_POST[ 'login' ] . " on LDAP server" 
+        );
+        redirect( 'admin' );
     }
 
     $default[ 'login' ] = $_POST[ 'login' ];
