@@ -15,7 +15,9 @@ if( ! array_key_exists( 'login', $_POST ) )
     exit;
 }
 
-$default = getUserInfo( $_POST['login'] );
+$user = $_POST[ 'login' ];
+
+$default = getUserInfo( $user );
 $buttonVal = 'update';
 if( ! $default )
 {
@@ -35,7 +37,7 @@ if( ! $default )
 echo '<form method="post" action="' . site_url( "admin/updateuser/$user") . '">';
 echo dbTableToHTMLTable(
     'logins', $default
-    , Array( 'alternative_email', 'roles', 'status'
+    , array( 'alternative_email', 'roles', 'status'
                 , 'title', 'eligible_for_aws', 'joined_on'
                 , 'valid_until' , 'laboffice', 'specialization', 'pi_or_host'
             ) 
@@ -45,7 +47,7 @@ echo '</form>';
 
 // Button for deleting user.
 echo '<br/><br/>';
-echo '<form action="'. site_url( "admin/deleteuser/$user") . ' method="post"> ';
+echo '<form action="'. site_url( "admin/deleteuser/$user" ) . '" method="post"> ';
 echo '<button type="submit" name="response" value="Delete">Delete User!</button>';
 echo '</form>';
 
