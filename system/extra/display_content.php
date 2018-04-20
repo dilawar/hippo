@@ -17,6 +17,10 @@ function printWarning($msg)
     return $warn;
 }
 
+function flashMessage( $msg, $category = 'success' )
+{
+    $_SESSION[ $category ] = $msg;
+}
 
 function printInfo( $msg )
 {
