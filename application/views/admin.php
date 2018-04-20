@@ -41,7 +41,7 @@ echo '
         <small>Type a login name and press the button.</small>
     </td>
         <td>
-            <form method="post" action="'.site_url('admin/updateuser').'">
+            <form method="post" action="'.site_url('admin/addupdatedelete').'">
             <input id="autocomplete_user" name="login" placeholder="I will autocomplete " >
             <button name="response" value="edit">Add/Update/Delete user</button>
             </form>

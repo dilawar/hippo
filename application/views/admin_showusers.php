@@ -27,7 +27,7 @@ foreach( $logins as $i => $login )
     $table .= '<tr>';
     $table .= arrayToRowHTML( $login, 'info', $hide, true, false );
     $table .= "<td> 
-        <form method=\"post\" action=\"" . site_url( "admin/updateuser/$loginName") . "\">
+        <form method=\"post\" action=\"" . site_url( "admin/addupdatedelete") . "\">
         <input type=\"hidden\" name=\"login\" value=\"$loginName\" />
         <button name=\"edit\" value=\"edit\">Edit</button> </td>
         </form>

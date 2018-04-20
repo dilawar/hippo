@@ -20,20 +20,27 @@ class Admin extends CI_Controller
     }
 
 
-    public function updateuser( $user = '' )
+    public function addupdatedelete( )
     {
-        if( ! $user)
-        {
-            // Probably user is in $_POST (created by input field).
-        }
-
         $this->template->set( 'header', 'header.php' );
         $this->template->load( 'admin_updateuser' );
     }
 
-    public function deleteuser( $user = '' )
+    public function updateuser( $user = '' )
     {
-        $res = deleteFromTable( 'logins', 'login', array( 'login' => $user ) ); 
+        $toUpdate = 'roles,title,joined_on,eligible_for_aws,laboffice' .
+           ',status,valid_until,alternative_email,pi_or_host,specialization';
+        $res = updateTable( 'logins', 'login', $toUpdate, $_POST );
+        if( $res )
+            echo flashMessage("Successfully updated.");
+
+        redirect('admin/addupdatedelete');
+    }
+
+    public function deleteuser( $md5 = '' )
+    {
+        $user = $_POST['login'];
+        $res = deleteFromTable( 'logins', 'login', $_POST  );
         if( $res )
         {
             echo flashMessage( "Successfully deleted $user." );
