@@ -10,8 +10,10 @@ function printErrorSevere($msg)
 
 function printWarning($msg)
 {
-    $warn ="<div class=\"alert alert-warning\"><i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</div>";
+    $warn ="<div class=\"alert alert-warning\">
+        <i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</div>";
     error_log( $msg );
+    $_SESSION['warning'] = $msg;
     return $warn;
 }
 
