@@ -20,15 +20,18 @@ class Admin extends CI_Controller
     }
 
 
-    public function updateuser( $user )
+    public function updateuser( $user = '' )
     {
+        if( ! $user)
+        {
+            // Probably user is in $_POST (created by input field).
+        }
 
-        $user = $_POST[ 'login' ];
         $this->template->set( 'header', 'header.php' );
         $this->template->load( 'admin_updateuser' );
     }
 
-    public function deleteuser( $user )
+    public function deleteuser( $user = '' )
     {
         $res = deleteFromTable( 'logins', 'login', array( 'login' => $user ) ); 
         if( $res )
