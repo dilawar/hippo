@@ -2138,13 +2138,22 @@ function piSpecializationHTML( $pi, $specialization )
 function goBackToPageLink( $url, $title = "Go back" ) : string
 {
 
-    $html = '<div class="goback">';
-    $html .= '<a style="float: left" href="' . site_url( $url ) . '">
-                <i class="fa fa-step-backward fa-3x"></i>
-                <font color="blue" size="5">' . $title . '</font>
-            </a></div><br/><br/>';
+    $html = '<div class="goback" style="float:left">';
+    $html .= goBackToPageLinkInline( $url, $title );
+    $html .= '</div> <br />';
     return $html;
 }
+
+function goBackToPageLinkInline( $url, $title = "Go back" ) : string
+{
+
+    $html = '<a href="' . site_url( $url ) . '">
+                <i class="fa fa-step-backward fa-2x"></i>
+                <font color="blue" size="5">' . $title . '</font>
+            </a>';
+    return $html;
+}
+
 
 /**
     * @brief Go back to referer page.

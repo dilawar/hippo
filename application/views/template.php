@@ -17,7 +17,7 @@ if( isset( $_SESSION['success'] ) )
         </div>';
     unset( $_SESSION['success'] );
 }
-else if( isset( $_SESSION['info'] ) )
+else if( isset($_SESSION['info']) )
 {
     echo '<div class="alert alert-info">
     <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
@@ -33,6 +33,16 @@ else if( isset( $_SESSION['error'] ) )
         ';
     unset( $_SESSION['error'] );
 }
+else if( isset($_SESSION['warning']) )
+{
+    echo '<div class="alert alert-error">
+        <i class="fa fa-exclamation-circle fa-2x"></i>
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+        <strong>' . $_SESSION['warning'] . '</strong></div>
+        ';
+    unset( $_SESSION['warning'] );
+}
+
 
 ?>
     <div id="contents"><?= $contents ?></div>
