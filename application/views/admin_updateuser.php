@@ -8,17 +8,9 @@ mustHaveAnyOfTheseRoles( Array( 'ADMIN', 'AWS_ADMIN' ) );
 echo userHTML( );
 
 
-if( ! array_key_exists( 'login', $_POST ) )
-{
-    echo printInfo( "You didn't select anyone. Go back and select someone." );
-    goBackToPageLink( 'admin' );
-    exit;
-}
-
-$user = $_POST[ 'login' ];
-
+$user = __get__($_POST, 'login', '');
 $default = getUserInfo( $user );
-$buttonVal = 'update';
+$buttonVal = 'Update';
 if( ! $default )
 {
     $default = getUserInfoFromLdap( $_POST[ 'login' ] );
@@ -31,24 +23,22 @@ if( ! $default )
     }
 
     $default[ 'login' ] = $_POST[ 'login' ];
-    $buttonVal = 'addnew';
+    $buttonVal = 'Add New';
 }
 
-echo '<form method="post" action="' . site_url( "admin/updateuser/$user") . '">';
-echo dbTableToHTMLTable(
-    'logins', $default
-    , array( 'alternative_email', 'roles', 'status'
-                , 'title', 'eligible_for_aws', 'joined_on'
-                , 'valid_until' , 'laboffice', 'specialization', 'pi_or_host'
-            ) 
-    , $buttonVal
-    );
+echo '<form method="post" action="' .site_url( "admin/updateuser").'">';
+echo dbTableToHTMLTable( 'logins', $default
+        , 'alternative_email,roles,status,title,eligible_for_aws,joined_on' 
+                .  ',valid_until,laboffice,specialization,pi_or_host'
+        , $buttonVal
+        );
 echo '</form>';
 
 // Button for deleting user.
 echo '<br/><br/>';
-echo '<form action="'. site_url( "admin/deleteuser/$user" ) . '" method="post"> ';
+echo '<form action="'. site_url( "admin/deleteuser/".md5($user) ) . '" method="post"> ';
 echo '<button type="submit" name="response" value="Delete">Delete User!</button>';
+echo '<input type="hidden" name="login" value="'.$user.'" />';
 echo '</form>';
 
 echo goBackToPageLink( 'admin', 'Go back' );
