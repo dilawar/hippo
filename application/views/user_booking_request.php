@@ -4,13 +4,17 @@ require_once BASEPATH .'autoload.php';
 
 echo userHTML( );
 
-echo alertUser( '
-    1. Set <tt>IS PUBLIC EVENT</tt>  to <tt>YES</tt> if you want your event to appear 
-    on google-calendar. <br />
-    2. Select proper <tt>CLASS</tt> for your booking. Your 
-    request will be rejected if it is filed under wrong <tt>CLASS</tt>
-    ' );
-    
+echo '<ul>
+        <li> Set <tt>IS PUBLIC EVENT</tt>  to <tt>YES</tt> if you want your event to appear 
+        on NCBS\' google-calendar. <br />
+        </li>
+        <li>
+            Pick proper <tt>CLASS</tt> for your booking. Your request will be rejected if it is 
+               filed under wrong <tt>CLASS</tt>.
+        </li>
+    </ul>
+    ';
+
 $venues = getVenues( $sortby = 'total_events' );
 
 if( ! array_key_exists( 'date', $_POST) )
@@ -85,7 +89,7 @@ $default[ 'end_time' ] = $defaultEndTime;
 
 $default = array_merge( $default, $_POST );
 
-echo '<form method="post" action="' . site_url('user/booking_request/submit') . '">';
+echo '<form method="post" action="' . site_url('user/bookingrequest_submit') . '">';
 echo dbTableToHTMLTable( 'bookmyvenue_requests'
         , $default
         , 'class,title,description,url,is_public_event,end_time' 

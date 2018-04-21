@@ -5,6 +5,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 require_once BASEPATH.'autoload.php';
 
 require_once __DIR__ . '/AWS.php';
+require_once __DIR__ . '/Booking.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -15,6 +16,7 @@ require_once __DIR__ . '/AWS.php';
 class User extends CI_Controller
 {
     use AWS;
+    use Booking;
 
     public function index( )
     {
@@ -32,29 +34,16 @@ class User extends CI_Controller
     public function book( $arg = '' )
     {
         $this->template->set( 'header', 'header.php' );
-        $this->template->load('quickbook');
+        $this->template->load('user_book_private');
     }
 
-    public function register_talk( $arg = '' )
+    // Function to show the user's booking.
+    public function show_private( $arg = '' )
     {
-        if( $arg == 'submit' )
-        {
-            $msg = register_talk_and_optionally_book( $_POST );
-            if( "OK" != $msg )
-            {
-                $msg .= arrayToVerticalTableHTML( $data, "request" );
-                $this->session->set_flashdata( 'error', $msg );
-                redirect( 'user/register_talk' );
-            }
-            else
-                redirect( 'user/home' );
-        }
-        else
-        {
-            $this->template->set( 'header', 'header.php' );
-            $this->template->load('user_register_talk');
-        }
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load('user_show_requests');
     }
+
 
     // USER EDITING PROFILE INFO
     public function info( $arg = '' )
@@ -124,20 +113,6 @@ class User extends CI_Controller
 
         $this->template->set( 'header', 'header.php' );
         $this->template->load('user_info' );
-    }
-
-    public function booking_request( $arg = '' )
-    {
-        if( $arg == 'submit' )
-        {
-
-        }
-        else 
-        {
-            log_message( 'info', 'Creating booking requests' );
-            $this->template->set( 'header', 'header.php' );
-            $this->template->load( 'user_submit_booking_request' );
-        }
     }
 
     // Show courses.

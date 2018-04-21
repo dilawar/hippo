@@ -1052,8 +1052,16 @@ function splitName( $name )
     return $result;
 }
 
-// verify the request.
-function verifyRequest( $request )
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Verify the booking request.
+    *
+    * @Param $request
+    *
+    * @Returns  "OK" if booking request if fine. A detailed message otherwise.
+ */
+/* ----------------------------------------------------------------------------*/
+function verifyRequest( array $request ) : string
 {
     if( ! isset( $request ) )
         return "Empty request";

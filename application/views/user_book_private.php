@@ -4,6 +4,7 @@
  * talks page. If a user creates a talk and we come here for a booking; we use
  * the external_id _GET variable.
  */
+
 require_once BASEPATH . 'autoload.php';
 
 echo userHTML( );
@@ -93,7 +94,7 @@ echo '<table style="min-width:300px;max-width:500px",border="0">';
 echo '<form action="' .site_url( 'user/book' ) . '" method="post" accept-charset="utf-8">';
 echo '
     <tr>
-        <td>Pick a date</td>
+        <td>Date</td>
         <td><input  class="datepicker" name="date"
             value="' . $defaults[ 'date' ] . '" /> </td>
     </tr>
@@ -335,7 +336,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
                 $date, $startTime, $endTime, $venueId, $jcAndMeets
             );
 
-        $block = '<form method="post" action="' . site_url( 'user/booking_request' ) . '">';
+        $block = '<form method="post" action="' . site_url( 'user/bookingrequest' ) . '">';
         $block .= '<div><tr>';
         if( count( $jclabmeets ) > 0 )
         {

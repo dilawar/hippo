@@ -79,7 +79,7 @@ $html .= '
          Otherwise use <tt>Book Public Event</tt> link below.
     </td>
     <td>
-        <a href="'. site_url("/user/book/show_requests") . '" class="clickable">
+        <a href="'. site_url("/user/show_private") . '" class="clickable">
             Manage My Private Events</a> <br />
         You can see your private bookings. You can modify their description, and
         cancel them if neccessary.
@@ -94,7 +94,7 @@ $html .= '
         <small>Keep the email and photograph of speaker handy, not neccessary but highly recommended.</small>
     </td>
     <td>
-        <a class="clickable" href="'. site_url("/user/book/talk/edit"). '">Manage My Public Events</a> <br />
+        <a class="clickable" href="'. site_url("/user/show_public"). '">Manage My Public Events</a> <br />
         Edit/update a previously registered public event and book a venue for it.
     </td>
    </tr>
