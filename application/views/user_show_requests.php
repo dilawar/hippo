@@ -6,10 +6,9 @@ echo userHTML( );
 
 $requests = getRequestOfUser( $_SESSION['user'], $status = 'PENDING' );
 
+echo '<h1>Pending booking</h1>';
 if( count( $requests ) < 1 )
     echo alertUser( "No pending request found." );
-else
-    echo alertUser( "You have following pending requests." );
 
 echo "<div style=\"font-size:x-small;\">";
 foreach( $requests as $request )
@@ -39,6 +38,7 @@ echo '</div>';
 echo goBackToPageLink( "user", "Go back" );
 
 
+echo '<h1>Approved booking</h1>';
 $groups = getEventsOfUser( $_SESSION['user'] );
 if( count( $groups ) < 1 )
     echo alertUser( "No upcoming events." );
@@ -48,51 +48,55 @@ else
     echo '<div style="font-size:x-small">';
 
     $hide = 'last_modified_on,created_by,external_id,is_public_event' 
-                    .  ',calendar_id,calendar_event_id,url';
+                    .  ',calendar_id,calendar_event_id,url,status,description';
 
     foreach( $groups as $group )
     {
 
+        echo '<div class="grouped items" style="background-color:rgba(255,255,200,0.5)">';
         $gid = $group['gid'];
+
+        echo '<table>';
         echo '<form method="post" action="'.site_url('user/private_event_edit').'">';
-        echo '<table style="width:600px">';
         echo "<tr><td> <strong>Group id $gid </strong>";
         echo '<button name="response" title="Cancel this group" 
-            onclick="AreYouSure(this,\"DELETE GROUP\")" >Cancel Group</button>';
+            onclick="AreYouSure(this,\'DELETE GROUP\')" >Cancel Group</button></td>';
 
         // If this event if from external talk, then do not allow user to edit
         // it here.
         if( ! isEventOfTalk( $group ) )
-            echo "<button title=\"Edit this event\" name=\"response\" 
-                    value=\"edit\" font-size=\"small\">Edit Group</button>";
+            echo "<td><button title=\"Edit this event\" name=\"response\" 
+                    value=\"edit\" font-size=\"small\">Edit Group</button></td>";
         else
             echo 'This event belongs to a talk, 
                 to edit it <a href="'.site_url('user/manage_talk').'" > edit its talk.</a>';
 
-        echo "</td></tr>";
+        echo "</tr>";
         echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
-        echo '</form>';
-
         $today = dbDate( 'today' );
         $events = getTableEntries( 'events', 'date,start_time'
-                        , "gid='$gid' AND date >= '$today' AND status='VALID' " );
+            , "gid='$gid' AND date >= '$today' AND status='VALID'" 
+        );
 
         if( count( $events ) < 1 )
             continue;
 
+        echo '</table>';
+        echo '</form>';
+
+        echo '<table class="condensed">';
+        echo arrayToTHRow( $events[0], 'events', $hide );
         foreach( $events as $event )
         {
             if( $event[ 'status' ] != 'VALID' )
                 continue;
 
             echo '<tr>';
-            echo '<td>';
             echo '<form method="post" action="'.site_url('user/private_event_edit').'">';
-            echo arrayToTableHTML( $event, 'info', '', $hide );
+            echo arrayToRowHTML( $event, 'events', $hide, false, false );
             echo "<td colspan=\"2\"><button name=\"response\" title=\"Cancel this event\" 
-                    onclick=\"AreYouSure(this)\" > <i class=\"fa fa-trash\"></i>
-                    </button>
-                </td>";
+                    onclick=\"AreYouSure(this,'DELETE EVENT')\" > <i class=\"fa fa-trash\"></i>
+                    </button></td>";
             echo '</tr>';
 
             $eid = $event[ 'eid' ];
@@ -101,8 +105,8 @@ else
             echo '</form>';
 
         }
-
         echo "</table>";
+        echo '</div>';
         echo "<br>";
     }
     echo '</div>';

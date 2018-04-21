@@ -18,11 +18,7 @@ echo '<ul>
 $venues = getVenues( $sortby = 'total_events' );
 
 if( ! array_key_exists( 'date', $_POST) )
-{
-    echo printWarning( "No valid day is selected. Going back to main page" );
-    goToPage( "user.php", 1 );
-    exit(0);
-}
+    flashMessage( "No valid day is selected. Going back to main page", 'warning' );
 
 $date = $_POST['date'];
 
@@ -106,4 +102,4 @@ echo '<button class="submit" name="response" value="submit"> <i class="fa fa-che
 echo '</form>';
 
 echo '<br><br>';
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user", "Go back" );

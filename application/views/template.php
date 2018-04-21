@@ -4,7 +4,8 @@
 </head>
 <body>
 
-<?php if(isset($header))
+<?php 
+if(isset($header))
     require_once "$header";
 else
     echo "";
@@ -42,8 +43,6 @@ else if( isset($_SESSION['warning']) )
         ';
     unset( $_SESSION['warning'] );
 }
-
-
 ?>
     <div id="contents"><?= $contents ?></div>
     <div id="header"><?php if(isset($footer)){echo $footer;}else{echo "";} ?></div>

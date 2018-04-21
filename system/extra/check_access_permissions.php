@@ -83,7 +83,7 @@ function mustHaveAnyOfTheseRoles( $roles )
     }
 }
 
-function mustHaveAllOfTheseRoles( $roles )
+function mustHaveAllOfTheseRoles( $roles ) : bool
 {
     if( is_string( $roles ))
         $roles = explode( ',', $roles );
@@ -92,7 +92,6 @@ function mustHaveAllOfTheseRoles( $roles )
         return true;
     else
         return false;
-        // redirect( site_url('welcome') );
 }
 
 

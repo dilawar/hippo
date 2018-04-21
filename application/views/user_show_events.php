@@ -1,16 +1,8 @@
 <?php
 
-include_once( "header.php" );
-include_once( "methods.php" );
-include_once( "database.php" );
-include_once( "tohtml.php" );
+require_once BASEPATH.'autoload.php';
 
 echo userHTML( );
-
-?>
-
-<?php
-
 
 $groups = getEventsOfUser( $_SESSION['user'] );
 if( count( $groups ) < 1 )
@@ -27,11 +19,10 @@ else
     {
 
         $gid = $group['gid'];
-        echo '<form method="post" action="user_show_events_edit.php">';
-        echo "<table style=\"width:600px\">";
-        echo "<tr><td> <strong>Group id $gid </strong>";
+        echo '<form method="post" action="'.site_url('user/public_event_edit').'">';
+        echo "<strong>Group id $gid </strong>";
         echo "<button name=\"response\" title=\"Cancel this group\" 
-                onclick=\"AreYouSure(this)\" >Cancel Group</button>
+                onclick=\"AreYouSure(this,'DELETE GROUP')\" >Cancel Group</button>
                 ";
 
         // If this event if from external talk, then do not allow user to edit
@@ -41,9 +32,7 @@ else
                     value=\"edit\" font-size=\"small\">Edit Group</button>";
         else
             echo "This event belongs to a talk, 
-                to edit it <a href=\"user_manage_talk.php\" > edit its talk</a> .";
-
-        echo "</td></tr>";
+                to edit it <a href=\"".site_url('user/manage_talk')."\" > edit its talk</a> .";
         echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
         echo '</form>';
 
@@ -54,17 +43,19 @@ else
         if( count( $events ) < 1 )
             continue;
 
+        echo '<table class="condensed">';
+        echo arrayToTHRow( $events[0], 'events', $hide );
         foreach( $events as $event )
         {
             if( $event[ 'status' ] != 'VALID' )
                 continue;
 
             echo '<tr>';
-            echo '<td>';
-            echo '<form method="post" action="user_show_events_edit.php">';
-            echo arrayToTableHTML( $event, 'events', '', $hide );
+            // echo '<td>';
+            echo '<form method="post" action="'.site_url('user/public_event_edit').'">';
+            echo arrayToRowHTML( $event, 'events', $hide, false, false );
             echo "<td colspan=\"2\"><button name=\"response\" title=\"Cancel this event\" 
-                    onclick=\"AreYouSure(this)\" >" . $symbCancel . "</button>
+                    onclick=\"AreYouSure(this)\"><i class=\"fa fa-trash\"></i></button>
                 </td>";
             echo '</tr>';
 
@@ -72,15 +63,12 @@ else
             echo "<input type=\"hidden\" name=\"eid\" value=\"$eid\">";
             echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
             echo '</form>';
-
         }
-
-        echo "</table>";
-        echo "<br>";
+        echo '</table>';
     }
     echo '</div>';
 }
 
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 
 ?>
