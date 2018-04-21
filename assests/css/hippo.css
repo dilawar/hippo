@@ -431,6 +431,22 @@ button {
     /*text-decoration: none;*/
 /*}*/
 
+table.condensed {
+    border-spacing: 2px;
+    border-collapse: separate;
+}
+
+table.condensed tr td {
+    font-size: small;
+    text-align: top;
+    border-top: 1px dotted;
+    padding-left: 10px;
+}
+
+table.condensed tr td:nth-child(odd) 
+{
+
+}
 
 table.input {
     text-align : left;
@@ -597,7 +613,8 @@ table.request tr:nth-of-type( odd ) {
 table.info {
     max-width : 90%;
     min-width : 600px;
-    /*counter-reset: rowNumber;*/
+    border-spacing: 1px;
+    border-collapse: separate;
 }
 
 

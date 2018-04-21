@@ -30,18 +30,11 @@ class User extends CI_Controller
         $this->template->load( 'user' );
     }
 
-    // BOOKING
+    // BOOKING. Rest of the functions are in Booking traits.
     public function book( $arg = '' )
     {
         $this->template->set( 'header', 'header.php' );
         $this->template->load('user_book_private');
-    }
-
-    // Function to show the user's booking.
-    public function show_private( $arg = '' )
-    {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load('user_show_requests');
     }
 
 

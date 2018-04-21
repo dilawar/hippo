@@ -253,7 +253,7 @@ function getPendingRequestsGroupedByGID( )
 }
 
 // Get all requests with given status.
-function getRequestsGroupedByGID( $status  )
+function getRequestsGroupedByGID( $status = 'PENDING'  )
 {
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare( 'SELECT * FROM bookmyvenue_requests
@@ -662,7 +662,7 @@ function getUniqueID( $tablename )
     *
     * @return  Group id of request.
  */
-function submitRequest( $request )
+function submitRequest( array $request )
 {
     $hippoDB = initDB();;
     $collision = false;
@@ -691,6 +691,8 @@ function submitRequest( $request )
     $res = $hippoDB->query( 'SELECT MAX(gid) AS gid FROM bookmyvenue_requests' );
     $prevGid = $res->fetch( PDO::FETCH_ASSOC);
     $gid = intval( $prevGid['gid'] ) + 1;
+
+    $errorMsg = '';
     foreach( $days as $day )
     {
         $rid += 1;
@@ -700,13 +702,12 @@ function submitRequest( $request )
 
         $collideWith = checkCollision( $request );
         $hide = 'rid,external_id,description,is_public_event,url,modified_by';
+
         if( $collideWith )
         {
-            echo '<div style="font-size:x-small">';
-            echo alertUser( 'Collision with following event/request' );
+            $errorMsg .= 'Collision with following event/request';
             foreach( $collideWith as $ev )
-                echo arrayToTableHTML( $ev, 'events', $hide );
-            echo '</div>';
+                $errorMsg .= arrayToTableHTML( $ev, 'events', $hide );
             $collision = true;
             continue;
         }
@@ -720,11 +721,13 @@ function submitRequest( $request )
 
         if( ! $res )
         {
-            echo printWarning( "Could not submit request id $gid" );
+            $errorMsg .= "Could not submit request id $gid";
             return 0;
         }
 
     }
+
+    flashMessage( $errorMsg, 'warning' );
     return $gid;
 }
 

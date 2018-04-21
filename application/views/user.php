@@ -88,7 +88,7 @@ $html .= '
    <tr>
     <td>
         <i class="fa fa-comments fa-3x"></i>
-        <a class="clickable" href="'. site_url("/user/book/register_talk"). '">Book Public Event</a>
+        <a class="clickable" href="'. site_url("/user/register_talk"). '">Book Public Event</a>
         <br />
         Register a new talk, seminar, or a thesis seminar.
         <small>Keep the email and photograph of speaker handy, not neccessary but highly recommended.</small>
