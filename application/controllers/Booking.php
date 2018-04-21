@@ -28,7 +28,6 @@ trait Booking
 
     public function private_event_edit($arg='')
     {
-        var_dump($_POST);
         $response = $_POST['response'];
         $gid = $_POST['gid'];
         $eid = $_POST['eid'];
@@ -42,6 +41,13 @@ trait Booking
             $res = deleteFromTable( 'events', 'gid,eid', $_POST );
             if($res)
                 flashMessage( "Successfully deleted $gid.$eid.");
+        }
+        else if( $response == 'DELETE GROUP')
+        {
+            $_POST['status'] = 'DELETED';
+            $res = updateTable( 'events', 'gid', 'status', $_POST );
+            if($res)
+                flashMessage("Successfully cancelled $gid");
         }
         else
         {

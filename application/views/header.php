@@ -79,11 +79,11 @@ $( function() {
 
 <!-- confirm on delete -->
 <script type="text/javascript" charset="utf-8">
-function AreYouSure( button )
+function AreYouSure( button, value = 'delete' )
 {
     var x = confirm( "ALERT! Destructive operation! Continue?" );
     if( x )
-        button.setAttribute( 'value', 'delete' );
+        button.setAttribute( 'value', value );
     else
         button.setAttribute( 'value', 'DO_NOTHING' );
     return x;
