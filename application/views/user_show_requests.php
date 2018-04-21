@@ -23,11 +23,10 @@ foreach( $requests as $request )
     echo "<table class=\"info\" >";
     echo "<tr>";
     echo "<td>" . arrayToTableHTML( $request, "requests", NULL, $tobefiltered );
-    echo '<form method="post" action="'.site_url("user/private_edit") .'">';
+    echo '<form method="post" action="'.site_url("user/private_request_edit") .'">';
     echo "</td></tr><tr>";
     echo "</td><td><button name=\"response\" title=\"Cancel this request\"
-            onclick=\"AreYouSure( this )\" > <i class=\"fa fa-trash\"></i>
-             </button>";
+            onclick=\"AreYouSure( this )\" > <i class=\"fa fa-trash\"></i> </button>";
     echo "<td><button name=\"response\" title=\"Edit this request\"
         value=\"edit\"> <i class=\"fa fa-pencil\"></i> </button>";
     echo "</td></tr>";

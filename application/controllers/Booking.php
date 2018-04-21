@@ -11,6 +11,45 @@ trait Booking
         $this->template->load( 'user_booking_request' );
     }
 
+    public function private_request_edit( $arg = '')
+    {
+        $gid = $_POST['gid'];
+        if( $_POST[ 'response'] == 'delete' )
+        {
+            $res = deleteFromTable( 'bookmyvenue_requests', 'gid', $_POST );
+            if( $res )
+                flashMessage("Successfully deleted request id $gid");
+        }
+        else
+            flashMessage( "Not implemented yet " . $_POST['response'] );
+
+        redirect( 'user/show_private');
+    }
+
+    public function private_event_edit($arg='')
+    {
+        var_dump($_POST);
+        $response = $_POST['response'];
+        $gid = $_POST['gid'];
+        $eid = $_POST['eid'];
+
+        if($response == 'DO NOTHING')
+        {
+            echo flashMessage("User selected DO NOTHING");
+        }
+        else if($response == 'delete')
+        {
+            $res = deleteFromTable( 'events', 'gid,eid', $_POST );
+            if($res)
+                flashMessage( "Successfully deleted $gid.$eid.");
+        }
+        else
+        {
+            echo flashMessage("Unknown request $response.");
+        }
+        redirect('user/show_private');
+    }
+
     public function bookingrequest_submit( $arg = '' )
     {
         $msg = verifyRequest( $_POST );
