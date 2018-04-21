@@ -197,6 +197,6 @@ foreach( $awses as $aws )
     echo awsPdfURL( $aws['speaker' ], $aws[ 'date' ] );
 }
 
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 
 ?>
