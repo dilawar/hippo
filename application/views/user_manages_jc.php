@@ -1,16 +1,11 @@
 <?php
 
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'USER' ) );
-
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
+require BASEPATH.'autoload.php';
 
 echo userHTML( );
 
 $jcs = getJournalClubs( );
-echo '<h1>Table of All Journal Clubs</h1>';
+echo '<h1>TAll Journal Clubs</h1>';
 $table = '<table class="info">';
 
 $table .= '<tr>';
@@ -23,13 +18,10 @@ foreach( $jcs as $i => $jc )
 
     $table .= '<td>' . $jc['id'];
     $table .= ' (' . $jcInfo[ 'title' ] . ')';
-    $table .=  '<form action="user_manages_jc_action.php"
-        method="post" accept-charset="utf-8">';
-    $table .= "<button name=\"response\"
-        value=\"$buttonVal\">$buttonVal</button>";
+    $table .= '<form action="'.site_url('user/manages_jc').'" method="post" >';
+    $table .= '<button name="response" value="$buttonVal">$buttonVal</button>';
     $table .= '<input type="hidden" name="jc_id" value="' . $jc['id'] . '" />';
-    $table .= '<input type="hidden" name="login" value="'
-                .  $_SESSION['user'] . '" />';
+    $table .= '<input type="hidden" name="login" value="'.$_SESSION['user'].'"/>';
     $table .= '</form>';
     $table .= '</td>';
 
@@ -92,9 +84,7 @@ if( count( $myPresentations ) > 0 )
     }
 }
 else
-{
     echo printInfo( "You have no upcoming JC presentation. <i class=\"fa fa-frown\"></i>" );
-}
 
 
 echo '<h1>JC presentation requests in your JCs</h1>';
@@ -148,6 +138,6 @@ else
     );
 }
 
-echo goBackToPageLink( 'user.php', 'Go Back' );
+echo goBackToPageLink( 'user/home', 'Go Back' );
 
 ?>
