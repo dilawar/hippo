@@ -148,10 +148,12 @@ table.show_info {
 table.show_info tr td:nth-child(1)
 {
     max-width : 25%;
+    padding:5px;
 }
 table.show_info tr td
 {
     background-color: var(--tabletdcolor);
+    border-top: 1px dotted;
 }
 
 table.table_in_table {
@@ -621,6 +623,8 @@ table.info {
 table.info tr td {
     font-family : 'Fira Sans';
     font-size: 12px;
+    padding-left:5px;
+    padding-top:5px;
     padding-bottom: 10px;
     vertical-align:top;
 }
@@ -762,6 +766,11 @@ div.alert_user {
    max-width : inherit;
    width: 80%;
    margin: 10px;
+}
+
+div.alert {
+    margin-top: 20px;
+    width : 500px;
 }
 
 div.fa_note {

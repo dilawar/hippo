@@ -5,6 +5,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 require_once BASEPATH.'autoload.php';
 
 require_once __DIR__ . '/AWS.php';
+require_once __DIR__ . '/JC.php';
 require_once __DIR__ . '/Booking.php';
 
 /* --------------------------------------------------------------------------*/
@@ -17,6 +18,7 @@ class User extends CI_Controller
 {
     use AWS;
     use Booking;
+    use JC;
 
     public function index( )
     {
