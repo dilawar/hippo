@@ -178,7 +178,7 @@ echo "<h1>Temporary assignments</h1>";
 
 echo printInfo("Three methods are available for scheduling AWS. First one is default.");
 
-$methodTable = "<form method=\"post\" action=\"".site_url('admin_acad_action/upcoming_aws'). "\">";
+$methodTable = "<form method=\"post\" action=\"".site_url('admin_acad_action/schedule_upcoming_aws'). "\">";
 $methodTable .= ' <table border="0"> ';
 $methodTable .= '<tr><td>';
 $methodTable .= '<button name="response" value="reschedule_default">
