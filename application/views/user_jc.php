@@ -5,7 +5,7 @@ require BASEPATH.'autoload.php';
 echo userHTML( );
 
 $jcs = getJournalClubs( );
-echo '<h1>TAll Journal Clubs</h1>';
+echo '<h1>Journal Clubs</h1>';
 $table = '<table class="info">';
 
 $table .= '<tr>';
@@ -18,8 +18,8 @@ foreach( $jcs as $i => $jc )
 
     $table .= '<td>' . $jc['id'];
     $table .= ' (' . $jcInfo[ 'title' ] . ')';
-    $table .= '<form action="'.site_url('user/manages_jc').'" method="post" >';
-    $table .= '<button name="response" value="$buttonVal">$buttonVal</button>';
+    $table .= '<form action="'.site_url("user/jc_action/$buttonVal").'" method="post" >';
+    $table .= '<button name="response" value="'.$buttonVal.'">'.$buttonVal.'</button>';
     $table .= '<input type="hidden" name="jc_id" value="' . $jc['id'] . '" />';
     $table .= '<input type="hidden" name="login" value="'.$_SESSION['user'].'"/>';
     $table .= '</form>';
@@ -33,29 +33,32 @@ $table .= '</table>';
 echo $table;
 
 
+echo "<h1>Upcoming JC presentations.</h1>";
+
 // Get all upcoming JCs in my JC.
 $mySubs = getUserJCs( $login = $_SESSION[ 'user' ] );
+
+echo '<table><tr>';
 foreach( $mySubs as $i => $mySub )
 {
-    echo "<h1>Upcoming presentations for " . $mySub[ 'jc_id' ] . "</h1>";
     $jcID = $mySub['jc_id' ];
     $upcomings = getUpcomingJCPresentations( $jcID );
     sortByKey( $upcomings, 'date' );
 
-    echo '<table>';
     foreach( $upcomings as $i => $upcoming )
     {
         if( ! $upcoming[ 'presenter' ] )
             continue;
 
-        echo '<tr>';
         echo '<td>';
         echo arrayToVerticalTableHTML( $upcoming, 'info', '', 'id,status' );
         echo '</td>';
-        echo '</tr>';
+
+        if( ($i+1) % 4 == 0 )
+           echo '</tr><tr>';
     }
-    echo '</table>';
 }
+echo '</tr></table>';
 
 
 // Check if I have any upcoming presentation.
@@ -74,7 +77,7 @@ if( count( $myPresentations ) > 0 )
             );
         }
         // If it is MINE then make it editable.
-        echo ' <form action="user_manages_jc_update_presentation.php"
+        echo ' <form action="user_jc_update_presentation.php"
             method="post" accept-charset="utf-8">';
         $action = 'Edit';
         if( $upcoming[ 'acknowledged' ] == 'NO' )
@@ -84,10 +87,13 @@ if( count( $myPresentations ) > 0 )
     }
 }
 else
-    echo printInfo( "You have no upcoming JC presentation. <i class=\"fa fa-frown\"></i>" );
+    echo printInfo( 'No JC presentation has been assigned for you. If you have something 
+        cool to present, raise a <a class="clickable" 
+        href="'.site_url('user/jc_request').'">presentation request</a>.' 
+    );
 
 
-echo '<h1>JC presentation requests in your JCs</h1>';
+echo '<h1>Presentation requests in your JCs</h1>';
 
 $today = dbDate( 'today' );
 
@@ -122,7 +128,7 @@ if( count( $allreqs ) > 0 )
             $action = 'Remove My Vote';
 
         echo '</td>';
-        echo ' <form action="user_manages_jc_update_presentation.php" method="post" accept-charset="utf-8">';
+        echo ' <form action="user_jc_update_presentation.php" method="post" accept-charset="utf-8">';
         echo ' <input type="hidden" name="id" value="' . $voteId . '" />';
         echo ' <input type="hidden" name="voter" value="' . whoAmI( ) . '" />';
         echo "<td> <button name='response' value='$action'>$action</button></td>";
@@ -132,11 +138,7 @@ if( count( $allreqs ) > 0 )
     echo '<table>';
 }
 else
-{
-    echo printInfo( "No presentation request has been made yet
-        or the existing ones have been cancelled by users."
-    );
-}
+    echo printInfo( 'Its very quiet in here <i class="fa fa-frown-o fa-2x"></i>.' );
 
 echo goBackToPageLink( 'user/home', 'Go Back' );
 
