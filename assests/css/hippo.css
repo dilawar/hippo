@@ -1,7 +1,7 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth : 800px
+    --maxwidth : 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -130,15 +130,19 @@ table.show_user tr td
 
 
 table.public_links {
-    max-width: var(--maxwidth);
-    min-width: 80%;
+    width:100%;
+    border-collapse: separate;
+    border-spacing: 5px 5px;
 }
 
 table.public_links tr td {
-    border-right: 1px solid;
-    min-width: 10%;
-    max-width: 20%;
-    text-align: justify;
+    /* border-right: 1px solid; */
+    min-width: 15%;
+    max-width: 25%;
+    text-align: center;
+    padding-top padding-bottom: 10px;
+    background-color:rgba(100,100,100,0.1);
+    border-radius:5px;
 }
 
 table.show_info {
@@ -580,12 +584,14 @@ div.image {
 }
 
 table.login_main {
-    position:relative;
-    margin-left: 500px;
+    float:right;
+    margin-right:0%;
     margin-top: 10px;
 }
 
 table.login_main tr td {
+    /* width:100px; */
+    /* margin:10px; */
 }
 
 table.eventline  {
