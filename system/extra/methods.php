@@ -940,9 +940,9 @@ function isBookingRequestValid( $request )
     *
     * @return
  */
-function saveDataFile( $filename, $text )
+function saveDataFile( $filepath, $text )
 {
-    $filepath = getDataDir( ) . '/' . $filename;
+    // $filepath = getDataDir( ) . '/' . $filename;
     file_put_contents( $filepath, $text );
     return file_exists( $filepath );
 }

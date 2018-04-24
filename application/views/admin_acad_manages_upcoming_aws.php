@@ -1,12 +1,13 @@
 <?php
 
-require_once "header.php";
-require_once "methods.php";
-require_once "tohtml.php";
-require_once 'database.php';
-require_once "check_access_permissions.php";
+require_once BASEPATH.'autoload.php';
 
-mustHaveAllOfTheseRoles( array( "AWS_ADMIN" ) );
+// Some symbols.
+$symbEdit = '<i class="fa fa-pencil"></i>';
+$symbCancel = '<i class="fa fa-times"></i>';
+$symbDelete = '<i class="fa fa-trash-o"></i>';
+$symbAccept = '<i class="fa fa-check"></i>';
+
 echo userHTML( );
 
 $allSpeakers = array_map( function( $x ) { return $x['login']; }, getAWSSpeakers( ) );
@@ -43,7 +44,7 @@ else
     $table = '<div style="font-size:small">';
     foreach( $upcomingAwsNextWeek as $upcomingAWS )
     {
-        $table .= '<form action="admin_acad_manages_upcoming_aws_submit.php"
+        $table .= '<form action="'.site_url('admin_acad_action/manages_upcoming_aws') . '"
             method="post" accept-charset="utf-8">';
         $table .= '<table>';
         $table .= '<tr><td>';
@@ -136,7 +137,7 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         // Speaker PI if any.
         $speakerTable .=  '<td>' . piSpecializationHTML( $pi, $specialization ) . '</td>';
 
-        $form = '<form action="admin_acad_manages_upcoming_aws_submit.php" method="post" accept-charset="utf-8">';
+        $form = '<form action="'.site_url('admin_acad_action/upcoming_aws'). '" method="post" accept-charset="utf-8">';
         $form .= '<input type="hidden", name="date" , value="' . $aws[ 'date' ] . '"/>';
         $form .= '<input type="hidden", name="speaker" , value="' . $aws[ 'speaker' ] . '"/>';
         $form .= '<button name="response" onclick="AreYouSure(this)"
@@ -177,7 +178,7 @@ echo "<h1>Temporary assignments</h1>";
 
 echo printInfo("Three methods are available for scheduling AWS. First one is default.");
 
-$methodTable = "<form method=\"post\" action=\"admin_acad_manages_upcoming_aws_submit.php\">";
+$methodTable = "<form method=\"post\" action=\"".site_url('admin_acad_action/upcoming_aws'). "\">";
 $methodTable .= ' <table border="0"> ';
 $methodTable .= '<tr><td>';
 $methodTable .= '<button name="response" value="reschedule_default">
@@ -265,8 +266,7 @@ foreach( $scheduleMap as $date => $schedule )
         $intranetLink = getIntranetLink( $speaker );
 
         $table .= "<br /> $intranetLink ";
-        $table .= '<form action="admin_acad_manages_upcoming_aws_submit.php"
-            method="post" accept-charset="utf-8">
+        $table .= '<form action="'.site_url('admin_acad_action/upcoming_aws').'" method="post">
             <input type="hidden" name="speaker" value="' . $speaker . '" />
             <button name="response" class="show_as_link" value="RemoveSpeaker" 
                 title="Remove this speaker from AWS speaker list" >
@@ -309,7 +309,7 @@ foreach( $scheduleMap as $date => $schedule )
         $table .= "</td>";
 
         // Create a form to approve the schedule.
-        $table .= '<form method="post" action="admin_acad_manages_upcoming_aws_submit.php">';
+        $table .= '<form method="post" action="'.site_url('admin_acad_action/upcoming_aws').'">';
         $table .= '<input type="hidden" name="speaker" value="' . $speaker . '" >';
         $table .= '<input type="hidden" name="date" value="' . $upcomingAWS['date'] . '" >';
         $table .= '<td style="background:white;border:0px;">
@@ -332,7 +332,7 @@ foreach( $scheduleMap as $date => $schedule )
 
 $csvText = implode( "\n", $csvdata );
 
-$upcomingAWSScheduleFile = 'upcoming_aws_schedule.csv';
+$upcomingAWSScheduleFile = FCPATH.'/temp/upcoming_aws_schedule.csv';
 
 $res = saveDataFile( $upcomingAWSScheduleFile, $csvText );
 
