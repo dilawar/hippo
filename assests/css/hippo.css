@@ -769,8 +769,7 @@ div.alert_user {
 }
 
 div.alert {
-    margin-top: 20px;
-    width : 500px;
+    width : var(--maxwidth);
 }
 
 div.fa_note {

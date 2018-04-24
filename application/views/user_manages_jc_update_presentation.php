@@ -35,7 +35,7 @@ if( __get__( $_POST, 'response', '' ) == 'Edit'
         {
             echo printInfo( 'Successfully saved your presentation entry.' );
             // We do not exit from here. User might want to edit some more.
-            echo goBackToPageLink( "user_manages_jc.php", "Done editing" );
+            echo goBackToPageLink( "user_jc.php", "Done editing" );
         }
     }
 }
@@ -48,7 +48,7 @@ else if( __get__( $_POST, 'response', '' ) == 'Add My Vote' )
     if( $res )
     {
         echo printInfo( 'Successfully voted.' );
-        goToPage( 'user_manages_jc.php', 1 );
+        goToPage( 'user_jc.php', 1 );
         exit;
     }
 }
@@ -59,7 +59,7 @@ else if( __get__( $_POST, 'response', '' ) == 'Remove My Vote' )
     if( $res )
     {
         echo printInfo( 'Successfully removed  your vote.' );
-        goToPage( 'user_manages_jc.php', 1 );
+        goToPage( 'user_jc.php', 1 );
         exit;
     }
 }
@@ -70,7 +70,7 @@ else if( __get__( $_POST, 'response', '' ) == 'Acknowledge' )
     if( $res )
     {
         echo printInfo( 'Successfully acknowleged  your JC presentation.' );
-        //goToPage( 'user_manages_jc.php', 1 );
+        //goToPage( 'user_jc.php', 1 );
         //exit;
     }
 }
@@ -80,11 +80,11 @@ else
         'This action ' . $_POST[ 'response' ]
         . ' is not supported yet'
     );
-    goToPage( 'user_manages_jc.php', 3 );
+    goToPage( 'user_jc.php', 3 );
     exit;
 }
 
 echo ' <br />';
-echo goBackToPageLink( 'user_manages_jc.php', 'Go Back' );
+echo goBackToPageLink( 'user_jc.php', 'Go Back' );
 
 ?>

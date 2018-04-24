@@ -113,7 +113,6 @@ class User extends CI_Controller
     // Show courses.
     public function courses( $arg = '' )
     {
-        // $this->session->set_flashdata( 'info', "With argument $arg." );
         $this->template->set( 'header', 'header.php' );
         $this->template->load( 'user_manages_courses' );
     }
@@ -122,9 +121,10 @@ class User extends CI_Controller
     public function manage_course( $action = '' )
     {
         // There must be a course id.
-        if( ! __get__( $_POST, 'course_id', '' ) )
+        $cid = __get__( $_POST, 'course_id', '' );
+        if( ! $cid )
         {
-            $this->session->set_flashdata( 'error', 'No course selected!' );
+            flashMessage( 'No course selected!', 'warning' );
             redirect( 'user/courses' );
         }
 
@@ -141,10 +141,17 @@ class User extends CI_Controller
             if( ! $res )
                 $this->session->set_flashdata( 'error', "Could not register" );
 
+            redirect( 'user/courses' );
         }
-
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'user_manages_courses' );
+        else if( $action == 'feedback' )
+        {
+            echo "Give feedback";
+        }
+        else
+        {
+            flashMessage( "Not implemented yet $action" );
+            redirect( 'user/courses' );
+        }
     }
 
     public function logout( )

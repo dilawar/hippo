@@ -52,8 +52,6 @@ $mySlots = array_unique( $mySlots );
     * coruse x-7 days and let people register till x+7 days.
  */
 /* ----------------------------------------------------------------------------*/
-echo '<h1>Course enrollment</h1>';
-
 $today = strtotime( 'today' );
 
 // Running course this semester.
@@ -88,13 +86,6 @@ foreach( $runningCourses as $c )
 }
 
 
-// Get the list of valid courses.
-echo noteWithFAIcon(
-    "Courses will be visible in registration form from -2 weeks to +2 weeks from the
-    <tt>start date</tt>."
-    , "fa-bell"
-    );
-
 echo "<h2>Registration form</h2>";
 $courseSelect = arrayToSelectList( 'course_id', $options, $courseMap );
 $default = array( 'student_id' => $_SESSION[ 'user' ]
@@ -103,7 +94,13 @@ $default = array( 'student_id' => $_SESSION[ 'user' ]
                 , 'course_id' => $courseSelect
                 );
 
-// TODO: Custom table for registration.
+echo alertUser( "Any course running on already registered slot will not appear in your
+    registration form."
+    );
+echo alertUser(
+    "Courses will be visible in registration form from -2 weeks to +2 weeks from the
+    <tt>start date</tt>."
+    );
 echo '<form method="post" action="manage_course/register">';
 echo dbTableToHTMLTable( 'course_registration'
     , $default
@@ -112,6 +109,8 @@ echo dbTableToHTMLTable( 'course_registration'
     , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
     );
 echo '</form>';
+
+// Show user which slots have been blocked.
 
 
 /**
@@ -129,13 +128,6 @@ if( count( $myCourses ) > 0 )
 {
     echo "<h1>You are registered for following courses for $sem $year</h1>";
 
-    // Show user which slots have been blocked.
-    echo alertUser(
-        "You have registered for courses running on following slots: "
-        . implode( ", ", $mySlots )
-        . ". <br> All courses running these slots will not appear in your
-        registration form."
-        );
 }
 
 if( count( $myCourses ) > 0 )
@@ -157,7 +149,7 @@ foreach( $myCourses as $c )
         echo '</tr><tr>';
 
     echo '<td>';
-    echo '<form method="post" action="manages_course/update">';
+    echo '<form method="post" action="'.site_url("user/courses/update").'">';
     $cid = $c[ 'course_id' ];
     $course = getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
     if( ! $course )
@@ -170,11 +162,18 @@ foreach( $myCourses as $c )
 
     // TODO: Don't show grades unless student has given feedback.
     $tofilter = 'student_id,registered_on,last_modified_on';
-    if( strlen( $c[ 'grade' ] ) == 0 )
-        $tofilter .= ',grade,grade_is_given_on';
-
     echo dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
     echo '</form>';
+
+    // Feeback form
+    $form =  '<form action="'.site_url("user/manage_course/feedback").'" method="post">';
+    $form .= ' <input type="hidden" name="course_id" value="'.$cid.'" />';
+    $form .= ' <input type="hidden" name="semester" value="'.$c['semester'].'" />';
+    $form .= ' <input type="hidden" name="year" value="'.$c['year'].'" />';
+    $form .= ' <button style="float:right" name="response" value="submit">Feeback</button>';
+    $form .= '</form>';
+
+    echo $form;
     echo '</td>';
 
     $count += 1;
