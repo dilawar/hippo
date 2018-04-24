@@ -11,26 +11,29 @@ trait AdminAcad
         $this->home();
     }
 
-    public function acad( $action = '' )
+    public function acad( $task = '' )
     {
         // If no action is selected, view admin page.
-        if( ! $action )
+        if( ! $task )
         {
             $this->template->set( 'header', 'header.php' );
             $this->template->load( 'admin_acad.php' );
         }
-        else
-            $this->acad_action( $action );
-    }
-
-    public function acad_action( $action )
-    {
-        if( $action == 'manages_upcoming_aws' )
+        elseif( $task == 'manages_upcoming_aws' )
         {
             $this->template->set( 'header', 'header.php');
             $this->template->load( 'admin_acad_manages_upcoming_aws.php' );
         }
-        elseif( $action == 'schedule_upcoming_aws' )
+        elseif($task == 'manages_enrollments')
+        {
+            $this->template->set( 'header', 'header.php');
+            $this->template->load( 'admin_acad_manages_enrollments.php' );
+        }
+    }
+
+    public function acad_action( $action )
+    {
+        if( $action == 'schedule_upcoming_aws' )
         {
             flashMessage( json_encode( $_POST ));
             $method = $_POST['method'];
@@ -39,12 +42,11 @@ trait AdminAcad
                 flashMessage("Failed to compute schedule.");
             else
                 flashMessage('Sucessfully computed schedule.');
-
-            redirect( 'admin/acad/manages_upcoming_aws');
+            redirect( 'admin/acad');
         }
-        elseif( $action == 'next_week_aws' )
+        elseif( $action == 'post' )
         {
-            $this->execute_aws_action( __get__($_POST,'response','') );
+            $this->execute_aws_action( strtolower(__get__($_POST,'response','')));
         }
         elseif( $action == 'update_aws_entry' )
         {
@@ -57,10 +59,7 @@ trait AdminAcad
             redirect( 'admin/acad/manages_upcoming_aws');
         }
         else
-        {
-            flashMessage( "$action is not implemented yet");
-            redirect( 'admin/acad' );
-        }
+            $this->execute_aws_action(strtolower($action));
     }
 
     public function execute_aws_action($response)
@@ -71,7 +70,7 @@ trait AdminAcad
             redirect( 'admin/acad/manages_upcoming_aws');
         }
 
-        if( $response == 'Accept' or $response == 'Assign' )
+        if( $response == 'accept' or $response == 'assign' )
         {
             $speaker = explode( '@', $_POST[ 'speaker' ] )[0];
             $date = $_POST[ 'date' ];
@@ -109,7 +108,7 @@ trait AdminAcad
             $this->template->set('header', 'header.php');
             $this->template->load( 'admin_acad_manages_upcoming_aws_reformat.php');
         }
-        else if( $_POST[ 'response' ] == 'RemoveSpeaker' )
+        else if( $response == 'removespeaker' )
         {
             $speaker = $_POST['speaker'];
             assert( $speaker );
@@ -124,8 +123,7 @@ trait AdminAcad
 
             redirect( "admin/acad/manages_upcoming_aws" );
         }
-
-        else if( $_POST[ 'response' ] == 'delete' )
+        else if( $response == 'delete' )
         {
             $speaker = $_POST['speaker'];
             $date = $_POST['date'];
@@ -160,7 +158,7 @@ trait AdminAcad
                 redirect( "admin/acad/manages_upcoming_aws");
             }
         }
-        else if( $_POST[ 'response' ] == "DO_NOTHING" )
+        else if( $response == "do_nothing" )
         {
             flashMessage( "User cancelled the previous operation.");
             redirect( "admin/acad/manages_upcoming_aws");

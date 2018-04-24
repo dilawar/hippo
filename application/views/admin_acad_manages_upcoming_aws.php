@@ -135,7 +135,7 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         // Speaker PI if any.
         $speakerTable .=  '<td>' . piSpecializationHTML( $pi, $specialization ) . '</td>';
 
-        $form = '<form action="'.site_url('admin/acad_action/upcoming_aws'). '" method="post" accept-charset="utf-8">';
+        $form = '<form action="'.site_url('admin/acad_action/post'). '" method="post" accept-charset="utf-8">';
         $form .= '<input type="hidden", name="date" , value="' . $aws[ 'date' ] . '"/>';
         $form .= '<input type="hidden", name="speaker" , value="' . $aws[ 'speaker' ] . '"/>';
         $form .= '<button name="response" onclick="AreYouSure(this)"
@@ -264,7 +264,7 @@ foreach( $scheduleMap as $date => $schedule )
         $intranetLink = getIntranetLink( $speaker );
 
         $table .= "<br /> $intranetLink ";
-        $table .= '<form action="'.site_url('admin/acad_action/upcoming_aws').'" method="post">
+        $table .= '<form action="'.site_url('admin/acad_action/post').'" method="post">
             <input type="hidden" name="speaker" value="' . $speaker . '" />
             <button name="response" class="show_as_link" value="RemoveSpeaker" 
                 title="Remove this speaker from AWS speaker list" >
@@ -307,7 +307,7 @@ foreach( $scheduleMap as $date => $schedule )
         $table .= "</td>";
 
         // Create a form to approve the schedule.
-        $table .= '<form method="post" action="'.site_url('admin/acad_action/upcoming_aws').'">';
+        $table .= '<form method="post" action="'.site_url('admin/acad_action/post').'">';
         $table .= '<input type="hidden" name="speaker" value="' . $speaker . '" >';
         $table .= '<input type="hidden" name="date" value="' . $upcomingAWS['date'] . '" >';
         $table .= '<td style="background:white;border:0px;">

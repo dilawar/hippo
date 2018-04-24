@@ -2316,7 +2316,7 @@ function addClickabelURLToMail( $html, $clickable )
 
 function awsAssignmentForm( $date = null, $small = false )
 {
-    $form = '<form method="post" action="admin_acad_manages_upcoming_aws_submit.php">';
+    $form = '<form method="post" action="'.site_url("admin/acad_action/assign").'">';
 
     $class = '';
     if( ! $small )
