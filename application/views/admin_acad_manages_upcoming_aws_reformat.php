@@ -1,21 +1,26 @@
 <?php
 
-include_once 'database.php';
-include_once './check_access_permissions.php';
+require_once BASEPATH.'autoload.php';
 
-mustHaveAllOfTheseRoles( array( "AWS_ADMIN" ) );
+// Send user to another page to adit it. This is a 'view'.
+// Update the user entry
+echo printInfo( "Admin is allowed to reformat the entry. 
+    That is why only abstract can be modified here." 
+    );
 
-$res = updateTable( 'upcoming_aws', 'id', 'abstract,is_presynopsis_seminar', $_POST );
-if( $res )
-{
-    echo printInfo( "Successfully updated abstract of upcoming AWS entry" );
-    echo goToPage( "admin_acad_manages_upcoming_aws.php",  1 );
-    exit;
-}
+$aws = getTableEntry( 'upcoming_aws', "speaker,date", $_POST );
+if( ! $aws )
+    echo alertUser( "Nothing to update." );
 else
-    echo minionEmbarrassed( "I could not update abstract of upcoming AWS" );
+{
+    echo '<form method="post" action="'.site_url('admin/acad_action/update_aws_entry').'">';
+    echo dbTableToHTMLTable( 'upcoming_aws', $aws
+        , 'abstract,title,is_presynopsis_seminar', 'Update AWS Entry' );
+    echo '</form>';
+}
 
-echo goBackToPageLink( "admin_acad_manages_upcoming_aws.php", "Go back" );
+
+echo goBackToPageLink( 'admin/acad/manages_upcoming_aws');
 
 
 ?>
