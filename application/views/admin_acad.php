@@ -1,12 +1,6 @@
 <?php
 
-include_once 'header.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-include_once 'database.php';
-
-include_once 'check_access_permissions.php';
-mustHaveAllOfTheseRoles( array( 'AWS_ADMIN' ) );
+require_once BASEPATH.'autoload.php';
 
 $logins = getLoginIds( );
 
@@ -31,14 +25,17 @@ $(function() {
 
 echo userHTML( );
 
+$symbUpdate = '<i class="fa fa-check"></i>';
+
+
 echo '<h1>ANNUAL WORK SEMINAR</h1>';
 echo '<table class="tasks">
     <tr>
       <td>
         <i class="fa fa-cog fa-spin fa-2x fa-fw"></i>
-        <a class="clickable" href="admin_acad_manages_upcoming_aws.php">Manage upcoming AWSes</a>
+        <a class="clickable" href="'.site_url('admin/acad/manages_upcoming_aws').'">Manage upcoming AWSes</a>
         </td>
-        <td> <a class="clickable" href="admin_acad_manages_scheduling_request.php">
+        <td> <a class="clickable" href="'.site_url('admin/acad/manages_scheduling_request').'">
             Manage ' . count( $pendingScheduleRequest ) .
             ' pending scheduling requests</a> </td>
     </tr>
@@ -47,12 +44,13 @@ echo '<table class="tasks">
 echo ' <br /> ';
 echo '<table class="tasks">
     <tr>
-        <td> <a class="clickable" href="admin_acad_add_aws_entry.php">Add Missing AWS entry</td>
+        <td> <a class="clickable" href="'.site_url('admin/acad/add_aws_entry').'">Add Missing AWS entry</td>
         <td>
          <form method="post" action="">
             <input id="autocomplete_user1" name="login" placeholder="AWS Speaker" type="text" />
             <input class="datepicker" name="date" placeholder="date(optional)" value="" >
-            <button name="response" value="Select">' . $symbCheck . '</button>
+            <button name="response" value="Select"> <i class="fa fa-check fa-1x"></i>
+             </button>
             </form>
             Enter a login and optionally AWS date and you can delete that AWS entry
             from my database.
@@ -60,7 +58,7 @@ echo '<table class="tasks">
     </tr>
     <tr>
         <td>
-            <form method="post" action="admin_acad_update_user.php">
+            <form method="post" action="admin/acad/update_user">
                 <i fa class="fa fa-graduation-cap fa-2x"></i>
                 <input id="autocomplete_user" name="login"
                     placeholder="student login" >
@@ -78,10 +76,10 @@ echo '<br />';
 echo '<table class="tasks">
     <tr>
         <td> <a class="clickable_small"
-            href="admin_acad_manages_requests.php">Manage ' . count( $pendingRequests) .
+            href="'.site_url('admin/acad/manages_requests').'">Manage ' . count( $pendingRequests) .
             ' pending requests</a>
         </td>
-        <td> <a class="clickable_small" href="admin_acad_email_and_docs.php">Emails and Documents</td>
+        <td> <a class="clickable_small" href="'.site_url('admin/acad/email_and_docs').'">Emails and Documents</td>
     </tr>
     </table>';
 
@@ -105,9 +103,8 @@ if( isset( $_POST[ 'response' ] ))
         $res = deleteAWSEntry( $_POST['speaker'], $_POST['date' ] );
         if( $res )
         {
-            echo printInfo( "Successfully deleted" );
-            goToPage( 'admin_acad.php', 0);
-            exit;
+            flashMessage( "Successfully deleted" );
+            redirect( 'admin/acad' );
         }
     }
 
@@ -151,11 +148,11 @@ echo '
   <table class="tasks">
     <tr>
         <td>
-            <a class="clickable" href="admin_acad_manages_enrollments.php">Manage Enrollments</a>
+            <a class="clickable" href="'.site_url('admin/acad/manages_enrollments').'">Manage Enrollments</a>
             <p>Add/Remove student enrollments from  courses and assign grades.</p>
         </td>
         <td>
-            <a class="clickable" href="admin_acad_manages_grades.php">Manage Grades</a>
+            <a class="clickable" href="'.site_url('admin/acad/manages_grades').'">Manage Grades</a>
             <p>Add/Remove student enrollments from  courses and assign grades.</p>
         </td>
     </tr>
@@ -163,20 +160,20 @@ echo '
         <td>
             <i class="fa fa-cog fa-spin fa-2x fa-fw"></i>
             <a class="clickable"
-                 href="admin_acad_manages_current_courses.php">Manage this semester courses</a>
+                 href="'.site_url('admin/acad/manages_current_courses').'">Manage this semester courses</a>
         </td>
         <td>
             <a class="clickable"
-                href="./admin_acad_schedule_upcoming_courses.php">Schedule Upcoming Courses</a>
+                href="'.site_url('admin/acad/schedule_upcoming_courses').'">Schedule Upcoming Courses</a>
             <p> Compute the best possible schedule for course (NOT: Not complete).  </p>
         </td>
     </tr>
     <tr>
         <td> <a class="clickable"
-             href="admin_acad_manages_slots.php">Manage Slots</a> <br />
+             href="'.site_url('admin/acad/manages_slots').'">Manage Slots</a> <br />
             Add/Delete or update slot.
         </td>
-        <td> <a class="clickable" href="admin_acad_manages_courses.php">Manage all courses</a>  <br />
+        <td> <a class="clickable" href="'.site_url('admin/acad/manages_courses').'">Manage all courses</a>  <br />
         Add new courses, or update course description.</td>
     </tr>
   </table>
@@ -187,8 +184,8 @@ echo '<h1>Journal Clubs</h1>';
 echo '
   <table class="tasks">
     <tr>
-        <td><a class="clickable" href="admin_acad_manages_jc.php">Add/Update Journal Clubs</a> </td>
-        <td><a class="clickable" href="admin_acad_manages_jc_admins.php">Manage Journal Club Admins</a></td>
+        <td><a class="clickable" href="'.site_url('admin/acad/manages_jc').'">Add/Update Journal Clubs</a> </td>
+        <td><a class="clickable" href="'.site_url('admin/acad/manages_jc_admins').'">Manage Journal Club Admins</a></td>
     </tr>
   </table>
   ';
@@ -208,7 +205,7 @@ else
         likely these entries have no data. You need to fix them. "
     );
 
-    echo '<form action="./admin_acad_update_upcoming_aws.php" method="post">';
+    echo '<form action="admin/acad/update_upcoming_aws" method="post">';
     foreach( $badEntries as $aws )
     {
         echo alertUser( "This AWS is incomplete." );
@@ -229,25 +226,25 @@ echo '
             in "Date Wise" list.  </small>
         </td>
         <td>
-            <a href="admin_acad_summary_user_wise.php">User wise</a>
+            <a href="'.site_url('admin/acad/summary_user_wise').'">User wise</a>
             <br />
-            <a href="admin_acad_summary_date_wise.php">Date wise</a>
+            <a href="'.site_url('admin/acad/summary_date_wise').'">Date wise</a>
         </td>
     </tr>
     <tr>
         <td>List of AWS speakers</td>
-        <td> <a href="admin_acad_aws_speakers.php">AWS speaker</a> </td>
+        <td> <a href="'.site_url('admin/acad/aws_speakers').'">AWS speaker</a> </td>
     </tr>
   </table>';
 
 echo '<h1>Manage talks and seminars</h1>';
 echo '<table class="tasks">';
 echo '<tr>
-        <td> <a class="clickable" href="admin_acad_manages_talks.php">Manage talks/seminar</td>
-        <td> <a class="clickable" href="admin_acad_manages_speakers.php">Manage talk/seminar speakers</td>
+        <td> <a class="clickable" href="'.site_url('admin/acad/manages_talks').'">Manage talks/seminar</td>
+        <td> <a class="clickable" href="'.site_url('admin/acad/manages_speakers').'">Manage talk/seminar speakers</td>
     </tr>';
 echo '</table>';
 
-echo goBackToPageLink( 'user.php', 'Go back' );
+echo goBackToPageLink( 'admin/acad', 'Go back' );
 
 ?>
