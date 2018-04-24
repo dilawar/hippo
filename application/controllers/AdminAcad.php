@@ -11,12 +11,31 @@ trait AdminAcad
         $this->home();
     }
 
-    public function acad( )
+    public function acad( $action = '' )
     {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'admin_acad.php' );
+        // If no action is selected, view admin page.
+        if( ! $action )
+        {
+            $this->template->set( 'header', 'header.php' );
+            $this->template->load( 'admin_acad.php' );
+        }
+        else
+            $this->acad_action( $action );
     }
 
+    public function acad_action( $action )
+    {
+        if( $action == 'manages_upcoming_aws' )
+        {
+            $this->template->set( 'header', 'header.php');
+            $this->template->load( 'admin_acad_manages_upcoming_aws.php' );
+        }
+        else
+        {
+            flashMessage( "$action is not implemented yet");
+            redirect( 'admin/acad' );
+        }
+    }
 }
 
 ?>

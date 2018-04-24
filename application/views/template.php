@@ -43,6 +43,8 @@ else if( isset($_SESSION['warning']) )
         ';
     unset( $_SESSION['warning'] );
 }
+
+
 ?>
     <div id="contents"><?= $contents ?></div>
     <div id="header"><?php if(isset($footer)){echo $footer;}else{echo "";} ?></div>
