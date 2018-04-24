@@ -4,9 +4,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
 
+require_once __DIR__.'/AdminAcad.php';
+
 
 class Admin extends CI_Controller
 {
+    use AdminAcad;
+
     function index()
     {
         $this->home();
