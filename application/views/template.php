@@ -44,9 +44,11 @@ else if( isset($_SESSION['warning']) )
     unset( $_SESSION['warning'] );
 }
 
+$symbDelete = ' <i class="fa fa-trash "></i> ';
+
 
 ?>
     <div id="contents"><?= $contents ?></div>
-    <div id="header"><?php if(isset($footer)){echo $footer;}else{echo "";} ?></div>
+    <div id="footer"><?php if(isset($footer)){echo $footer;}else{echo "";} ?></div>
 </body>
 </html>

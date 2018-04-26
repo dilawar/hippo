@@ -60,6 +60,61 @@ class Admin extends CI_Controller
         $this->template->set( 'header', 'header.php' );
         $this->template->load( 'admin_showusers' );
     }
+
+    public function emailtemplates( $arg = '' )
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'admin_manages_email_templates' );
+    }
+
+    public function templates_task( $arg = '' )
+    {
+        $response = strtolower($_POST['response']);
+        $templateID = $_POST[ 'id'];
+        if( $response == 'update' )
+        {
+            $_POST[ 'modified_on' ] = date( 'Y-m-d H:i:s', strtotime( 'now' ));
+            $res = updateTable( 'email_templates'
+                , 'id'
+                , 'when_to_send,description,cc,recipients'
+                , $_POST
+            );
+
+            if( $res )
+                flashMessage( "Successfully updated email template $templateID." );
+            else
+                flashMessage( "I could not update email templates $templateID.", 'warning');
+
+        }
+        else if( $response == 'add' )
+        {
+            $_POST[ 'modified_on' ] = date( 'Y-m-d H:i:s', strtotime( 'now' ));
+            $res = insertIntoTable( 
+                'email_templates' , 'id,when_to_send,description,recipients,cc'
+                , $_POST 
+            );
+
+            if( $res )
+                flashMessage( 'Successfully added a new email template.' );
+            else
+                flashMessage( "I could not add new email template $templateID.", 'warning');
+
+        }
+        else if( $response == 'delete' )
+        {
+            $res = deleteFromTable( 'email_templates' , 'id' , $_POST );
+            if( $res )
+                flashMessage( "Successfully deleted email template $templateID." );
+            else
+                flashMessage( "I could not delete email template $templateID.", 'warning' );
+
+        }
+        else
+            flashMessage( "I don't understand what you are asking me to do: $response.");
+
+        redirect( 'admin/emailtemplates' );
+    }
+
 }
 
 ?>

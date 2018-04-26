@@ -1,12 +1,10 @@
 <?php
 
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
-
-mustHaveAllOfTheseRoles( Array( 'ADMIN' ) );
+require_once BASEPATH.'autoload.php';
 
 echo userHTML( );
+
+$symbDelete = ' <i class="fa fa-trash"></i>';
 
 $templates = getEmailTemplates( );
 
@@ -40,18 +38,19 @@ if( $id )
     $todo = 'update';
 }
 
-echo '<form method="post" action="admin_manages_email_templates_submit.php">';
+echo '<form method="post" action="'.site_url('admin/templates_task').'">';
+
 if( $todo  == 'update' )
     $editable = array( 'recipients', 'cc', 'when_to_send', 'description' );
 else
     $editable = array( 'id', 'recipients', 'cc', 'when_to_send', 'description' );
 
 echo dbTableToHTMLTable( 'email_templates', $defaults, $editable, $todo);
-echo '<button onclick="AreYouSure( this )" 
+echo '<button onclick="AreYouSure( this, \'DeleteTemplate\' )" 
     name="response" title="Delete this entry" value="delete">' . $symbDelete 
     . '</button>';
 echo "</form>";
 
-echo goBackToPageLink( "admin.php", "Go back" );
+echo goBackToPageLink( "admin/home" );
 
 ?>
