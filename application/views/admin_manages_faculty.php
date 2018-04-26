@@ -1,10 +1,6 @@
 <?php
 
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
-
-mustHaveAllOfTheseRoles( Array( 'ADMIN' ) );
+require_once BASEPATH. 'autoload.php';
 
 echo userHTML( );
 
@@ -14,6 +10,9 @@ $faculty = getFaculty( );
 $facultyMap = array( );
 $default = array( );
 $specialization = array( );
+
+$symbDelete = '<i class="fa fa-trash-o"></i>';
+
 
 foreach( $faculty as $fac )
 {
@@ -26,11 +25,7 @@ echo "<h2>Add a new faculty or update existing faculty </h3>";
 $facultyEmails = array_keys( $facultyMap );
 $specialization = array_keys( $specialization );
 
-echo printInfo( '
-    If email is not found in database, you may add a faculty, otherwise
-    you can update an existing faculty. You can also add instructor of given 
-    course.
-    ' );
+echo printInfo( 'To update a faculty, first search him/her.' );
 
 ?>
 
@@ -49,7 +44,7 @@ $( function() {
 
 echo '<form method="post" action="">
     Email of facutly <input id="faculty" name="faculty_email">
-    <button type="submit" name="response" value="search">Search</button>
+    <button type="submit" name="response" value="search">Search to update</button>
     </form>';
 
 if( $_POST && array_key_exists( 'response', $_POST ) )
@@ -60,7 +55,7 @@ if( $_POST && array_key_exists( 'response', $_POST ) )
     if( $faculty )
     {
         $default = array_merge( $default, $faculty );
-        $action = 'submit';
+        $action = 'Update';
     }
 }
 
@@ -68,7 +63,7 @@ echo '<br/><br/>';
 
 $default[ 'modified_on' ] = dbDateTime( 'now' );
 
-echo '<form method="post" action="admin_manages_faculty_submit.php">';
+echo '<form method="post" action="'.site_url('admin/faculty_task'). '">';
 echo dbTableToHTMLTable( 'faculty'
     , $default
     , array( 'email', 'first_name', 'middle_name', 'last_name'
@@ -82,7 +77,7 @@ if( $action == 'submit' )
 
 echo "</form>";
 
-echo goBackToPageLink( "admin.php", "Go back" );
+echo goBackToPageLink("admin/home");
 
 echo '<h2>List of active faculty</h2>';
 
@@ -95,6 +90,8 @@ $table .= arrayHeaderRow( $faculty[0], 'row', $hide );
 foreach( $faculty as $fac )
     $table .= arrayToRowHTML( $fac, 'row', $hide );
 $table .= '</table>';
+
 echo $table;
+echo goBackToPageLink("admin/home");
 
 ?>

@@ -115,6 +115,57 @@ class Admin extends CI_Controller
         redirect( 'admin/emailtemplates' );
     }
 
+    /* Manage faculty */
+    public function faculty( $arg = '' )
+    {
+        $this->template->set('header', 'header.php');
+        $this->template->load( 'admin_manages_faculty.php');
+    }
+
+    public function faculty_task( $arg = '' )
+    {
+        $response = strtolower($_POST['response']);
+        if( $response == 'update' )
+        {
+            $_POST[ 'modified_on' ] = date( 'Y-m-d H:i:s', strtotime( 'now' ));
+            $res = updateTable( 'faculty', 'email'
+                , 'first_name,middle_name,last_name,status' . 
+                    ',modified_on,url,specialization,affiliation,institute'
+                , $_POST 
+                );
+
+            if( $res )
+                flashMessage( 'Successfully updated faculty' );
+            else
+                flashMessage( "I could not update faculty", 'warning' );
+        }
+        else if( $response == 'add' )
+        {
+            $_POST[ 'modified_on' ] = date( 'Y-m-d H:i:s', strtotime( 'now' ));
+            $res = insertIntoTable( 'faculty'
+                , 'email,first_name,middle_name,last_name,status' . 
+                    ',modified_on,url,specialization,affiliation,institute'
+                , $_POST 
+                );
+
+            if( $res )
+                flashMessage( 'Successfully added a new faculty' );
+            else
+                flashMessage( "I could not edit new faculty.", 'warning' );
+        }
+        else if( $response == 'delete' )
+        {
+            $res = deleteFromTable( 'faculty', 'email', $_POST );
+            if( $res )
+                echo flashMessage( "Successfully deteleted faculty." );
+            else
+                echo flashMessage( "Failed to delete entry from table.", 'warning' );
+        }
+        else
+            flashMessage("Not implemented yet $response.", "warning");
+
+        redirect('admin/faculty');
+    }
 }
 
 ?>
