@@ -1,7 +1,7 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth : 100%;
+    --maxwidth : 80%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -10,17 +10,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 body {
-    font-family: "Libre Baskerville";
-    font-size: 16px;
+    /* font-family: "Libre Baskerville"; */
+    /* font-size: 16px; */
     line-height: 140%;
-    max-width: var(--maxwidth);
-    min-width : 80%;
+    /* max-width: var(--maxwidth); */
+    /* min-width : 80%; */
     display:block;
     background-color:var(--background);
     background-size: 800px;
     background-position:0 140px;
-    background-repeat:no-repeat;
-    background-attachment:fixed;
+    /* background-repeat:no-repeat; */
+    /* background-attachment:fixed; */
+    margin-left: 10%;
+    margin-right: 10%;
 }
 
 
