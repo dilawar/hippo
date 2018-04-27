@@ -1,7 +1,7 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth : 80%;
+    --maxwidth : 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
