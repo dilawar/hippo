@@ -1,12 +1,9 @@
 <?php
 
-// This is admin interface for book my venue.
-// We are here to manage the requests.
-include_once "header.php";
-include_once "methods.php";
-include_once "database.php";
-include_once "tohtml.php";
-include_once "check_access_permissions.php";
+require_once BASEPATH.'autoload.php';
+
+$symbReview = ' <i class="fa fa-eye fa-2x"></i>';
+$symbEdit = ' <i class="fa fa-pencil fa-1x"></i>';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -17,77 +14,55 @@ include_once "check_access_permissions.php";
 /* ----------------------------------------------------------------------------*/
 function bookmyVenueAdminTaskTable( )
 {
-    $html = '<table class="tasks">
+    $html = '<table class="admin">
         <tr>
-        <td>
-            Book using old interface  <br />
-            <small>
-                You can browse all venues and see the pending requests and approved events.
-            </small>
-        </td>
-        <td>
-            <a href="bookmyvenue_browse.php">OLD BOOKING INTERFACE</a>
-        </td>
-        </tr>
-        </table>'
-    ;
-
-    $html .= '<br>';
-    $html .= '<table class="tasks">
-        <tr>
-        <td>
-           <strong>Make sure you are logged-in using correct google account </strong>
-            </strong>
-        </td>
             <td>
-                <a href="bookmyvenue_admin_synchronize_events_with_google_calendar.php">
-                <i class="fa fa-calendar fa-2x"></i> Synchronize public calendar </a>
+                <a class="clickable" href="'.site_url('user/bmv_browse').'">OLD BOOKING INTERFACE</a>
+                <br /> You can browse all venues and see the pending requests and approved events.
+            </td>
+            <td>
+                <i class="fa fa-calendar fa-2x"></i> 
+                <a class="clickable" href="bookmyvenue_admin_synchronize_events_with_google_calendar.php">
+                Synchronize public calendar </a>
+                <br />
+               <strong>Make sure you are logged-in using correct google account </strong>
+                </strong>
             </td>
         </tr>
         <tr>
-        <td>
-            Add/Update/Delete venues
-        </td>
             <td>
-                <a href="bookmyvenue_admin_manages_venues.php"> Manage venues </a>
+                <a class="clickable" href="'.site_url('adminbmv/manages_venues').'"> Manage venues </a>
+                <br /> Add/Update/Delete venues
+            </td>
+            <td>
+                <i class="fa fa-share fa-2x"></i> 
+                <a  class="clickable" href="'.site_url('admin/acad/email_and_docs').'">Send emails </a>
+                <br />Send emails manually (and generate documents)
             </td>
         </tr>
         <tr>
-            <td>Send emails manually (and generate documents)</td>
-            <td>
-                <i class="fa fa-share fa-2x"></i>
-                <a href="admin_acad_email_and_docs.php">Send emails
-            </td>
-        </tr>
-        <tr>
-            <td>Manage talks and seminars. </td>
             <td>
                 <i class="fa fa-comments-o fa-2x"></i>
-                <a href="admin_acad_manages_talks.php">Manage talks/seminar
+                <a class="clickable" href="'.site_url('admin/acad/manages_talks') .'">Manage talks/seminar</a>
+                <br />Manage talks and seminars. 
             </td>
-        </tr>
-        <tr>
-            <td>Add or update speakers. </td>
             <td>
                 <i class="fa fa-users fa-2x"></i>
-                <a href="admin_acad_manages_speakers.php">Manage speakers
+                <a class="clickable" href="'.site_url('admin/acad/manages_speakers'). '">Manage speakers
             </td>
         </tr>
         <tr>
-            <td>Block venues <br />
-                <small> Block venues on certain days/times. </small>
-            </td>
             <td>
                 <i class="fa fa-ban fa-2x"></i>
-                <a href="bookmyvenue_admin_block_venues.php">Block venues</a>
+                <a class="clickable" href="'.site_url('adminbmv/block_venues').'">Block venues</a>
+                <br />Block venues on certain days/times.
             </td>
         </tr>
         </table>' ;
+
     return $html;
 }
 
-
-mustHaveAnyOfTheseRoles( array( 'BOOKMYVENUE_ADMIN' ) );
 
 echo userHTML( );
 echo bookmyVenueAdminTaskTable( );
@@ -97,15 +72,12 @@ echo '<h1> Pending requests </h1>';
 
 $requests = getPendingRequestsGroupedByGID( );
 
-if( count( $requests ) == 0 )
-    echo printInfo( "Cool! No request is pending for review" );
-else
-    echo printInfo( "These requests needs your attention" );
-
 $html = '<div style="font-size:small">';
-$html .= '<table class="show_request">';
+$html .= '<table class="info">';
 
 $tohide = 'last_modified_on,status,modified_by,timestamp,url,external_id,gid,rid';
+
+$html .= arrayToTHRow( $requests[0], 'request', $tohide );
 foreach( $requests as $r )
 {
     // If request date has passed, ignore it.
@@ -114,32 +86,32 @@ foreach( $requests as $r )
         // TODO: Do not show requests which are more than 1 days old. Their status
         // remains PENDING all the time. Dont know what to do such
         // unapproved/expired requests.
+        changeRequestStatus($r['gid'], $r['rid'], 'EXPIRED');
         continue;
     }
 
+    // If a request is coming from talk, use different background.
+    $color = 'black';
+    if( strpos( $r[ 'external_id'], 'talks.' ) !== false )
+        $color = 'red';
+
+    $html .= "<tr style='text-color:$color'>";
     $html .= '<form action="bookmyvenue_admin_request_review.php" method="post">';
-    $html .= '<tr><td>';
     // Hide some buttons to send information to next page.
     $html .= '<input type="hidden" name="gid" value="' . $r['gid'] . '" />';
     $html .= '<input type="hidden" name="rid" value="' . $r['rid'] . '" />';
 
-    // If a request is coming from talk, use different background.
-    $color = 'white';
-    if( strpos( $r[ 'external_id'], 'talks.' ) !== false )
-        $color = 'yellow';
 
-    $html .= arrayToTableHTML( $r, 'events', $color,  $tohide );
-    $html .= '</td>';
-    $html .= '<td style="background:white">
-        <button name="response" value="Review" title="Review request"> ' .
-            $symbReview . '</button> </td>';
+    $html .= arrayToRowHTML( $r,'request', $tohide, false, false );
+
+    $html .= '<td style="background:white"><button name="response" value="Review" title="Review request"> ' .  $symbReview . '</button> </td>';
     $html .= '</tr>';
     $html .= '</form>';
 }
 $html .= '</table>';
 $html .= "</div>";
 echo $html;
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "adminbmv/home", "Go home" );
 
 ?>
 
@@ -175,14 +147,14 @@ if( count( $events ) > 0 )
 {
     $html = '<div style="font-size:small;">';
     $event = $events[0];
-    $html .= "<table class=\"show_events\">";
 
+    $html .= "<table class=\"info\">";
     $tofilter = 'eid,calendar_id,calendar_event_id' .
         ',external_id,gid,last_modified_on,status,url';
 
 
     // Add extra field to create one last row.
-    $html .= arrayHeaderRow( $event, 'show_events', $tofilter );
+    $html .= arrayHeaderRow( $event, 'event', $tofilter );
 
     foreach( $events as $event )
     {
@@ -192,15 +164,16 @@ if( count( $events ) > 0 )
 
         $gid = $event['gid'];
         $eid = $event['eid'];
-        $html .= "<tr><form method=\"post\" action=\"bookmyvenue_admin_edit.php\">";
-        $event[ 'edit' ] = "<td> <button title=\"Edit this entry\"  name=\"response\"
-                value=\"edit\">" . $symbEdit .  "</button></td>";
+        $html .= "<tr>";
+        $html .= arrayToRowHTML( $event, 'event', $tofilter, false, false );
 
-        $html .= arrayToRowHTML( $event, 'events', $tofilter );
-
+        $html .= "<td>";
+        $html .= '<form method="post" action="'.site_url('adminbmv/edit').'">';
+        $html .= "<td> <button title=\"Edit this entry\"  name=\"response\"
+                    value=\"edit\">" . $symbEdit .  "</button></td>";
         $html .= "<input name=\"gid\" type=\"hidden\" value=\"$gid\" />";
         $html .= "<input name=\"eid\" type=\"hidden\" value=\"$eid\" />";
-        $html .= "</td></form>";
+        $html .= "</form>";
         $html .= "</tr>";
     }
 
@@ -209,6 +182,6 @@ if( count( $events ) > 0 )
     echo $html;
 }
 
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "adminbmv/home", "Go home" );
 
 ?>

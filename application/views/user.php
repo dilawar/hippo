@@ -146,7 +146,7 @@ if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
 
    if( in_array( "BOOKMYVENUE_ADMIN", $roles ) )
        $html .= '<tr><td>Approve/reject, modify or cancel booking requests.</td>
-       <td> <a class="clickable" href="'. site_url("/admin/book"). '">BookMyVenue Admin</a></td> </tr>';
+       <td> <a class="clickable" href="'. site_url("adminbmv"). '">BookMyVenue Admin</a></td> </tr>';
 
    if( in_array( "AWS_ADMIN", $roles ) )
        $html .= '<tr><td>Schedule AWS. Update AWS speaker list.

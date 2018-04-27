@@ -163,7 +163,7 @@ class BMVPDO extends PDO
                 , date DATE NOT NULL
                 , start_time TIME NOT NULL
                 , end_time TIME NOT NULL
-                , status ENUM ( 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED' ) DEFAULT 'PENDING'
+                , status ENUM ( 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED', 'EXPIRED' ) DEFAULT 'PENDING'
                 , is_public_event ENUM( 'YES', 'NO' ) DEFAULT 'NO'
                 , url VARCHAR( 1000 )
                 , modified_by VARCHAR(50) -- Who modified the request last time.
