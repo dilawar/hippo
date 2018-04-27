@@ -22,7 +22,7 @@ function bookmyVenueAdminTaskTable( )
             </td>
             <td>
                 <i class="fa fa-calendar fa-2x"></i> 
-                <a class="clickable" href="bookmyvenue_admin_synchronize_events_with_google_calendar.php">
+                <a class="clickable" href="'.site_url('adminbmv/synchronize_calendar').'">
                 Synchronize public calendar </a>
                 <br />
                <strong>Make sure you are logged-in using correct google account </strong>
@@ -96,7 +96,7 @@ foreach( $requests as $r )
         $color = 'red';
 
     $html .= "<tr style='text-color:$color'>";
-    $html .= '<form action="bookmyvenue_admin_request_review.php" method="post">';
+    $html .= '<form action="'.site_url('adminbmv/review'). '" method="post">';
     // Hide some buttons to send information to next page.
     $html .= '<input type="hidden" name="gid" value="' . $r['gid'] . '" />';
     $html .= '<input type="hidden" name="rid" value="' . $r['rid'] . '" />';
@@ -113,11 +113,9 @@ $html .= "</div>";
 echo $html;
 echo goBackToPageLink( "adminbmv/home", "Go home" );
 
-?>
 
-<h1>Upcoming (approved) events in next 4 weeks </h1>
+echo '<h1>Upcoming (approved) events in next 4 weeks </h1>';
 
-<?php
 
 // Let admin search.
 echo '<form action="" method="post" accept-charset="utf-8">

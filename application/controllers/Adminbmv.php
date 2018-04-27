@@ -20,6 +20,12 @@ class Adminbmv extends CI_Controller
         $this->template->load( 'bookmyvenue_admin' );
     }
 
+    public function review( )
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'bookmyvenue_admin_request_review' );
+    }
+
 }
 
 ?>
