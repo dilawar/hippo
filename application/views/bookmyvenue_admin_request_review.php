@@ -1,14 +1,11 @@
 <?php 
 
-include_once( "header.php" );
-include_once( "methods.php" );
-include_once( "tohtml.php" );
-include_once( 'database.php' );
-include_once 'check_access_permissions.php';
-
-mustHaveAllOfTheseRoles( array( 'BOOKMYVENUE_ADMIN' ) );
+require_once BASEPATH.'autoload.php';
 
 echo userHTML( );
+
+$symbApprove = '<i class="fa fa-thumbs-o-up fa-2x"></i>';
+$symbReject = '<i class="fa fa-thumbs-o-down fa-2x"></i>';
 
 ?>
 
@@ -24,9 +21,8 @@ function toggleMe(source) {
 <?php
 if( ! array_key_exists( 'response', $_POST ) )
 {
-    echo printInfo( "Nothing to do here anymore" );
-    goToPage( './bookmyvenue_admin.php', 0 );
-    exit;
+    flashMessage( "Nothing to do here." );
+    redirect( 'adminbmv/home' );
 }
 
 if( $_POST['response'] == "Review" )
@@ -41,7 +37,7 @@ if( $_POST['response'] == "Review" )
 
     // First insert this request into event calendar.
     echo '<div style="font-size:small">';
-    echo '<form method="post" action="bookmyvenue_admin_request_review_submit.php">';
+    echo '<form method="post" action="'.site_url('adminbmv/request_review').'">';
     echo '<table class="show_events">';
     $childrenId = 0;
 
@@ -106,8 +102,10 @@ if( $_POST['response'] == "Review" )
         $collisionEvents = array_values( $collisedWithText );
         $table = '<table class="info">';
         $table .= arrayHeaderRow( $collisionEvents[0], '', $hide );
+
         foreach( $collisionEvents as  $event )
             $table .= arrayToRowHTML( $event, '', $hide );
+
         $table .=  '</table>';
         echo $table;
     }
@@ -143,7 +141,6 @@ if( $_POST['response'] == "Review" )
                         title=\"Reject selected\">" . $symbReject . "</button>
                 </td>
             </tr>
-
             <input type=\"hidden\" name=\"gid\" value=\"$gid\" /> 
         </table>
         ";
@@ -151,6 +148,6 @@ if( $_POST['response'] == "Review" )
     echo '</div>';
 }
 
-echo goBackToPageLink( "bookmyvenue_admin.php", "Go back" );
+echo goBackToPageLink( "adminbmv/home", "Go back" );
 
 ?>
