@@ -114,6 +114,9 @@ class Adminbmv extends CI_Controller
                 , $userEmail
                 , 'hippo@lists.ncbs.res.in'
             );
+
+            flashMessage( 'Successfuly reviewed.' );
+            redirect( 'adminbmv/home' );
         }
     }
 }
