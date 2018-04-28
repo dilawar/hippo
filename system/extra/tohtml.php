@@ -1647,6 +1647,13 @@ function awsPdfURL( $speaker, $date, $msg = 'Download PDF' )
     return $url;
 }
 
+function download_file( $filepath, $msg = 'Download File' )
+{
+    $url = "<a class='download_link' 
+        href='".force_download($filepath, NULL)."'>$msg</a>";
+    return $url;
+}
+
 /**
     * @brief Download text file of given name. This file must exists in data
     * folder.
@@ -1658,8 +1665,9 @@ function awsPdfURL( $speaker, $date, $msg = 'Download PDF' )
  */
 function downloadTextFile( $filepath, $msg = 'Download file', $class = 'download_link' )
 {
-    $url = '<a class="' . $class . '" target="_blank" href="download_file.php?filename='
-           . $filepath .  '">' . $msg .'</a>';
+    // $url = '<a class="' . $class . '" target="_blank" href="download_file.php?filename='
+           // . $filepath .  '">' . $msg .'</a>';
+    $url = "<a class='$class' href='".force_download($filepath, NULL)."'>$msg</a>";
     return $url;
 }
 

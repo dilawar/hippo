@@ -13,7 +13,6 @@ import sys
 import os
 import subprocess
 import re
-import html2text
 import string
 import tempfile
 import base64

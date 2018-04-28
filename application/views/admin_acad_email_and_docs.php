@@ -5,25 +5,6 @@ echo userHTML( );
 
 $symbSubmit = '<i class="fa fa-check fa-1x"></i>';
 
-?>
-
-<script type="text/javascript" charset="utf-8">
-function ShowPlainEmail( button )
-{
-    var win = window.open('plain_email');
-    win.document.write( "<pre>" + button.value + "</pre>" );
-    win.select( );
-}
-</script>
-
-<script type="text/javascript">
-$(document).ready( function( ) {
-
-});
-</script>
-
-<?php
-
 /* 
  * Admin select the class of emails she needs to prepare. We remain on the same 
  * page for these tasks.

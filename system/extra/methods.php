@@ -152,7 +152,7 @@ function toColor($n)
  */
 function getDataDir( )
 {
-    return __DIR__ . '/data/';
+    return FCPATH.'temp/';
 }
 
 /**
@@ -811,7 +811,7 @@ function html2Markdown( $html, $strip_inline_image = false ) : string
     file_put_contents( $outfile, $html );
     if( file_exists( $outfile ) )
     {
-        $cmd = __DIR__ . "/html2other.py $outfile md ";
+        $cmd = FCPATH."scripts/html2other.py $outfile md ";
         echo printInfo( "Executing $cmd" );
         hippo_shell_exec( $cmd, $md, $stderr );
         if( $stderr )
@@ -835,7 +835,7 @@ function html2Tex( $html, $strip_inline_image = false )
 
     if( file_exists( $outfile ) )
     {
-        $cmd = __DIR__ . "/html2other.py $outfile tex ";
+        $cmd = FCPATH."scripts/html2other.py $outfile tex ";
         hippo_shell_exec( $cmd, $texfile, $stderr );
         unlink( $outfile );
         $tex = file_get_contents( trim($texfile) );
@@ -847,7 +847,7 @@ function html2Tex( $html, $strip_inline_image = false )
 
 function saveDownloadableFile( $filename, $content )
 {
-    $filepath = __DIR__ . '/data/' . $filename;
+    $filepath = getDataDir(). $filename;
 
     // Remove old file.
     if( file_exists( $filepath ) )

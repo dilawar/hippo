@@ -1,7 +1,6 @@
 <?php
 
-include_once 'database.php';
-include_once 'tohtml.php';
+include_once BASEPATH.'autoload.php';
 
 // This script may also be called by command line by the email bot. To make sure 
 // $_GET works whether we call it from command line or browser.
