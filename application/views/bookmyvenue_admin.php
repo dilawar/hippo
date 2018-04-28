@@ -31,7 +31,7 @@ function bookmyVenueAdminTaskTable( )
         </tr>
         <tr>
             <td>
-                <a class="clickable" href="'.site_url('adminbmv/manages_venues').'"> Manage venues </a>
+                <a class="clickable" href="'.site_url('adminbmv/venues').'"> Manage venues </a>
                 <br /> Add/Update/Delete venues
             </td>
             <td>

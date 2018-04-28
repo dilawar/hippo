@@ -60,7 +60,8 @@ else
         If your event requires email to be send out to academic community (e.g. 
         <strong><tt>TALK</tt>s, <tt>SEMINAR</tt>, <tt>THESIS SEMINAR</tt>s, <tt>LECTURE</tt>s</strong> ),
         <a href="' . site_url( 'user/register_talk') . '"> <i class="fa fa-spinner fa-spin"></i> click here</a>.'
-    );
+        , false
+        );
 }
 
 // Since we come back to this page again and again, we reuse the previous values

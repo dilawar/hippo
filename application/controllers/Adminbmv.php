@@ -26,6 +26,76 @@ class Adminbmv extends CI_Controller
         $this->template->load( 'bookmyvenue_admin_request_review' );
     }
 
+    public function synchronize_calendar( )
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'synchronize_calendar.php' );
+        redirect( 'adminabmv/home' );
+    }
+
+    public function venues( )
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'bookmyvenue_admin_manages_venues.php' );
+    }
+
+    public function venues_action($arg='')
+    {
+        $response = __get__( $_POST, 'response', '' );
+        if( $response == 'update' )
+        {
+            $res = updateTable( 
+                    'venues'
+                    , 'id'
+                    , 'name,institute,building_name,floor,location,type,strength,' 
+                        . 'distance_from_ncbs,has_projector,' 
+                        . 'suitable_for_conference,has_skype'
+                    , $_POST
+                );
+            if( $res )
+                flashMessage( "Venue " . $_POST[ 'id' ] . ' is updated successful' );
+            else
+                flashMessage( 'Failed to update venue ' . $_POST[ 'id ' ] );
+        }
+        else if( $response == 'add new' ) 
+        {
+            if( strlen( $_POST[ 'id' ] ) < 2  )
+                flashMessage( "The venue id is too short to be legal." );
+            else
+            {
+                $res = insertIntoTable( 
+                        'venues'
+                        , 'id,name,institute,building_name,floor,location,type,strength,' 
+                            . 'distance_from_ncbs,has_projector,' 
+                            . 'suitable_for_conference,has_skype'
+                        , $_POST
+                    );
+
+                if( $res )
+                    flashMessage( "Venue " . $_POST[ 'id' ] . ' is successfully added.' );
+                else
+                    flashMessage( 'Failed to added venue ' . $_POST[ 'id ' ] );
+            }
+        }
+        else if( $response == 'delete' ) 
+        {
+            $res = deleteFromTable( 'venues' , 'id' , $_POST);
+            if( $res )
+                flashMessage( "Venue " . $_POST[ 'id' ] . ' is successfully deleted.' );
+            else
+                flashMessage( 'Failed to added venue ' . $_POST[ 'id ' ] );
+        }
+        else if( $response == 'DO_NOTHING' ) 
+        {
+            flashMessage( "User said DO NOTHING. So going back!" );
+            redirect( 'adminbmv/venues' );
+        }
+        else
+            flashMessage( "Unknown command from user $response." );
+
+        redirect('adminbmv/venues');
+    }
+
     // Views with action.
     public function request_review( )
     {

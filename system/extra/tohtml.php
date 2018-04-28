@@ -397,7 +397,7 @@ function hourToHTMLTable( $day, $hour, $venue, $section = 4 )
         {
 
             // Add a form to trigger adding event purpose.
-            $html .= '<form method="post" action="'.site_url('user/submit_booking_request') . '">';
+            $html .= '<form method="post" action="'.site_url('user/bookingrequest') . '">';
             $html .= "<td>";
             if( $segDateTime >= strtotime( 'now' ) )
                 $html .= '<button class="add_event'.$is_public_event.'" name="add_event" value="'.$segTime.'">+</button>';
@@ -2156,7 +2156,7 @@ function goBackToPageLinkInline( $url, $title = "Go back" ) : string
 
 function goBackInline( )
 {
-    $url = __get__( $_SERVER, 'HTTP_REFERER', 'index.php' );
+    $url = __get__( $_SERVER, 'HTTP_REFERER', site_url('user/home'));
     $html = '<a href="' . $url . '"> 
             <i class="fa fa-step-backward fa-2x"></i>
             <font color="blue" size="5">Go back</font>
@@ -2175,10 +2175,9 @@ function goBackInline( )
 function goBack( $default = '', $delay = 0 )
 {
     if( ! $default )
-        $url = __get__( $_SERVER, 'HTTP_REFERER', 'index.php' );
+        $url = __get__( $_SERVER, 'HTTP_REFERER', site_url('user/home'));
     else
         $url = $default;
-
     goToPage( $url, $delay );
 }
 

@@ -1,10 +1,8 @@
 <?php
 
-include_once 'methods.php';
-include_once 'tohtml.php';
-include_once 'database.php';
-include_once './calendar/NCBSCalendar.php';
-include_once './calendar/methods.php';
+require_once BASEPATH.'autoload.php';
+include_once BASEPATH.'calendar/NCBSCalendar.php';
+include_once BASEPATH.'calendar/methods.php';
 
 // We come here from google-calendar
 // When we come here from ./authenticate_gcalendar.php page, the GOOGLE API

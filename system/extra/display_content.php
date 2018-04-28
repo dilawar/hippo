@@ -1,8 +1,12 @@
 <?php
 
-function printErrorSevere($msg)
+function printErrorSevere($msg, $flash = false )
 {
-    $err = "<div class=\"alert alert-danger\">$msg></div>";
+    $err = '<div class="alert alert-danger">'.$msg.'</div>';
+
+    if($flash)
+        $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . "<p>$msg </p>";
+
     error_log( $msg );
     return $err;
 }
