@@ -17,8 +17,13 @@ echo '<ul>
 
 $venues = getVenues( $sortby = 'total_events' );
 
-if( ! array_key_exists( 'date', $_POST) )
-    flashMessage( "No valid day is selected. Going back to main page", 'warning' );
+if(! __get__($_POST, 'date'))
+{
+    echo printErrorSevere( "No valid day is selected. Please go back and select a valid date.", false );
+    echo goBack( );
+    echo goBackToPageLink( "user/home", "Go Home" );
+    exit;
+}
 
 $date = $_POST['date'];
 
@@ -94,12 +99,13 @@ echo dbTableToHTMLTable( 'bookmyvenue_requests'
         );
 
 echo '<input type="hidden" name="external_id" value="' . $external_id . '" >';
+
 // I need to add repeat pattern here.
-echo "<br>";
+echo "<br />";
 echo repeatPatternTable( 'repeat_pat' );
-echo '<br>';
-echo '<button class="submit" name="response" value="submit"> <i class="fa fa-check fa-1x"></i> </button>';
+echo '<br />';
+echo '<button class="submit" name="response" value="submit"><i class="fa fa-check"></i></button>';
 echo '</form>';
 
-echo '<br><br>';
+echo '<br /><br />';
 echo goBackToPageLink( "user", "Go back" );
