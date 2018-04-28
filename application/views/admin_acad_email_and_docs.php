@@ -1,14 +1,9 @@
 <?php
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'html2text.php';
-include_once 'check_access_permissions.php';
-
-mustHaveAnyOfTheseRoles( array('AWS_ADMIN', 'BOOKMYVENUE_ADMIN' ) );
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
+
+$symbSubmit = '<i class="fa fa-check fa-1x"></i>';
 
 ?>
 
@@ -51,7 +46,9 @@ if( array_key_exists( 'response', $_POST ) )
 }
 
 // Construct user interface.
-echo '<form method="post" action=""> <select name="task" id="list_of_tasks">';
+echo '<form method="post" action=""> 
+    <select name="task" id="list_of_tasks">';
+
 foreach( $options as $val )
     echo "<option value=\"$val\" " . __get__( $default, $val, '') . 
         "> $val </option>";

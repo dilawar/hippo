@@ -36,19 +36,19 @@ function bookmyVenueAdminTaskTable( )
             </td>
             <td>
                 <i class="fa fa-share fa-2x"></i> 
-                <a  class="clickable" href="'.site_url('admin/acad/email_and_docs').'">Send emails </a>
+                <a  class="clickable" href="'.site_url('adminbmv/email_and_docs').'">Send emails </a>
                 <br />Send emails manually (and generate documents)
             </td>
         </tr>
         <tr>
             <td>
                 <i class="fa fa-comments-o fa-2x"></i>
-                <a class="clickable" href="'.site_url('admin/acad/manages_talks') .'">Manage talks/seminar</a>
+                <a class="clickable" href="'.site_url('adminbmv/manages_talks') .'">Manage talks/seminar</a>
                 <br />Manage talks and seminars. 
             </td>
             <td>
                 <i class="fa fa-users fa-2x"></i>
-                <a class="clickable" href="'.site_url('admin/acad/manages_speakers'). '">Manage speakers
+                <a class="clickable" href="'.site_url('adminbmv/manages_speakers'). '">Manage speakers
             </td>
         </tr>
         <tr>

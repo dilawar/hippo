@@ -7,7 +7,7 @@ require_once BASEPATH.'autoload.php';
 
 class Adminbmv extends CI_Controller
 {
-
+    // Pure VIEWS
     function index()
     {
         $this->home();
@@ -39,6 +39,13 @@ class Adminbmv extends CI_Controller
         $this->template->load( 'bookmyvenue_admin_manages_venues.php' );
     }
 
+    public function email_and_docs($arg = '')
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'admin_acad_email_and_docs.php' );
+    }
+
+    // ACTIONS
     public function venues_action($arg='')
     {
         $response = __get__( $_POST, 'response', '' );
