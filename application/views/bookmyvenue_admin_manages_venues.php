@@ -49,7 +49,7 @@ if( $task != 'add new' )
 }
 
 echo '</form>';
-
+echo goBackToPageLink( 'adminbmv/home', 'Go back' );
 
 echo '<h1> List of venues </h1>';
 
@@ -66,8 +66,7 @@ foreach( $venues as $venue )
 }
 echo '</table>';
 
-// Go back to BOOKMYVENUE_ADMIN page.
-echo goBackToPageLink( 'bookmyvenue_admin.php', 'Go back' );
+echo goBackToPageLink( 'adminbmv/home', 'Go back' );
 
 
 ?>
