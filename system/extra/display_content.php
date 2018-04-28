@@ -35,9 +35,11 @@ function msg_fade_out( $msg , $class = "info" )
     return $info;
 }
 
-function alertUser( $msg )
+function alertUser( $msg, $flash = true )
 {
     $info ="<div class=\"alert alert-warning\"> <i class=\"fa fa-exclamation-circle fa-1x\"></i> " . $msg . "</div>";
+    if($flash)
+        $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . "<p>$msg </p>";
     return $info;
 }
 

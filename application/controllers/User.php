@@ -39,6 +39,12 @@ class User extends CI_Controller
         $this->template->load('user_book_private');
     }
 
+    public function bmv_browse( )
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load('bookmyvenue_browse');
+    }
+
 
     // USER EDITING PROFILE INFO
     public function info( $arg = '' )
@@ -153,6 +159,7 @@ class User extends CI_Controller
             redirect( 'user/courses' );
         }
     }
+
 
     public function logout( )
     {

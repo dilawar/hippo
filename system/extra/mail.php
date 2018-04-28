@@ -108,16 +108,10 @@ function mailFooter( ) {
     ";
 }
 
-function sendHTMLEmail( $msg, $sub, $to, $cclist = '', $attachment = null )
+function sendHTMLEmail( string $msg, string $sub, string $to, string $cclist = '', $attachment = null )
 {
     global $maildir;
     $conf = getConf( );
-    if( ! is_string( $msg ) )
-    {
-        error_log( "Email msg is not in string format" );
-        echo printInfo( 'Email msg not in string format' );
-        return;
-    }
 
     //echo printInfo( "Trying to send email to $to, $cclist with subject $sub" );
     if( strlen( trim( $msg ) ) < 1 )
@@ -128,7 +122,7 @@ function sendHTMLEmail( $msg, $sub, $to, $cclist = '', $attachment = null )
 
     if( ! array_key_exists( 'send_emails', $conf['global' ] ) )
     {
-        echo printInfo( "Email service has not been configured." );
+        echo printErrorSevere( "Email service has not been configured." );
         error_log( "Mail service is not configured" );
         return false;
     }

@@ -397,17 +397,17 @@ function hourToHTMLTable( $day, $hour, $venue, $section = 4 )
         {
 
             // Add a form to trigger adding event purpose.
-            $html .= "<form method=\"post\" action=\"user_submit_booking_request.php\" >";
+            $html .= '<form method="post" action="'.site_url('user/submit_booking_request') . '">';
             $html .= "<td>";
             if( $segDateTime >= strtotime( 'now' ) )
-                $html .= "<button class=\"add_event$is_public_event\" name=\"add_event\" value=\"$segTime\">+</button>";
+                $html .= '<button class="add_event'.$is_public_event.'" name="add_event" value="'.$segTime.'">+</button>';
             else
-                $html .= "<button class=\"add_event_past$is_public_event\" name=\"add_event\" value=\"$segTime\" disabled></button>";
+                $html .= '<button class="add_event_past'.$is_public_event.'" name="add_event" value="'.$segTime.'" disabled></button>';
 
             $html .= "</td>";
+
             // And the hidden elements to carry the values to the action page.
-            $html .= '<input type="hidden" name="start_time" value="'.
-                     dbTime($segTime) . '">';
+            $html .= '<input type="hidden" name="start_time" value="'. dbTime($segTime) . '">';
             $html .= '<input type="hidden" name="date" value="'. $day . '">';
             $html .= '<input type="hidden" name="venue" value="'. $venue . '">';
             $html .= "</form>";

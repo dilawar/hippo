@@ -1,26 +1,14 @@
 <?php 
-include_once( "header.php" );
-include_once( "methods.php" );
-include_once( "tohtml.php" );
-include_once( "database.php" );
-include_once 'display_content.php';
-include_once "./check_access_permissions.php";
 
-mustHaveAnyOfTheseRoles( array( 'USER' ));
+require_once BASEPATH.'autoload.php';
 
-echo alertUser( "This interface is deprecated.  Booking made using this interface 
+echo alertUser( 
+    "This interface is deprecated.  Booking made using this interface 
     likely to clash with clases/JC/LAB MEETS. Use 'QuickBook' link provides above.
-    <br />
-    DO NOT USE IT."
+    <br /> DO NOT USE IT.", false
     );
 
 echo userHTML( );
-
-if( isMobile( ) )
-    echo alertUser( 
-        "If you are on a mobile device, you may like another interface.
-        <a href=\"quickbook.php\">TAKE ME THERE</a>"
-        );
 
 // There is a form on this page which will send us to this page again. Therefore 
 // we need to keep $_POST variable to a sane state.
@@ -88,11 +76,9 @@ echo "<form method=\"post\" action=\"\">
         value=\"" . $defaults[ 'selected_dates' ] . "\" >
         <br />
         <p>Explore time range </p>
-        <input type=\"time\" value=\"" . $defaults[ 'start_time' ] . 
-            "\" class=\"timepicker\" name=\"start_time\"> Start Time
+        <input value=\"" . $defaults[ 'start_time' ] .  "\" class=\"timepicker\" name=\"start_time\"> Start Time
         <br />
-        <input type=\"time\" value=\"" . $defaults[ 'end_time' ] . 
-                "\" class=\"timepicker\" name=\"end_time\"> End Time
+        <input value=\"" . $defaults[ 'end_time' ] .  "\" class=\"timepicker\" name=\"end_time\"> End Time
     </td>
     <td> $venueSelect </td>
     </tr>
