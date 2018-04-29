@@ -1,11 +1,12 @@
-#/bin/bash -
+#/usr/bin/env bash
+
 #===============================================================================
 #
 #          FILE: tex2pdf.sh
 #
 #         USAGE: ./tex2pdf.sh
 #
-#   DESCRIPTION: 
+#   DESCRIPTION: Genrate a pdf file in /tmp directory.
 #
 #       OPTIONS: ---
 #  REQUIREMENTS: ---
@@ -18,16 +19,24 @@
 #===============================================================================
 
 set -e
-set -x
-set -o nounset                                  # Treat unset variables as an error
+# set -x
 INFILE=$(readlink -f $1)
-EXTRA=""
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+TEXFILENAME=$(basename $INFILE)
+OUTFILENAME=${TEXFILENAME%.tex}.pdf
 ( 
     cd /tmp
     # Run the command two times. Sometimes it does not add images.
     kpsewhich --var-value=TEXMFVAR
-    export TEXMFVAR=/var/www/.texlive2016/texmf-var/
-    pdflatex $EXTRA --output-directory=$SCRIPT_DIR/data/ "$INFILE"
-    pdflatex $EXTRA --output-directory=$SCRIPT_DIR/data/ "$INFILE"
+    if [ -d /var/www/.texlive2016/texmf-var ];then 
+        export TEXMFVAR=/var/www/.texlive2016/texmf-var/
+    fi
+
+    # LuaLaTex suffers from 'writable cache path' problem. See here
+    # https://github.com/sharelatex/sharelatex/issues/450
+    #lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
+    #lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
+
+    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
+    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
 )
