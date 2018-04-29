@@ -82,10 +82,12 @@ if( $default[ 'task' ] == 'This week AWS' )
         $md = html2Markdown( $templ[ 'email_body' ] );
 
         // Save the file and let the admin download it.
-        file_put_contents( __DIR__ . "/data/$filename", $md);
-        echo "<br><br>";
+        file_put_contents( getDataDir() . "$filename", $md);
+        echo "<br /><br />";
+
         echo '<table style="width:500px;border:1px solid"><tr><td>';
         echo downloadTextFile( $filename, 'Download email' );
+
         echo "</td><td>";
         echo awsPdfURL( '', $whichDay, 'All AWS PDF' );
         echo "</td></tr>";
@@ -213,6 +215,6 @@ else if( $default[ 'task' ] == 'Today\'s events' )
 
 }
 
-echo goBackToPageLink( "admin_acad.php", "Go back" );
+echo goBackToPageLink( getRefShort(), "Go back" );
 
 ?>

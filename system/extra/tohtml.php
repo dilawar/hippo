@@ -1,9 +1,10 @@
 <?php
 
-require_once BASEPATH. 'extra/methods.php';
-require_once BASEPATH. 'database.php';
-require_once BASEPATH. 'extra/ICS.php';
-require_once BASEPATH. 'extra/linkify.php';
+require_once BASEPATH.'extra/methods.php';
+require_once BASEPATH.'database.php';
+require_once BASEPATH.'extra/ICS.php';
+require_once BASEPATH.'extra/linkify.php';
+require_once FCPATH.'scripts/generate_pdf_aws.php';
 
 $useCKEditor = false;
 
@@ -1636,15 +1637,10 @@ function closePage( )
 
 function awsPdfURL( $speaker, $date, $msg = 'Download PDF' )
 {
-    $get = "date=$date";
-    if( $speaker )
-        $get .= "&speaker=$speaker";
-
-    // Link to pdf file.
-    $url = '<div><a target="_blank" href="generate_pdf_aws.php?' .
-           $get . '">' . $msg . '</a></div>';
-
-    return $url;
+    $pdfFile = pdfFileOfAWS( $date, $speaker );
+    if( $pdfFile )
+        return force_download( $pdfFile, NULL );
+    return "<a href='' disable>No PDF generated</a>";
 }
 
 function download_file( $filepath, $msg = 'Download File' )
@@ -2126,6 +2122,15 @@ function courseToHTMLRow( $c, $slot, $sem, $year, &$enrollments )
     return $row;
 }
 
+function getReferer( )
+{
+    return $_SERVER['HTTP_REFERER'];
+}
+
+function getRefShort( )
+{
+    return str_replace( site_url(), '', $_SERVER['HTTP_REFERER'] );
+}
 
 /*
 function mailto( $email, $text = '' )
@@ -2154,13 +2159,13 @@ function goBackToPageLink( $url, $title = "Go back" ) : string
 
 function goBackToPageLinkInline( $url, $title = "Go back" ) : string
 {
-
     $html = '<a href="' . site_url( $url ) . '">
                 <i class="fa fa-step-backward fa-2x"></i>
                 <font color="blue" size="5">' . $title . '</font>
             </a>';
     return $html;
 }
+
 
 function goBackInline( )
 {

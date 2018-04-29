@@ -1,13 +1,11 @@
 <?php
 
-include_once BASEPATH.'autoload.php';
+require_once BASEPATH.'autoload.php';
 
 // This script may also be called by command line by the email bot. To make sure 
 // $_GET works whether we call it from command line or browser.
 if( isset($argv) )
     parse_str( implode( '&' , array_slice( $argv, 1 )), $_GET );
-
-//var_dump( $_GET );
 
 
 function awsToTex( $aws )
@@ -64,7 +62,7 @@ function awsToTex( $aws )
 
     // Two columns here.
     $head = '';
-    $logo = __DIR__ . '/data/ncbs_logo.png';
+    $logo = FCPATH.'data/ncbs_logo.png';
 
     // Is presynopsis seminar?
     if( __get__( $aws, 'is_presynopsis_seminar', 'NO' ) == 'YES' )
@@ -104,7 +102,7 @@ function awsToTex( $aws )
     $tempFile = tempnam( "/tmp", "hippo_abstract" );
     file_put_contents( $tempFile, $abstract );
 
-    $cmd = __DIR__ . '/html2other.py';
+    $cmd = FCPATH.'scripts/html2other.py';
     hippo_shell_exec( "$cmd $tempFile tex", $texAbstractFile, $stderr );
     $texAbstract = file_get_contents( trim($texAbstractFile) );
 
@@ -120,106 +118,87 @@ function awsToTex( $aws )
     $extra .= '\end{tabular}';
 
     $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-        , fit to height=18 cm, fit basedim=16pt
+        , fit to height=18 cm, fit basedim=14pt
         ]' . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
 
     return implode( "\n", $tex );
 
 } // Function ends.
 
-if( ! array_key_exists( 'date', $_GET ) )
+function pdfFileOfAWS( string $date, string $speaker = '' ) : string
 {
-    echo printInfo( 'Invalid request' );
-    echo closePage( );
-    exit;
-}
-else 
-{
-    $date = $_GET[ 'date' ];
+
+    if( ! $date )
+    {
+        echo printWarning( "Invalid date $date" );
+        return '';
+    }
+    
     $whereExpr = "date='" . $date . "'";
-    if( array_key_exists( 'speaker', $_GET ) )
-        $whereExpr .= " AND speaker='" . $_GET[ 'speaker' ] . "'";
+    if( $speaker )
+        $whereExpr .= " AND speaker='$speaker'";
 
     $awses = getTableEntries( 'annual_work_seminars', '', $whereExpr );
     $upcomingS = getTableEntries( 'upcoming_aws', '', $whereExpr ); 
     $awses = array_merge( $awses, $upcomingS );
-}
 
-// Intialize pdf template.
-$tex = array( "\documentclass[]{article}"
-    , "\usepackage[margin=25mm,top=20mm,a4paper]{geometry}"
-    , "\usepackage[]{graphicx}"
-    , "\usepackage[]{grffile}"
-    , "\usepackage[]{amsmath,amssymb}"
-    , "\usepackage[]{color}"
-    , "\usepackage{tikz}"
-    , "\usepackage{wrapfig}"
-    , "\usepackage{fontawesome}"
-    , '\pagenumbering{gobble}'
-    , '\linespread{1.15}'
-    , '\usetikzlibrary{calc,positioning,arrows,fit}'
-    , '\usepackage[sfdefault,light]{FiraSans}'
-    , '\usepackage{tcolorbox}'
-    , '\tcbuselibrary{fitting}'
-    , '\begin{document}'
-    );
+    // Intialize pdf template.
+    $tex = array( "\documentclass[]{article}"
+        , "\usepackage[margin=25mm,top=20mm,a4paper]{geometry}"
+        , "\usepackage[]{graphicx}"
+        , "\usepackage[]{grffile}"
+        , "\usepackage[]{amsmath,amssymb}"
+        , "\usepackage[]{color}"
+        , "\usepackage{tikz}"
+        , "\usepackage{wrapfig}"
+        , "\usepackage{fontawesome}"
+        , '\pagenumbering{gobble}'
+        , '\linespread{1.15}'
+        , '\usetikzlibrary{calc,positioning,arrows,fit}'
+        , '\usepackage[sfdefault,light]{FiraSans}'
+        , '\usepackage{tcolorbox}'
+        , '\tcbuselibrary{fitting}'
+        , '\begin{document}'
+        );
 
-$outfile = 'AWS_' . $date;
-foreach( $awses as $aws )
-{
-    $outfile .= '_' . $aws[ 'speaker' ];
-    $tex[] = awsToTex( $aws );
-    $tex[] = '\newpage';
-}
+    $outfile = 'AWS_' . $date;
+    foreach( $awses as $aws )
+    {
+        $outfile .= '_' . $aws[ 'speaker' ];
+        $tex[] = awsToTex( $aws );
+        $tex[] = '\newpage';
+    }
 
-$tex[] = '\end{document}';
-$TeX = implode( "\n", $tex );
-//echo "<pre> $TeX </pre>";
+    $tex[] = '\end{document}';
+    $TeX = implode( "\n", $tex );
 
-// Generate PDF now.
-$outdir = __DIR__ . "/data";
-$texFile = $outdir . '/' . $outfile . ".tex";
+    // Generate PDF now.
+    $texFile = sys_get_temp_dir() . "/$outfile.tex";
 
-// If outfile is set in GET the use it. Otherwise create one.
-if( array_key_exists( 'texfile', $_GET) && $_GET[ 'texfile' ] )
-    $texFile = $_GET[ 'texfile' ];
-else
-    $texFile = $outdir . '/' . $outfile . ".tex";
 
-// Remove tex from the end and apped pdf.
-$pdfFile = rtrim( $texFile, 'tex' ) . 'pdf';
-if( file_exists( $pdfFile ) )
-    unlink( $pdfFile );
+    // Remove tex from the end and apped pdf.
+    $pdfFile = rtrim( $texFile, 'tex' ) . 'pdf';
+    if( file_exists( $pdfFile ) )
+        unlink( $pdfFile );
 
-file_put_contents( $texFile,  $TeX );
-if( file_exists( $texFile ) )
-    $res = `./tex2pdf.sh $texFile`;
+    file_put_contents( $texFile,  $TeX );
 
-if( file_exists( $pdfFile ) )
-{
-    echo printInfo( "Successfully genered pdf document " . 
-       basename( $pdfFile ) );
+    $cmd = FCPATH."scripts/tex2pdf.sh $texFile";
+    if( file_exists( $texFile ) )
+        hippo_shell_exec( $cmd, $stdout, $stderr );
 
-    // This should only be visible if called from a browser.
-    if( ! isset($argv) )
-        goToPage( 'download_pdf.php?filename=' .$pdfFile, 0 );
-}
-else
-{
-    echo printWarning( "Failed to genered pdf document <br>
+    if( file_exists( $pdfFile ) )
+    {
+        echo printInfo( "Successfully genered pdf document " . 
+           basename( $pdfFile ) , true);
+        return $pdfFile;
+    }
+
+    alertUser( "Failed to genered pdf document <br>
         This is usually due to hidden special characters 
-        in your abstract. You need to clean your entry up." );
-    echo printWarning( "Error message <small>This is only for diagnostic
-        purpose. Show it to someone who is good with LaTeX </small>" );
-    echo "<pre> $res </pre>";
+        in your abstract. You need to clean your entry up." 
+        );
+    return '';
 }
-
-// if( file_exists( $texFile ) )
-// {
-    // unlink( $texFile );
-// }
-
-echo "<br/>";
-echo closePage( );
 
 ?>

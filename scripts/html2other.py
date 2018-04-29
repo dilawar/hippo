@@ -29,8 +29,8 @@ def fix( msg ):
 
 def tomd( htmlfile ):
     # This function is also used by sendemail.py file.
-    with open( htmlfile ) as f:
-        msg = f.read( )
+    with open( htmlfile, 'r' ) as f:
+        msg = f.read()
 
     msg = fix( msg )
     # remove <div class="strip_from_md"> </div>
@@ -43,8 +43,10 @@ def tomd( htmlfile ):
     # Write back to original file.
     htmlfile = tempfile.mktemp( prefix = 'hippo', suffix='.html' )
     txtfile = '%s.txt' % htmlfile
+
     with open( htmlfile, 'w' ) as f:
-        f.write( msg )
+        f.write(msg)
+
     _cmd( 'pandoc -t plain -o %s %s' % (txtfile, htmlfile) )
     return msg, txtfile.strip()
 

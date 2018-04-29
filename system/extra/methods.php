@@ -812,7 +812,7 @@ function html2Markdown( $html, $strip_inline_image = false ) : string
     if( file_exists( $outfile ) )
     {
         $cmd = FCPATH."scripts/html2other.py $outfile md ";
-        echo printInfo( "Executing $cmd" );
+        echo printInfo( "Executing $cmd", false );
         hippo_shell_exec( $cmd, $md, $stderr );
         if( $stderr )
         {
