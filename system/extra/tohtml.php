@@ -4,7 +4,9 @@ require_once BASEPATH.'extra/methods.php';
 require_once BASEPATH.'database.php';
 require_once BASEPATH.'extra/ICS.php';
 require_once BASEPATH.'extra/linkify.php';
+
 require_once FCPATH.'scripts/generate_pdf_aws.php';
+require_once FCPATH.'scripts/generate_pdf_talk.php';
 
 $useCKEditor = false;
 
@@ -83,7 +85,7 @@ function addToGoogleCalLink( array $event )
     $res = '<a href="'. $link . '" target="_blank" >';
 
     // Get inline image.
-    $res .= inlineImage( __DIR__ . '/data/gc_button6.png' );
+    $res .= inlineImage( FCPATH.'data/gc_button6.png' );
     $res .= '</a>';
 
     $res = '<div class="strip_from_md">' . $res . "</div>";
@@ -1557,7 +1559,7 @@ function talkToHTML( $talk, $with_picture = false )
 
     $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
 
-    $html = '<div style="width:700px">';
+    $html = '<div class="show_talks">';
     $html .= '<table border="0"><tr>';
     $html .= '<td colspan="2"><h1>' . $title . '</h1></td>';
     $html .= "</tr><tr>";
@@ -1641,6 +1643,16 @@ function awsPdfURL( $speaker, $date, $msg = 'Download PDF' )
     return download_file( $pdfFile );
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Generate a controller for downloading file.
+    *
+    * @Param $filepath
+    * @Param $msg
+    *
+    * @Returns  Clickable link.
+ */
+/* ----------------------------------------------------------------------------*/
 function download_file( $filepath, $msg = 'Download File' )
 {
     // All of these files are in /tmp directory.
@@ -1653,6 +1665,21 @@ function download_file( $filepath, $msg = 'Download File' )
         $url = "<a class='download_link' disabled>No downloadable data found.</a>";
 
     return $url;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Generate pdfs for talk on given date.
+    *
+    * @Param $date
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function pdfTalkLink( $date )
+{
+    $pdffile = generatePdfForTalk( $date );
+    return download_file( $pdffile );
 }
 
 /**
@@ -2129,8 +2156,11 @@ function getReferer( )
     return $_SERVER['HTTP_REFERER'];
 }
 
-function getRefShort( )
+function getRefShort( $ifsamegoto = 'user/home' )
 {
+    if( $_SERVER['HTTP_REFERER'] == $_SERVER['PHP_SELF'])
+        return site_url( $ifsamegoto ) ;
+
     return str_replace( site_url(), '', $_SERVER['HTTP_REFERER'] );
 }
 

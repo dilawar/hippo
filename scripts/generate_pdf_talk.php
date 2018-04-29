@@ -1,7 +1,7 @@
 <?php
 
-include_once 'database.php';
-include_once 'tohtml.php';
+require_once BASEPATH. 'database.php';
+require_once BASEPATH.'extra/tohtml.php';
 
 // This script may also be called by command line by the email bot. To make sure 
 // $_GET works whether we call it from command line or browser.
@@ -135,114 +135,92 @@ function eventToTex( $event, $talk = null )
 } // Function ends.
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Intialize pdf template.
-//////////////////////////////////////////////////////////////////////////////
-// Institute 
-$tex = array( 
-    "\documentclass[12pt]{article}"
-    , "\usepackage[margin=25mm,top=3cm,a4paper]{geometry}"
-    , "\usepackage[]{graphicx}"
-    , "\usepackage[]{wrapfig}"
-    , "\usepackage[]{grffile}"
-    , "\usepackage[]{amsmath,amssymb}"
-    , "\usepackage[colorlinks=true]{hyperref}"
-    , "\usepackage[]{color}"
-    , "\usepackage{tikz}"
-    , "\usepackage{fontawesome}"
-    , '\linespread{1.15}'
-    , '\pagenumbering{gobble}'
-    , '\usetikzlibrary{fit,calc,positioning,arrows,backgrounds}'
-    , '\usepackage[sfdefault,light]{FiraSans}'
-    , '\usepackage{tcolorbox}'          // Fit text in one page.
-    , '\tcbuselibrary{fitting}'
-    , '\begin{document}'
+function generatePdfForTalk( string $date, string $id = '' ) : string
+{
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Intialize pdf template.
+    //////////////////////////////////////////////////////////////////////////////
+    // Institute 
+    $tex = array( 
+        "\documentclass[12pt]{article}"
+        , "\usepackage[margin=25mm,top=3cm,a4paper]{geometry}"
+        , "\usepackage[]{graphicx}"
+        , "\usepackage[]{wrapfig}"
+        , "\usepackage[]{grffile}"
+        , "\usepackage[]{amsmath,amssymb}"
+        , "\usepackage[colorlinks=true]{hyperref}"
+        , "\usepackage[]{color}"
+        , "\usepackage{tikz}"
+        , "\usepackage{fontawesome}"
+        , '\linespread{1.15}'
+        , '\pagenumbering{gobble}'
+        , '\usetikzlibrary{fit,calc,positioning,arrows,backgrounds}'
+        , '\usepackage[sfdefault,light]{FiraSans}'
+        , '\usepackage{tcolorbox}'          // Fit text in one page.
+        , '\tcbuselibrary{fitting}'
+        , '\begin{document}'
     );
 
-
-$ids = array( );
-$date = null;
-if( array_key_exists( 'id', $_GET ) )
-{
-    array_push( $ids, $_GET[ 'id' ] );
-}
-else if( array_key_exists( 'date', $_GET ) )
-{
-    // Get all ids on this day.
-    $date = $_GET[ 'date' ];
-    echo "Found date $date";
-    echo printInfo( "Events on $date" );
-    
-    // Not all public events but only talks.
-    $entries = getPublicEventsOnThisDay( $date );
-    foreach( $entries as $entry )
+    $ids = array( );
+    if( $id )
+        $ids[] = $id;
+    else if( $date )
     {
-        $eid = explode( '.', $entry[ 'external_id' ] );
-
-        // Only from table talks.
-        if( $eid[0] == 'talks' && intval( $eid[1] ) > 0 )
-            array_push( $ids, $eid[1] );
+        // Not all public events but only talks.
+        $entries = getPublicEventsOnThisDay( $date );
+        foreach( $entries as $entry )
+        {
+            $eid = explode( '.', $entry[ 'external_id' ] );
+            // Only from table talks.
+            if( $eid[0] == 'talks' && intval( $eid[1] ) > 0 )
+                $ids[] =$eid[1];
+        }
     }
-}
-else
-{
-    echo alertUser( 'Invalid request.' );
-    exit;
-}
+    else
+    {
+        echo alertUser( 'Not valid id or date found.' );
+        return '';
+    }
 
-// Prepare TEX document.
-$outfile = 'EVENTS';
-if( $date )
-    $outfile .= '_' . $date;
+    // Prepare TEX document.
+    $outfile = 'EVENTS';
+    if( $date )
+        $outfile .= '_' . $date;
 
-foreach( $ids as $id )
-{
-    $talk = getTableEntry( 'talks', 'id', array( 'id' => $id ) );
-    $event = getEventsOfTalkId( $id );
-    $tex[] = eventToTex( $event, $talk );
-    $tex[] = '\pagebreak';
-    $outfile .= "_$id";
-}
+    foreach( $ids as $id )
+    {
+        $talk = getTableEntry( 'talks', 'id', array( 'id' => $id ) );
+        $event = getEventsOfTalkId( $id );
+        $tex[] = eventToTex( $event, $talk );
+        $tex[] = '\pagebreak';
+        $outfile .= "_$id";
+    }
 
-$tex[] = '\end{document}';
-$TeX = implode( "\n", $tex );
+    $tex[] = '\end{document}';
+    $TeX = implode( "\n", $tex );
 
-// Generate PDF now.
-$outdir = __DIR__ . "/data";
-$pdfFile = $outdir . '/' . $outfile . ".pdf";
-$texFile = sys_get_temp_dir() . '/' . $outfile . ".tex";
+    // Generate PDF now.
+    $outdir = sys_get_temp_dir();
+    $pdfFile = $outdir . '/' . $outfile . ".pdf";
+    $texFile = sys_get_temp_dir() . '/' . $outfile . ".tex";
 
-if( file_exists( $pdfFile ) )
-    unlink( $pdfFile );
+    if( file_exists( $pdfFile ) )
+        unlink( $pdfFile );
 
-file_put_contents( $texFile,  $TeX );
-$cmd = __DIR__ . "/tex2pdf.sh $texFile";
-if( file_exists( $texFile ) )
-    $res = `$cmd`;
+    file_put_contents( $texFile,  $TeX );
+    $cmd = FCPATH . "scripts/tex2pdf.sh $texFile";
+    if( file_exists( $texFile ) )
+        hippo_shell_exec($cmd, $res, $stderr);
 
-if( file_exists( $pdfFile ) )
-{
-    // Remove tex file.
-    // unlink( $texFile );
+    if( file_exists( $pdfFile ) )
+        return $pdfFile;
 
-    // Download only if called from browser.
-    if( ! isset( $argv ) )
-        goToPage( 'download_pdf.php?filename=' .$pdfFile, 0 );
-}
-else
-{
-    echo printWarning( "Failed to genered pdf document <br>
+    alertUser( "Failed to genered pdf document. <br />
         This is usually due to hidden special characters 
-        in your text. You need to cleanupyour entry." );
-
-    echo printWarning( "Error message <small>This is only for diagnostic
-        purpose. Show it to someone who is good with LaTeX </small>" );
-    echo "Command <pre> $cmd </pre>";
-    echo "<pre> $res </pre>";
+        in your text. You need to cleanupyour entry."
+        );
+    return '';
 }
-
-
-echo "<br/>";
-echo closePage( );
 
 ?>

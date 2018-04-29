@@ -177,42 +177,35 @@ else if( $default[ 'task' ] == 'Today\'s events' )
 
         $hostInstitite = emailInstitute( $talk[ 'host' ] );
 
-        $templ = emailFromTemplate(
-            "this_event" 
+        $templ = emailFromTemplate( "this_event" 
             , array( 'EMAIL_BODY' => $talkHTML
                     , 'HOST_INSTITUTE' => strtoupper( $hostInstitite )
                 ) 
             );
 
         $templ = htmlspecialchars( json_encode( $templ ) );
-        echo '
-            <form method="post" action="admin_acad_send_email.php">
+        echo '<form method="post" action="'.site_url('adminbmv/send_email').'">
                 <button type="submit">Send email</button>
                 <input type="hidden" name="subject" value="'. $subject . '" >
                 <input type="hidden" name="template" value="'. $templ . '" >
             </form>'
             ;
-
         $html .= $talkHTML;
     }
 
     $md = html2Markdown( $html, $strip_inline_image = true );
-
-
     $emailFileName = 'EVENT_' . $default['date'] . '.txt';
 
-    saveDownloadableFile( $emailFileName, $md );
-    echo downloadTextFile( $emailFileName, 'Download email' );
+    if( saveDownloadableFile( $emailFileName, $md ) )
+        echo downloadTextFile( $emailFileName );
 
     echo '<br>';
-    // Link to pdf file.
-    // echo '<a target="_blank" href="generate_pdf_talk.php?date='
-            // . $default[ 'date' ] . '">Download pdf</a>';
+    echo pdfTalkLink( $date );
 
     echo '<br><br>';
 
 }
 
-echo goBackToPageLink( getRefShort(), "Go back" );
+echo goBackToPageLink( getRefShort('user/home'), "Go back" );
 
 ?>

@@ -817,7 +817,7 @@ function html2Markdown( $html, $strip_inline_image = false ) : string
         if( $stderr )
         {
             echo printErrorSevere( "Error: $stderr" );
-            return false;
+            return '';
         }
         return $md;
     }
@@ -845,14 +845,9 @@ function html2Tex( $html, $strip_inline_image = false )
     return $tex;
 }
 
-function saveDownloadableFile( $filename, $content )
+function saveDownloadableFile( string $filename, string $content ) : bool
 {
-    $filepath = getDataDir(). $filename;
-
-    // Remove old file.
-    if( file_exists( $filepath ) )
-        unlink( $filepath );
-
+    $filepath = sys_get_temp_dir(). "/$filename";
     file_put_contents( $filepath, $content );
     if( file_exists( $filepath ) )
         return true;
