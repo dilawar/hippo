@@ -98,7 +98,7 @@ foreach( $upcomingTalks as $t )
     if( ! ($request || $event ) )
     {
         echo '<td>';
-        echo '<form method="post" action="'.site_url("$ref/manages_talk").'">';
+        echo '<form method="post" action="'.site_url("$ref/scheduletalk/$tid").'">';
         echo '<input type="hidden" name="id" value="' . $t[ 'id' ] . '" />';
         echo '<button title="Schedule this talk" 
             name="response" value="schedule">' . $symbCalendar . '</button>';

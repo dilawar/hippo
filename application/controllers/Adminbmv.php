@@ -288,7 +288,12 @@ class Adminbmv extends CI_Controller
 
         $external_id = getTalkExternalId( $id );
         $query = "&external_id=".$external_id;
-        // header( "Location: quickbook.php?" . $query );
+
+        $data = array( 
+            'external_id' => $external_id
+            , 'controller', 'adminbmv'
+            );
+        $this->loadview('user_book.php', $data );
     }
 }
 

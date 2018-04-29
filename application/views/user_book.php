@@ -23,13 +23,11 @@ $defaults = array(
     );
 
 
-/* NOTE: We can come here from a $_GET or $_POST request. Usually this happend when
- * admin is scheduling a talk.
+/*
+ * If external_id is set by controller then we are here to book a  talk.
  */
-$external_id = null;
-if( array_key_exists( 'external_id', $_GET ) )
+if( isset( $external_id ) )
 {
-    $external_id = $_GET[ 'external_id' ];
     $expr = explode( ".", $external_id );
     $tableName = $expr[ 0 ];
     $id = $expr[ 1 ];
@@ -92,7 +90,7 @@ else
 /* PAGE */
 echo '<br />';
 echo '<table style="min-width:300px;max-width:500px",border="0">';
-echo '<form action="' .site_url( 'user/book' ) . '" method="post" accept-charset="utf-8">';
+echo '<form action="" method="post" >';
 echo '
     <tr>
         <td>Date</td>
@@ -389,8 +387,6 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
     }
     $table .= '</table>';
     echo $table;
-
-    unset( $_POST );
 }
 
 
