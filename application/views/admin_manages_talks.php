@@ -1,13 +1,17 @@
 <?php
 
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'AWS_ADMIN', 'BOOKMYVENUE_ADMIN' ) );
+require_once BASEPATH.'autoload.php';
 
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
+// Get the referece page. These tasks are shared by both ADMIN_ACAD and
+// ADMINBMV. Controller must set controller parameter.
+$ref = $controller;
 
 echo userHTML( );
+
+$symbEdit = ' <i class="fa fa-pencil fa-2x"></i>';
+$symbDelete = ' <i class="fa fa-trash fa-2x"></i>';
+$symbCalendar = ' <i class="fa fa-calendar fa-2x"></i>';
+
 
 // Logic for POST requests.
 $speaker = array( 
@@ -54,14 +58,20 @@ foreach( $upcomingTalks as $t )
     /***************************************************************************
      * SECOND COLUMN: Talk information.
      */
+    $tid = $t['id'];
+
     echo '<td>';
-    echo '<form method="post" action="admin_acad_manages_talks_action.php">';
+    echo '<form method="post" action="'.site_url("$ref/updatetalk/$tid").'">';
     echo arrayToVerticalTableHTML( $t, 'info', '', 'speaker_id');
+    echo '</form>';
 
     // Put an edit button. 
+    echo '<form method="post" action="'.site_url("$ref/edittalk/$tid").'">';
     echo '<button style="float:right" title="Edit this talk"
             name="response" value="edit">' . $symbEdit . '</button>';
+    echo '</form>';
 
+    echo '<form method="post" action="'.site_url("$ref/deletetalk/$tid").'">';
     echo '<input type="hidden" name="id" value="' . $t[ 'id' ] . '" />
         <button onclick="AreYouSure(this)" name="response" 
             title="Delete this talk" >' . $symbDelete . '</button>';
@@ -88,7 +98,7 @@ foreach( $upcomingTalks as $t )
     if( ! ($request || $event ) )
     {
         echo '<td>';
-        echo '<form method="post" action="admin_acad_manages_talks_action.php">';
+        echo '<form method="post" action="'.site_url("$ref/manages_talk").'">';
         echo '<input type="hidden" name="id" value="' . $t[ 'id' ] . '" />';
         echo '<button title="Schedule this talk" 
             name="response" value="schedule">' . $symbCalendar . '</button>';
@@ -128,7 +138,7 @@ foreach( $upcomingTalks as $t )
                 );
             $templ = htmlspecialchars( json_encode( $templ ) );
 
-            $html .= '<form method="post" action="./admin_acad_send_email.php">';
+            $html .= '<form method="post" action="'.site_url("$ref/send_email") .'">';
             $html .= '<input type="hidden" name="subject" value="'. $subject . '" >';
             $html .= '<input type="hidden" name="template" value="'. $templ . '" >';
 
@@ -151,7 +161,7 @@ foreach( $upcomingTalks as $t )
                 , 'eid,class,external_id,url,modified_by,timestamp,calendar_id' . 
                 ',status,calendar_event_id,last_modified_on' );
 
-            echo '<form method="post" action="user_show_requests_edit.php">';
+            echo '<form method="post" action="'.site_url("user/show_requests").'">';
             echo "<button onclick=\"AreYouSure(this)\" 
                 name=\"response\" title=\"Cancel this request\"> 
                 $symbCancel </button>";

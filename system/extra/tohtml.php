@@ -2161,7 +2161,11 @@ function getRefShort( $ifsamegoto = 'user/home' )
     if( $_SERVER['HTTP_REFERER'] == $_SERVER['PHP_SELF'])
         return site_url( $ifsamegoto ) ;
 
-    return str_replace( site_url(), '', $_SERVER['HTTP_REFERER'] );
+    $shortUrl = str_replace( site_url(), '', $_SERVER['HTTP_REFERER'] );
+
+    // Remove leading / if any
+    $shortUrl = ltrim( $shortUrl, '/' );
+    return $shortUrl;
 }
 
 /*

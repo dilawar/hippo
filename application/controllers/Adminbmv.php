@@ -13,39 +13,49 @@ class Adminbmv extends CI_Controller
         $this->home();
     }
 
+    public function loadview( $view, $data = null )
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( $view, $data );
+    }
+
     // Show user home.
     public function home()
     {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'bookmyvenue_admin' );
+        $this->loadview( 'bookmyvenue_admin' );
     }
 
     public function review( )
     {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'bookmyvenue_admin_request_review' );
+        $this->loadview( 'bookmyvenue_admin_request_review' );
     }
 
-    public function synchronize_calendar( )
-    {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'synchronize_calendar.php' );
-        redirect( 'adminabmv/home' );
-    }
 
     public function venues( )
     {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'bookmyvenue_admin_manages_venues.php' );
+        $this->loadview( 'bookmyvenue_admin_manages_venues.php' );
     }
 
     public function email_and_docs($arg = '')
     {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'admin_acad_email_and_docs.php' );
+        $this->loadview( 'admin_acad_email_and_docs.php' );
+    }
+
+    // Set the controller which called it. Since this view can be called by acad
+    // admin as well.
+    public function manages_talks( $arg = '' )
+    {
+        $data = array( 'controller' => 'adminbmv' );
+        $this->loadview( 'admin_manages_talks.php', $data );
     }
 
     // ACTIONS
+    public function synchronize_calendar( )
+    {
+        $this->loadview( 'synchronize_calendar.php' );
+        redirect( 'adminabmv/home' );
+    }
+
     public function venues_action($arg='')
     {
         $response = __get__( $_POST, 'response', '' );
@@ -195,6 +205,90 @@ class Adminbmv extends CI_Controller
             flashMessage( 'Successfuly reviewed.' );
             redirect( 'adminbmv/home' );
         }
+    }
+
+    // MANAGES TALK
+    public function deletetalk($id)
+    {
+        $response = $_POST['response'];
+        if( $response == 'DO_NOTHING' )
+        {
+            flashMessage( "User cancelled.");
+            redirect( 'adminbmv/manages_talks');
+        }
+
+        // Delete this entry from talks.
+        $data = array( 'id' => $id );
+        $res = deleteFromTable( 'talks', 'id', $data );
+        if( $res )
+        {
+            flashMessage( 'Successfully deleted talk' );
+            $success = true;
+            $externalId = getTalkExternalId( $id );
+            $events = getTableEntries( 'events'
+                , 'external_id', "external_id='$externalId' AND status='VALID'" 
+            );
+            $requests = getTableEntries( 'bookmyvenue_requests'
+                , 'external_id', "external_id='$externalId' AND status='PENDING'" 
+            );
+            foreach( $events as $e )
+            {
+                echo printInfo( "Cancelling associated booking." );
+                echo arrayToTableHTML( $e, 'info' );
+                $e[ 'status' ] = 'CANCELLED';
+                // Now cancel this talk in requests, if there is any.
+                $res = updateTable( 'events', 'external_id', 'status', $e );
+            }
+
+            foreach( $requests as $r )
+            {
+                echo printInfo( "Cancelling associated booking request " );
+                echo arrayToTableHTML( $r, 'info' );
+
+                $r[ 'status' ] = 'CANCELLED';
+                $res = updateTable( 'bookmyvenue_requests', 'external_id', 'status', $r);
+            }
+
+            // /* VALIDATION: Check the bookings are deleted  */
+            $events = getTableEntries( 'events'
+                , 'external_id', "external_id='$externalId' AND status='VALID'"
+            );
+            $requests = getTableEntries( 'bookmyvenue_requests'
+                , 'external_id', "external_id='$externalId' AND status='VALID'"
+            );
+            assert( ! $events );
+            assert( ! $requests );
+            flashMessage( "Successfully deleted related events/requests of talk id $id." );
+        }
+        else
+            printWarning( "Failed to delete the talk." );
+
+        redirect('adminbmv/manages_talks');
+    }
+
+    public function updatetalk( $id )
+    {
+        echo printInfo( "Here you can only change the host, class, title and description
+            of the talk." );
+
+        $data = array('id' => $id );
+        $talk = getTableEntry( 'talks', 'id', $data );
+
+        echo '<form method="post" action="admin_acad_manages_talks_action_update.php">';
+        echo dbTableToHTMLTable('talks', $talk
+            , 'class,coordinator,host,title,description'
+            , 'submit');
+        echo '</form>';
+    }
+
+    public function scheduletalk($id)
+    {
+        // We are sending this to quickbook.php as GET request. Only external_id is 
+        // sent to page.
+
+        $external_id = getTalkExternalId( $id );
+        $query = "&external_id=".$external_id;
+        // header( "Location: quickbook.php?" . $query );
     }
 }
 

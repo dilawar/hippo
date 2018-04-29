@@ -11,6 +11,7 @@ trait AdminAcad
         $this->home();
     }
 
+    // VIEWS ONLY.
     public function acad( $task = '' )
     {
         // If no action is selected, view admin page.
@@ -29,8 +30,14 @@ trait AdminAcad
             $this->template->set( 'header', 'header.php');
             $this->template->load( 'admin_acad_manages_enrollments.php' );
         }
+        else
+        {
+            flashMessage( "Not implemented yet: $task" );
+            redirect('admin/acad');
+        }
     }
 
+    // VIEWS WITH ACTION.
     public function acad_action( $action )
     {
         if( $action == 'schedule_upcoming_aws' )
