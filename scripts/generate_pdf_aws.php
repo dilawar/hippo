@@ -188,11 +188,7 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
         hippo_shell_exec( $cmd, $stdout, $stderr );
 
     if( file_exists( $pdfFile ) )
-    {
-        echo printInfo( "Successfully genered pdf document " . 
-           basename( $pdfFile ) , true);
         return $pdfFile;
-    }
 
     alertUser( "Failed to genered pdf document <br>
         This is usually due to hidden special characters 

@@ -794,7 +794,7 @@ function rescheduleAWS( $method = 'reschedule_default' )
     else
         $scriptPath = FCPATH.'./script/schedule_aws.py';
 
-    echo("Executing $scriptPath with timeout 60 secs.");
+    // echo("Executing $scriptPath with timeout 60 secs.");
     $command = "timeout 60 $scriptPath";
     return hippo_shell_exec( $command, $output, $err );
 }
@@ -812,7 +812,7 @@ function html2Markdown( $html, $strip_inline_image = false ) : string
     if( file_exists( $outfile ) )
     {
         $cmd = FCPATH."scripts/html2other.py $outfile md ";
-        echo printInfo( "Executing $cmd", false );
+        // echo printInfo( "Executing $cmd", false );
         hippo_shell_exec( $cmd, $md, $stderr );
         if( $stderr )
         {

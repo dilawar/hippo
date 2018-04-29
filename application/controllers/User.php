@@ -45,6 +45,22 @@ class User extends CI_Controller
         $this->template->load('bookmyvenue_browse');
     }
 
+    public function download( $filename )
+    {
+        $filepath = sys_get_temp_dir() . "/$filename";
+        if( file_exists( $filepath ) )
+        {
+            $content = file_get_contents( $filepath );
+            force_download( $filename, $content );
+        }
+        else
+            flashMessage( "File $filename does not exist!", "warning" );
+
+        if ($this->agent->is_referral())
+            redirect( $this->agent->referrer() );
+        else
+            redirect( 'user/home' );
+    }
 
     // USER EDITING PROFILE INFO
     public function info( $arg = '' )

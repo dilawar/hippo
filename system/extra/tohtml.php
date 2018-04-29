@@ -1638,15 +1638,20 @@ function closePage( )
 function awsPdfURL( $speaker, $date, $msg = 'Download PDF' )
 {
     $pdfFile = pdfFileOfAWS( $date, $speaker );
-    if( $pdfFile )
-        return force_download( $pdfFile, NULL );
-    return "<a href='' disable>No PDF generated</a>";
+    return download_file( $pdfFile );
 }
 
 function download_file( $filepath, $msg = 'Download File' )
 {
-    $url = "<a class='download_link' 
-        href='".force_download($filepath, NULL)."'>$msg</a>";
+    // All of these files are in /tmp directory.
+    if( file_exists( $filepath ) )
+    {
+        $filename = basename($filepath);
+        $url = "<a class='download_link' href='". site_url("user/download/$filename")."'>$msg</a>";
+    }
+    else
+        $url = "<a class='download_link' disabled>No downloadable data found.</a>";
+
     return $url;
 }
 
@@ -1661,10 +1666,7 @@ function download_file( $filepath, $msg = 'Download File' )
  */
 function downloadTextFile( $filepath, $msg = 'Download file', $class = 'download_link' )
 {
-    // $url = '<a class="' . $class . '" target="_blank" href="download_file.php?filename='
-           // . $filepath .  '">' . $msg .'</a>';
-    $url = "<a class='$class' href='".force_download($filepath, NULL)."'>$msg</a>";
-    return $url;
+    return download_file( $filepath );
 }
 
 

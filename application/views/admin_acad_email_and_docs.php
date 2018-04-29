@@ -55,9 +55,7 @@ if( $default[ 'task' ] == 'This week AWS' )
 
     $filename = "AWS_" . $whichDay;
     if( count( $awses ) < 1 )
-    {
-        echo printInfo( "No AWS has been confirmed for this day" );
-    }
+        echo printInfo( "No AWS is found for selected day.", true );
     else
     {
         foreach( $awses as $aws )
@@ -65,6 +63,7 @@ if( $default[ 'task' ] == 'This week AWS' )
 
             echo awsToHTML( $aws, $with_picture = true );
             $emailHtml .= awsToHTML( $aws, false );
+
             // Link to pdf file.
             echo awsPdfURL( $aws[ 'speaker' ], $aws[ 'date' ] );
             $filename .= '_' . $aws[ 'speaker' ];
@@ -207,9 +206,8 @@ else if( $default[ 'task' ] == 'Today\'s events' )
 
     echo '<br>';
     // Link to pdf file.
-    echo '<a target="_blank" href="generate_pdf_talk.php?date=' 
-            . $default[ 'date' ] . '">Download pdf</a>';
-
+    // echo '<a target="_blank" href="generate_pdf_talk.php?date='
+            // . $default[ 'date' ] . '">Download pdf</a>';
 
     echo '<br><br>';
 

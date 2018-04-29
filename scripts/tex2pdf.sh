@@ -21,7 +21,7 @@
 set -e
 # set -x
 INFILE=$(readlink -f $1)
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TEXFILENAME=$(basename $INFILE)
 OUTFILENAME=${TEXFILENAME%.tex}.pdf
 ( 
