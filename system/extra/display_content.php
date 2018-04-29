@@ -12,12 +12,13 @@ function printErrorSevere($msg, $flash = false )
 }
 
 
-function printWarning($msg)
+function printWarning($msg, $flash = true)
 {
     $warn ="<div class=\"alert alert-warning\">
         <i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</div>";
     error_log( $msg );
-    $_SESSION['warning'] = $msg;
+    if( $flash )
+        $_SESSION['warning'] = $msg;
     return $warn;
 }
 
