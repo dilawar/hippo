@@ -37,7 +37,7 @@ def fix( msg ):
 def tomd( htmlfile ):
     # This function is also used by sendemail.py file.
     with open( htmlfile, 'r' ) as f:
-        msg = f.read().encode('utf-8')
+        msg = f.read()
 
     msg = fix( msg )
     # remove <div class="strip_from_md"> </div>
