@@ -16,6 +16,13 @@ class Admin extends CI_Controller
         $this->home();
     }
 
+    public function load_admin_view( $view, $data = array() )
+    {
+        $data['controller'] = 'admin';
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( $view, $data );
+    }
+
     // Show user home.
     public function home()
     {

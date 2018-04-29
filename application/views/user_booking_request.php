@@ -4,6 +4,10 @@ require_once BASEPATH .'autoload.php';
 
 echo userHTML( );
 
+$controller = 'user';
+if(isset($controller))
+    $ref = $controller;
+
 echo '<ul>
         <li> Set <tt>IS PUBLIC EVENT</tt>  to <tt>YES</tt> if you want your event to appear 
         on NCBS\' google-calendar. <br />
@@ -17,15 +21,13 @@ echo '<ul>
 
 $venues = getVenues( $sortby = 'total_events' );
 
-if(! __get__($_POST, 'date'))
+if(! isset($date))
 {
     echo printErrorSevere( "No valid day is selected. Please go back and select a valid date.", false );
     echo goBack( );
     echo goBackToPageLink( "user/home", "Go Home" );
     exit;
 }
-
-$date = $_POST['date'];
 
 $day = nameOfTheDay( $date ); 
 $events = getEvents( $date );
@@ -77,25 +79,24 @@ if( count( $labmeetOrJCs ) > 0 )
 
 echo ' <h2>Fill-in details</h2> ';
 
+$default = array( 'created_by' => whoAmI() );
+$default[ 'end_time' ] = $defaultEndTime;
+$default = array_merge( $default, $_POST );
+
 // If external_id is given then this needs to go into request table. This is 
 // used to fetch event data from external table. The format of this field if 
 // TABLENAME.ID. 'SELF.-1' means the there is not external dependency.
-$external_id = 'SELF.-1';
-if( array_key_exists( 'external_id', $_POST ) )
-    $external_id = $_POST[ 'external_id' ];
-
-
-$default = array( 'created_by' => $_SESSION[ 'user' ] );
-$default[ 'end_time' ] = $defaultEndTime;
-
-$default = array_merge( $default, $_POST );
+if(!isset($external_id))
+    $external_id = 'SELF.-1';
+else
+    $default['is_public_event'] = true;
 
 echo '<form method="post" action="' . site_url('user/bookingrequest_submit') . '">';
 echo dbTableToHTMLTable( 'bookmyvenue_requests'
         , $default
         , 'class,title,description,url,is_public_event,end_time' 
         , ''
-        , $hide = 'gid,rid,external_id,modified_by,timestamp,status'
+        , $hide = 'gid,rid,modified_by,timestamp,status'
         );
 
 echo '<input type="hidden" name="external_id" value="' . $external_id . '" >';
@@ -104,8 +105,8 @@ echo '<input type="hidden" name="external_id" value="' . $external_id . '" >';
 echo "<br />";
 echo repeatPatternTable( 'repeat_pat' );
 echo '<br />';
-echo '<button class="submit" name="response" value="submit"><i class="fa fa-check"></i></button>';
+echo submitButton( 'Submit' );
 echo '</form>';
-
 echo '<br /><br />';
-echo goBackToPageLink( "user", "Go back" );
+
+echo goBackToPageLink( "$ref/home", "Go back" );

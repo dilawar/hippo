@@ -20,6 +20,13 @@ class User extends CI_Controller
     use Booking;
     use JC;
 
+    public function load_user_view( $view, $data = array() )
+    {
+        $data['controller'] = 'user';
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( $view, $data );
+    }
+
     public function index( )
     {
         $this->home();
@@ -36,7 +43,7 @@ class User extends CI_Controller
     public function book( $arg = '' )
     {
         $this->template->set( 'header', 'header.php' );
-        $this->template->load('user_book_private');
+        $this->template->load('user_book');
     }
 
     public function bmv_browse( )

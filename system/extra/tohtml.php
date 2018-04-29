@@ -107,6 +107,14 @@ function eventToICAL( array $event ) : string
     return $ics;
 }
 
+function submitButton( $value )
+{
+    return '<div style="float:right"> 
+        <button class="submit" name="response" value="' . $value . '">
+            <i class="fa fa-check"></i></button>
+        </div>';
+}
+
 function eventToICALLink( $event )
 {
     return '';

@@ -6,7 +6,14 @@ require_once BASEPATH.'autoload.php';
 
 trait AdminAcad
 {
-    function index()
+    public function load_adminacad_view( $view, $data = array() )
+    {
+        $data['controller'] = 'admin/acad';
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( $view, $data );
+    }
+
+    public function index()
     {
         $this->home();
     }
@@ -17,18 +24,15 @@ trait AdminAcad
         // If no action is selected, view admin page.
         if( ! $task )
         {
-            $this->template->set( 'header', 'header.php' );
-            $this->template->load( 'admin_acad.php' );
+            $this->load_adminacad_view( 'admin_acad.php' );
         }
         elseif( $task == 'manages_upcoming_aws' )
         {
-            $this->template->set( 'header', 'header.php');
-            $this->template->load( 'admin_acad_manages_upcoming_aws.php' );
+            $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws.php' );
         }
         elseif($task == 'manages_enrollments')
         {
-            $this->template->set( 'header', 'header.php');
-            $this->template->load( 'admin_acad_manages_enrollments.php' );
+            $this->load_adminacad_view( 'admin_acad_manages_enrollments.php' );
         }
         else
         {
@@ -112,8 +116,7 @@ trait AdminAcad
         }
         else if( $response == 'format_abstract' )
         {
-            $this->template->set('header', 'header.php');
-            $this->template->load( 'admin_acad_manages_upcoming_aws_reformat.php');
+            $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws_reformat.php');
         }
         else if( $response == 'removespeaker' )
         {

@@ -11,6 +11,7 @@ echo userHTML( );
 $symbEdit = ' <i class="fa fa-pencil fa-2x"></i>';
 $symbDelete = ' <i class="fa fa-trash fa-2x"></i>';
 $symbCalendar = ' <i class="fa fa-calendar fa-2x"></i>';
+$symbCancel = ' <i class="fa fa-trash fa-2x"></i>';
 
 
 // Logic for POST requests.

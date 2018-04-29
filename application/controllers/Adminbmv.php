@@ -13,8 +13,10 @@ class Adminbmv extends CI_Controller
         $this->home();
     }
 
-    public function loadview( $view, $data = null )
+    public function loadview( $view, $data = array() )
     {
+        // Make sure each view knows from which controller it has been called.
+        $data['controller'] = 'adminbmv';
         $this->template->set( 'header', 'header.php' );
         $this->template->load( $view, $data );
     }
@@ -30,15 +32,19 @@ class Adminbmv extends CI_Controller
         $this->loadview( 'bookmyvenue_admin_request_review' );
     }
 
-
     public function venues( )
     {
-        $this->loadview( 'bookmyvenue_admin_manages_venues.php' );
+        $this->loadview( 'bookmyvenue_admin_manages_venues.php', $data );
     }
 
     public function email_and_docs($arg = '')
     {
         $this->loadview( 'admin_acad_email_and_docs.php' );
+    }
+
+    public function bookingrequest($arg = '')
+    {
+        $this->loadview( 'user_booking_request', $_POST );
     }
 
     // Set the controller which called it. Since this view can be called by acad

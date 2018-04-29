@@ -7,6 +7,10 @@
 
 require_once BASEPATH . 'autoload.php';
 
+$ref = 'user';
+if(isset($controller))
+    $ref = $controller;
+
 echo userHTML( );
 
 $roundedTimeNow = round( time( ) / (15 * 60) ) * (15 * 60 );
@@ -57,8 +61,9 @@ else
     echo alertUser( '
         If your event requires email to be send out to academic community (e.g. 
         <strong><tt>TALK</tt>s, <tt>SEMINAR</tt>, <tt>THESIS SEMINAR</tt>s, <tt>LECTURE</tt>s</strong> ),
-        <a href="' . site_url( 'user/register_talk') . '"> <i class="fa fa-spinner fa-spin"></i> click here</a>.'
-        , false
+        <a href="' . site_url( "$ref/register_talk") . '"> 
+            <i class="fa fa-spinner fa-spin"></i> click here</a>.'
+            , false
         );
 }
 
@@ -163,25 +168,26 @@ $date = __get__( $_POST, 'date', dbDate(strtotime( 'today' )) );
 // Get list of public events on user request day and show them to him. So he can
 // decides if some other timeslot should be used.
 $publicEvents = getPublicEventsOnThisDay( $date );
+
+echo "<div style=\"font-size:small;border:1px solid\">";
 if( count( $publicEvents ) > 0 )
 {
-    echo alertUser(
-        "<h3>Alert: Public events on selected date</h3>
-        It is advisable not to book any academic event which might clash with any of 
-        the following events.
-        "
+    echo printWarning( 
+        "There are some public events on selected date. <br />
+        You are advised not to book any academic event which might clash with any of 
+        the following events.", false
     );
 
-    echo "<div style=\"font-size:x-small\">";
     $tohide = 'gid,eid,description,status,is_public_event,external_id'
               . ',calendar_id,calendar_event_id,last_modified_on,url' ;
-    echo '<table class="show_events">';
+
+    echo '<table class="show_events info">';
     echo arrayHeaderRow( $publicEvents[0], 'info', $tohide );
     foreach( $publicEvents as $event )
         echo arrayToRowHTML( $event, 'info', $tohide );
     echo '</table>';
-    echo "</div>";
 }
+echo "</div>";
 
 /******************************************************************************
  * Get the list of labmeets and JC
@@ -335,7 +341,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
                 $date, $startTime, $endTime, $venueId, $jcAndMeets
             );
 
-        $block = '<form method="post" action="' . site_url( 'user/bookingrequest' ) . '">';
+        $block = '<form method="post" action="' . site_url( "$ref/bookingrequest" ) . '">';
         $block .= '<div><tr>';
         if( count( $jclabmeets ) > 0 )
         {
@@ -359,6 +365,9 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 
         // Create hidden fields from defaults. The description must be cleaned
         // otherwise it will be displayed on the screen.
+        if(!isset($external_id))
+            $external_id = 'SELF.-1';
+
         $block .= '<input type="hidden" name="title"
             value="' . $defaults['title' ] . '">';
         $block .= '<input type="hidden" name="description"
@@ -390,7 +399,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 }
 
 
-echo goBackToPageLink( "user/home", "Go back" );
+echo goBackToPageLink( "$ref/home", "Go back" );
 echo "</body>";
 
 ?>

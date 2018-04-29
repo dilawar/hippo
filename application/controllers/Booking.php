@@ -8,7 +8,7 @@ trait Booking
     {
         log_message( 'info', 'Creating booking requests' );
         $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'user_booking_request' );
+        $this->template->load( 'user_booking_request', $_POST );
     }
 
     // Function to show the user's booking.
