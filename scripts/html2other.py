@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 __author__           = "Dilawar Singh"
 __copyright__        = "Copyright 2016, Dilawar Singh"
@@ -17,6 +18,12 @@ import string
 import tempfile
 import base64
 from logger import _logger
+import locale
+
+# Set locale to utf-8 otherwise calling this script from apache will have
+# decoding issues.
+locale.setlocale( locale.LC_ALL, "en_IN.UTF-8")
+os.environ[ "PYTHONENCODING"] = "utf-8"
 
 pandoc_ = True
 
@@ -30,14 +37,14 @@ def fix( msg ):
 def tomd( htmlfile ):
     # This function is also used by sendemail.py file.
     with open( htmlfile, 'r' ) as f:
-        msg = f.read()
+        msg = f.read().encode('utf-8')
 
     msg = fix( msg )
     # remove <div class="strip_from_md"> </div>
-    pat = re.compile( r'\<div\s+class\s*\=\s*"strip_from_md"\s*\>.+?\</div\>', re.DOTALL )
+    pat = re.compile( u'\<div\s+class\s*\=\s*"strip_from_md"\s*\>.+?\</div\>', re.DOTALL )
     for s in pat.findall( msg ):
         msg = msg.replace( s, '' )
-    msg = msg.replace( '</div>', '' )
+    msg = msg.replace( u'</div>', '' )
     msg = re.sub( r'\<div\s+.+?\>', '', msg )
 
     # Write back to original file.

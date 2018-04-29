@@ -104,9 +104,13 @@ function awsToTex( $aws )
 
     $cmd = FCPATH.'scripts/html2other.py';
     hippo_shell_exec( "$cmd $tempFile tex", $texAbstractFile, $stderr );
-    $texAbstract = file_get_contents( trim($texAbstractFile) );
 
-    unlink( $tempFile );
+    if(file_exists($texAbstractFile))
+        $texAbstract = file_get_contents( trim($texAbstractFile) );
+    else
+        $texAbstract = 'Abstract could not be generated.';
+
+    // unlink( $tempFile );
 
     if( strlen(trim($texAbstract)) > 10 )
         $abstract = $texAbstract;
@@ -127,7 +131,6 @@ function awsToTex( $aws )
 
 function pdfFileOfAWS( string $date, string $speaker = '' ) : string
 {
-
     if( ! $date )
     {
         echo printWarning( "Invalid date $date" );
@@ -153,7 +156,7 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
         , "\usepackage{wrapfig}"
         , "\usepackage{fontawesome}"
         , '\pagenumbering{gobble}'
-        , '\linespread{1.15}'
+        , '\linespread{1.2}'
         , '\usetikzlibrary{calc,positioning,arrows,fit}'
         , '\usepackage[sfdefault,light]{FiraSans}'
         , '\usepackage{tcolorbox}'
@@ -175,9 +178,9 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
     // Generate PDF now.
     $texFile = sys_get_temp_dir() . "/$outfile.tex";
 
-
     // Remove tex from the end and apped pdf.
     $pdfFile = rtrim( $texFile, 'tex' ) . 'pdf';
+
     if( file_exists( $pdfFile ) )
         unlink( $pdfFile );
 

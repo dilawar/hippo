@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <html>
 <head>
     <title><?php if(isset($title)){ echo $title;}else{echo "Hippo";} ?></title>
