@@ -41,7 +41,7 @@ def tomd( htmlfile ):
 
     msg = fix( msg )
     # remove <div class="strip_from_md"> </div>
-    pat = re.compile( u'\<div\s+class\s*\=\s*"strip_from_md"\s*\>.+?\</div\>', re.DOTALL )
+    pat = re.compile( r'\<div\s+class\s*\=\s*"strip_from_md"\s*\>.+?\</div\>', re.DOTALL )
     for s in pat.findall( msg ):
         msg = msg.replace( s, '' )
     msg = msg.replace( u'</div>', '' )
