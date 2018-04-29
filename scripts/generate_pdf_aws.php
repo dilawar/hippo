@@ -99,17 +99,13 @@ function awsToTex( $aws )
     $tex[] = '\par \vspace{3mm}';
 
     // remove html formating before converting to tex.
-    $tempFile = tempnam( "/tmp", "hippo_abstract" );
+    $tempFile = tempnam( sys_get_temp_dir(), "hippo_abstract" );
     file_put_contents( $tempFile, $abstract );
 
     $cmd = FCPATH.'scripts/html2other.py';
     hippo_shell_exec( "$cmd $tempFile tex", $texAbstractFile, $stderr );
 
-    if(file_exists($texAbstractFile))
-        $texAbstract = file_get_contents( trim($texAbstractFile) );
-    else
-        $texAbstract = 'Abstract could not be generated.';
-
+    $texAbstract = file_get_contents( trim($texAbstractFile) );
     // unlink( $tempFile );
 
     if( strlen(trim($texAbstract)) > 10 )
@@ -122,8 +118,9 @@ function awsToTex( $aws )
     $extra .= '\end{tabular}';
 
     $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-        , fit to height=18 cm, fit basedim=14pt
-        ]' . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
+        , fit to height=18 cm, fit basedim=14pt, enhanced]
+        \fontfamily{pnc}\selectfont
+    ' . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
 
     return implode( "\n", $tex );
 
@@ -158,6 +155,7 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
         , '\pagenumbering{gobble}'
         , '\linespread{1.2}'
         , '\usetikzlibrary{calc,positioning,arrows,fit}'
+        // , '\usepackage{ebgaramond}'
         , '\usepackage[sfdefault,light]{FiraSans}'
         , '\usepackage{tcolorbox}'
         , '\tcbuselibrary{fitting}'
