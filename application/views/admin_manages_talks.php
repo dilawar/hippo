@@ -153,8 +153,10 @@ foreach( $upcomingTalks as $t )
         // Else there might be a pending request.
         else if( $request )
         {
-            echo alertUser( "Shown below is the booking request pending review for 
-                    above talk." );
+            echo alertUser( 
+                "Shown below is the booking request pending review for above talk."
+                , false
+            );
 
             $gid = $request[ 'gid' ];
 

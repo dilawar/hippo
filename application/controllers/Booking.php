@@ -116,8 +116,9 @@ trait Booking
         redirect('user/show_private');
     }
 
-    public function bookingrequest_submit( $arg = '' )
+    public function bookingrequest_submit( $ref = '' )
     {
+        $ref = __get__( $_POST, 'REFERER', 'user' );
         $msg = verifyRequest( $_POST );
         if( $msg == "OK" )
         {
@@ -168,24 +169,22 @@ trait Booking
                 );
 
                 echo flashMessage( "Your request has been submitted." );
-                redirect('user/book' );
+                redirect("$ref/book");
             }
             else
             {
-                echo printWarning( 
-                    "Your request could not be submitted. Please notify the admin." 
-                );
-                redirect('user/home');
+                echo printWarning( "Your request could not be submitted. Please notify the admin." );
+                redirect("$ref/home");
             }
         }
         else
         {
             $msg1 = "There was an error in request.";
             $msg1 .= "<p>$msg</p>";
-            $msg1 .= "<p>Complete entry is following</p>";
+            $msg1 .= "<p>Complete entry is following.</p>";
             $msg1 .= arrayToVerticalTableHTML( $_POST, "request" );
-            flashMessage( $msg1 );
-            redirect( 'user/book' );
+            flashMessage( $msg1, 'warning' );
+            redirect( "$ref/book" );
         }
     }
 

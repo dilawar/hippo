@@ -4,7 +4,7 @@ require_once BASEPATH .'autoload.php';
 
 echo userHTML( );
 
-$controller = 'user';
+$ref = 'user';
 if(isset($controller))
     $ref = $controller;
 
@@ -91,7 +91,7 @@ if(!isset($external_id))
 else
     $default['is_public_event'] = true;
 
-echo '<form method="post" action="' . site_url('user/bookingrequest_submit') . '">';
+echo '<form method="post" action="' . site_url("user/bookingrequest_submit") . '">';
 echo dbTableToHTMLTable( 'bookmyvenue_requests'
         , $default
         , 'class,title,description,url,is_public_event,end_time' 
@@ -100,6 +100,9 @@ echo dbTableToHTMLTable( 'bookmyvenue_requests'
         );
 
 echo '<input type="hidden" name="external_id" value="' . $external_id . '" >';
+
+// Lets keep the referer in the $_POST.
+echo '<input type="hidden" name="REFERER" value="' . $ref . '" >';
 
 // I need to add repeat pattern here.
 echo "<br />";

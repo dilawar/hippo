@@ -27,6 +27,12 @@ class Adminbmv extends CI_Controller
         $this->loadview( 'bookmyvenue_admin' );
     }
 
+    // BOOKING. Rest of the functions are in Booking traits.
+    public function book( $arg = '' )
+    {
+        $this->manages_talks($arg);
+    }
+
     public function review( )
     {
         $this->loadview( 'bookmyvenue_admin_request_review' );
@@ -51,8 +57,7 @@ class Adminbmv extends CI_Controller
     // admin as well.
     public function manages_talks( $arg = '' )
     {
-        $data = array( 'controller' => 'adminbmv' );
-        $this->loadview( 'admin_manages_talks.php', $data );
+        $this->loadview( 'admin_manages_talks.php' );
     }
 
     // ACTIONS
