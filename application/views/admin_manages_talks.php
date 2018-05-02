@@ -164,7 +164,7 @@ foreach( $upcomingTalks as $t )
                 , 'eid,class,external_id,url,modified_by,timestamp,calendar_id' . 
                 ',status,calendar_event_id,last_modified_on' );
 
-            echo '<form method="post" action="'.site_url("user/show_requests").'">';
+            echo '<form method="post" action="'.site_url("$ref/show_requests").'">';
             echo "<button onclick=\"AreYouSure(this)\" 
                 name=\"response\" title=\"Cancel this request\"> 
                 $symbCancel </button>";
@@ -180,6 +180,6 @@ foreach( $upcomingTalks as $t )
 echo '</table>';
 echo '</div>';
     
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "$ref/home", "Go back" );
 
 ?>

@@ -136,25 +136,23 @@ if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
    echo "<h1> <i class=\"fa fa-cogs\"></i>   Admin</h1>";
    $roles =  getRoles( $_SESSION['user'] );
 
-   $html = "<table class=\"admin\">";
-
+   $html = "<table class=\"info\">";
    if( in_array( "ADMIN", $roles ) )
        $html .= '<tr>
-           <td> All mighty ADMIN </td>
            <td><a class="clickable" href="'. site_url("/admin"). '">Admin</a> </td>
-       </tr>';
+        ';
 
    if( in_array( "BOOKMYVENUE_ADMIN", $roles ) )
-       $html .= '<tr><td>Approve/reject, modify or cancel booking requests.</td>
-       <td> <a class="clickable" href="'. site_url("adminbmv"). '">BookMyVenue Admin</a></td> </tr>';
+       $html .= '<td><a class="clickable" href="'. site_url("adminbmv"). '">BookMyVenue Admin</a></td>';
+   else
+       $html .= ' <td></td>';
 
    if( in_array( "AWS_ADMIN", $roles ) )
-       $html .= '<tr><td>Schedule AWS. Update AWS speaker list.
-       Manage running courses and more ...
-       </td>
-       <td> <a class="clickable" href="'. site_url("/admin/acad"). '">Academic Admin</a></td> </tr>';
+       $html .= '<td> <a class="clickable" href="'. site_url("/admin/acad"). '">Academic Admin</a></td>';
+   else
+       $html .= ' <td></td>';
 
-   $html .= "</table>";
+   $html .= "</tr></table>";
    echo $html;
 }
 
