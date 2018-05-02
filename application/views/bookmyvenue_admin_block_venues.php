@@ -1,12 +1,11 @@
 <?php
-include_once 'header.php';
-include_once 'database.php';
-include_once 'methods.php';
-include_once 'tohtml.php';
-include_once 'check_access_permissions.php';
 
-mustHaveAnyOfTheseRoles('BOOKMYVENUE_ADMIN' );
+require_once BASEPATH.'autoload.php';
+include_once BASEPATH.'extra/helper.php';
+
 echo userHTML( );
+
+global $dbChoices;
 
 /* Let user select venues and select the date to block them. */
 echo ' <h1> Block venues on certain dates and times </h1> ';

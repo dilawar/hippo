@@ -53,6 +53,38 @@ class Adminbmv extends CI_Controller
         $this->loadview( 'user_booking_request', $_POST );
     }
 
+    public function block_venues($arg = '')
+    {
+        $this->loadview('bookmyvenue_admin_block_venues');
+    }
+
+    public function update_requests($arg = '')
+    {
+        $response = strtolower($_POST['response']);
+        if( $response == 'edit' )
+        {
+            flashMessage( "Sorry. But you can not modfiy this request. You must 
+                ask its owner to update the booking request.
+                ");
+            $this->loadview('admin_manages_talks');
+        }
+        else if( $response == 'delete' )
+        {
+            flashMessage("Deleting request is not implemented yet." );
+            $this->loadview('admin_manages_talks');
+        }
+        else if($response == 'do_nothing')
+        {
+            flashMessage("User cancelled the last operation.");
+            $this->loadview('admin_manages_talks');
+        }
+        else
+        {
+            flashMessage( "$response is not implemented yet.");
+            $this->loadview('admin_manages_talks');
+        }
+    }
+
     // Set the controller which called it. Since this view can be called by acad
     // admin as well.
     public function manages_talks( $arg = '' )

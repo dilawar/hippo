@@ -39,6 +39,8 @@ foreach( $talks as $t )
     array_push( $upcomingTalks, $t );
 }
 
+echo goBackToPageLink( "$ref/home", "Go back" );
+
 echo "<h1>Upcoming talks</h1>";
 
 // Show upcoming talks to user. She has edit, delete or schedule them.
@@ -164,7 +166,7 @@ foreach( $upcomingTalks as $t )
                 , 'eid,class,external_id,url,modified_by,timestamp,calendar_id' . 
                 ',status,calendar_event_id,last_modified_on' );
 
-            echo '<form method="post" action="'.site_url("$ref/show_requests").'">';
+            echo '<form method="post" action="'.site_url("$ref/update_requests").'">';
             echo "<button onclick=\"AreYouSure(this)\" 
                 name=\"response\" title=\"Cancel this request\"> 
                 $symbCancel </button>";
