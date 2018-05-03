@@ -7,7 +7,7 @@ require_once BASEPATH.'autoload.php';
 
 class Adminbmv extends CI_Controller
 {
-    // Pure VIEWS
+    // PURE VIEWS
     function index()
     {
         $this->home();
@@ -56,6 +56,57 @@ class Adminbmv extends CI_Controller
     public function block_venues($arg = '')
     {
         $this->loadview('bookmyvenue_admin_block_venues');
+    }
+
+    // VIEWS WITH ACTION.
+    public function block_venue_submit($arg = '')
+    {
+        $venues = __get__( $_POST, 'venue' );
+        $dates = __get__( $_POST, 'dates' );
+        $dates = explode( ',', $dates );
+        $startTime = __get__( $_POST, 'start_time' );
+        $endTime = __get__( $_POST, 'end_time' );
+        $gid = intval( getUniqueFieldValue( 'bookmyvenue_requests', 'gid' ) ) + 1;
+        $rid = 0;
+        foreach( $venues as $venue )
+        {
+            foreach( $dates as $date )
+            {
+                $date = dbDate( trim( $date ) );
+                $title = __get__( $_POST, 'reason', '' );
+                $class = __get__( $_POST, 'class', 'UNKNOWN' );
+
+                if( strlen( $title ) < 8 )
+                {
+                    flashMessage( "Reason for blocking '$title' is too small.
+                        At least 8 chars are required. Ignoring ...", 'warning' 
+                        );
+                    continue;
+                }
+
+                // We create a request and immediately approve it.
+                $user = whoAmI( );
+                $data = array(
+                    'gid' => $gid, 'rid' => $rid
+                    , 'date' => dbDate( $date )
+                    , 'start_time' => $startTime
+                    , 'end_time' => $endTime
+                    , 'venue' => $venue
+                    , 'title' => $title
+                    , 'class' => $class
+                    , 'description' => 'AUTO BOOKED BY Hippo'
+                    , 'created_by' => whoAmI( )
+                    , 'last_modified_on' => dbDateTime( 'now' )
+                );
+
+                $res = insertIntoTable( 'bookmyvenue_requests', array_keys( $data ), $data );
+                $res = approveRequest( $gid, $rid );
+                if( $res )
+                    flashMessage( "Request $gid.$rid is approved and venue has been blocked." );
+                $rid ++;
+             }
+        }
+        redirect( 'adminbmv/block_venues' );
     }
 
     public function update_requests($arg = '')

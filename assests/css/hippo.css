@@ -268,6 +268,7 @@ table.show_schedule tr td
     font-family: Fira Sans;
     background-color: var(--tabletdcolor);
     border : 1px dotted;
+    border-spacing: 4px;
     width: 50%;
     font-size: small;
 }
@@ -275,20 +276,22 @@ table.show_schedule tr td
 
 table.tasks
 {
-    width: 600px;
-    max-width: 700px;
+    width: 100%;
+    max-width: var(--maxwidth);
     min-width : 500px;
-    text-align: top;
+    border-spacing: 1px;
+    border-collapse: separate;
 }
 
 
 table.tasks tr td
 {
     background-color: var(--tabletdcolor);
-    width: 50%;
-    text-align: top;
+    min-width: 100px;
+    /* vertical-align: top; */
     border-radius: 10px;
     padding: 5px;
+    text-align: top;
 }
 
 table.standout {
