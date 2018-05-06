@@ -305,7 +305,7 @@ table.enrollments {
 }
 
 table.enrollments tr td {
-    font-size: x-small;
+    /* font-size: small; */
     background-color: var(--tabletdcolor);
     padding: 2px;
     border: 1px solid;
@@ -369,6 +369,7 @@ div.justify {
 
 div.thick_border {
     border: 5px solid red;
+    margin: 10px;
 }
 
 
@@ -445,13 +446,17 @@ button.courseInfo {
 }
 
 button.show_as_link {
-    background: none;
-    border: none;
-    padding: 0px;
-    border-bottom: 1px solid;
+    /* padding: 3px; */
     min-width:20px;
     min-height:10px;
     cursor: pointer;
+    font-size: large;
+    color: blue;
+    font-weight: bold;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    float: right;
 }
 
 button.big {
@@ -842,6 +847,8 @@ div.fa_note {
 
 div.bordered {
     border: 1px dotted blue;
+    overflow: auto;
+    margin: 5px;
 }
 
 div.show_aws {

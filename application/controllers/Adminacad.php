@@ -55,7 +55,13 @@ class Adminacad extends CI_Controller
 
     public function grades( )
     {
-        $this->load_adminacad_view( 'admin_acad_manages_grades' );
+        $this->load_adminacad_view('admin_acad_manages_grades');
+    }
+
+    public function gradecourse( $year, $sem, $course_id )
+    {
+        $data = array('course_id' => $course_id, 'year' => $year, 'semester' => $sem);
+        $this->load_adminacad_view('admin_acad_grade_course.php', $data );
     }
 
     // ACTION.
@@ -423,6 +429,34 @@ class Adminacad extends CI_Controller
         flashMessage( $msg );
         redirect('adminacad/grades');
     }
+
+    public function  gradecourse_submit( )
+    {
+        $student = $_POST[ 'student_id' ];
+
+        $year = $_POST['year'];
+        $semester = $_POST['semester'];
+        $courseid = $_POST['course_id'];
+
+
+        $_POST[ 'grade_is_given_on' ] = dbdatetime( 'now' );
+        $_POST[ 'grade' ] = $_POST[ $student ];
+
+        $res = updatetable( 'course_registration'
+            , 'student_id,semester,year,course_id'
+            , 'grade,grade_is_given_on'
+            , $_POST
+        );
+
+        if( $res )
+            echo printinfo( "successfully assigned grade for " . $student );
+        else
+            echo alertuser( "could not assign grade for " . $student );
+
+        // Go to view.
+        redirect( "adminacad/gradecourse/$year/$semester/$courseid");
+    }
+
 }
 
 ?>

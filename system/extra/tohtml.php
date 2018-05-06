@@ -2460,5 +2460,25 @@ function selectYearSemesterForm( $defaultYear = '', $defaultSem = '' )
     return $form;
 }
 
+function showEnrollmenTable( $enrolls, $tdintr=4)
+{
+    $table = '<table class="enrollments">';
+    $table .= '<tr>';
+    foreach( $enrolls as $i => $e )
+    {
+        $index = $i + 1;
+        $student = $e[ 'student_id'];
+        $sname = arrayToName( getLoginInfo( $student ) );
+        $grade = __get__($e, 'grade', 'NA');
+        $type = $e[ 'type'];
+        $table .= "<td><tt>$index.</tt> $sname <br /> $type (Grade: " .colored($grade,'blue').")</td>";
+        if( ($index) % $tdintr == 0 )
+            $table .= '</tr><tr>';
+
+    }
+    $table .= '</tr>';
+    $table .= '</table>';
+    return $table;
+}
 
 ?>

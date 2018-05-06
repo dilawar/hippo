@@ -119,8 +119,6 @@ foreach( $courseMap as $cid => $enrolls )
     if( ! $cid )
         continue;
 
-    // sortByKey( $enrolls, 'student_id' );
-
     $cname = getCourseName( $cid );
 
     echo '<div style="border:2px solid lightblue;">';
@@ -141,6 +139,11 @@ foreach( $courseMap as $cid => $enrolls )
     }
     echo '</tr>';
     echo '</table>';
+
+    // Show update/edit grade button here.
+    echo '<form action="'.site_url("adminacad/gradecourse/$year/$sem/$cid").'" method="post">';
+    echo '<button class="show_as_link">Edit/Update Grades</button>';
+    echo '</form>';
     echo '</div>';
     echo ' <br />';
 }
