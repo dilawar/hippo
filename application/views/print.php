@@ -116,4 +116,5 @@ function printPreference($preferences, $this_sem)
 	
 	return $str;
 }
+
 ?>
