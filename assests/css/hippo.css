@@ -318,10 +318,10 @@ div.info {
 }
 
 div.important {
-    background-color: lightblue;
-    border: 1px dotted blue;
-    border-radius: 10px;
-    padding: 5px;
+    background-color: rgba(0,0,100,0.1);
+    border: 2px solid lightblue;
+    border-radius: 20px;
+    padding: 10px;
 }
 
 div.header {

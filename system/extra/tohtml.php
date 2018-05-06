@@ -2471,7 +2471,7 @@ function showEnrollmenTable( $enrolls, $tdintr=4)
         $sname = arrayToName( getLoginInfo( $student ) );
         $grade = __get__($e, 'grade', 'NA');
         $type = $e[ 'type'];
-        $table .= "<td><tt>$index.</tt> $sname <br /> $type (Grade: " .colored($grade,'blue').")</td>";
+        $table .= "<td><tt>$index.</tt> $student ($sname)<br /> $type (Grade: " .colored($grade,'blue').")</td>";
         if( ($index) % $tdintr == 0 )
             $table .= '</tr><tr>';
 

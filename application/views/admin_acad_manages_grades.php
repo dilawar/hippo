@@ -121,24 +121,9 @@ foreach( $courseMap as $cid => $enrolls )
 
     $cname = getCourseName( $cid );
 
-    echo '<div style="border:2px solid lightblue;">';
+    echo '<div class="important">';
     echo "<large><strong>$cid: $cname </strong></large>";
-    echo '<table class="enrollments">';
-    echo '<tr>';
-    foreach( $enrolls as $i => $e )
-    {
-        $student = $e[ 'student_id'];
-        $sname = arrayToName( getLoginInfo( $student ) );
-        $grade = __get__($e, 'grade', 'NA');
-        $type = $e[ 'type'];
-        echo "<td> <tt>$student</tt>, $sname <br /> $type <br /> 
-            GRADE <strong>$grade</strong></td>";
-        if( ($i+1) % 5 == 0 )
-            echo '</tr><tr>';
-
-    }
-    echo '</tr>';
-    echo '</table>';
+    echo showEnrollmenTable( $enrolls );
 
     // Show update/edit grade button here.
     echo '<form action="'.site_url("adminacad/gradecourse/$year/$sem/$cid").'" method="post">';
