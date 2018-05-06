@@ -363,6 +363,66 @@ class Adminacad extends CI_Controller
 
         redirect( 'adminacad/enrollments' );
     }
+
+    // Grades
+    public function quickgrade( )
+    {
+        $year = $_POST[ 'year' ];
+        $sem = $_POST[ 'semester' ];
+
+        $regs = array_map(
+            function( $x ) { return $x['student_id']; }
+                , getCourseRegistrations( $_POST[ 'course_id' ], intval($year), $sem )
+            );
+
+        $gradeCSV = explode( PHP_EOL, $_POST[ 'grades_csv' ]);
+        $gradeMap = array( );
+
+        $msg = '';
+        foreach( $gradeCSV as $i => $csv )
+        {
+            $l = splitAtCommonDelimeters( $csv );
+            $login = $l[0];
+            $grade = $l[1];
+
+            if(__substr__('@', $login))
+            {
+                $data = findAnyoneWithEmail($login);
+                if($data)
+                    $login = $data['login'];
+                else
+                    $login = '';
+            }
+
+            if( ! $login )
+            {
+                $msg .= "No valid user found with login/email <tt>$login</tt>. Ignoring...<br />";
+                continue;
+            }
+
+            if( ! in_array( $login, $regs ) )
+            {
+                $msg .= "<tt>$login</tt> has not registered for this course. Ignoring... <br />";
+                continue;
+            }
+
+            // Else assign grade.
+            $data = array( 'student_id' => $login, 'grade' => $grade );
+            $data = array_merge( $_POST, $data );
+            $res = updateTable( 'course_registration'
+                , 'student_id,semester,year,course_id'
+                , 'grade,grade_is_given_on'
+                , $data
+            );
+
+            if( $res )
+                $msg .= "Successfully assigned $grade for $login. <br /> ";
+            else
+                $msg .= "Could not assign grade for $login. <br /> ";
+        }
+        flashMessage( $msg );
+        redirect('adminacad/grades');
+    }
 }
 
 ?>

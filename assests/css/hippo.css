@@ -4,16 +4,19 @@
     --maxwidth : 100%;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family : 'EB Garamond';
-    line-height: 140%;
-}
+/* h1, h2, h3 { */
+    /* font-family : 'EB Garamond'; */
+    /* font-family: Ubuntu; */
+    /* line-height: 140%; */
+    /* font-size: 2vw; */
+/* } */
 
 body {
     /* font-family: "Libre Baskerville"; */
-    /* font-size: 16px; */
+    font-size: 16px;
+    font-family : 'EB Garamond';
     line-height: 140%;
-    /* max-width: var(--maxwidth); */
+    max-width: var(--maxwidth);
     /* min-width : 80%; */
     display:block;
     background-color:var(--background);
@@ -28,7 +31,7 @@ body {
 
 h1.title {
     line-height: 1.35;
-    font-size: large;
+    font-size: xx-large;
     text-align: center;
 }
 
@@ -51,49 +54,6 @@ img.login_picture {
     max-height : 300px;
 }
 
-
-div.header {
-    max-width : var(--maxwidth);
-    padding-bottom: 20px;
-    float: top;
-}
-
-div.aws_preference {
-    font-size : x-small;
-}
-
-div.human_readable {
-    width: 600px;
-    text-align: justify;
-    line-height: 1.5;
-}
-
-div.bottom {
-    font-size : xx-small;
-    float: bottom;
-    top-margin: 95%;
-}
-
-div.cell_content {
-    min-width : 10%;
-    max-height : 200px;
-    overflow : auto;
-}
-
-div.goback {
-
-}
-
-div.public_calendar {
-    margin-top : 500px;
-    background: transparent;
-}
-
-div.justify {
-    max-width: 600px;
-    min-width: 400px;
-    text-align: justify;
-}
 
 table {
     font-family : 'Ubuntu';
@@ -363,6 +323,54 @@ div.important {
     border-radius: 10px;
     padding: 5px;
 }
+
+div.header {
+    max-width : var(--maxwidth);
+    padding-bottom: 20px;
+    float: top;
+}
+
+div.aws_preference {
+    font-size : x-small;
+}
+
+div.human_readable {
+    width: 600px;
+    text-align: justify;
+    line-height: 1.5;
+}
+
+div.bottom {
+    font-size : xx-small;
+    float: bottom;
+    top-margin: 95%;
+}
+
+div.cell_content {
+    min-width : 10%;
+    max-height : 200px;
+    overflow : auto;
+}
+
+div.goback {
+
+}
+
+div.public_calendar {
+    margin-top : 500px;
+    background: transparent;
+}
+
+div.justify {
+    max-width: 600px;
+    min-width: 400px;
+    text-align: justify;
+}
+
+div.thick_border {
+    border: 5px solid red;
+}
+
 
 button.tiles {
     border : 1px dotted;
@@ -801,6 +809,11 @@ p.note {
     max-width : 80%;
 }
 
+td.db_table_fieldname {
+    font-size : x-small;
+    text-transform : uppercase;
+}
+
 
 div.alert_user {
    max-width : var(--maxwidth);
@@ -825,10 +838,6 @@ div.fa_note {
    margin-top:10px;
 }
 
-td.db_table_fieldname {
-    font-size : x-small;
-    text-transform : uppercase;
-}
 
 
 div.bordered {
