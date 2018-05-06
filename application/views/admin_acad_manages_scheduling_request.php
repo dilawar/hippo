@@ -3,7 +3,6 @@
 require_once BASEPATH.'autoload.php';
 
 
-echo "<h3>Manage pending requests</h3>";
 
 // First, review request for upcoming AWS.
 $schedulingReqs = getTableEntries( 'aws_scheduling_request', 'status'
@@ -15,11 +14,11 @@ if(isset($controller))
 
 if( count( $schedulingReqs ) == 0 )
 {
-    flashMessage( "No requests are left" ); 
-    redirect( "$ref/home" );
+    echo printInfo( "No scheduling request. Its very quiet in here!" );
 }
 else
 {
+    echo "<h3>Manage pending requests</h3>";
     foreach( $schedulingReqs as $req )
     {
         echo '<form method="post" action="admin_acad_manages_scheduling_request_submit.php">';
@@ -40,6 +39,6 @@ else
     }
 }
 
-echo goBackToPageLink( 'admin_acad_manages_scheduling_request_submit.php', 'Go back' );
+echo goBackToPageLink( 'adminacad/home', 'Go back' );
 
 ?>

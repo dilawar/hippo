@@ -1,11 +1,7 @@
 <?php
 
-include_once 'check_access_permissions.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-
-mustHaveAllOfTheseRoles( array( 'ADMIN', 'AWS_ADMIN' ) );
-echo userHTML( );
+require_once BASEPATH.'autoload.php';
+echo userHTML();
 
 $logins = getLoginIds( );
 
@@ -20,25 +16,16 @@ $(function() {
 
 <?php
 
-
 // We are using a generic function to create table. We need to add user name as  
 // well.
 
-echo '<form method="post" action="admin_acad_add_aws_entry_submit.php"> ';
-echo '
-    <table>
-    <tr>
-        <td>Login ID for which following AWS entry is being created </td>
-        <td><input name="speaker" id="autocomplete_user" 
-            placeholder="I will autocomplete" > </td>
-    </tr>
-    </table>
-    ';
+echo "<h2>Add new AWS entry.</h2>";
+
+echo '<form method="post" action="adminacad/aws_entry_submit"> ';
 echo '<br />';
-echo editableAWSTable( );
+echo editableAWSTable( -1, array(), $withlogin = true );
 echo '</form>';
 
-echo goBackToPageLink( 'admin_acad.php', 'Go back' );
-exit(0);
+echo goBackToPageLink( 'adminacad/home', 'Go back' );
 
 ?>
