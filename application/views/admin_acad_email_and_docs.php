@@ -5,6 +5,11 @@ echo userHTML( );
 
 $symbSubmit = '<i class="fa fa-check fa-1x"></i>';
 
+// Referering controller.
+$ref = "adminbmv";
+if(isset($controller))
+    $ref = $controller;
+
 /* 
  * Admin select the class of emails she needs to prepare. We remain on the same 
  * page for these tasks.
@@ -206,6 +211,6 @@ else if( $default[ 'task' ] == 'Today\'s events' )
 
 }
 
-echo goBackToPageLink( getRefShort('user/home'), "Go back" );
+echo goBackToPageLink( "$ref/home", "Go back" );
 
 ?>

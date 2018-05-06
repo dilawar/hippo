@@ -1,12 +1,10 @@
 <?php
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
+require_once BASEPATH.'autoload.php';
 
-echo "<h3>Manage pending requests</h3>";
+echo "<h1>Manging pending requests</h1>";
 
+echo printWarning( "This page is not fixed yet." );
 
 // Second review pending requests for AWS modification.
 $pendingRequests = getPendingAWSRequests( );
@@ -40,6 +38,6 @@ foreach( $pendingRequests as $req )
     echo '</form>';
 }
 
-echo goBackToPageLink( "admin_acad.php", "Go back" );
+echo goBackToPageLink( "adminacad/home", "Go back" );
 
 ?>

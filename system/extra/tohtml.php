@@ -2197,7 +2197,6 @@ function piSpecializationHTML( $pi, $specialization )
 
 function goBackToPageLink( $url, $title = "Go back" ) : string
 {
-
     $html = '<div class="goback" style="float:left">';
     $html .= goBackToPageLinkInline( $url, $title );
     $html .= '</div> <br />';

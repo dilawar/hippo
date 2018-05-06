@@ -82,21 +82,6 @@ if( isset( $_POST[ 'response' ] ))
         $date = $_POST[ 'date' ];
     }
 
-    else if( $_POST[ 'response' ] == 'DO_NOTHING' )
-    {
-
-    }
-    else if( $_POST[ 'response' ] == 'delete' )
-    {
-        echo "Deleting this AWS entry.";
-        $res = deleteAWSEntry( $_POST['speaker'], $_POST['date' ] );
-        if( $res )
-        {
-            flashMessage( "Successfully deleted" );
-            redirect( 'adminacad' );
-        }
-    }
-
     $awss = array( );
     if( $login and $date )
         $awss = array( getMyAwsOn( $login, $date ) );
@@ -129,6 +114,8 @@ if( isset( $_POST[ 'response' ] ))
             </form>
             ';
     }
+    if(count($aws) > 0)
+        echo goBackToPageLink( "adminacad/home", "Refresh" );
 }
 
 

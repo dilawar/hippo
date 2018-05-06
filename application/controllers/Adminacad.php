@@ -38,6 +38,16 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( 'admin_acad_add_aws_entry' );
     }
 
+    public function requests( )
+    {
+        $this->load_adminacad_view( "admin_acad_manages_requests" );
+    }
+
+    public function email_and_docs( )
+    {
+        $this->load_adminacad_view( "admin_acad_email_and_docs" );
+    }
+
     // ACTION.
     public function next_week_aws_action( )
     {
