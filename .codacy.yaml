@@ -1,0 +1,6 @@
+exclude_paths:
+    - ./system/core/**
+    - ./system/database/**
+    - ./system/language/**
+    - ./system/libraries/**
+

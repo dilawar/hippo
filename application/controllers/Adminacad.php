@@ -1,5 +1,4 @@
 <?php
-
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
@@ -45,6 +44,18 @@ class Adminacad extends CI_Controller
         $this->execute_aws_action( $_POST['response'], 'upcoming_aws' );
     }
 
+    public function updateaws($arg = '')
+    {
+        $response = strtolower($_POST['response']);
+        if($response == 'do_nothing')
+        {
+            flashMessage( 'User cancelled last action.' );
+            redirect( 'adminacad/home' );
+        }
+
+        // Now real stuff.
+        redirect( 'adminacad/home' );
+    }
 
     public function action( $task = '' )
     {

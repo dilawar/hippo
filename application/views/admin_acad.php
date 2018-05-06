@@ -9,6 +9,8 @@ if(isset($controller))
 $logins = getLoginIds( );
 $pendingRequests = getPendingAWSRequests( );
 $pendingScheduleRequest = getTableEntries( 'aws_scheduling_request', 'status', "status='PENDING'" );
+$symbDelete = ' <i class="fa fa-trash-o fa-1x"></i>';
+$symbEdit = ' <i class="fa fa-pencil fa-1x"></i>';
 
 ?>
 
@@ -116,11 +118,11 @@ if( isset( $_POST[ 'response' ] ))
         echo '<br>';
 
         /* This forms remain on this page only */
-        echo '<form method="post" action="">
+        echo '<form method="post" action="'.site_url("$ref/updateaws") . '">
             <input type="hidden" name="speaker" value="' . $speaker . '">
             <input type="hidden" name="date" value="' . $date . '" >
-            <button onclick="AreYouSure(this)"
-                style=\"float:right\" name="response" >'. $symbDelete . '</button>
+            <button onclick="AreYouSure(this)" style=\"float:right\" name="response" >'. $symbDelete . '</button>
+            <button onclick="AreYouSure(this)" style=\"float:right\" name="response" >'. $symbEdit . '</button>
             </form>
             ';
     }
