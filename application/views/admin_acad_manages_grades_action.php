@@ -38,7 +38,7 @@ else if( $_POST[ 'response' ] == 'Assign All' )
         , getCourseRegistrations( $_POST[ 'course_id' ], intval($year), $sem )
         );
 
-    $gradeCSV = explode( PHP_EOL, $_POST[ 'grades_csv' ] );
+    $gradeCSV = str_getcsv($_POST[ 'grades_csv']);
     $gradeMap = array( );
     foreach( $gradeCSV as $i => $csv )
     {
