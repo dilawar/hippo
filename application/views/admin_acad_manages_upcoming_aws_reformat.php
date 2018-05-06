@@ -13,14 +13,14 @@ if( ! $aws )
     echo alertUser( "Nothing to update." );
 else
 {
-    echo '<form method="post" action="'.site_url('admin/acad_action/update_aws_entry').'">';
+    echo '<form method="post" action="'.site_url('adminacad/update_aws_entry').'">';
     echo dbTableToHTMLTable( 'upcoming_aws', $aws
         , 'abstract,title,is_presynopsis_seminar', 'Update AWS Entry' );
     echo '</form>';
 }
 
 
-echo goBackToPageLink( 'admin/acad/manages_upcoming_aws');
+echo goBackToPageLink( 'adminacad/upcoming_aws');
 
 
 ?>

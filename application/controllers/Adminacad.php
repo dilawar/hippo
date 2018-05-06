@@ -13,6 +13,7 @@ class Adminacad extends CI_Controller
         $this->template->load( $view, $data );
     }
 
+    // VIEWS ONLY.
     public function index()
     {
         $this->load_adminacad_view( 'admin_acad.php' );
@@ -23,12 +24,26 @@ class Adminacad extends CI_Controller
         $this->index();
     }
 
-    // VIEWS ONLY.
     public function upcoming_aws( $arg = '' )
     {
         $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws' );
     }
 
+    public function scheduling_request( )
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_scheduling_request');
+    }
+
+    public function add_aws_entry( )
+    {
+        $this->load_adminacad_view( 'admin_acad_add_aws_entry' );
+    }
+
+    // ACTION.
+    public function next_week_aws_action( )
+    {
+        $this->execute_aws_action( $_POST['response'], 'upcoming_aws' );
+    }
 
 
     public function action( $task = '' )
@@ -45,12 +60,6 @@ class Adminacad extends CI_Controller
         {
             $this->load_adminacad_view( 'admin_acad_manages_enrollments' );
         }
-        elseif($task == 'manages_scheduling_request')
-        {
-            $this->load_adminacad_view( 'admin_acad_manages_scheduling_request');
-        }
-        elseif($task == 'home' )
-            redirect( 'adminacad' );
         else
         {
             flashMessage( "Not implemented yet: $task" );
@@ -58,79 +67,110 @@ class Adminacad extends CI_Controller
         }
     }
 
-    // VIEWS WITH ACTION.
-    public function acad_action( $action )
+    public function update_aws_speaker($arg = '')
     {
-        if( $action == 'schedule_upcoming_aws' )
-        {
-            flashMessage( json_encode( $_POST ));
-            $method = $_POST['method'];
-            $ret = rescheduleAWS($method);
-            if($ret)
-                flashMessage("Failed to compute schedule.");
-            else
-                flashMessage('Sucessfully computed schedule.');
-            redirect( 'adminacad');
-        }
-        elseif( $action == 'post' )
-        {
-            $this->execute_aws_action( strtolower(__get__($_POST,'response','')));
-        }
-        elseif( $action == 'update_aws_entry' )
-        {
-            $res = updateTable( 'upcoming_aws', 'id', 'abstract,title,is_presynopsis_seminar', $_POST );
-            if( $res )
-                flashMessage( "Successfully updated abstract of upcoming AWS entry" );
-            else
-                flashMessage( "I could not update title/abstract.", 'warning' );
-
-            redirect( 'adminacad/manages_upcoming_aws');
-        }
-        else
-            $this->execute_aws_action(strtolower($action));
+        $this->load_adminacad_view( 'admin_acad_update_user' );
     }
 
-    public function execute_aws_action($response)
+    // VIEWS WITH ACTION.
+    function schedule_upcoming_aws( $arg = '' )
+    {
+        flashMessage( json_encode( $_POST ));
+        $method = $_POST['method'];
+        $ret = rescheduleAWS($method);
+        if($ret)
+            flashMessage("Failed to compute schedule.");
+        else
+            flashMessage('Sucessfully computed schedule.');
+        redirect( 'adminacad/upcoming_aws');
+    }
+
+    public function update_user( )
+    {
+        $toUpdate = 'title,joined_on,eligible_for_aws,status,pi_or_host';
+        $res = updateTable( 'logins', 'login', $toUpdate, $_POST );
+        if( $res )
+        {
+            $login = $_POST[ 'login' ];
+            flashMessage( "Successfully updated profile. " );
+
+            // Get previous status of student.
+            $msg = initUserMsg( $login );
+            $msg .= "<p>Your Hippo profile has been updated by Academic Admin.</p>";
+            $msg .= "<p>You current profile is following </p>";
+            $msg .= arrayToVerticalTableHTML(
+                        getTableEntry( 'logins', 'login', array( 'login' => $login ) )
+                        , 'profile'
+                    );
+
+            $msg .= "<p>If there is any mistake, please contact academic office. You can
+                    also update your profile after login to Hippo
+                    </p>";
+
+            $subject = "Your Hippo profile has been updated by admin";
+            $to = getLoginEmail( $login );
+            $cc = 'hippo@lists.ncbs.res.in';
+            sendHTMLEmail( $msg, $subject, $to, $cc );
+            // Rerun the scheduling script every time a change is made.
+            rescheduleAWS( );
+            redirect( 'adminacad/home');
+        }
+    }
+
+    public function update_aws_entry( )
+    {
+        $res = updateTable( 'upcoming_aws', 'id', 'abstract,title,is_presynopsis_seminar', $_POST );
+        if( $res )
+            flashMessage( "Successfully updated abstract of upcoming AWS entry" );
+        else
+            flashMessage( "I could not update title/abstract.", 'warning' );
+
+        redirect( 'adminacad/upcoming_aws');
+    }
+
+
+    public function assignaws( )
+    {
+        $speaker = explode( '@', $_POST[ 'speaker' ] )[0];
+        $date = $_POST[ 'date' ];
+        if(  $speaker && getLoginInfo( $speaker ) && strtotime( $date ) > strtotime( '-7 day' ) )
+        {
+            $aws = getUpcomingAWSOfSpeaker( $speaker );
+            if( $aws )
+                flashMessage( "$speaker already has AWS scheduled. Doing nothing." );
+            else
+            {
+                $awsID = acceptScheduleOfAWS( $speaker, $date );
+                if( $awsID > 0 )
+                {
+                    flashMessage( "Successfully assigned" );
+                    if( $response == 'Assign' )
+                        rescheduleAWS( );
+
+                    // Send email to user.
+                    $res = notifyUserAboutUpcomingAWS( $_POST[ 'speaker' ], $_POST[ 'date' ], $awsID );
+                    if(! $res )
+                        flashMessage( "Failed to send email to user" );
+                }
+                else
+                    flashMessage( "Invalid entry. Probably date ('$date') is in past." );
+            }
+        }
+        else
+            printWarning( "Invalid speaker '$speaker' or date '$date' 
+                is in past.  Could not assign AWS.");
+
+        redirect( "adminacad/upcoming_aws" );
+    }
+
+    public function execute_aws_action($response, $ref = 'upcoming_aws' )
     {
         if( ! $response)
         {
             flashMessage( 'Empty response from user.', 'warning');
-            redirect( 'adminacad/manages_upcoming_aws');
+            redirect("adminacad/$ref");
         }
 
-        if( $response == 'accept' or $response == 'assign' )
-        {
-            $speaker = explode( '@', $_POST[ 'speaker' ] )[0];
-            $date = $_POST[ 'date' ];
-            if(  $speaker && getLoginInfo( $speaker ) && strtotime( $date ) > strtotime( '-7 day' ) )
-            {
-                $aws = getUpcomingAWSOfSpeaker( $speaker );
-                if( $aws )
-                    flashMessage( "$speaker already has AWS scheduled. Doing nothing." );
-                else
-                {
-                    $awsID = acceptScheduleOfAWS( $speaker, $date );
-                    if( $awsID > 0 )
-                    {
-                        flashMessage( "Successfully assigned" );
-                        if( $response == 'Assign' )
-                            rescheduleAWS( );
-
-                        // Send email to user.
-                        $res = notifyUserAboutUpcomingAWS( $_POST[ 'speaker' ], $_POST[ 'date' ], $awsID );
-                        if(! $res )
-                            flashMessage( "Failed to send email to user" );
-                    }
-                    else
-                        flashMessage( "Invalid entry. Probably date ('$date') is in past." );
-                }
-            }
-            else
-                printWarning( "Invalid speaker '$speaker' or date '$date' 
-                    is in past.  Could not assign AWS.");
-
-            redirect( "adminacad/manages_upcoming_aws" );
-        }
         else if( $response == 'format_abstract' )
         {
             $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws_reformat.php');
@@ -148,7 +188,7 @@ class Adminacad extends CI_Controller
             else
                 flashMessage( "Could not remove $speaker.", "warning");
 
-            redirect( "adminacad/manages_upcoming_aws" );
+            redirect( "adminacad/$ref" );
         }
         else if( $response == 'delete' )
         {
@@ -182,21 +222,20 @@ class Adminacad extends CI_Controller
                     , $to = getLoginEmail( $_POST[ 'speaker' ] )
                     , $cclist = "acadoffice@ncbs.res.in,hippo@lists.ncbs.res.in"
                 );
-                redirect( "adminacad/manages_upcoming_aws");
+                redirect( "adminacad/$ref");
             }
         }
         else if( $response == "do_nothing" )
         {
             flashMessage( "User cancelled the previous operation.");
-            redirect( "adminacad/manages_upcoming_aws");
+            redirect( "adminacad/$ref");
         }
         else
         {
             flashMessage( "Not yet implemented $response.");
-            redirect( "adminacad/manages_upcoming_aws");
+            redirect( "adminacad/$ref");
         }
     }
-
 }
 
 ?>

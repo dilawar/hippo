@@ -1272,7 +1272,7 @@ function getIntranetLink( $login )
     *
     * @return  A editable table with submit button.
  */
-function editableAWSTable( $awsId = -1,  $default = NULL )
+function editableAWSTable(int $awsId=-1, array $default=array(), bool $withlogin=false)
 {
     if( $awsId > 0 && ! $default )
         $default = getAwsById( $awsId );
@@ -1290,20 +1290,23 @@ function editableAWSTable( $awsId = -1,  $default = NULL )
 
     $html = "<table class=\"input\">";
     $text = sanitiesForTinyMCE( __get__( $default, 'abstract', '' ));
-    $html .= '
-             <tr>
-             <td>Title</td>
-             <td><input type="text" class="long" name="title" value="'
-             . __get__( $default, 'title', '') . '" /></td>
+
+    if( $withlogin )
+        $html .= '<tr>
+                <td>Speaker Login ID</td> 
+                <td><input type="text" class="long" name="speaker" value="" /></td>
+             </tr>';
+                
+    $html .= '<tr>
+                 <td>Title</td>
+                 <td><input type="text" class="long" name="title" value="'
+                 . __get__( $default, 'title', '') . '" /></td>
              </tr>
              <tr>
-             <td>Abstract </td>
-             <td>
-             <textarea class="editable" id="abstract" name="abstract">' .
-             $text . '</textarea> ' .
-             editor_script( 'abstract', $text ) .
-             '</td> </tr>'
-             ;
+                 <td>Abstract </td>
+                 <td><textarea class="editable" id="abstract" name="abstract">' .
+                     $text . '</textarea> ' .  editor_script( 'abstract', $text ) . '</td> 
+            </tr>';
 
     for( $i = 1; $i <= 2; $i++ )
     {
@@ -2372,7 +2375,7 @@ function addClickabelURLToMail( $html, $clickable )
 
 function awsAssignmentForm( $date = null, $small = false )
 {
-    $form = '<form method="post" action="'.site_url("admin/acad_action/assign").'">';
+    $form = '<form method="post" action="'.site_url("adminacad/assignaws").'">';
 
     $class = '';
     if( ! $small )

@@ -230,6 +230,7 @@ table.show_aws tr td
     max-width : 500px;
     max-height: 3cm;
     background-color:var(--tabletdcolor);
+    padding: 2px;
 }
 
 table.show_calendar {

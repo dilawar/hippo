@@ -37,6 +37,7 @@ foreach( $upcomingAWSs as $aws )
         array_push( $upcomingAwsNextWeek, $aws );
 
 echo '<h1>Annual Work Seminar for upcoming week</h1>';
+
 if( count( $upcomingAwsNextWeek ) < 1 )
     echo alertUser( "No AWS found." );
 else
@@ -44,21 +45,15 @@ else
     $table = '<div style="font-size:small">';
     foreach( $upcomingAwsNextWeek as $upcomingAWS )
     {
-        $table .= '<form action="'.site_url('adminacad/next_week_aws').'" method="post" >';
+        $table .= '<form action="'.site_url('adminacad/next_week_aws_action').'" method="post" >';
         $table .= '<table>';
         $table .= '<tr><td>';
-
-        $table .= arrayToVerticalTableHTML( $upcomingAWS, 'aws'
-            , '', array( 'id', 'status', 'comment' )
-        );
-
+        $table .= arrayToVerticalTableHTML($upcomingAWS, 'aws', '', array( 'id', 'status', 'comment' ));
         $table .= '<input type="hidden", name="date" , value="' .  $upcomingAWS[ 'date' ] . '"/>';
         $table .= '<input type="hidden", name="speaker" , value="' . $upcomingAWS[ 'speaker' ] . '"/>';
         $table .= '<input type="hidden", name="id" , value="' . $upcomingAWS[ 'id' ] . '"/>';
         $table .= '</td><td>';
-        $table .= '<button name="response"
-            title="Edit/fromat the abstract" 
-            value="format_abstract">' . $symbEdit . '</button>';
+        $table .= '<button name="response" title="Edit/format the abstract" value="format_abstract">' . $symbEdit . '</button>';
         $table .= '<br>';
         $table .= '<button onclick="AreYouSure(this)" name="response"
                . title="Remove this entry from schedule" value="delete">' . $symbCancel . '</button>';
@@ -103,8 +98,9 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
     $awsThisWeek = count( $awses );
 
     $table .= '<tr>';
-    $table .= '<td style="font-size:large">' . humanReadableDate( $groupDate, $with_day = false ) 
-        . '</td>';
+
+    // $table .= '<td style="font-size:large" colspan=3>' . humanReadableDate( $groupDate, $with_day = false ) . '</td>';
+    // $table .= ' </tr><tr>';
 
     // Show AWSes
     foreach( $awses as $countAWS => $aws )
@@ -127,7 +123,8 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         if( $request )
             $speakerHTML .= '<br />' . preferenceToHtml( $request );
 
-        $speakerTable .= '<td>' . $speakerHTML . '</td>';
+        $speakerTable .= '<td>' . $speakerHTML . ' <br /><strong>' 
+            . humanReadableDate($aws['date'], false) . '</strong></td>';
 
         $pi = getPIOrHost( $aws[ 'speaker' ] );
         $specialization = getSpecialization( $aws[ 'speaker' ], $pi );
@@ -135,7 +132,7 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         // Speaker PI if any.
         $speakerTable .=  '<td>' . piSpecializationHTML( $pi, $specialization ) . '</td>';
 
-        $form = '<form action="'.site_url('adminadcad/acad_action'). '" method="post" accept-charset="utf-8">';
+        $form = '<form action="'.site_url('adminadcad/action'). '" method="post" accept-charset="utf-8">';
         $form .= '<input type="hidden", name="date" , value="' . $aws[ 'date' ] . '"/>';
         $form .= '<input type="hidden", name="speaker" , value="' . $aws[ 'speaker' ] . '"/>';
         $form .= '<button name="response" onclick="AreYouSure(this)"
@@ -176,7 +173,7 @@ echo "<h1>Temporary assignments</h1>";
 
 echo printInfo("Three methods are available for scheduling AWS. First one is default.");
 
-$methodTable = "<form method=\"post\" action=\"".site_url('adminacad/schedule_upcoming_aws'). "\">";
+$methodTable  = "<form method=\"post\" action=\"".site_url('adminacad/schedule_upcoming_aws'). "\">";
 $methodTable .= ' <table border="0"> ';
 $methodTable .= '<tr><td>';
 $methodTable .= '<button name="method" value="reschedule_default">
@@ -186,7 +183,7 @@ $methodTable .= '<button name="method" value="reschedule_group_greedy">Recompute
 $methodTable .= "</td><td>";
 $methodTable .= '<button name="method" value="reschedule">Recompute (DoNotGroupAWS)</button>';
 $methodTable .= "</td></tr>";
-$methodTable .= '</table>'; 
+$methodTable .= '</table>';
 $methodTable .= "</form>";
 echo $methodTable;
 

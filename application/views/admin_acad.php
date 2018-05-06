@@ -1,12 +1,14 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
+echo userHTML( );
+
+$ref = "adminacad";
+if(isset($controller))
+    $ref = $controller;
 
 $logins = getLoginIds( );
-
 $pendingRequests = getPendingAWSRequests( );
-$pendingScheduleRequest = getTableEntries( 'aws_scheduling_request'
-    , 'status', "status='PENDING'" );
+$pendingScheduleRequest = getTableEntries( 'aws_scheduling_request', 'status', "status='PENDING'" );
 
 ?>
 
@@ -20,10 +22,7 @@ $(function() {
 });
 </script>
 
-
 <?php
-
-echo userHTML( );
 
 $symbUpdate = '<i class="fa fa-check"></i>';
 
@@ -32,21 +31,15 @@ echo '<td><a class="clickable" href="'.site_url('adminacad/upcoming_aws').'">Man
 echo '<td><a class="clickable" href="'.site_url('adminacad/scheduling_request'). '">
         Manage ' . count( $pendingScheduleRequest) . ' Pending Scheduling Requests</a></td>';
 echo '</tr></table>';
-
 echo ' <br /> ';
+
 echo '<table class="admin">
     <tr>
-        <td> <a class="clickable" href="'.site_url('adminacad/add_aws_entry').'">Add Missing AWS entry</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td> Update AWS list <br />
-            <form method="post" action="adminacad/update_user">
-                <input id="autocomplete_user" name="login"
-                    placeholder="student login" >
+        <td> Update AWS speaker<br />
+            <form method="post" action="' . site_url("$ref/update_aws_speaker") . '">
+                <input id="autocomplete_user" name="login" placeholder="student login" >
                 <button title="Add or remove speakers from AWS list"
-                    name="response" value="edit">' . $symbUpdate .
-                '</button>
+                    name="response" value="edit">' . $symbUpdate . '</button>
             </form>
         </td>
         <td>
@@ -70,6 +63,10 @@ echo '<table class="admin">
             ' pending requests</a>
         </td>
         <td> <a class="clickable_small" href="'.site_url('adminacad/email_and_docs').'">Emails and Documents</td>
+    </tr>
+    <tr>
+        <td> <a class="clickable_small" href="'.site_url('adminacad/add_aws_entry').'">Add Missing AWS entry</td>
+        <td></td>
     </tr>
     </table>';
 
