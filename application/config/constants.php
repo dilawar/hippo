@@ -117,3 +117,9 @@ $dbChoices = array(
         ',LECTURE,PUBLIC LECTURE,CLASS,TUTORIAL' .
         ',INTERVIEW,SPORT EVENT,CULTURAL EVENT,OTHER'
     );
+
+$symbUpdate = '<i class="fa fa-check fa-1x"></i>';
+$symbSelect = '<i class="fa fa-hand fa-1x"></i>';
+$symbEdit = '<i class="fa fa-pencil fa-1x"></i>';
+
+?>

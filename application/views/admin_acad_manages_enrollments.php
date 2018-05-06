@@ -1,15 +1,10 @@
 <?php
-
-include_once 'header.php';
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'AWS_ADMIN' ) );
-
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
+$ref = 'adminacad';
+if(isset($controller))
+    $ref = $controller;
 
 $year = __get__( $_GET, 'year', getCurrentYear( ) );
 $sem = __get__( $_GET, 'semester', getCurrentSemester( ) );
@@ -26,9 +21,11 @@ else
     $springChecked = '';
 }
 
+echo '<div class="important">';
+echo "<strong>Selected semester $sem/$year.</strong>";
 echo selectYearSemesterForm( $year, $sem );
+echo '</div>';
 
-echo  noteWithFAIcon( "Selected semester $sem/$year", 'fa-bell-o' );
 
 // Select semester and year here.
 
@@ -52,24 +49,21 @@ $taskSelect = arrayToSelectList( 'task'
                 , array( ), false, $taskSelected
         );
 
-
-echo '<h1>Manage Enrollements</h1>';
-echo alertUser( "Your are working with semester $sem-$year" );
-
-echo '<form method="post" action="">'; echo
-"<table>
-    <tr>
-        <th>Select courses</th>
-        <th>Task</th>
-    </tr>
-    <tr>
-        <td>" . $runningCoursesSelect . "</td>
-        <td>" . $taskSelect . "</td>
-        <td><button type=\"submit\">Submit</button>
-    </tr>
-    </table>";
-
-echo '</form>';
+//echo ' <br /> <br />';
+//echo '<form method="post" action="">'; echo
+//    "<table>
+//        <tr>
+//            <th>Select courses</th>
+//            <th>Task</th>
+//        </tr>
+//        <tr>
+//            <td>" . $runningCoursesSelect . "</td>
+//            <td>" . $taskSelect . "</td>
+//            <td><button type=\"submit\">Submit</button>
+//        </tr>
+//    </table>";
+//
+//echo '</form>';
 
 // Handle request here.
 $taskSelected = __get__( $_POST, 'task', '' );
@@ -82,11 +76,7 @@ if( __get__( $_POST, 'course_id', '' ) )
 
 $enrollments = getTableEntries( 'course_registration' ,'student_id', $whereExpr);
 
-if( $taskSelected == '' )
-{
-    echo printWarning( "No task has been selected yet!" );
-}
-else if( $_POST[ 'task' ] == 'Change enrollment' )
+if(__get__($_POST, 'task', '') == 'Change enrollment')
 {
     echo "<h2>Changing enrollment</h2>";
 
@@ -100,9 +90,7 @@ else if( $_POST[ 'task' ] == 'Change enrollment' )
     {
         $i += 1;
         echo "<tr><td>$i</td><td>";
-        echo '<form method="post"
-            action="admin_acad_manages_enrollments_action.php">';
-
+        echo '<form method="post" action="'.site_url("adminacad/quickenroll").'">';
         echo arrayToTableHTML( $enrol, 'info', ''
             , 'last_modified_on,grade,grade_is_given_on,status' );
 
@@ -127,13 +115,13 @@ else if( $_POST[ 'task' ] == 'Change enrollment' )
     echo '</table>';
 
 }
-else if( $_POST[ 'task' ] == 'Add enrollment' )
+else if( __get__($_POST, 'task', '') == 'Add enrollment' )
 {
     $course = $_POST[ 'course_id' ] ;
     $cname = getCourseName( $course );
 
-    echo "<h2> Adding new enrollments to $cname ($sem/$year) </h2>";
-    $form = '<form method="post" action="admin_acad_manages_enrollments_action.php">';
+    echo "<h2 style='float:right;'> Adding new enrollments to $cname ($sem/$year) </h2>";
+    $form = '<form method="post" action="'.site_url("adminacad/quickenroll").'">';
     $form .= '<table>';
     $form .= '<tr><td>';
     $form .= '<textarea cols="30" rows="4" name="logins" placeholder="gabbar@ncbs.res.in kalia@instem.res.in"></textarea>';
@@ -151,14 +139,11 @@ else if( $_POST[ 'task' ] == 'Add enrollment' )
     $form .= '</form>';
     echo $form;
 }
-else
-    echo printInfo( "Unsupported task " . $_POST[ 'task' ] );
+echo goBackToPageLink( "$ref/home", 'Go back' );
 
-
-echo goBackToPageLink( 'admin_acad.php', 'Go back' );
-
-echo "<h1>All enrollments for $sem/$year</h1>";
-$enrolls = getTableEntries( 'course_registration', 'course_id'
+// Show the quick action and enrollment information here.
+echo "<h1>Enrollments for $sem/$year</h1>";
+$enrolls = getTableEntries( 'course_registration', 'course_id, student_id'
         , "status='VALID' AND year='$year' AND semester='$sem'"
     );
 $courseMap = array( );
@@ -171,16 +156,17 @@ foreach( $courseMap as $cid => $enrolls )
     if( ! $cid )
         continue;
 
-    $cname = getCourseName( $cid );
-    echo "<h2> ($cid) $cname </h2>";
+    echo '<div style="border:4px solid lightblue">';
 
+    $cname = getCourseName( $cid );
+    echo "<h4>($cid) $cname </h4>";
     // Create a form to add new registration.
     $table = ' <table border="0">';
     $table .= '<tr>
-            <td> <textarea cols="40" rows="3" name="enrollments"
+            <td> <textarea cols="30" rows="2" name="enrollments"
                 placeholder="gabbar@ncbs.res.in:CREDIT&#10kalia@instem.res.in:AUDIT"></textarea> </td>
             <td> <button name="response" value="quick_enroll"
-                title=\'Use "email:CREDIT" or "email:AUDIT" or "email:DROPPED" format.\'
+                title=\'Use "email:CREDIT" or "email:AUDIT" or "email:DROPPED" format.\' 
                 >Quick Enroll</button> </td>
         </tr>';
     $table .= '</table>';
@@ -197,26 +183,25 @@ foreach( $courseMap as $cid => $enrolls )
     echo $form;
 
     echo ' <br /> ';
-    echo '<table class="tiles">';
+    echo '<table class="enrollments">';
     echo '<tr>';
-    echo ' <strong>Enrollement Table</strong> ';
+    echo ' <strong>Current enrollements</strong> ';
     foreach( $enrolls as $i => $e )
     {
+        $index = $i + 1;
         $student = $e[ 'student_id'];
-
         $dropForm = '
-            <form action="admin_acad_manages_enrollments_action.php" method="post" accept-charset="utf-8">
+            <form action="'.site_url("adminacad/drop").'" method="post" accept-charset="utf-8">
                 <button class="show_as_link" name="response" value="drop_course"
-                    title="Drop course"> <i class="fa fa-tint fa-1x"></i>
+                    title="Drop course"> <i class="fa fa-tint fa-2x"></i>
                 </button>
                 <input type="hidden" name="course_id" id="" value="' . $cid . '" />
                 <input type="hidden" name="year" value="' . $year . '" />
                 <input type="hidden" name="semester" value="' . $sem . '" />
                 <input type="hidden" name="student_id" value="' . $student . '" />
-            </form>
-        ';
+            </form>';
 
-        $sname = arrayToName( getLoginInfo( $student ) );
+        $sname = arrayToName( getLoginInfo( $student ), true );
         $grade = $e[ 'grade' ];
         $type = $e[ 'type'];
 
@@ -224,16 +209,18 @@ foreach( $courseMap as $cid => $enrolls )
         if( $grade )
             $dropForm = '';
 
-        echo "<td> $sname  ($student) <br /> $type <br /> $grade $dropForm </td>";
-        if( ($i+1) % 4 == 0 )
+        echo "<td> <tt>$index.</tt> $student<br />$sname <br />$type <br />$grade $dropForm </td>";
+        if( ($i+1) % 5 == 0 )
             echo '</tr><tr>';
     }
     echo '</tr>';
     echo '</table>';
+    echo '</div>';
+    echo '<br />';
 }
 
 echo '<br />';
-echo goBackToPageLink( 'admin_acad.php', 'Go back' );
+echo goBackToPageLink( "$ref/home", 'Go back' );
 
 
 ?>

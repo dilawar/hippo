@@ -51,8 +51,8 @@ function alertUser( $msg, $flash = true )
 function noteWithFAIcon( $msg, $fa )
 {
     $icon = '<i class="fa ' . $fa . '"></i>';
-    $info ="<div class=\"fa_note\"><p> $icon ".$msg."</p></div>";
-    return $info;
+    // $info ="<div class=\"fa_note\"><p> $icon ".$msg."</p></div>";
+    return $icon . $msg;
 }
 
 function minionEmbarrassed( $msg, $info = '' )

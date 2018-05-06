@@ -339,10 +339,29 @@ table.chart tr dt  {
     max-width: 50%;
 }
 
+table.enrollments {
+    width: 100%;
+    table-layout: fixed;
+}
+
+table.enrollments tr td {
+    font-size: x-small;
+    background-color: var(--tabletdcolor);
+    padding: 2px;
+    border: 1px solid;
+    /* border-radius: 10px; */
+}
 
 div.info {
     /*border : 1px solid #73AD21;*/
     max-width : var(--maxwidth);
+}
+
+div.important {
+    background-color: lightblue;
+    border: 1px dotted blue;
+    border-radius: 10px;
+    padding: 5px;
 }
 
 button.tiles {

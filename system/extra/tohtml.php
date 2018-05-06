@@ -9,6 +9,7 @@ require_once FCPATH.'scripts/generate_pdf_aws.php';
 require_once FCPATH.'scripts/generate_pdf_talk.php';
 
 $useCKEditor = false;
+global $symbUpdate;
 
 if( $useCKEditor )
     echo '<script src="https://cdn.ckeditor.com/4.6.2/standard/ckeditor.js"></script>';
@@ -2449,14 +2450,13 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
 
 function selectYearSemesterForm( $defaultYear = '', $defaultSem = '' )
 {
+    global $symbUpdate;
     $years = range( intval(getCurrentYear( )) + 1, 2010 );
     $yearSelect = arrayToSelectList( 'year', $years, array(), false, $defaultYear );
     $semSelect = arrayToSelectList( 'semester', array( 'SPRING', 'AUTUMN' ), array(), false, $defaultSem );
-
-    $form = '<form action="" method="get" accept-charset="utf-8">' . $yearSelect
-        . $semSelect .
-        ' <button type="submit" name="select_year_sem">Select Year/Semester</button></form>';
-
+    $form = '<form action="" method="get" accept-charset="utf-8">' 
+                . $yearSelect . $semSelect . "<button> $symbUpdate </button>" . 
+            '</form>';
     return $form;
 }
 
