@@ -176,7 +176,7 @@ echo "<h2>Automatic Housekeeping</h2>";
 
 $badEntries = doAWSHouseKeeping( );
 if( count( $badEntries ) == 0 )
-    echo printInfo( "AWS House is in order" );
+    echo printInfo( "AWS House is in order." );
 else
 {
     // can't make two forms on same page with same action. They will merge.
@@ -184,7 +184,7 @@ else
         likely these entries have no data. You need to fix them. ", false
     );
 
-    echo '<form action="adminacad/update_upcoming_aws" method="post">';
+    echo '<form action="' . site_url("adminacad/update_upcoming_aws") . '" method="post">';
     foreach( $badEntries as $aws )
     {
         echo alertUser( "This AWS is incomplete.", false );

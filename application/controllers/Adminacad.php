@@ -262,6 +262,86 @@ class Adminacad extends CI_Controller
             redirect( "adminacad/$ref");
         }
     }
+
+    // Courses 
+    public function drop( )
+    {
+        $user = $_POST[ 'student_id' ];
+        $course = $_POST[ 'course_id' ];
+        $sem = $_POST[ 'semester' ];
+        $year = $_POST[ 'year' ];
+
+        $res = updateTable( 'course_registration'
+            , 'student_id,course_id,year,semester', 'status', $_POST
+        );
+
+        if( $res )
+            flashMessage( "Successfully dropped $user from $course $sem/$year." );
+        else
+            printWarning( "Failed to drop $user from $course $sem/$year." );
+
+        redirect( 'adminacad/enrollments' );
+    }
+
+    public function quick_enroll( )
+    {
+        $enrolls = explode( PHP_EOL, $_POST[ 'enrollments' ] );
+        foreach( $enrolls as $i => $en )
+        {
+            $l = splitAtCommonDelimeters( $en, ':' );
+
+            $email = $l[0];
+            if( count( $l ) < 2 )
+            {
+                printWarning( "Partial information in <tt>$en</tt>. Missing CREDIT/AUDIT info. 
+                    Assuming <tt>CREDIT</tt>." 
+                    );
+                $etype = 'CREDIT';
+            }
+            else
+                $etype = $l[1];
+
+
+            if( ! in_array( $etype, array( 'AUDIT', 'CREDIT' ) ) )
+            {
+                echo printWarning( "Unknown registration type: '$etype'. Ignoring ..." );
+                continue;
+            }
+
+            $login = getLoginByEmail( $email );
+            if( ! $login )
+            {
+                echo printWarning( "No valid login found for $email. Ignoring ... " );
+                continue;
+            }
+
+            $data = array( );
+            $data[ 'registered_on' ] = dbDateTime( 'now' );
+            $data[ 'last_modified_on' ] = dbDateTime( 'now' );
+            $data[ 'student_id' ] = $login;
+            $data[ 'type' ] = $etype;
+            $courseId = $_POST[ 'course_id' ];
+            $data = array_merge( $data, $_POST );
+
+            try {
+                $res = insertOrUpdateTable( 'course_registration'
+                    , 'student_id,course_id,year,semester'
+                    , 'student_id,course_id,type,year,semester,registered_on,last_modified_on'
+                    , $data
+                );
+            } catch (Exception $e) {
+                echo printWarning( "failed to update table. Error was " . $e->getMessage( ) );
+                continue;
+            }
+
+            if( $res )
+                flashMessage( "Successfully enrolled $login to $courseId with type $etype." );
+            else
+                echo printWarning( "Failed to enroll $login to $courseId." );
+        }
+
+        redirect( 'adminacad/enrollments' );
+    }
 }
 
 ?>

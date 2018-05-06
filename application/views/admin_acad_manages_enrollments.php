@@ -173,7 +173,7 @@ foreach( $courseMap as $cid => $enrolls )
 
     // Display form
     $form = '<div id="show_hide_div">';
-    $form .= '<form action="admin_acad_manages_enrollments_action.php" method="post" accept-charset="utf-8">';
+    $form .= '<form action="' . site_url('adminacad/quick_enroll') . '" method="post" accept-charset="utf-8">';
     $form .= $table;
     $form .= '<input type="hidden" name="course_id" value="' . $cid . '" />';
     $form .= '<input type="hidden" name="year" value="' . $year . '" />';
@@ -183,6 +183,7 @@ foreach( $courseMap as $cid => $enrolls )
     echo $form;
 
     echo ' <br /> ';
+
     echo '<table class="enrollments">';
     echo '<tr>';
     echo ' <strong>Current enrollements</strong> ';
