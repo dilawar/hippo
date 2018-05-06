@@ -111,18 +111,21 @@ if( isset( $_POST[ 'response' ] ))
 
         $speaker = $aws[ 'speaker' ];
         $date = $aws['date'];
-        echo "<a>Entry for $speaker (" . loginToText( $speaker ) . ") on " .
-            date( 'D M d, Y', strtotime( $date ) ) . "</a>";
+        echo printInfo( "<a>Entry for $speaker (" . loginToText( $speaker ) . ") on " .
+            date( 'D M d, Y', strtotime( $date ) ) . "</a>" );
 
         echo arrayToVerticalTableHTML( $aws, 'annual_work_seminars' );
-        echo '<br>';
+        echo '<br />';
 
         /* This forms remain on this page only */
-        echo '<form method="post" action="'.site_url("$ref/updateaws") . '">
+        echo '<form method="post" action="'.site_url("adminacad/updateaws").'">
             <input type="hidden" name="speaker" value="' . $speaker . '">
             <input type="hidden" name="date" value="' . $date . '" >
-            <button onclick="AreYouSure(this)" style=\"float:right\" name="response" >'. $symbDelete . '</button>
-            <button onclick="AreYouSure(this)" style=\"float:right\" name="response" >'. $symbEdit . '</button>
+            <input type="hidden" name="id" value="' . $aws['id'] . '" >
+                <button onclick="AreYouSure(this)" style=\"float:right\" name="response" 
+                    value="delete" ><i class="fa fa-trash"></i>
+                </button> <button style=\"float:right\" name="response" value="edit" >
+                    <i class="fa fa-pencil"></i> </button>
             </form>
             ';
     }

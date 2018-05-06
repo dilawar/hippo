@@ -52,30 +52,30 @@ class Adminacad extends CI_Controller
             flashMessage( 'User cancelled last action.' );
             redirect( 'adminacad/home' );
         }
-
-        // Now real stuff.
-        redirect( 'adminacad/home' );
-    }
-
-    public function action( $task = '' )
-    {
-        // If no action is selected, view admin page.
-        if( ! $task )
+        elseif($response == 'delete' )
         {
-            $this->load_adminacad_view( 'admin_acad' );
+            $id = $_POST['id'];
+            $res = deleteFromTable( 'annual_work_seminars', 'id', $_POST );
+            if( $res )
+                flashMessage( "Successfully deleted AWS entry $id" );
         }
-        elseif( $task == 'manages_upcoming_aws' )
+        elseif($response == 'update' )
         {
+            $id = $_POST['id'];
+            $res = updateTable( 'annual_work_seminars', 'id', 'is_presynopsis_seminar,title,abstract', $_POST );
+            if( $res )
+                flashMessage( "Updated successfully AWS entry id $id." );
         }
-        elseif($task == 'manages_enrollments')
+        elseif($response == 'edit' )
         {
-            $this->load_adminacad_view( 'admin_acad_manages_enrollments' );
+            // This is a view.
+            $this->load_adminacad_view("admin_acad_edit_aws", $_POST );
+            return;
         }
         else
-        {
-            flashMessage( "Not implemented yet: $task" );
-            redirect('adminacad');
-        }
+            flashMessage( "Request $response is not supported yet." );
+
+        redirect( 'adminacad/home' );
     }
 
     public function update_aws_speaker($arg = '')
