@@ -36,7 +36,7 @@ foreach( $upcomingAWSs as $aws )
     if( strtotime( $aws['date'] ) - strtotime( 'today' )  < 7 * 24 * 3600 )
         array_push( $upcomingAwsNextWeek, $aws );
 
-echo '<h1>Next week Annual Work Seminar</h1>';
+echo '<h1>Annual Work Seminar for upcoming week</h1>';
 if( count( $upcomingAwsNextWeek ) < 1 )
     echo alertUser( "No AWS found." );
 else
@@ -44,7 +44,7 @@ else
     $table = '<div style="font-size:small">';
     foreach( $upcomingAwsNextWeek as $upcomingAWS )
     {
-        $table .= '<form action="'.site_url('admin/acad_action/next_week_aws').'" method="post" >';
+        $table .= '<form action="'.site_url('adminacad/next_week_aws').'" method="post" >';
         $table .= '<table>';
         $table .= '<tr><td>';
 
@@ -135,7 +135,7 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         // Speaker PI if any.
         $speakerTable .=  '<td>' . piSpecializationHTML( $pi, $specialization ) . '</td>';
 
-        $form = '<form action="'.site_url('admin/acad_action/post'). '" method="post" accept-charset="utf-8">';
+        $form = '<form action="'.site_url('adminadcad/acad_action'). '" method="post" accept-charset="utf-8">';
         $form .= '<input type="hidden", name="date" , value="' . $aws[ 'date' ] . '"/>';
         $form .= '<input type="hidden", name="speaker" , value="' . $aws[ 'speaker' ] . '"/>';
         $form .= '<button name="response" onclick="AreYouSure(this)"
@@ -165,7 +165,7 @@ $table .= '</table>';
 echo $table;
 
 
-echo goBackToPageLink( "admin/acad", "Go back" );
+echo goBackToPageLink( "adminacad/home", "Go back" );
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -176,7 +176,7 @@ echo "<h1>Temporary assignments</h1>";
 
 echo printInfo("Three methods are available for scheduling AWS. First one is default.");
 
-$methodTable = "<form method=\"post\" action=\"".site_url('admin/acad_action/schedule_upcoming_aws'). "\">";
+$methodTable = "<form method=\"post\" action=\"".site_url('adminacad/schedule_upcoming_aws'). "\">";
 $methodTable .= ' <table border="0"> ';
 $methodTable .= '<tr><td>';
 $methodTable .= '<button name="method" value="reschedule_default">
@@ -264,7 +264,7 @@ foreach( $scheduleMap as $date => $schedule )
         $intranetLink = getIntranetLink( $speaker );
 
         $table .= "<br /> $intranetLink ";
-        $table .= '<form action="'.site_url('admin/acad_action/post').'" method="post">
+        $table .= '<form action="'.site_url('adminacad/action').'" method="post">
             <input type="hidden" name="speaker" value="' . $speaker . '" />
             <button name="response" class="show_as_link" value="RemoveSpeaker" 
                 title="Remove this speaker from AWS speaker list" >
@@ -307,7 +307,7 @@ foreach( $scheduleMap as $date => $schedule )
         $table .= "</td>";
 
         // Create a form to approve the schedule.
-        $table .= '<form method="post" action="'.site_url('admin/acad_action/post').'">';
+        $table .= '<form method="post" action="'.site_url('adminacad/action').'">';
         $table .= '<input type="hidden" name="speaker" value="' . $speaker . '" >';
         $table .= '<input type="hidden" name="date" value="' . $upcomingAWS['date'] . '" >';
         $table .= '<td style="background:white;border:0px;">
@@ -338,6 +338,6 @@ if( $res )
     echo downloadTextFile(  $upcomingAWSScheduleFile, "Download schedule" );
 
 echo '<br><br>';
-echo goBackToPageLink( "admin/acad", "Go back" );
+echo goBackToPageLink( "adminacad/home", "Go back" );
 
 ?>

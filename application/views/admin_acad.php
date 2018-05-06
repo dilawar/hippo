@@ -28,8 +28,8 @@ echo userHTML( );
 $symbUpdate = '<i class="fa fa-check"></i>';
 
 echo '<table class="admin"><tr>';
-echo '<td><a class="clickable" href="'.site_url('adminacad/manages_upcoming_aws').'">Manage Upcoming AWSes</a></td>';
-echo '<td><a class="clickable" href="'.site_url('adminacad/manages_scheduling_request'). '">
+echo '<td><a class="clickable" href="'.site_url('adminacad/upcoming_aws').'">Manage Upcoming AWSes</a></td>';
+echo '<td><a class="clickable" href="'.site_url('adminacad/scheduling_request'). '">
         Manage ' . count( $pendingScheduleRequest) . ' Pending Scheduling Requests</a></td>';
 echo '</tr></table>';
 
@@ -66,7 +66,7 @@ echo '<br />';
 echo '<table class="admin">
     <tr>
         <td> <a class="clickable_small"
-            href="'.site_url('adminacad/manages_requests').'">Manage ' . count( $pendingRequests) .
+            href="'.site_url('adminacad/requests').'">Manage ' . count( $pendingRequests) .
             ' pending requests</a>
         </td>
         <td> <a class="clickable_small" href="'.site_url('adminacad/email_and_docs').'">Emails and Documents</td>
@@ -138,11 +138,11 @@ echo '
   <table class="admin">
     <tr>
         <td>
-            <a class="clickable" href="'.site_url('adminacad/manages_enrollments').'">Manage Enrollments</a>
+            <a class="clickable" href="'.site_url('adminacad/enrollments').'">Manage Enrollments</a>
             <p>Add/Remove student enrollments from  courses and assign grades.</p>
         </td>
         <td>
-            <a class="clickable" href="'.site_url('adminacad/manages_grades').'">Manage Grades</a>
+            <a class="clickable" href="'.site_url('adminacad/grades').'">Manage Grades</a>
             <p>Add/Remove student enrollments from  courses and assign grades.</p>
         </td>
     </tr>
@@ -150,7 +150,7 @@ echo '
         <td>
             <i class="fa fa-cog fa-spin fa-2x fa-fw"></i>
             <a class="clickable"
-                 href="'.site_url('adminacad/manages_current_courses').'">Manage this semester courses</a>
+                 href="'.site_url('adminacad/current_courses').'">Manage this semester courses</a>
         </td>
         <td>
             <a class="clickable"
@@ -160,10 +160,10 @@ echo '
     </tr>
     <tr>
         <td> <a class="clickable"
-             href="'.site_url('adminacad/manages_slots').'">Manage Slots</a> <br />
+             href="'.site_url('adminacad/slots').'">Manage Slots</a> <br />
             Add/Delete or update slot.
         </td>
-        <td> <a class="clickable" href="'.site_url('adminacad/manages_courses').'">Manage all courses</a>  <br />
+        <td> <a class="clickable" href="'.site_url('adminacad/courses').'">Manage all courses</a>  <br />
         Add new courses, or update course description.</td>
     </tr>
   </table>
@@ -174,8 +174,8 @@ echo '<h1>Journal Clubs</h1>';
 echo '
   <table class="admin">
     <tr>
-        <td><a class="clickable" href="'.site_url('adminacad/manages_jc').'">Add/Update Journal Clubs</a> </td>
-        <td><a class="clickable" href="'.site_url('adminacad/manages_jc_admins').'">Manage Journal Club Admins</a></td>
+        <td><a class="clickable" href="'.site_url('adminacad/jc').'">Add/Update Journal Clubs</a> </td>
+        <td><a class="clickable" href="'.site_url('adminacad/jc_admins').'">Manage Journal Club Admins</a></td>
     </tr>
   </table>
   ';
@@ -230,8 +230,8 @@ echo '
 echo '<h1>Manage talks and seminars</h1>';
 echo '<table class="admin">';
 echo '<tr>
-        <td> <a class="clickable" href="'.site_url('adminacad/manages_talks').'">Manage talks/seminar</td>
-        <td> <a class="clickable" href="'.site_url('adminacad/manages_speakers').'">Manage talk/seminar speakers</td>
+        <td> <a class="clickable" href="'.site_url('adminacad/talks').'">Manage talks/seminar</td>
+        <td> <a class="clickable" href="'.site_url('adminacad/speakers').'">Manage talk/seminar speakers</td>
     </tr>';
 echo '</table>';
 

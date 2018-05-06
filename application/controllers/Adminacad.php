@@ -24,6 +24,13 @@ class Adminacad extends CI_Controller
     }
 
     // VIEWS ONLY.
+    public function upcoming_aws( $arg = '' )
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws' );
+    }
+
+
+
     public function action( $task = '' )
     {
         // If no action is selected, view admin page.
@@ -33,7 +40,6 @@ class Adminacad extends CI_Controller
         }
         elseif( $task == 'manages_upcoming_aws' )
         {
-            $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws' );
         }
         elseif($task == 'manages_enrollments')
         {
