@@ -53,6 +53,11 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( 'admin_acad_manages_enrollments' );
     }
 
+    public function grades( )
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_grades' );
+    }
+
     // ACTION.
     public function next_week_aws_action( )
     {
@@ -264,26 +269,41 @@ class Adminacad extends CI_Controller
     }
 
     // Courses 
-    public function drop( )
+    public function change_enrollement( )
     {
+        $response = strtolower($_POST['response']);
         $user = $_POST[ 'student_id' ];
         $course = $_POST[ 'course_id' ];
         $sem = $_POST[ 'semester' ];
         $year = $_POST[ 'year' ];
 
+        $_POST['status'] = 'VALID';
+
+        if( $response == 'drop' )
+            $_POST['status'] = 'DROPPED';
+        elseif($response == 'audit')
+            $_POST['type'] = 'AUDIT';
+        elseif($response == 'credit')
+            $_POST['type'] = 'CREDIT';
+
         $res = updateTable( 'course_registration'
-            , 'student_id,course_id,year,semester', 'status', $_POST
-        );
+            , 'student_id,course_id,year,semester', 'status,type', $_POST
+            );
 
         if( $res )
-            flashMessage( "Successfully dropped $user from $course $sem/$year." );
+        {
+            if($response == 'drop')
+                flashMessage("Successfully dropped  $user from $course $sem/$year." );
+            else
+                flashMessage("Successfully changes registration type $user, $course ($sem/$year) to $response.");
+        }
         else
-            printWarning( "Failed to drop $user from $course $sem/$year." );
+            printWarning( "Failed to execute your wish!" );
 
         redirect( 'adminacad/enrollments' );
     }
 
-    public function quick_enroll( )
+    public function quickenroll( )
     {
         $enrolls = explode( PHP_EOL, $_POST[ 'enrollments' ] );
         foreach( $enrolls as $i => $en )
@@ -320,13 +340,14 @@ class Adminacad extends CI_Controller
             $data[ 'last_modified_on' ] = dbDateTime( 'now' );
             $data[ 'student_id' ] = $login;
             $data[ 'type' ] = $etype;
+            $data[ 'status' ] = 'VALID';
             $courseId = $_POST[ 'course_id' ];
-            $data = array_merge( $data, $_POST );
+            $data = array_merge( $_POST, $data );
 
             try {
                 $res = insertOrUpdateTable( 'course_registration'
                     , 'student_id,course_id,year,semester'
-                    , 'student_id,course_id,type,year,semester,registered_on,last_modified_on'
+                    , 'student_id,course_id,status,type,year,semester,registered_on,last_modified_on'
                     , $data
                 );
             } catch (Exception $e) {

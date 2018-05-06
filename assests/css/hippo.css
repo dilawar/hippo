@@ -446,7 +446,7 @@ button.show_as_link {
     cursor: pointer;
 }
 
-button {
+button.big {
     /* font-size: large; */
     font-family: "Fira Sans";
     min-width : 80px;
@@ -454,6 +454,22 @@ button {
     background: var(--tabletdcolor);
     border-radius: 8px;
     padding-left padding-right: 5px;
+}
+
+button.small {
+    font-size: x-small;
+    padding: 0pt;
+}
+
+/* This button is disabled and represent current type of enrollement. It is
+ * either CREDIT or AUDIT.
+ */
+button.current_enrollment_type {
+    background: none;
+    border: none;
+    font-weight: bold;
+    text-decoration: underline;
+    color: red;
 }
 
 /*button.courseInfo:hover {*/

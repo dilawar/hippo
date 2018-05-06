@@ -76,71 +76,6 @@ if( __get__( $_POST, 'course_id', '' ) )
 
 $enrollments = getTableEntries( 'course_registration' ,'student_id', $whereExpr);
 
-if(__get__($_POST, 'task', '') == 'Change enrollment')
-{
-    echo "<h2>Changing enrollment</h2>";
-
-    echo printInfo( "Press in button to change the status of ennrollment." );
-
-    $types = getTableColumnTypes( 'course_registration', 'type' );
-
-    $i = 0;
-    echo '<table>';
-    foreach( $enrollments as $enrol )
-    {
-        $i += 1;
-        echo "<tr><td>$i</td><td>";
-        echo '<form method="post" action="'.site_url("adminacad/quickenroll").'">';
-        echo arrayToTableHTML( $enrol, 'info', ''
-            , 'last_modified_on,grade,grade_is_given_on,status' );
-
-        $type = $enrol[ 'type' ];
-
-        foreach( $types as $t )
-        {
-            if( $t == $type )
-                continue ;
-
-            echo '</td><td><button name="response" value="' . $t
-                . '">'. $t . '</button>';
-        }
-
-        echo '</td></tr>';
-        echo '<input type="hidden" name="year" value="' . $enrol[ 'year'] . '" >';
-        echo '<input type="hidden" name="semester" value="' . $enrol['semester'] . '" >';
-        echo '<input type="hidden" name="student_id" value="' . $enrol['student_id'] . '" >';
-        echo '<input type="hidden" name="course_id" value="' . $enrol['course_id'] . '" >';
-        echo '</form>';
-    }
-    echo '</table>';
-
-}
-else if( __get__($_POST, 'task', '') == 'Add enrollment' )
-{
-    $course = $_POST[ 'course_id' ] ;
-    $cname = getCourseName( $course );
-
-    echo "<h2 style='float:right;'> Adding new enrollments to $cname ($sem/$year) </h2>";
-    $form = '<form method="post" action="'.site_url("adminacad/quickenroll").'">';
-    $form .= '<table>';
-    $form .= '<tr><td>';
-    $form .= '<textarea cols="30" rows="4" name="logins" placeholder="gabbar@ncbs.res.in kalia@instem.res.in"></textarea>';
-    $form .= '</td><td>';
-    $form .= arrayToSelectList( 'type', array( 'CREDIT', 'AUDIT' )
-                , array( 'CREDIT' ,'AUDIT' ), false, 'CREDIT'  );
-    // Add semester and year as hidden input.
-    $form .= ' <input type="hidden" name="year" id="" value="' . $year . '" />';
-    $form .= ' <input type="hidden" name="semester" id="" value="' . $sem . '" />';
-    $form .= '</td><td>';
-    $form .= '<button type="submit" name="response" value="enroll_new">Enroll</button>';
-    $form .= '</td></tr>';
-    $form .= '</table>';
-    $form .= '<input type="hidden" name="course_id" value="' . $course .  '">';
-    $form .= '</form>';
-    echo $form;
-}
-echo goBackToPageLink( "$ref/home", 'Go back' );
-
 // Show the quick action and enrollment information here.
 echo "<h1>Enrollments for $sem/$year</h1>";
 $enrolls = getTableEntries( 'course_registration', 'course_id, student_id'
@@ -165,7 +100,7 @@ foreach( $courseMap as $cid => $enrolls )
     $table .= '<tr>
             <td> <textarea cols="30" rows="2" name="enrollments"
                 placeholder="gabbar@ncbs.res.in:CREDIT&#10kalia@instem.res.in:AUDIT"></textarea> </td>
-            <td> <button name="response" value="quick_enroll"
+            <td> <button name="response" value="quickenroll"
                 title=\'Use "email:CREDIT" or "email:AUDIT" or "email:DROPPED" format.\' 
                 >Quick Enroll</button> </td>
         </tr>';
@@ -173,7 +108,7 @@ foreach( $courseMap as $cid => $enrolls )
 
     // Display form
     $form = '<div id="show_hide_div">';
-    $form .= '<form action="' . site_url('adminacad/quick_enroll') . '" method="post" accept-charset="utf-8">';
+    $form .= '<form action="' . site_url('adminacad/quickenroll') . '" method="post" accept-charset="utf-8">';
     $form .= $table;
     $form .= '<input type="hidden" name="course_id" value="' . $cid . '" />';
     $form .= '<input type="hidden" name="year" value="' . $year . '" />';
@@ -191,12 +126,21 @@ foreach( $courseMap as $cid => $enrolls )
     {
         $index = $i + 1;
         $student = $e[ 'student_id'];
-        $dropForm = '
-            <form action="'.site_url("adminacad/drop").'" method="post" accept-charset="utf-8">
-                <button class="show_as_link" name="response" value="drop_course"
-                    title="Drop course"> <i class="fa fa-tint fa-2x"></i>
-                </button>
-                <input type="hidden" name="course_id" id="" value="' . $cid . '" />
+        $dropForm = '<form action="'.site_url("adminacad/change_enrollement").'" method="post" >';
+
+        // Change type of enrollment.
+        $otherEnrollmentTypes = array( 'CREDIT', 'AUDIT', 'DROP' );
+        foreach( $otherEnrollmentTypes as $other )
+        {
+            $style = '';
+            if( $e['type'] == $other )
+                $style = 'disabled=true class="current_enrollment_type"';
+
+            $dropForm .= "<button name='response' value='$other' 
+                $style title='$other course'>" . strtoupper($other) . '</button>';
+        }
+
+        $dropForm .= '<input type="hidden" name="course_id" id="" value="' . $cid . '" />
                 <input type="hidden" name="year" value="' . $year . '" />
                 <input type="hidden" name="semester" value="' . $sem . '" />
                 <input type="hidden" name="student_id" value="' . $student . '" />
@@ -210,7 +154,7 @@ foreach( $courseMap as $cid => $enrolls )
         if( $grade )
             $dropForm = '';
 
-        echo "<td> <tt>$index.</tt> $student<br />$sname <br />$type <br />$grade $dropForm </td>";
+        echo "<td> <tt>$index.</tt> $student<br />$sname <br />$grade <br />$dropForm</td>";
         if( ($i+1) % 5 == 0 )
             echo '</tr><tr>';
     }
