@@ -136,19 +136,20 @@ if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
    echo "<h1> <i class=\"fa fa-cogs\"></i>   Admin</h1>";
    $roles =  getRoles( $_SESSION['user'] );
 
-   $html = "<table class=\"info\">";
+   $html = "<table class=\"admin\">";
    if( in_array( "ADMIN", $roles ) )
-       $html .= '<tr>
-           <td><a class="clickable" href="'. site_url("/admin"). '">Admin</a> </td>
-        ';
+       $html .= '<tr><td><a class="clickable" href="'. site_url("/admin"). '">
+                <i class="fa fa-lock fa-2x"></i><br />Admin</a></td>';
 
    if( in_array( "BOOKMYVENUE_ADMIN", $roles ) )
-       $html .= '<td><a class="clickable" href="'. site_url("adminbmv"). '">BookMyVenue Admin</a></td>';
+       $html .= '<td><a class="clickable" href="'. site_url("adminbmv"). '"> 
+           <i class="fa fa-calendar-plus-o fa-2x"></i><br />BookMyVenue Admin</a></td>';
    else
        $html .= ' <td></td>';
 
    if( in_array( "AWS_ADMIN", $roles ) )
-       $html .= '<td> <a class="clickable" href="'. site_url("/admin/acad"). '">Academic Admin</a></td>';
+       $html .= '<td> <a class="clickable" href="'. site_url("/adminacad"). '">
+           <i class="fa fa-graduation-cap fa-2x"></i><br />Academic Admin</a></td>';
    else
        $html .= ' <td></td>';
 

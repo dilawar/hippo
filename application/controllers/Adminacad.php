@@ -4,40 +4,51 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
 
-trait AdminAcad
+class Adminacad extends CI_Controller
 {
     public function load_adminacad_view( $view, $data = array() )
     {
-        $data['controller'] = 'admin/acad';
+        $data['controller'] = 'adminacad';
         $this->template->set( 'header', 'header.php' );
         $this->template->load( $view, $data );
     }
 
     public function index()
     {
-        $this->home();
+        $this->load_adminacad_view( 'admin_acad.php' );
+    }
+
+    public function home()
+    {
+        $this->index();
     }
 
     // VIEWS ONLY.
-    public function acad( $task = '' )
+    public function action( $task = '' )
     {
         // If no action is selected, view admin page.
         if( ! $task )
         {
-            $this->load_adminacad_view( 'admin_acad.php' );
+            $this->load_adminacad_view( 'admin_acad' );
         }
         elseif( $task == 'manages_upcoming_aws' )
         {
-            $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws.php' );
+            $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws' );
         }
         elseif($task == 'manages_enrollments')
         {
-            $this->load_adminacad_view( 'admin_acad_manages_enrollments.php' );
+            $this->load_adminacad_view( 'admin_acad_manages_enrollments' );
         }
+        elseif($task == 'manages_scheduling_request')
+        {
+            $this->load_adminacad_view( 'admin_acad_manages_scheduling_request');
+        }
+        elseif($task == 'home' )
+            redirect( 'adminacad' );
         else
         {
             flashMessage( "Not implemented yet: $task" );
-            redirect('admin/acad');
+            redirect('adminacad');
         }
     }
 
@@ -53,7 +64,7 @@ trait AdminAcad
                 flashMessage("Failed to compute schedule.");
             else
                 flashMessage('Sucessfully computed schedule.');
-            redirect( 'admin/acad');
+            redirect( 'adminacad');
         }
         elseif( $action == 'post' )
         {
@@ -67,7 +78,7 @@ trait AdminAcad
             else
                 flashMessage( "I could not update title/abstract.", 'warning' );
 
-            redirect( 'admin/acad/manages_upcoming_aws');
+            redirect( 'adminacad/manages_upcoming_aws');
         }
         else
             $this->execute_aws_action(strtolower($action));
@@ -78,7 +89,7 @@ trait AdminAcad
         if( ! $response)
         {
             flashMessage( 'Empty response from user.', 'warning');
-            redirect( 'admin/acad/manages_upcoming_aws');
+            redirect( 'adminacad/manages_upcoming_aws');
         }
 
         if( $response == 'accept' or $response == 'assign' )
@@ -112,7 +123,7 @@ trait AdminAcad
                 printWarning( "Invalid speaker '$speaker' or date '$date' 
                     is in past.  Could not assign AWS.");
 
-            redirect( "admin/acad/manages_upcoming_aws" );
+            redirect( "adminacad/manages_upcoming_aws" );
         }
         else if( $response == 'format_abstract' )
         {
@@ -131,7 +142,7 @@ trait AdminAcad
             else
                 flashMessage( "Could not remove $speaker.", "warning");
 
-            redirect( "admin/acad/manages_upcoming_aws" );
+            redirect( "adminacad/manages_upcoming_aws" );
         }
         else if( $response == 'delete' )
         {
@@ -165,18 +176,18 @@ trait AdminAcad
                     , $to = getLoginEmail( $_POST[ 'speaker' ] )
                     , $cclist = "acadoffice@ncbs.res.in,hippo@lists.ncbs.res.in"
                 );
-                redirect( "admin/acad/manages_upcoming_aws");
+                redirect( "adminacad/manages_upcoming_aws");
             }
         }
         else if( $response == "do_nothing" )
         {
             flashMessage( "User cancelled the previous operation.");
-            redirect( "admin/acad/manages_upcoming_aws");
+            redirect( "adminacad/manages_upcoming_aws");
         }
         else
         {
             flashMessage( "Not yet implemented $response.");
-            redirect( "admin/acad/manages_upcoming_aws");
+            redirect( "adminacad/manages_upcoming_aws");
         }
     }
 

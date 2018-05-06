@@ -27,59 +27,49 @@ echo userHTML( );
 
 $symbUpdate = '<i class="fa fa-check"></i>';
 
-
-echo '<h1>ANNUAL WORK SEMINAR</h1>';
-echo '<table class="tasks">
-    <tr>
-      <td>
-        <i class="fa fa-cog fa-spin fa-2x fa-fw"></i>
-        <a class="clickable" href="'.site_url('admin/acad/manages_upcoming_aws').'">Manage upcoming AWSes</a>
-        </td>
-        <td> <a class="clickable" href="'.site_url('admin/acad/manages_scheduling_request').'">
-            Manage ' . count( $pendingScheduleRequest ) .
-            ' pending scheduling requests</a> </td>
-    </tr>
-  </table>';
+echo '<table class="admin"><tr>';
+echo '<td><a class="clickable" href="'.site_url('adminacad/manages_upcoming_aws').'">Manage Upcoming AWSes</a></td>';
+echo '<td><a class="clickable" href="'.site_url('adminacad/manages_scheduling_request'). '">
+        Manage ' . count( $pendingScheduleRequest) . ' Pending Scheduling Requests</a></td>';
+echo '</tr></table>';
 
 echo ' <br /> ';
-echo '<table class="tasks">
+echo '<table class="admin">
     <tr>
-        <td> <a class="clickable" href="'.site_url('admin/acad/add_aws_entry').'">Add Missing AWS entry</td>
-        <td>
-         <form method="post" action="">
-            <input id="autocomplete_user1" name="login" placeholder="AWS Speaker" type="text" />
-            <input class="datepicker" name="date" placeholder="date(optional)" value="" >
-            <button name="response" value="Select"> <i class="fa fa-check fa-1x"></i>
-             </button>
-            </form>
-            Enter a login and optionally AWS date and you can delete that AWS entry
-            from my database.
-        </td>
+        <td> <a class="clickable" href="'.site_url('adminacad/add_aws_entry').'">Add Missing AWS entry</td>
+        <td></td>
     </tr>
     <tr>
-        <td>
-            <form method="post" action="admin/acad/update_user">
-                <i fa class="fa fa-graduation-cap fa-2x"></i>
+        <td> Update AWS list <br />
+            <form method="post" action="adminacad/update_user">
                 <input id="autocomplete_user" name="login"
                     placeholder="student login" >
                 <button title="Add or remove speakers from AWS list"
                     name="response" value="edit">' . $symbUpdate .
                 '</button>
             </form>
-            Update AWS list <br />
         </td>
-        <td></td>
+        <td>
+         <form method="post" action="">
+            Enter a login and optionally AWS date and you can delete that AWS entry
+            from my database.
+            <input id="autocomplete_user1" name="login" placeholder="AWS Speaker" type="text" />
+            <input class="datepicker" name="date" placeholder="date(optional)" value="" >
+            <button name="response" value="Select"> <i class="fa fa-check fa-1x"></i>
+             </button>
+            </form>
+        </td>
     </tr>
     </table>';
 
 echo '<br />';
-echo '<table class="tasks">
+echo '<table class="admin">
     <tr>
         <td> <a class="clickable_small"
-            href="'.site_url('admin/acad/manages_requests').'">Manage ' . count( $pendingRequests) .
+            href="'.site_url('adminacad/manages_requests').'">Manage ' . count( $pendingRequests) .
             ' pending requests</a>
         </td>
-        <td> <a class="clickable_small" href="'.site_url('admin/acad/email_and_docs').'">Emails and Documents</td>
+        <td> <a class="clickable_small" href="'.site_url('adminacad/email_and_docs').'">Emails and Documents</td>
     </tr>
     </table>';
 
@@ -104,7 +94,7 @@ if( isset( $_POST[ 'response' ] ))
         if( $res )
         {
             flashMessage( "Successfully deleted" );
-            redirect( 'admin/acad' );
+            redirect( 'adminacad' );
         }
     }
 
@@ -145,14 +135,14 @@ if( isset( $_POST[ 'response' ] ))
  */
 echo '<h1>COURSES</h1>';
 echo '
-  <table class="tasks">
+  <table class="admin">
     <tr>
         <td>
-            <a class="clickable" href="'.site_url('admin/acad/manages_enrollments').'">Manage Enrollments</a>
+            <a class="clickable" href="'.site_url('adminacad/manages_enrollments').'">Manage Enrollments</a>
             <p>Add/Remove student enrollments from  courses and assign grades.</p>
         </td>
         <td>
-            <a class="clickable" href="'.site_url('admin/acad/manages_grades').'">Manage Grades</a>
+            <a class="clickable" href="'.site_url('adminacad/manages_grades').'">Manage Grades</a>
             <p>Add/Remove student enrollments from  courses and assign grades.</p>
         </td>
     </tr>
@@ -160,20 +150,20 @@ echo '
         <td>
             <i class="fa fa-cog fa-spin fa-2x fa-fw"></i>
             <a class="clickable"
-                 href="'.site_url('admin/acad/manages_current_courses').'">Manage this semester courses</a>
+                 href="'.site_url('adminacad/manages_current_courses').'">Manage this semester courses</a>
         </td>
         <td>
             <a class="clickable"
-                href="'.site_url('admin/acad/schedule_upcoming_courses').'">Schedule Upcoming Courses</a>
+                href="'.site_url('adminacad/schedule_upcoming_courses').'">Schedule Upcoming Courses</a>
             <p> Compute the best possible schedule for course (NOT: Not complete).  </p>
         </td>
     </tr>
     <tr>
         <td> <a class="clickable"
-             href="'.site_url('admin/acad/manages_slots').'">Manage Slots</a> <br />
+             href="'.site_url('adminacad/manages_slots').'">Manage Slots</a> <br />
             Add/Delete or update slot.
         </td>
-        <td> <a class="clickable" href="'.site_url('admin/acad/manages_courses').'">Manage all courses</a>  <br />
+        <td> <a class="clickable" href="'.site_url('adminacad/manages_courses').'">Manage all courses</a>  <br />
         Add new courses, or update course description.</td>
     </tr>
   </table>
@@ -182,10 +172,10 @@ echo '
 // Journal clubs.
 echo '<h1>Journal Clubs</h1>';
 echo '
-  <table class="tasks">
+  <table class="admin">
     <tr>
-        <td><a class="clickable" href="'.site_url('admin/acad/manages_jc').'">Add/Update Journal Clubs</a> </td>
-        <td><a class="clickable" href="'.site_url('admin/acad/manages_jc_admins').'">Manage Journal Club Admins</a></td>
+        <td><a class="clickable" href="'.site_url('adminacad/manages_jc').'">Add/Update Journal Clubs</a> </td>
+        <td><a class="clickable" href="'.site_url('adminacad/manages_jc_admins').'">Manage Journal Club Admins</a></td>
     </tr>
   </table>
   ';
@@ -202,13 +192,13 @@ else
 {
     // can't make two forms on same page with same action. They will merge.
     echo alertUser( "Following entries could not be moved to main AWS list. Most
-        likely these entries have no data. You need to fix them. "
+        likely these entries have no data. You need to fix them. ", false
     );
 
-    echo '<form action="admin/acad/update_upcoming_aws" method="post">';
+    echo '<form action="adminacad/update_upcoming_aws" method="post">';
     foreach( $badEntries as $aws )
     {
-        echo alertUser( "This AWS is incomplete." );
+        echo alertUser( "This AWS is incomplete.", false );
         echo arrayToVerticalTableHTML( $aws, 'info', '', 'status,comment' );
         echo '<input type="hidden" name="response" value="update" />';
         echo '<button name="id" value="' . $aws[ 'id' ] . '">Fix</button>';
@@ -219,32 +209,32 @@ else
 
 echo "<h2>Information</h2>";
 echo '
-  <table border="0" class="tasks">
+  <table border="0" class="admin">
     <tr>
         <td>AWS summary <small>
             See the summary of all AWSs. You may be able to spot missing AWS entry
             in "Date Wise" list.  </small>
         </td>
         <td>
-            <a href="'.site_url('admin/acad/summary_user_wise').'">User wise</a>
+            <a href="'.site_url('adminacad/summary_user_wise').'">User wise</a>
             <br />
-            <a href="'.site_url('admin/acad/summary_date_wise').'">Date wise</a>
+            <a href="'.site_url('adminacad/summary_date_wise').'">Date wise</a>
         </td>
     </tr>
     <tr>
         <td>List of AWS speakers</td>
-        <td> <a href="'.site_url('admin/acad/aws_speakers').'">AWS speaker</a> </td>
+        <td> <a href="'.site_url('adminacad/aws_speakers').'">AWS speaker</a> </td>
     </tr>
   </table>';
 
 echo '<h1>Manage talks and seminars</h1>';
-echo '<table class="tasks">';
+echo '<table class="admin">';
 echo '<tr>
-        <td> <a class="clickable" href="'.site_url('admin/acad/manages_talks').'">Manage talks/seminar</td>
-        <td> <a class="clickable" href="'.site_url('admin/acad/manages_speakers').'">Manage talk/seminar speakers</td>
+        <td> <a class="clickable" href="'.site_url('adminacad/manages_talks').'">Manage talks/seminar</td>
+        <td> <a class="clickable" href="'.site_url('adminacad/manages_speakers').'">Manage talk/seminar speakers</td>
     </tr>';
 echo '</table>';
 
-echo goBackToPageLink( 'admin/acad', 'Go back' );
+echo goBackToPageLink( 'adminacad', 'Go back' );
 
 ?>

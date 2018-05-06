@@ -286,7 +286,7 @@ table.tasks
 
 table.tasks tr td
 {
-    background-color: var(--tabletdcolor);
+    background-color:var(--tabletdcolor);
     min-width: 100px;
     /* vertical-align: top; */
     border-radius: 10px;
@@ -431,7 +431,7 @@ button {
     font-family: "Fira Sans";
     min-width : 80px;
     min-height: 40px;
-    background: rgba(100,200,200,0.5);
+    background: var(--tabletdcolor);
     border-radius: 8px;
     padding-left padding-right: 5px;
 }
@@ -701,23 +701,20 @@ table.sticker tr td {
 
 table.admin 
 {
-    min-width : 500px;
-    max-width : var(--maxwidth);
+    width: 100%;
     border-spacing: 2px;
     border-collapse: separate;
-}
-
-table.admin tr:nth-of-type( odd ) {
-
+    table-layout: fixed;
 }
 
 table.admin tr td {
-    width : 50%;
-    background-color: var( --tabletdcolor );
+    /* min-width: 200px; */
+    background-color: var(--tabletdcolor);
     vertical-align: top;
-    /* border: 1px dotted; */
     border-radius: 20px;
     padding:10px;
+    overflow-x: auto;
+    width: 100%;
 }
 
 

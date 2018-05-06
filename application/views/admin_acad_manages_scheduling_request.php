@@ -1,9 +1,7 @@
 <?php
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
+require_once BASEPATH.'autoload.php';
+
 
 echo "<h3>Manage pending requests</h3>";
 
@@ -11,15 +9,17 @@ echo "<h3>Manage pending requests</h3>";
 $schedulingReqs = getTableEntries( 'aws_scheduling_request', 'status'
     , "status='PENDING'" );
 
+$ref = 'admin/acad';
+if(isset($controller))
+    $ref = $controller;
+
 if( count( $schedulingReqs ) == 0 )
 {
-    echo printWarning( "No requests are left" ); 
-    goBack( "./admin_acad.php", 1 );
-    exit;
+    flashMessage( "No requests are left" ); 
+    redirect( "$ref/home" );
 }
 else
 {
-
     foreach( $schedulingReqs as $req )
     {
         echo '<form method="post" action="admin_acad_manages_scheduling_request_submit.php">';
