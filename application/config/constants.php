@@ -120,6 +120,8 @@ $dbChoices = array(
 
 $symbUpdate = '<i class="fa fa-check fa-1x"></i>';
 $symbSelect = '<i class="fa fa-hand fa-1x"></i>';
+$symbDelete = '<i class="fa fa-trash-o fa-1x"></i>';
 $symbEdit = '<i class="fa fa-pencil fa-1x"></i>';
+$symbBell = '<i class="fa fa-bell-o fa-1x"></i>';
 
 ?>

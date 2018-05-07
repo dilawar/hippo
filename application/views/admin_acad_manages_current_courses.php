@@ -1,13 +1,10 @@
 <?php
-
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'AWS_ADMIN' ) );
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
+
+// In config/constants.php
+global $symbDelete;
+global $symbBell;
 
 $sem = getCurrentSemester( );
 $year = getCurrentYear( );
@@ -68,30 +65,31 @@ if( $_POST && array_key_exists( 'running_course', $_POST ) )
     $action = 'Edit';
 }
 
-$runningCoursesHTML = "<h1>Running courses in $sem, $year</h1>";
+$runningCoursesHTML  = "<h2>Following courses are running in $sem $year.</h2>";
 $runningCoursesHTML .= '<table class="info sortable">';
+
 $tobefilterd = 'id,semester,year';
 $runningCoursesHTML .= arrayHeaderRow( $runningCourses[0], 'info', $tobefilterd );
 foreach( $runningCourses as $course )
 {
     $cname = getCourseName( $course[ 'course_id'] );
-    $course[ 'course_id' ] = '<strong>'. $course['course_id'] . '</strong><br> ' . $cname;
+    $course['course_id'] = '<strong>'. $course['course_id'] . '</strong><br> ' . $cname;
 
-    if( isCourseActive( $course ) )
-        $course[ 'course_id' ] = "<blink> $symbBell </blink>" . $course[ 'course_id' ];
+    if(isCourseActive($course))
+        $course['course_id'] .= "<blink>$symbBell</blink>";
 
     $runningCoursesHTML .= '<tr>';
-    $runningCoursesHTML .= arrayToRowHTML( $course, 'aws', $tobefilterd, true, false );
+    $runningCoursesHTML .= arrayToRowHTML($course, 'aws', $tobefilterd, true, false);
     $runningCoursesHTML .=  '<td>
-        <form action="#" method="post" accept-charset="utf-8">
-        <button type="submit" value="Edit">Edit</button>
-        <input type="hidden" name="running_course" value="' .
-            $course[ 'id' ] . ': ' . $cname .  '" />
-        </form>
-        </td>';
+        <form action="" method="post">
+            <button type="submit" value="Edit">Edit</button>
+            <input type="hidden" name="running_course" value="' 
+                .  $course[ 'id' ] . ': ' . $cname .  '" />
+        </form></td>';
     $runningCoursesHTML .= '</tr>';
 }
 $runningCoursesHTML .= '</table>';
+
 echo $runningCoursesHTML;
 
 
@@ -109,7 +107,8 @@ if( $action == 'Add' )
 else
     echo "<h1>Edit following course </h1>";
 
-echo '<form method="post" action="admin_acad_manages_current_courses_action.php">';
+// echo '<form method="post" action="admin_acad_manages_current_courses_action.php">';
+echo '<form method="post" action="'.site_url('adminacad/courses_action') .'">';
 $default[ 'slot' ] = $slotSelect;
 $default[ 'venue' ] = $venueSelect;
 $default[ 'semester' ] = $sem;
@@ -152,8 +151,7 @@ if( $action == 'Update' )
 
 echo '</form>';
 
-
-echo "<br/><br/>";
-echo goBackToPageLink( 'admin_acad.php', 'Go back' );
+echo "<br/>";
+echo goBackToPageLink( 'adminacad/home', 'Go back' );
 
 ?>

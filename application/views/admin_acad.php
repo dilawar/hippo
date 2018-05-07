@@ -137,9 +137,7 @@ echo '
     </tr>
     <tr>
         <td>
-            <i class="fa fa-cog fa-spin fa-2x fa-fw"></i>
-            <a class="clickable"
-                 href="'.site_url('adminacad/current_courses').'">Manage this semester courses</a>
+            <a class="clickable" href="'.site_url('adminacad/courses').'">Manage This Semester Courses</a>
         </td>
         <td>
             <a class="clickable"
@@ -152,7 +150,7 @@ echo '
              href="'.site_url('adminacad/slots').'">Manage Slots</a> <br />
             Add/Delete or update slot.
         </td>
-        <td> <a class="clickable" href="'.site_url('adminacad/courses').'">Manage all courses</a>  <br />
+        <td> <a class="clickable" href="'.site_url('adminacad/allcourses').'">Manage all courses</a>  <br />
         Add new courses, or update course description.</td>
     </tr>
   </table>

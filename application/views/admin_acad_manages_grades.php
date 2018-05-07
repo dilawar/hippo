@@ -134,7 +134,7 @@ foreach( $courseMap as $cid => $enrolls )
 }
 
 echo '<br />';
-echo goBackToPageLink( 'admin_acad.php', 'Go back' );
+echo goBackToPageLink( 'adminacad/home', 'Go back' );
 
 
 ?>

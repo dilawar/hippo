@@ -672,8 +672,8 @@ table.request tr:nth-of-type( odd ) {
 /* This implements auto row number in table */
 /* https://stackoverflow.com/a/28320927/1805129 */
 table.info {
-    max-width : 90%;
-    min-width : 600px;
+    max-width : var(--maxwidth);
+    /* min-width : 600px; */
     border-spacing: 1px;
     border-collapse: separate;
 }
