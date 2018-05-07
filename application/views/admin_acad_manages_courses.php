@@ -1,13 +1,9 @@
 <?php
-include_once 'header.php';
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'AWS_ADMIN' ) );
-
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
+
+// In config/constansts.php
+global $symbDelete;
 
 // Javascript.
 $courses = getTableEntries( 'courses_metadata' );
@@ -60,7 +56,7 @@ $( function() {
 $course = array( 'id' => '', 'day' => '', 'start_time' => '', 'end_time' => '' );
 
 
-echo '<form method="post" action="#">';
+echo '<form method="post" action="">';
 echo '<input id="course" name="id" type="text" value="" >';
 echo '<button type="submit" name="response" value="show">Edit Course</button>';
 echo '</form>';
@@ -75,27 +71,26 @@ if( __get__( $_POST, 'reponse', 'Edit' ) && __get__( $_POST, 'id', false ) )
 
 echo '<h3>Add/Edit course details</h3>';
 
-echo '<form method="post" action="admin_acad_manages_courses_action.php">';
-
+// echo '<form method="post" action="admin_acad_manages_courses_action.php">';
+echo '<form method="post" action="'.site_url('adminacad/upcomingcourses_action').'">';
 echo dbTableToHTMLTable( 'courses_metadata', $course
-    , 'id,credits:required,name:required,description,'
-        . 'instructor_1:required,instructor_2,instructor_3'
-        . ',instructor_4,instructor_5,instructor_6,instructor_extras'
-        . ',comment'
+        , 'id,credits:required,name:required,description,'
+            . 'instructor_1:required,instructor_2,instructor_3'
+            . ',instructor_4,instructor_5,instructor_6,instructor_extras'
+            . ',comment'
         , $buttonVal
-    );
+        );
 
 
 echo '<button title="Delete this entry" type="submit" onclick="AreYouSure(this)"
     name="response" value="Delete">' . $symbDelete .
     '</button>';
 echo '<button id="addMoreInstructors">Add more instructors</button>';
-
 echo '</form>';
 
 
 echo "<br/><br/>";
-echo goBackToPageLink( 'admin_acad.php', 'Go back' );
+echo goBackToPageLink( 'adminacad/allcourses', 'Go back' );
 echo '<br>';
 
 
