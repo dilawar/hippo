@@ -39,6 +39,34 @@ trait AdminacadJC
         redirect( "adminacad/jc");
     }
 
+    public function jc_admins_action()
+    {
+        $response = strtolower($_POST['response']);
+        if( $response == 'add new admin' )
+        {
+            // The user may alredy be subscribed to this JC. If yes, then update the 
+            // subscription_type to ADMIN.
+            $res = insertOrUpdateTable( 'jc_subscriptions'
+                , 'login,jc_id,subscription_type,last_modified_on'
+                , 'subscription_type,last_modified_on'
+                , $_POST
+            );
+
+            if( $res )
+                flashMessage( "Added JC admin successfully");
+        }
+        else if( $response == 'remove admin' )
+        {
+            $_POST[ 'subscription_type' ] = 'NORMAL';
+            $res = updateTable( 'jc_subscriptions'
+                , 'jc_id,login', 'subscription_type', $_POST );
+            if( $res )
+                flashMessage("Successfully removed JC ADMIN from JC");
+        }
+
+        redirect('adminacad/jc_admins');
+    }
+
 }
 
 ?>
