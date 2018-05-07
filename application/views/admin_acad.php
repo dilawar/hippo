@@ -140,9 +140,10 @@ echo '
             <a class="clickable" href="'.site_url('adminacad/courses').'">Manage This Semester Courses</a>
         </td>
         <td>
-            <a class="clickable"
-                href="'.site_url('adminacad/schedule_upcoming_courses').'">Schedule Upcoming Courses</a>
-            <p> Compute the best possible schedule for course (NOT: Not complete).  </p>
+            <a class="clickable" href="javascript:void(0)">Schedule Upcoming Courses</a>
+            <p> Compute the best possible schedule for course 
+                <strong>(Not implemented yet.)</strong>. 
+            </p>
         </td>
     </tr>
     <tr>
@@ -150,8 +151,9 @@ echo '
              href="'.site_url('adminacad/slots').'">Manage Slots</a> <br />
             Add/Delete or update slot.
         </td>
-        <td> <a class="clickable" href="'.site_url('adminacad/allcourses').'">Manage all courses</a>  <br />
-        Add new courses, or update course description.</td>
+        <td><a class="clickable" href="'.site_url('adminacad/allcourses').'">
+            Manage all courses</a> <br /> Add new courses, or update course description.
+        </td>
     </tr>
   </table>
   ';
