@@ -1,20 +1,11 @@
 <?php
-
-include_once 'header.php';
-
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'AWS_ADMIN' ) );
-
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
+
+global $symbDelete;
 
 // Javascript.
 $slots = getTableEntries( 'slots', 'groupid' );
-
-//var_dump( $speakers );
 
 $slotsMap = array( );
 $slotsId = array_map( function( $x ) { return $x['id']; }, $slots );
@@ -39,6 +30,7 @@ $( function() {
 // Logic for POST requests.
 $slot = array( 'id' => '', 'day' => '', 'start_time' => '', 'end_time' => '' );
 
+echo ' <h1>Slot Table</h1>';
 echo slotTable( );
 
 echo "<h2>Slot details</h2>";
@@ -58,19 +50,13 @@ if( array_key_exists( 'id', $_POST ) )
 
 echo '<h3>Edit slot details</h3>';
 
-echo '<form method="post" action="admin_acad_manages_slots_action.php">';
-echo dbTableToHTMLTable( 'slots', $slot 
-    , 'id,day,start_time,end_time', 'submit' 
-    );
-
+echo '<form method="post" action="'.site_url('adminacad/slots_action') .'">';
+echo dbTableToHTMLTable('slots', $slot, 'id,day,start_time,end_time', 'submit');
 echo '<button title="Delete this entry" type="submit" onclick="AreYouSure(this)"
-    name="response" value="Delete">' . $symbDelete .
-    '</button>';
-
+    name="response" value="Delete">' . $symbDelete .  '</button>';
 echo '</form>';
 
-
-echo "<br/><br/>";
-echo goBackToPageLink( 'admin_acad.php', 'Go back' );
+echo "<br/>";
+echo goBackToPageLink( 'adminacad/home', 'Go back' );
 
 ?>
