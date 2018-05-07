@@ -122,6 +122,43 @@ trait AdminacadCourses
             }
         }
     }
+
+    public function slots_action( $arg = '' )
+    {
+        $response = strtolower($_POST['response']);
+        if( $response == 'do_nothing' )
+        {
+            flashMessage( "User said do nothing.");
+        }
+        else if( $response == 'delete')
+        {
+            // We may or may not get email here. Email will be null if autocomplete was 
+            // used in previous page. In most cases, user is likely to use autocomplete 
+            // feature.
+            if( strlen($_POST[ 'id' ]) > 0 )
+                $res = deleteFromTable( 'slots', 'id', $_POST );
+            if( $res )
+                flashMessage( "Successfully deleted entry." );
+            else
+                printWarning( "Failed to delete slot from database." );
+        }
+        else   // update
+        {
+            // Get group id of slot.
+            $gid = slotGroupId( $_POST['id'] );
+            $_POST[ 'groupid' ] = $gid;
+
+            $res = insertOrUpdateTable( 'slots'
+                    , 'id,groupid,day,start_time,end_time'
+                    , 'day,start_time,end_time'
+                    , $_POST 
+                );
+
+            if( $res )
+                flashMessage( 'Updated/Inserted slot.' );
+        }
+        redirect("adminacad/slots");
+    }
 }
 
 ?>

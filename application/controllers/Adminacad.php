@@ -3,10 +3,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
 require_once __DIR__.'/AdminacadCourses.php';
+require_once __DIR__.'/AdminacadJC.php';
 
 class Adminacad extends CI_Controller
 {
     use AdminacadCourses;
+    use AdminacadJC;
 
     public function load_adminacad_view( $view, $data = array() )
     {
@@ -76,6 +78,16 @@ class Adminacad extends CI_Controller
     public function allcourses( )
     {
         $this->load_adminacad_view( 'admin_acad_manages_courses' );
+    }
+
+    public function slots()
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_slots' );
+    }
+
+    public function jc()
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_jc' );
     }
 
     // ACTION.
