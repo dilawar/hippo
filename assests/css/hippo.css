@@ -20,10 +20,11 @@ body {
     /* min-width : 80%; */
     display:block;
     background-color:var(--background);
-    background-size: 800px;
-    background-position:0 140px;
-    /* background-repeat:no-repeat; */
-    /* background-attachment:fixed; */
+    /* background-size: 800px; */
+    /* background-position:0 140px; */
+    background-position: 50% 140px;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
     margin-left: 10%;
     margin-right: 10%;
 }
