@@ -13,7 +13,8 @@ $table = '<table class="info">
         </tr>
         </table>';
 
-echo "$table <br />";
+echo $table;
+echo "<br />";
 
 if( strtotime( 'today' ) == strtotime( 'this monday' ) )
     $today = dbDate( 'this monday' );

@@ -183,6 +183,10 @@ class User extends CI_Controller
         }
     }
 
+    public function downloadaws( )
+    {
+
+    }
 
     public function logout( )
     {

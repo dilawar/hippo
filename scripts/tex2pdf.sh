@@ -19,13 +19,29 @@
 #===============================================================================
 
 set -e
-# set -x
+set -x
 INFILE=$(readlink -f $1)
 # SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 TEXFILENAME=$(basename $INFILE)
 OUTFILENAME=${TEXFILENAME%.tex}.pdf
+
 ( 
     cd /tmp
+
+    # Compute md5 sum of file, if md5 sum alread exists then do not run the
+    # command other run the command.
+    if [ -f $OUTFILENAME ]; then
+        MD5=$(md5sum $TEXFILENAME | awk '{ print $1 }')
+
+        # If both PDF file exists and MDF5 is same then return. There is nothing
+        # to do.
+        if [ -f $MD5 ]; then
+            exit 0;
+        fi
+        echo "$TEXFILENAME" > $MD5
+    fi
+
     # Run the command two times. Sometimes it does not add images.
     kpsewhich --var-value=TEXMFVAR
     if [ -d /var/www/.texlive2016/texmf-var ];then 
@@ -34,9 +50,11 @@ OUTFILENAME=${TEXFILENAME%.tex}.pdf
 
     # LuaLaTex suffers from 'writable cache path' problem. See here
     # https://github.com/sharelatex/sharelatex/issues/450
-    #lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
+    # lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
     #lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
 
-    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
-    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
+    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE" &
+    echo "$TEXFILENAME" > $MD5
+    # xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
+
 )
