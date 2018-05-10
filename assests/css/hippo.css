@@ -16,8 +16,9 @@ body {
     font-size: 16px;
     font-family : 'EB Garamond';
     line-height: 120%;
+    width: 80%;
     max-width: var(--maxwidth);
-    display:block;
+    /* display:block; */
     background-color:var(--background);
     background-position: 50% 140px;
     background-repeat:no-repeat;
