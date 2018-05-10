@@ -1,0 +1,14 @@
+Dear $USER$,
+
+We have noticed that you have uploaded following $COUNT$ photos to 'Photography competition' with theme "$THEME$" ,
+
+$LIST$
+However according to our current rules (https://intranet.ncbs.res.in/photography/guidelines), you are only allowed to upload only 3 photographs per theme. Please let us know which photo you want to remove from the competition. We can send request to IT section for deletion of photo accordingly.
+Please let us know by $TIME$, else we will remove your $LAST_COUNT$.
+
+Kindly cooperate, thank you !
+
+Sincerely
+Photography Team
+
+P.S.: This is an automatically generated email. In the case of any discrepancy, please reply to this email.
