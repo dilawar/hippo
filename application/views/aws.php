@@ -77,7 +77,10 @@ else
         $awstext = awsToHTML( $aws, $with_picture = true );
 
         // Link to pdf file.
-        $awstext .= awsPdfURL( $aws[ 'speaker' ], $aws['date' ] );
+        // $awstext .= awsPdfURL( $aws[ 'speaker' ], $aws['date' ] );
+        $awstext .= '<a href="'.site_url("user/downloadaws/".$aws['date']."/".$aws['speaker']).'"
+            target="_blank">Download PDF</a>';
+
         echo $awstext;
         echo horizontalLine( );
     }
