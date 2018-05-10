@@ -154,7 +154,7 @@ function sendHTMLEmail( string $msg, string $sub, string $to, string $cclist = '
     $to =  implode( ' -t ', explode( ',', trim( $to ) ) );
 
     // Use \" whenever possible. ' don't escape especial characters in bash.
-    $cmd= __DIR__ . "/sendmail.py -t $to -s \"$sub\" -i \"$msgfile\" ";
+    $cmd= FCPATH . "scripts/sendmail.py -t $to -s \"$sub\" -i \"$msgfile\" ";
 
     if( $cclist )
     {
@@ -170,21 +170,15 @@ function sendHTMLEmail( string $msg, string $sub, string $to, string $cclist = '
 
     hippo_shell_exec( $cmd, $out, $stderr );
     if(  $stderr )
-    {
-        echo printWarning( "Failed to send email. Error $stderr" );
         return false;
-
-    }
 
     error_log( "<pre> $cmd </pre>" );
     error_log( '... $out' );
     error_log( "Saving the mail in archive" . $archivefile );
 
-
     // generate md5 of email. And store it in archive.
     file_put_contents( $archivefile, "SENT" );
     unlink( $msgfile );
-    echo printInfo( "Email is sent! <br />" );
     return true;
 }
 
@@ -237,11 +231,11 @@ function sendPlainTextEmail($msg, $sub, $to, $cclist='', $attachment = null)
     $archivefile = $maildir . '/' . md5($sub . $msg) . '.email';
     if( file_exists( $archivefile ) )
     {
-        echo printInfo( "This email has already been sent. Doing nothing" );
+        echo printWarning( "This email has already been sent. Doing nothing" );
         return;
     }
 
-    printInfo( "... preparing email" );
+    // printInfo( "... preparing email" );
 
     $timestamp = date( 'r', strtotime( 'now' ) );
 
@@ -255,7 +249,7 @@ function sendPlainTextEmail($msg, $sub, $to, $cclist='', $attachment = null)
     $to =  implode( ' -t ', explode( ',', trim( $to ) ) );
 
     // Use \" whenever possible. ' don't escape especial characters in bash.
-    $cmd= __DIR__ . "/sendmail.py -t $to -s \"$sub\" -i \"$msgfile\" ";
+    $cmd= FCPATH . "scripts/sendmail.py -t $to -s \"$sub\" -i \"$msgfile\" ";
 
     if( $cclist )
     {
