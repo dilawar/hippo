@@ -3,10 +3,7 @@
 <script src="<?= base_url() ?>/node_modules/highcharts/modules/exporting.js"></script>
 
 <?php
-
 require_once BASEPATH.'autoload.php';
-
-
 $upto = dbDate( 'tomorrow' );
 $requests = getTableEntries( 'bookmyvenue_requests', 'date'
                 , "date >= '2017-02-28' AND date <= '$upto'" );

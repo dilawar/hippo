@@ -1650,7 +1650,10 @@ function getLoginInfoByName( string $name ) : array
         , $match
     );
 
-    $info = getTableEntry( 'logins', 'first_name,last_name', $match );
+    if( __get__($match, 'first_name','') )
+        $info = getTableEntry( 'logins', 'first_name,last_name', $match );
+    else
+        return array();
 
     $login = __get__( $info, 'login', '' );
     if( ! $login )
