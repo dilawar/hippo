@@ -100,11 +100,11 @@ foreach( $requests as $r )
     }
 
     // If a request is coming from talk, use different background.
-    $color = 'black';
+    $color = '';
     if( strpos( $r[ 'external_id'], 'talks.' ) !== false )
-        $color = 'red';
+        $color = 'lightyellow';
 
-    $html .= "<tr style='text-color:$color'>";
+    $html .= "<tr style='background-color:$color'>";
     // $html .= '<td>';
     $html .= '<form action="'.site_url('adminbmv/review'). '" method="post">';
     // Hide some buttons to send information to next page.
@@ -171,7 +171,6 @@ if( count( $events ) > 0 )
     $html .= "<table class=\"info\">";
     $tofilter = 'eid,calendar_id,calendar_event_id' .
         ',external_id,gid,last_modified_on,status,url';
-
 
     // Add extra field to create one last row.
     $html .= arrayHeaderRow( $event, 'event', $tofilter );
