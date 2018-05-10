@@ -19,12 +19,12 @@ body {
     max-width: var(--maxwidth);
     display:block;
     background-color:var(--background);
-    /* background-size: 800px; */
-    /* background-position:0 140px; */
     background-position: 50% 140px;
     background-repeat:no-repeat;
-    background-size: contain;
-    background-attachment:fixed;
+    /* background-size: cover; */
+    background-size: 80%;
+    /* background-attachment:fixed; */
+    background-attachment: scroll;
     margin-left: 10%;
     margin-right: 10%;
 }
