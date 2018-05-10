@@ -3,6 +3,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
+require_once BASEPATH.'calendar/methods.php';
 
 
 class Adminbmv extends CI_Controller
@@ -146,7 +147,7 @@ class Adminbmv extends CI_Controller
     // ACTIONS
     public function synchronize_calendar( )
     {
-        $this->loadview( 'synchronize_calendar.php' );
+        $res = synchronize_google_calendar( );
         redirect( 'adminabmv/home' );
     }
 
@@ -200,11 +201,13 @@ class Adminbmv extends CI_Controller
         {
             flashMessage( "User said DO NOTHING. So going back!" );
             redirect( 'adminbmv/venues' );
+            return;
         }
         else
             flashMessage( "Unknown command from user $response." );
 
         redirect('adminbmv/venues');
+        return;
     }
 
     // Views with action.
@@ -387,7 +390,7 @@ class Adminbmv extends CI_Controller
             'external_id' => $external_id
             , 'controller', 'adminbmv'
             );
-        $this->loadview('user_book.php', $data );
+        $this->loadview('user_book', $data );
     }
 }
 
