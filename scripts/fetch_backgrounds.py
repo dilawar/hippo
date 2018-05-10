@@ -146,9 +146,9 @@ def get_images_from_dropbox( ):
     # Run submodule to get the data.
     try:
         subprocess.run( [ 'python3', 'main.py', '-t', 'json' ], shell = False
-                , cwd = './PhotographyCompetition/'
+                , cwd = os.path.join(scriptDir, 'PhotographyCompetition')
                 )
-        with open( os.path.join( './PhotographyCompetition', 'output.json' )) as f:
+        with open(os.path.join(scriptDir, 'PhotographyCompetition', 'output.json')) as f:
             data = json.load( f )
     except Exception as e:
         log( 'Failed to read JSON' )
