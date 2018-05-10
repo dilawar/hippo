@@ -1464,7 +1464,7 @@ function awsToHTML( $aws, $with_picture = false )
     // screws up the formatting of emails.
     if( $with_picture )
     {
-        $html .=  '<table class="email">';
+        $html .=  '<table>';
         $html .= '<tr>';
         $imgHtml = getUserPicture( $user, 'hippo' );
         $html .= "<td float=\"left\"> <div> $imgHtml </div> </td>";
