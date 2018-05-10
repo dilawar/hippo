@@ -4,6 +4,7 @@ require_once BASEPATH . 'autoload.php';
 
 class Info extends CI_Controller 
 {
+    /*
     public function __construct( )
     {
         parent::__construct();
@@ -17,6 +18,7 @@ class Info extends CI_Controller
         }
 
     }
+    */
 
     public function aws( $arg = '' )
     {
@@ -61,6 +63,7 @@ class Info extends CI_Controller
         $this->template->load('courses' );
 
     }
+
 }
 
 ?>

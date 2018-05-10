@@ -16,6 +16,13 @@ class Welcome extends CI_Controller
         $login = __get__( $_POST, 'username', '' );
         $pass = __get__($_POST, 'pass' );
 
+        if( ! ($login && $pass ) )
+        {
+            echo printWarning( "Empty username or password!" );
+            redirect( "welcome");
+            return;
+        }
+
         // If user use @instem.ncbs.res.in or @ncbs.res.in, ignore it.
         $ldap = explode( '@', $login)[0];
         $_SESSION['AUTHENTICATED'] = false;
