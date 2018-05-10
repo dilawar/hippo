@@ -755,16 +755,20 @@ function checkCollision( $request )
 function approveRequest( $gid, $rid )
 {
     $request = getRequestById( $gid, $rid );
-    $hippoDB = initDB();;
+    if(! $reqest )
+    {
+        echo printWarning( "No request $gid.$rid found in my database." );
+        return false;
+    }
 
+    global $hippoDB;
     $collideWith = checkCollision( $request );
     if( ! $collideWith )
     {
-        echo alertUser( "Following request is colliding with another
-            event or request. Rejecting it.." );
+        echo alertUser( "Following request is colliding with another event or request. Rejecting it..", true );
         echo arrayToTableHTML( $collideWith, 'request' );
         rejectRequest( $gid, $rid );
-        return false;
+        return true;
     }
 
     $stmt = $hippoDB->prepare( 'INSERT INTO events (
@@ -803,15 +807,39 @@ function rejectRequest( $gid, $rid )
 }
 
 
-function actOnRequest( $gid, $rid, $status )
+function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify = false )
 {
-    if( $status == 'APPROVE' )
-        approveRequest( $gid, $rid );
-    elseif( $status == 'REJECT' )
-        rejectRequest( $gid, $rid );
+    $status = "";
+    $success = false;
+    if( $whatToDo == 'APPROVE' )
+    {
+        $success = approveRequest( $gid, $rid );
+        $status = 'APPROVED';
+    }
+    elseif( $whatToDo == 'REJECT' )
+    {
+        $success = rejectRequest( $gid, $rid );
+        $status = 'REJECTED';
+    }
     else
-        echo( printWarning( "unknown request " . $gid . '.' . $rid .
-        " or status " . $status ) );
+    {
+        printWarning( "Unknown request " . $gid . '.' . $rid .  " or command: " . $whatToDo );
+        return false;
+    }
+
+    if( $notify && $success )
+    {
+        $req = getRequestById( $gid, $rid );
+        $title = $req['title'];
+        $subject = "Your booking request '$title' has been $status.";
+        $msg  = '<p>The status of your booking request is following.</p>';
+        $msg .=  arrayToVerticalTableHTML( $req, 'info' );
+        $msg .= "<p>If there is any mistake, please contact Dean's Office.</p>";
+        $userEmail = getLoginEmail(  $req[ 'created_by' ] );
+        $res = sendHTMLEmail( $msg, $subject, $userEmail, 'hippo@lists.ncbs.res.in');
+    }
+
+    return true;
 }
 
 function changeIfEventIsPublic( $gid, $eid, $status )
@@ -3259,6 +3287,15 @@ function pickPresenter( $jcID, $picker = 'random', $gap_between_presentations_in
 
     // Else return a random sample.
     return $suitable[ mt_rand(0, count($suitable) - 1) ];
+}
+
+function getNumberOfRequetsInGroup( string $gid ) : int
+{
+    $res = executeQuery( "SELECT COUNT(rid) FROM bookmyvenue_requests WHERE gid='$gid'");
+    if( $res )
+        return intval($res[0]['COUNT(rid)']);
+    else 
+        return 0;
 }
 
 

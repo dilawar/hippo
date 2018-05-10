@@ -2,8 +2,9 @@
 
 require_once BASEPATH.'autoload.php';
 
-$symbReview = ' <i class="fa fa-eye fa-2x"></i>';
-$symbEdit = ' <i class="fa fa-pencil fa-1x"></i>';
+global $symbReview;
+global $symbEdit;
+global $symbThumbsUp;
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -67,7 +68,7 @@ function bookmyVenueAdminTaskTable( )
 echo userHTML( );
 echo bookmyVenueAdminTaskTable( );
 
-echo '<h1> Pending requests </h1>';
+echo '<h1>Pending requests</h1>';
 
 
 $requests = getPendingRequestsGroupedByGID( );
@@ -76,6 +77,14 @@ $html = '<div style="font-size:small">';
 $html .= '<table class="info">';
 
 $tohide = 'last_modified_on,status,modified_by,timestamp,url,external_id,gid,rid';
+foreach( $requests as &$r )
+{
+    $r['metadata'] = '<small>(' . $r['gid'].'.'.$r['rid'] .')'
+        . ' <br />' . $r['timestamp'] 
+        . ' <br />' . $r['status']
+        . '</small>';
+
+}
 
 $html .= arrayToTHRow( $requests[0], 'request', $tohide );
 foreach( $requests as $r )
@@ -96,17 +105,30 @@ foreach( $requests as $r )
         $color = 'red';
 
     $html .= "<tr style='text-color:$color'>";
+    // $html .= '<td>';
     $html .= '<form action="'.site_url('adminbmv/review'). '" method="post">';
     // Hide some buttons to send information to next page.
     $html .= '<input type="hidden" name="gid" value="' . $r['gid'] . '" />';
     $html .= '<input type="hidden" name="rid" value="' . $r['rid'] . '" />';
-
-
     $html .= arrayToRowHTML( $r,'request', $tohide, false, false );
-
-    $html .= '<td style="background:white"><button name="response" value="Review" title="Review request"> ' .  $symbReview . '</button> </td>';
-    $html .= '</tr>';
+    $html .= '<td style="background:white"><button name="response" 
+            value="Review" title="Review request"> ' .  $symbReview . '</button>';
     $html .= '</form>';
+    // $html .= '</td>';
+
+    // Another form to quickly approve. Visible only if there are not many
+    // subrequests.
+    if( getNumberOfRequetsInGroup( $r['gid'] ) == 1 )
+    {
+        // $html .= '<td style="background:white">';
+        $html .= '<form action="'.site_url('adminbmv/approve'). '" method="post">';
+        $html .= '<input type="hidden" name="gid" value="' . $r['gid'] . '" />';
+        $html .= '<input type="hidden" name="rid" value="' . $r['rid'] . '" />';
+        $html .= '<button title="One click approve. Careful!"> ' .  $symbThumbsUp . '</button>';
+        $html .= '</form>';
+    }
+    // $html .= '</td>';
+    $html .= '</tr>';
 }
 $html .= '</table>';
 $html .= "</div>";

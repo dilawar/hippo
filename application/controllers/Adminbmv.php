@@ -392,6 +392,19 @@ class Adminbmv extends CI_Controller
             );
         $this->loadview('user_book', $data );
     }
+
+    public function approve( )
+    {
+        $gid = $_POST['gid'];
+        $rid = $_POST['rid'];
+        $res = actOnRequest( $gid, $rid, 'APPROVE', true );
+        if( $res )
+            flashMessage( "Request $gid.$rid is approved and venue has been blocked." );
+        else
+            printErrorSevere("Could not approve request $gid.$rid.");
+
+        redirect( 'adminbmv/home' );
+    }
 }
 
 ?>
