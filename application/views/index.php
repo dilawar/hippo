@@ -30,15 +30,21 @@ echo loginForm();
 
 // Show background image only on index.php page.
 $thisPage = basename( $_SERVER[ 'PHP_SELF' ] );
-if( strpos( $thisPage, 'index.php' ) !== false )
+if( strpos( $thisPage, 'welcome' ) !== false )
 {
 
     // Select one image from directory _backgrounds.
-    $background = random_jpeg( "./_backgrounds" );
+    // NOTE: In url leading ./../ is important since the url has to be relative
+    // to application/views. Not sure why ./../.. did not work.
+    $background = random_jpeg( "temp/_backgrounds" );
     if( $background )
     {
-        echo "<body style=\"background-image:url($background);
-            filter:alpha(Opactity=30);opacity=0.3; width:800px; \">";
+        echo "<script type=\"text/javascript\">
+            window.onload = function() {
+                var body = document.getElementsByTagName('body')[0];
+                body.style.backgroundImage = \"url('./../$background')\";
+            }; 
+            </script>";
     }
 }
 
