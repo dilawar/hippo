@@ -19,7 +19,7 @@
 #===============================================================================
 
 set -e
-set -x
+# set -x
 INFILE=$(readlink -f $1)
 # SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
