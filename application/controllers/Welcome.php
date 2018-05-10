@@ -1,6 +1,5 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
 require_once BASEPATH. "autoload.php" ;
 
 class Welcome extends CI_Controller 
