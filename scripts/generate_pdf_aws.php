@@ -187,7 +187,7 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
     $cmd = FCPATH."scripts/tex2pdf.sh $texFile";
 
     if( file_exists( $texFile ) )
-        hippo_shell_exec( "nohup $cmd", $stdout, $stderr );
+        hippo_shell_exec( $cmd, $stdout, $stderr );
 
     if( file_exists($pdfFile) )
         return $pdfFile;
