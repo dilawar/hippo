@@ -84,7 +84,7 @@ def download_url( url, caption, copyright = '(c) NCBS Photography Club', outpath
             img = io.BytesIO( r.content )
             img = PIL.Image.open( img )
             img = crop_surrounding_whitespace( img )
-            width = 800
+            width = 1200
             height = int((float(img.size[1])*width/float(img.size[0])))
             img = img.resize( (width,height), PIL.Image.ANTIALIAS )
             writeOnImage( img, caption, copyright )

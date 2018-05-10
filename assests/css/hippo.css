@@ -24,7 +24,7 @@ body {
     background-position: 50% 140px;
     background-repeat:no-repeat;
     background-size:80%;
-    /* background-attachment:fixed; */
+    background-attachment:scroll;
     margin-left: 10%;
     margin-right: 10%;
 }
