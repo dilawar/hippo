@@ -291,12 +291,10 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
         if( count( $all ) > 0 )
         {
             $tr = '<tr><td colspan="2">';
-            $tr .= "<tt> Venue <font color=\"red\">"
+            $tr .= "<tt> <div class='important'>Venue <font color=\"red\">"
                 . strtoupper( $venue['id'])
                 . " </font> has been taken by following booking request/event</tt>"
                 ;
-
-            $tr .= '<div style="font-size:x-small">';
 
             foreach( $all as $r )
                 $tr .= arrayToTableHTML( $r, 'info', '', $ignore );
