@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/NCBSCalendar.php';
+
 // Find event in list of events
 function findEvent( $events, $googleEvent )
 {

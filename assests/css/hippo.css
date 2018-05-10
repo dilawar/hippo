@@ -641,11 +641,13 @@ table.login_main {
     float:right;
     margin-right:0%;
     margin-top: 10px;
+    background: transparent;
 }
 
 table.login_main tr td {
     /* width:100px; */
     /* margin:10px; */
+    background-color: none;
 }
 
 table.eventline  {
