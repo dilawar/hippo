@@ -23,7 +23,7 @@ body {
     /* background-position:0 140px; */
     background-position: 50% 140px;
     background-repeat:no-repeat;
-    background-size:cover;
+    background-size: contain;
     background-attachment:fixed;
     margin-left: 10%;
     margin-right: 10%;
