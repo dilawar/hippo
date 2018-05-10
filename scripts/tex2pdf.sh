@@ -31,8 +31,8 @@ OUTFILENAME=${TEXFILENAME%.tex}.pdf
 
     # Compute md5 sum of file, if md5 sum alread exists then do not run the
     # command other run the command.
+    MD5=$(sha256sum $TEXFILENAME | awk '{ print $1 }')
     if [ -f $OUTFILENAME ]; then
-        MD5=$(md5sum $TEXFILENAME | awk '{ print $1 }')
 
         # If both PDF file exists and MDF5 is same then return. There is nothing
         # to do.
