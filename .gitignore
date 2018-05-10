@@ -1,0 +1,9 @@
+*.pyc
+.idea/
+credentials/
+pics/
+winners/
+final_scores.xlsx
+output.csv
+output.json
+public.md
