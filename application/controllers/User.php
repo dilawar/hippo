@@ -52,21 +52,27 @@ class User extends CI_Controller
         $this->template->load('bookmyvenue_browse');
     }
 
-    public function download( $filename )
+ 
+    public function download( $filename, $redirect = true )
     {
-        $filepath = sys_get_temp_dir() . "/$filename";
+        if( "/" == $filename[0] )
+            $filepath = $filename;
+        else
+            $filepath = sys_get_temp_dir() . "/$filename";
+
         if( file_exists( $filepath ) )
         {
             $content = file_get_contents( $filepath );
             force_download( $filename, $content );
         }
         else
-            flashMessage( "File $filename does not exist!", "warning" );
+            flashMessage( "File $filepath does not exist!", "warning" );
 
-        if ($this->agent->is_referral())
-            redirect( $this->agent->referrer() );
-        else
-            redirect( 'user/home' );
+        if( $redirect )
+            if ($this->agent->is_referral())
+                redirect( $this->agent->referrer() );
+            else
+                redirect( 'user/home' );
     }
 
     // USER EDITING PROFILE INFO
@@ -183,6 +189,30 @@ class User extends CI_Controller
         }
     }
 
+    public function downloadaws( $date, $speaker = '')
+    {
+        $pdffile = pdfFileOfAWS( $date, $speaker );
+        $this->download( $pdffile, false );
+
+        echo '<script type="text/javascript" charset="utf-8">
+                window.onload = function() {
+                    window.close();
+                };
+            </script>';
+
+    }
+
+    public function downloadtalk( $date, $id )
+    {
+        $pdffile = generatePdfForTalk( $date, $id );
+        $this->download( $pdffile, false );
+
+        echo '<script type="text/javascript" charset="utf-8">
+                window.onload = function() {
+                    window.close();
+                };
+            </script>';
+    }
 
     public function logout( )
     {

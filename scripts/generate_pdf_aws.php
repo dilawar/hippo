@@ -185,10 +185,11 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
     file_put_contents( $texFile,  $TeX );
 
     $cmd = FCPATH."scripts/tex2pdf.sh $texFile";
+
     if( file_exists( $texFile ) )
         hippo_shell_exec( $cmd, $stdout, $stderr );
 
-    if( file_exists( $pdfFile ) )
+    if( file_exists($pdfFile) )
         return $pdfFile;
 
     alertUser( "Failed to genered pdf document <br>
