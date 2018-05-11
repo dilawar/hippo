@@ -49,10 +49,9 @@ else
 
             $talkHtml .= "<br>";
             // Link to pdf file.
-            $talkHtml.= '<a style="margin-left:500px"
-                        target="_blank" href="generate_pdf_talk.php?date='
-                        . $default[ 'date' ] . '&id=' . $talkId . '">
-                        <i class="fa fa-download ">PDF</i></a>';
+            $talkHtml.= '<a style="margin-left:100%;align:right;" target="_blank" href="'
+                    . site_url("user/downloadtalk/".$default['date']."/$talkId") . '">
+                    <i class="fa fa-download ">PDF</i></a>';
             $talkHtml .= horizontalLine( );
         }
     }
