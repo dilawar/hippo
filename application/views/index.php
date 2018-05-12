@@ -1,12 +1,8 @@
 <?php
-
-include_once BASEPATH. 'extra/tohtml.php' ;
-include_once BASEPATH. 'extra/methods.php' ;
-include_once BASEPATH. 'calendar/calendar.php' ;
+include_once BASEPATH. 'autoload.php';
 
 function loginForm()
 {
-    /* Check if ldap server is alive. */
     $table = "";
     $table .= '<form action="' . site_url('/welcome/login').'" method="post" >';
     $table .= '<table class="login_main">';
