@@ -1154,7 +1154,7 @@ function getLoginEmail( $login )
     return $res['email'];
 }
 
-function getRoles( $user )
+function getRoles( string $user ) : array
 {
     $hippoDB = initDB();;
 

@@ -8,6 +8,22 @@ require_once BASEPATH.'calendar/methods.php';
 
 class Adminbmv extends CI_Controller
 {
+    // here we must check that user has permission to access this page.
+    function __construct( )
+    {
+        parent::__construct();
+
+        $roles = getRoles( $this->session->userdata("WHOAMI") );
+
+        if(! __get__( $roles, 'ADMIN_BOOKMYVENUE' ) )
+        {
+            flashMessage( "You don't have permission to access this page." );
+            redirect( "user/home");
+            return;
+        }
+    }
+
+
     // PURE VIEWS
     function index()
     {
