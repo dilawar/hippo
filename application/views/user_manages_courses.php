@@ -64,7 +64,7 @@ foreach( $runningCourses as $c )
     $cstart = strtotime( $c[ 'start_date' ] );
 
     // Registration is allowed within 4 weeks.
-    if( $today > strtotime( '-14 day', $cstart) && $today <= strtotime( '+14 day', $cstart ) )
+    if( $today <= strtotime( '+14 day', $cstart ) )
     {
         // Ignore any course which is colliding with any registered course.
         $cid = $c[ 'course_id' ];
@@ -98,8 +98,7 @@ echo alertUser( "Any course running on already registered slot will not appear i
     registration form."
     );
 echo alertUser(
-    "Courses will be visible in registration form from -2 weeks to +2 weeks from the
-    <tt>start date</tt>."
+    "Courses will be visible in registration upto 14 days from <tt>start date</tt>."
     );
 echo '<form method="post" action="manage_course/register">';
 echo dbTableToHTMLTable( 'course_registration'
