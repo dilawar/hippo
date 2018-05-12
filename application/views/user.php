@@ -5,7 +5,7 @@ echo userHTML( );
 
 $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
 // Only show this section if user is eligible for AWS.
-$userInfo = getLoginInfo( $_SESSION[ 'user' ] );
+$userInfo = getLoginInfo( whoAmI() );
 
 $html = '<table class="admin">';
 $html .= '<tr><td>
@@ -51,7 +51,7 @@ $table = '<table class="admin">
          </td>
     </tr>';
 
-if( isJCAdmin( $_SESSION[ 'user' ] ) )
+if( isJCAdmin( whoAmI() ) )
 {
     $table .= '<tr>
         <td>

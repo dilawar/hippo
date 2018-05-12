@@ -393,22 +393,16 @@ function initialize( $hippoDB  )
             ) "
         );
 
-    // DEPRECATED: TOLET.
+
+    // Questionnaire
     $res = $hippoDB->query( "
-        CREATE TABLE IF NOT EXISTS apartments (
+        CREATE TABLE IF NOT EXISTS question_bank (
             id INT PRIMARY KEY
-            , type ENUM( 'SHARE', 'SINGLE', '1BHK', '2BHK', '3BHK', '3+BHK' )
-            , available_from DATE NOT NULL
-            , open_vacancies INT DEFAULT '1'
-            , address VARCHAR( 200 ) NOT NULL
-            , description MEDIUMTEXT
-            , status ENUM( 'AVAILABLE', 'TAKEN', 'WITHDRAWN', 'INVALID', 'EXPIRED' )
-                    DEFAULT 'AVAILABLE'
-            , owner_contact VARCHAR(200) NOT NULL
-            , rent INT NOT NULL
-            , advance INT NOT NULL DEFAULT '0'
-            , created_by VARCHAR(50) NOT NULL -- Email of owner
-            , created_on DATETIME NOT NULL -- timestamp
+            , category VARCHAR(40) NOT NULL
+            , subcategory VARCHAR(40)
+            , question MEDIUMTEXT NOT NULL 
+            , choices VARCHAR(500) 
+            , status ENUM('VALID', 'INVALID' ) default 'VALID'
             , last_modified_on DATETIME
             )"
         );
@@ -432,8 +426,6 @@ function initialize( $hippoDB  )
             , UNIQUE KEY (login,on_table,on_field,value)
         )"
         );
-
-
 
     $res = $hippoDB->query( "
         CREATE TABLE IF NOT EXISTS upcoming_course_schedule (

@@ -90,7 +90,7 @@ echo '</form>';
 
 
 echo "<br/><br/>";
-echo goBackToPageLink( 'adminacad/allcourses', 'Go back' );
+echo goBackToPageLink( 'adminacad/home', 'Go back' );
 echo '<br>';
 
 
