@@ -20,6 +20,13 @@ class Info extends CI_Controller
     }
     */
 
+    public function loadview( $view, $data = array())
+    {
+        $data['controller'] = 'info';
+        $this->template->set('header', 'header.php');
+        $this->template->load($view);
+    }
+
     public function aws( $arg = '' )
     {
         if( $arg == 'search' )
@@ -62,6 +69,11 @@ class Info extends CI_Controller
         $this->template->set('header', 'header.php' );
         $this->template->load('courses' );
 
+    }
+
+    public function jc( )
+    {
+        $this->loadview( 'jc.php' );
     }
 
 }
