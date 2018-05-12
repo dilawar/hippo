@@ -5,10 +5,16 @@ require_once BASEPATH. "autoload.php" ;
 class Welcome extends CI_Controller 
 {
 
+    public function loadview( $view, $data = array() )
+    {
+        $data['controller'] = 'welcome';
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load($view, $data);
+    }
+
     public function index()
     {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load('index');
+        $this->loadview('index');
     }
 
     public function login( )
@@ -39,7 +45,7 @@ class Welcome extends CI_Controller
             if( ! $auth )
             {
                 $this->session->set_flashdata( 'error', "Loging unsucessful. Try again!" );
-                redirect( "/welcome" );
+                redirect( "welcome" );
             }
         }
 
