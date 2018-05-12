@@ -134,7 +134,7 @@ echo '<table class="admin">
 if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
 {
    echo "<h1> <i class=\"fa fa-cogs\"></i>   Admin</h1>";
-   $roles =  getRoles( $_SESSION['user'] );
+   $roles =  getRoles(whoAmI() );
 
    $html = "<table class=\"admin\">";
    if( in_array( "ADMIN", $roles ) )
@@ -156,5 +156,6 @@ if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
    $html .= "</tr></table>";
    echo $html;
 }
+
 
 ?>
