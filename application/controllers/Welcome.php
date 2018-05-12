@@ -31,7 +31,9 @@ class Welcome extends CI_Controller
 
         // If user use @instem.ncbs.res.in or @ncbs.res.in, ignore it.
         $ldap = explode( '@', $login)[0];
-        $_SESSION['AUTHENTICATED'] = false;
+
+        $this->session->set_userdata( 'AUTHENTICATED', false);
+        $this->session->set_userdata( 'WHOAMI', $login );
 
         // Check if ldap is available. If it is use LDAP else fallback to imap based 
         // authentication.
@@ -51,9 +53,8 @@ class Welcome extends CI_Controller
 
         if( $auth )
         {
-            $_SESSION['AUTHENTICATED'] = true;
-            $_SESSION['user'] = $ldap;
-
+            $this->session->set_userdata( 'AUTHENTICATED', true);
+            $this->session->set_userdata( 'WHOAMI', $login );
             $ldapInfo = getUserInfoFromLdap( $ldap );
 
             $email = '';
@@ -61,7 +62,7 @@ class Welcome extends CI_Controller
             if( $ldapInfo )
             {
                 $email = $ldapInfo[ 'email' ];
-                $_SESSION['email'] = $email;
+                $this->session->set_userdata( 'email', $email );
                 $type = __get__( $ldapInfo, 'title', 'UNKNOWN' );
             }
 
