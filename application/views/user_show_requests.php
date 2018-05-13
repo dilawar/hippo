@@ -4,7 +4,7 @@ require_once BASEPATH.'autoload.php';
 
 echo userHTML( );
 
-$requests = getRequestOfUser( $_SESSION['user'], $status = 'PENDING' );
+$requests = getRequestOfUser( whoAmI(), $status = 'PENDING' );
 
 echo '<h1>Pending booking</h1>';
 if( count( $requests ) < 1 )
@@ -39,7 +39,7 @@ echo goBackToPageLink( "user", "Go back" );
 
 
 echo '<h1>Approved booking</h1>';
-$groups = getEventsOfUser( $_SESSION['user'] );
+$groups = getEventsOfUser( whoAmI() );
 if( count( $groups ) < 1 )
     echo alertUser( "No upcoming events." );
 else 

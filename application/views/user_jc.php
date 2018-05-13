@@ -1,7 +1,6 @@
 <?php
 
 require BASEPATH.'autoload.php';
-
 echo userHTML( );
 
 $jcs = getJournalClubs( );
@@ -13,7 +12,7 @@ foreach( $jcs as $i => $jc )
 {
     $jcInfo = getJCInfo( $jc );
     $buttonVal = 'Subscribe';
-    if( isSubscribedToJC( $_SESSION['user'], $jc['id'] ) )
+    if( isSubscribedToJC( whoAmI(), $jc['id'] ) )
         $buttonVal = 'Unsubscribe';
 
     $table .= '<td>' . $jc['id'];
@@ -21,7 +20,7 @@ foreach( $jcs as $i => $jc )
     $table .= '<form action="'.site_url("user/jc_action/$buttonVal").'" method="post" >';
     $table .= '<button name="response" value="'.$buttonVal.'">'.$buttonVal.'</button>';
     $table .= '<input type="hidden" name="jc_id" value="' . $jc['id'] . '" />';
-    $table .= '<input type="hidden" name="login" value="'.$_SESSION['user'].'"/>';
+    $table .= '<input type="hidden" name="login" value="'.whoAmI().'"/>';
     $table .= '</form>';
     $table .= '</td>';
 
@@ -77,8 +76,7 @@ if( count( $myPresentations ) > 0 )
             );
         }
         // If it is MINE then make it editable.
-        echo ' <form action="user_jc_update_presentation.php"
-            method="post" accept-charset="utf-8">';
+        echo ' <form action="'.site_url('user/jc/update_presentation') .'" method="post" >';
         $action = 'Edit';
         if( $upcoming[ 'acknowledged' ] == 'NO' )
             $action = 'Acknowledge';
@@ -128,7 +126,7 @@ if( count( $allreqs ) > 0 )
             $action = 'Remove My Vote';
 
         echo '</td>';
-        echo ' <form action="user_jc_update_presentation.php" method="post" accept-charset="utf-8">';
+        echo ' <form action="'. site_url("user/jc/update_presentation") . '" method="post">';
         echo ' <input type="hidden" name="id" value="' . $voteId . '" />';
         echo ' <input type="hidden" name="voter" value="' . whoAmI( ) . '" />';
         echo "<td> <button name='response' value='$action'>$action</button></td>";
