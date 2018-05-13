@@ -634,13 +634,13 @@ function submitRequest( array $request )
     $hippoDB = initDB();;
     $collision = false;
 
-    if( ! array_key_exists( 'user', $_SESSION ) )
+    if( ! whoAmI() )
     {
         echo printErrorSevere( "Error: I could not determine the name of user" );
         return false;
     }
 
-    $request[ 'created_by' ] = $_SESSION[ 'user' ];
+    $request[ 'created_by' ] = whoAmI();
     $repeatPat = __get__( $request, 'repeat_pat', '' );
 
     if( strlen( $repeatPat ) > 0 )
@@ -3050,7 +3050,7 @@ function getUserJCs( $login )
 
 function getMyJCs( )
 {
-    return getUserJCs( $_SESSION[ 'user' ] );
+    return getUserJCs( whoAmI() );
 }
 
 /* --------------------------------------------------------------------------*/

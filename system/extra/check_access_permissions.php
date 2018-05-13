@@ -18,7 +18,7 @@ function isAuthenticated( )
 
 function requiredPrivilege( $role )
 {
-    $user = __get__( $_SESSION, 'user', '' );
+    $user = whoAmI();
     if( ! $user )
         return false;
 

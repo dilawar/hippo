@@ -720,7 +720,7 @@ function arrayToHtmlTableOfLogins( $logins )
 
 function userHTML( )
 {
-    $user = __get__( $_SESSION, 'user', 'UNKNOWN' );
+    $user = whoAmI();
 
     $html = '<table class="user_float">';
     $html .= '<tr colspan="2"><th>Hi 
@@ -1379,7 +1379,7 @@ function editableAWSTable(int $awsId=-1, array $default=array(), bool $withlogin
 function initUserMsg( $user = null )
 {
     if( ! $user )
-        $user = $_SESSION[ 'user' ];
+        $user = whoAmI();
 
     $msg = "<p> Dear " . loginToText( $user ) . "<p>";
     return $msg;
