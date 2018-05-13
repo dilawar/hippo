@@ -34,7 +34,7 @@ foreach( $myCourses as $c )
             'course_registration'
             , 'student_id,year,semester,course_id'
             , 'status'
-            , array( 'student_id' => $_SESSION[ 'user' ], 'year' => $year
+            , array( 'student_id' => whoAmI(), 'year' => $year
                 , 'semester' => $sem, 'course_id' => $c[ 'course_id' ]
                 , 'status' => 'INVALID'
             )
@@ -88,18 +88,20 @@ foreach( $runningCourses as $c )
 
 echo "<h2>Registration form</h2>";
 $courseSelect = arrayToSelectList( 'course_id', $options, $courseMap );
-$default = array( 'student_id' => $_SESSION[ 'user' ]
+$default = array( 'student_id' => whoAmI()
                 , 'semester' => $sem
                 , 'year' => $year
                 , 'course_id' => $courseSelect
                 );
 
-echo alertUser( "Any course running on already registered slot will not appear in your
-    registration form."
-    );
+// echo alertUser( "Any course running on already registered slot will not appear in your
+    // registration form."
+    // );
 echo alertUser(
-    "Courses will be visible in registration upto 14 days from <tt>start date</tt>."
+    "Courses will be visible in registration form upto 14 days from <tt>start date</tt>."
+    , false
     );
+
 echo '<form method="post" action="manage_course/register">';
 echo dbTableToHTMLTable( 'course_registration'
     , $default

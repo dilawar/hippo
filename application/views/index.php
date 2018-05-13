@@ -18,9 +18,6 @@ function loginForm()
     return $table;
 }
 
-
-$_SESSION['user'] = 'anonymous';
-
 // Now create a login form.
 echo loginForm();
 

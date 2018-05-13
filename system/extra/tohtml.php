@@ -10,6 +10,7 @@ require_once FCPATH.'scripts/generate_pdf_talk.php';
 
 $useCKEditor = false;
 global $symbUpdate;
+global $symbDelete;
 
 if( $useCKEditor )
     echo '<script src="https://cdn.ckeditor.com/4.6.2/standard/ckeditor.js"></script>';
@@ -2479,6 +2480,53 @@ function showEnrollmenTable( $enrolls, $tdintr=4)
     $table .= '</tr>';
     $table .= '</table>';
     return $table;
+}
+
+function questionBankBySubcategoryToTable( $subcategory, $questions, $controller )
+{
+    global $symbDelete;
+    $table = '<table class="info">';
+    $table .= "<caption> $subcategory </caption>";
+    foreach( $questions as $j => $q )
+    {
+        $qid = $q['id'];
+
+        $table .= '<tr>';
+        $table .= '<td>' . (1+$j) .'</td>';
+        $table .= arrayToRowHTML( $q, 'info', 'id,category,subcategory,status,last_modified_on', true, false );
+
+        // Add forms to delete or modify the question.
+        $table .= '<td>';
+        $table .= '<form action="'.site_url("$controller/deletequestion/$qid"). '" method="post">';
+        $table .= '<button type="submit" title="Delete this question">' . $symbDelete . '</button>';
+        $table .= '</form>';
+        $table .= '</td>';
+
+        $table .= '</tr>';
+    }
+    $table .= '</table>';
+    return $table;
+
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Convert question bank array to html table.
+    *
+    * @Param $qmap. Dictionary or associated array where subcategory is key and  
+    *       Array to question as value.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function questionBankByCategoryToTable( $qmap, $controller )
+{
+
+    $html = '';
+    foreach( $qmap as $subcategory => $questions )
+        $html .= questionBankBySubcategoryToTable( $subcategory, $questions, $controller );
+    return $html;
+
 }
 
 ?>
