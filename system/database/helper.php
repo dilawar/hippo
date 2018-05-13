@@ -3343,8 +3343,10 @@ function getOldResponses( $externalID ) : array
 {
     $responses = array();
     $entries = getTableEntries('poll_response', 'question_id', "external_id='$externalID' AND status='VALID'");
+
     foreach($entries as $entry )
-        $responses[$entry['question_id']] = $entry['response'];
+        $responses[$entry['question_id']] = $entry;
+
     return $responses;
 }
 
@@ -3361,7 +3363,8 @@ function getOldResponses( $externalID ) : array
 /* ----------------------------------------------------------------------------*/
 function getOldCourseFeedback( $year, $semester, $cid )
 {
-    return getOldResponses( "$year.$semester.$cid" );
+    $res = getOldResponses( "$year.$semester.$cid" );
+    return $res;
 }
 
 ?>

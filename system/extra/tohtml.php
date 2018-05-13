@@ -2529,7 +2529,7 @@ function questionBankByCategoryToTable( $qmap, $controller )
 
 }
 
-function csvToRadio(string $csv, string $name, string $default='') : string
+function csvToRadio(string $csv, string $name, string $default='', string $extra = '') : string
 {
     $csvarray = explode( ',', $csv );
     $html = '';
@@ -2537,9 +2537,8 @@ function csvToRadio(string $csv, string $name, string $default='') : string
     $options = array();
     foreach( $csvarray as $i => $opt )
     {
-        $extra = '';
         if( $default == $opt )
-            $extra = 'checked';
+            $extra .= ' checked';
 
         $row = "<input type='radio' value='$opt' name='$name' id='$name$i' $extra /> ";
         $row .= "<label for='$name$i' class='poll'>$opt</label>";
@@ -2550,7 +2549,18 @@ function csvToRadio(string $csv, string $name, string $default='') : string
     return $html;
 }
 
-function questionsToPoll($questions, $responses = array())
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Convert questions to a poll form. 
+    *
+    * @Param $questions
+    * @Param $responses
+    * @Param $nochangeafater Don't allow changing response after this many days.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function questionsToPoll($questions, $responses = array(), $nochangeafater = 1)
 {
     $html = '';
     foreach( $questions as $subcat => $qs )
@@ -2562,13 +2572,20 @@ function questionsToPoll($questions, $responses = array())
         {
             $qid = $q['id'];
 
-            $defaultVal = __get__($responses, $qid, 'Neutral' );
+
+            $oldres = $responses[$qid];
+
+            $defaultVal = $oldres['response'];
+
+            $extra = '';
+            if( (strtotime('now') - strtotime($oldres['timestamp'])) > $nochangeafater * 24 *3600 )
+                $extra = 'disabled';
 
             $choices = trim($q['choices']);
             if( ! $choices )
-                $options = '<textarea cols=50 rows=5 name="qid='.$qid .'">'.$defaultVal.'</textarea>';
+                $options = '<textarea cols=50 rows=5 name="qid='.$qid .'"' . " $extra " .'>'.$defaultVal.'</textarea>';
             else
-                $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal );
+                $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal, $extra );
 
             $row = '<tr>';
             $row .= '<td>' . $q['question'] . '</td>';
