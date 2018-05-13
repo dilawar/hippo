@@ -5,7 +5,7 @@ echo userHTML();
 $editable = 'category,subcategory,question,choices';
 
 $defaults = array( 'last_modified_on' => dbDateTime( 'now' )
-    , 'choices' => 'Strongly Disagree,Disagree,Neutral,Agree,Strongly Disagree'
+    , 'choices' => 'Strongly Disagree,Disagree,Neutral,Agree,Strongly Agree'
     );
 
 $defaults['id'] = getUniqueID( 'question_bank' );
