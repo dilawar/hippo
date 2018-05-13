@@ -3298,5 +3298,37 @@ function getNumberOfRequetsInGroup( string $gid ) : int
         return 0;
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Check if students has given feedback.
+    *
+    * @Param $student
+    * @Param $cid
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function hasStudentGivenFeedback( $student, $cid )
+{
+    $questions = getTableEntries( 'question_bank', 'id'
+        , "status='VALID' AND LOWER(category)='course feedback'"
+        );
+
+    return false;
+
+}
+
+function getQuestionsWithCategory( $category )
+{
+    $res = array();
+    $entries = getTableEntries( 'question_bank', 'id'
+        , "status='VALID' AND category='$category'" );
+
+    foreach( $entries as $i => $q )
+        $res[$q['subcategory']][] = $q;
+
+    return $res;
+}
+
 
 ?>

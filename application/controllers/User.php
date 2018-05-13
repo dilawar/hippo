@@ -189,6 +189,13 @@ class User extends CI_Controller
         }
     }
 
+    public function givefeedback( $cid, $semester, $year )
+    {
+        $this->load_user_view( 'user_give_feedback.php'
+            , array('cid'=>$cid, 'semester'=>$semester, 'year'=>$year) 
+        );
+    }
+
     public function downloadaws( $date, $speaker = '')
     {
         $pdffile = pdfFileOfAWS( $date, $speaker );
@@ -199,7 +206,6 @@ class User extends CI_Controller
                     window.close();
                 };
             </script>';
-
     }
 
     public function downloadtalk( $date, $id )

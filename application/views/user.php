@@ -17,7 +17,8 @@ $html .= '<tr><td>
 
 if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
 {
-    $html .=  '<td> <i class="fa fa-graduation-cap fa-3x"></i>
+    $html .=  '<td> 
+        <i class="fa fa-graduation-cap fa-3x"></i>
         <a class="clickable" href="'. site_url("/user/aws"). '">My AWS</a> <br />
         List of your Annual Work Seminar <br />
         <small> See your previous AWSs and update them. Check

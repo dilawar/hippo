@@ -2529,4 +2529,55 @@ function questionBankByCategoryToTable( $qmap, $controller )
 
 }
 
+function csvToRadio(string $csv, string $name, string $default='') : string
+{
+    $csvarray = explode( ',', $csv );
+    $html = '';
+
+    $options = array();
+    foreach( $csvarray as $i => $opt )
+    {
+        $extra = '';
+        if( $default == $opt )
+            $extra = 'checked';
+
+        $row = "<input type='radio' value='$opt' name='$name' id='$name$i' $extra /> ";
+        $row .= "<label for='$name$i' class='poll'>$opt</label>";
+        $options[] = $row;
+    }
+
+    $html .= implode(' ', $options);
+    return $html;
+}
+
+function questionsToPoll( $questions )
+{
+    $html = '';
+    foreach( $questions as $subcat => $qs )
+    {
+        $table = '<table class="poll">';
+        $table .= "<caption>$subcat</caption>";
+
+        foreach( $qs as $q )
+        {
+            $row = '<tr>';
+
+            $choices = trim($q['choices']);
+            if( ! $choices )
+                $options = '<input type="text" />';
+            else
+                $options = csvToRadio( $choices, $q['id'], 'Neutral' );
+
+            $row .= '<td>' . $q['question'] . '</td>';
+            $row .= '<td>' . $options . '</td>';
+            $row .= '</tr>';
+            $table .= $row;
+        }
+        $table .= '</table>';
+        $html .= $table;
+    }
+
+    return $html;
+}
+
 ?>
