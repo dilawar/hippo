@@ -3308,13 +3308,30 @@ function getNumberOfRequetsInGroup( string $gid ) : int
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function hasStudentGivenFeedback($student, $cid) : bool
+function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
 {
+    $extID = "$year.$sem.$cid";
+
     $questions = getTableEntries( 'question_bank', 'id'
         , "status='VALID' AND LOWER(category)='course feedback'"
         );
 
-    return false;
+    $oldres = getTableEntries( 'poll_response', 'login', 
+        "login='$student' AND external_id='$extID'"
+        );
+
+    $nQuesNotAnswered = count($questions); 
+
+    $res = array();
+    foreach( $questions as $q )
+    {
+        $res = getTableEntry( 'poll_response', 'external_id,question_id,login'
+            , array( 'login'=>$student, 'external_id'=>$extID, 'question_id'=>$q['id']));
+        if( $res )
+            $nQuesNotAnswered -= 1;
+    }
+
+    return $nQuesNotAnswered;
 
 }
 

@@ -170,8 +170,15 @@ foreach($myCourses as &$c)
     // Show grade if it is available and user has given feedback.
     if( __get__($c, 'grade', 'X' ) != 'X' )
     {
-        $noFeedback[] = $cid;
-        $c['grade'] = colored('Grade is available. <br />Feedback is due.', 'darkred');
+        $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
+        if($numUnanswered > 0 )
+        {
+            $noFeedback[] = $cid;
+            $c['grade'] = colored( "Grade is available. 
+                    <br />Feedback is due. $numUnanswered unanswered."
+                    , 'darkred'
+                    );
+        }
     }
 
     echo dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
@@ -182,8 +189,10 @@ foreach($myCourses as &$c)
         // Feeback form
         $sem = $c['semester'];
         $year = $c['year'];
-        $form =  '<form action="'.site_url("user/givefeedback/$cid/$sem/$year").'" method="post">';
-        $form .= ' <button style="float:right" name="response" value="submit">Feeback</button>';
+        $form =  '<form action="'.site_url("user/givefeedback/$cid/$sem/$year").'" 
+            method="post">';
+        $form .= ' <button style="float:right" name="response" 
+            value="submit">Feeback</button>';
         $form .= '</form>';
         echo $form;
     }
