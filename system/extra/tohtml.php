@@ -2550,7 +2550,7 @@ function csvToRadio(string $csv, string $name, string $default='') : string
     return $html;
 }
 
-function questionsToPoll( $questions )
+function questionsToPoll($questions, $responses = array())
 {
     $html = '';
     foreach( $questions as $subcat => $qs )
@@ -2560,14 +2560,17 @@ function questionsToPoll( $questions )
 
         foreach( $qs as $q )
         {
-            $row = '<tr>';
+            $qid = $q['id'];
+
+            $defaultVal = __get__($responses, $qid, 'Neutral' );
 
             $choices = trim($q['choices']);
             if( ! $choices )
-                $options = '<input type="text" />';
+                $options = '<textarea cols=50 rows=5 name="qid='.$qid .'">'.$defaultVal.'</textarea>';
             else
-                $options = csvToRadio( $choices, $q['id'], 'Neutral' );
+                $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal );
 
+            $row = '<tr>';
             $row .= '<td>' . $q['question'] . '</td>';
             $row .= '<td>' . $options . '</td>';
             $row .= '</tr>';

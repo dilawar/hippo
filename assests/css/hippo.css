@@ -441,7 +441,14 @@ button.display_request {
 
 button.submit {
     font-size: x-large;
+    display: inline-block;
+    /* overflow: auto; */
+    float: right;
+    position: inherit;
+    padding: 3px;
+    margin-top: 20px;
 }
+
 
 button.courseInfo {
     border: none;
@@ -639,6 +646,12 @@ table.editable_faculty tr td
     /*min-width : 20%;*/
 }
 
+caption {
+    color: blue;
+    font-variant: small-caps;
+    text-decoration: underline;
+}
+
 div.image {
     max-width: 100%;
 }
@@ -727,18 +740,23 @@ table.poll tr:nth-of-type( odd )
 }
 
 table.poll {
-    font-size: small;
     border: 1px;
+    max-width: var(--maxwidth);
+    min-width: 800px;
 }
 
 table.poll tr {
-    border-top: 1px dotted;
+    padding-top: 10px;
 }
 
 
 /* Second column must be larger */
-table.poll tr td.nth-child(0) {
-    max-width: 30%;
+table.poll tr td:nth-child(2) {
+    font-size:x-small;
+    min-width: 400px;
+    max-width: 60%;
+    /* text-decoration: underline; */
+    vertical-align: top;
 }
 
 table.tiles {

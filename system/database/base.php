@@ -362,6 +362,20 @@ class BMVPDO extends PDO
                 )"
             );
 
+        // table to record poll.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS poll_response (
+                login VARCHAR(40) NOT NULL
+                , question_id INT NOT NULL
+                , external_id VARCHAR(100) NOT NULL -- e.g. COURSEID.SEMESTER.YEAR
+                , response VARCHAR(1000) NOT NULL -- it could be large text but no longer than 1000 char.
+                , status ENUM('VALID', 'INVALID', 'WITHDRAWN' ) default 'VALID'
+                , timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                , last_modified_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                , UNIQUE KEY(login,question_id,external_id)
+                )"
+            );
+
         // Slots
         $res = $this->query( "
             create TABLE IF NOT EXISTS slots (

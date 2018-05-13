@@ -3308,7 +3308,7 @@ function getNumberOfRequetsInGroup( string $gid ) : int
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function hasStudentGivenFeedback( $student, $cid )
+function hasStudentGivenFeedback($student, $cid) : bool
 {
     $questions = getTableEntries( 'question_bank', 'id'
         , "status='VALID' AND LOWER(category)='course feedback'"
@@ -3318,7 +3318,16 @@ function hasStudentGivenFeedback( $student, $cid )
 
 }
 
-function getQuestionsWithCategory( $category )
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get all questions for given category.
+    *
+    * @Param $category
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getQuestionsWithCategory($category) : array
 {
     $res = array();
     $entries = getTableEntries( 'question_bank', 'id'
@@ -3330,5 +3339,29 @@ function getQuestionsWithCategory( $category )
     return $res;
 }
 
+function getOldResponses( $externalID ) : array
+{
+    $responses = array();
+    $entries = getTableEntries('poll_response', 'question_id', "external_id='$externalID' AND status='VALID'");
+    foreach($entries as $entry )
+        $responses[$entry['question_id']] = $entry['response'];
+    return $responses;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get old course feedback.
+    *
+    * @Param $year
+    * @Param $semester
+    * @Param $cid
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getOldCourseFeedback( $year, $semester, $cid )
+{
+    return getOldResponses( "$year.$semester.$cid" );
+}
 
 ?>

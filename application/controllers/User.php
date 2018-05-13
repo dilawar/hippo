@@ -46,6 +46,22 @@ class User extends CI_Controller
         $this->template->load('user_book');
     }
 
+    public function givefeedback($course_id, $semester, $year)
+    {
+        if( $course_id &&  $semester && $year )
+        {
+            $this->load_user_view( 'user_give_feedback.php'
+                , array('course_id'=>$course_id, 'semester'=>$semester, 'year'=>$year) 
+            );
+        }
+        else
+        {
+            $msg = "Invalid values: course_id=$course_id, semester=$semester, year=$year";
+            printWarning( $msg );
+            redirect('user/home');
+        }
+    }
+
     public function bmv_browse( )
     {
         $this->template->set( 'header', 'header.php' );
@@ -189,12 +205,60 @@ class User extends CI_Controller
         }
     }
 
-    public function givefeedback( $cid, $semester, $year )
+    // submit poll.
+    public function submitpoll( )
     {
-        $this->load_user_view( 'user_give_feedback.php'
-            , array('cid'=>$cid, 'semester'=>$semester, 'year'=>$year) 
-        );
+        $course_id = $_POST['course_id'];
+        $semester = $_POST['semester'];
+        $year = $_POST['year'];
+
+        if(!($year && $semester && $year))
+        {
+            $msg = "Either semester, year or course_id was invalid.";
+            $msg .= json_encode( $_POST );
+            printWarning( $msg );
+            redirect( 'user/home' );
+            return;
+        }
+
+        $external_id = "$year.$semester.$course_id";
+
+        // Keep data in array to table updating.
+        $entries = array();
+        foreach( $_POST as $key => $val )
+        {
+            preg_match( '/qid\=(?P<qid>\d+)/', $key, $m );
+            if($m)
+            {
+                $entry = array('external_id' => $external_id, 'question_id' => $m['qid']
+                        , 'login' => whoAmI() , 'response' => $val
+                        );
+                $entries[] = $entry;
+            }
+        }
+
+        // Update poll_response table now.
+        $msg = '';
+        $error = false;
+        foreach( $entries as $entry )
+        {
+            // $msg .= json_encode($entry);
+            $res = insertOrUpdateTable('poll_response', 'login,question_id,external_id,response', 'response', $entry);
+            if(!$res)
+            {
+                $msg .= 'Faieled to record response for question id ' . json_encode($entry);
+                $error = true;
+            }
+        }
+
+        if($error)
+            printWarning( $error );
+
+        // flashMessage( $msg );
+
+        redirect("user/givefeedback/$course_id/$semester/$year");
     }
+
 
     public function downloadaws( $date, $speaker = '')
     {
