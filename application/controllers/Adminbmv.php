@@ -15,9 +15,9 @@ class Adminbmv extends CI_Controller
 
         $roles = getRoles( $this->session->userdata("WHOAMI") );
 
-        if(! __get__( $roles, 'ADMIN_BOOKMYVENUE' ) )
+        if(! in_array('BOOKMYVENUE_ADMIN', $roles))
         {
-            flashMessage( "You don't have permission to access this page." );
+            flashMessage( "You don't have permission to access this page." . json_encode($roles) );
             redirect( "user/home");
             return;
         }
