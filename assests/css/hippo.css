@@ -32,9 +32,11 @@ body {
 
 
 h1.title {
-    font-family: 'Fira Sans';
+    /* font-family: 'Fira Sans'; */
     font-size: 72;
     font-variant: small-caps;
+    vertical-align: bottom;
+    display: inline-block;
 }
 
 pre {
