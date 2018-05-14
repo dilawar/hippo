@@ -1,13 +1,5 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
-
-if( ! (isIntranet() || isAuthenticated( ) ) )
-{
-    echo loginOrIntranet( );
-    exit;
-}
-
 ?>
 
 <!-- Sweet alert -->
