@@ -187,14 +187,13 @@ foreach( $slotCourses as $slot => $courses )
 
         $tid = "show_hide_$cid";
 
-        $regTable = '<table class=""></table>';
         if( count( $allEmails ) > 0 )
         {
             // Apend user email at the end of registration table.
             $mailtext = implode( ",", $allEmails );
             $enTable .= '<div>' .  mailto( $mailtext, 'Send email to all students' ) . "</div>";
 
-            $regTable = '<table border="1">';
+            $regTable = '<table>';
             $regTable .= '<tr>';
             $regTable .= '<td>
                 <button class="show_as_link"
@@ -204,10 +203,12 @@ foreach( $slotCourses as $slot => $courses )
             $regTable .= "<tr><td id=\"$tid\" style=\"display:none\"> $enTable </td></tr>";
             $regTable .= '</table>';
         }
+        else
+            $regTable = '<table></table>';
 
         $div .= $courseTable;
         $div .= $regTable;
-        $div .= '</div> <br />';
+        $div .= '</div>';
     }
     $html .= $div;
 }
