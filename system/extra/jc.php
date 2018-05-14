@@ -1,9 +1,5 @@
 <?php
 
-include_once 'methods.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Assign user to a JC presentation and send an email.
