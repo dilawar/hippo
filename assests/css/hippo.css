@@ -20,7 +20,7 @@ body {
     max-width: var(--maxwidth);
     /* display:block; */
     background-color:var(--background);
-    background-position: 50% 140px;
+    background-position: 50% 180px;
     background-repeat:no-repeat;
     /* background-size: cover; */
     background-size: 80%;
@@ -664,8 +664,7 @@ div.image {
 table.login_main {
     float:right;
     margin-right:0%;
-    margin-top: 10px;
-    background: transparent;
+    margin-top: 20px;
 }
 
 table.login_main tr td {
