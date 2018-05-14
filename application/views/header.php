@@ -142,7 +142,7 @@ $(document).ready(function(){
 </script>
 
 <h1><a href="<?= site_url( 'welcome' ) ?>" >
-<img src="./../../data/hippo.svg" width="50px" alt="" /> Hippo</a></h1>
+<?php echo img( 'data/hippo.svg', false, array('width'=>'50')); ?> Hippo</a></h1>
 
 <div style="font-size:small" class="header">
 <table class="public_links">
