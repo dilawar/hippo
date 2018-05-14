@@ -1,13 +1,5 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
-
-if( ! (isIntranet() || isAuthenticated( ) ) )
-{
-    echo loginOrIntranet( );
-    exit;
-}
-
 ?>
 
 <!-- Sweet alert -->
@@ -118,9 +110,8 @@ function showRunningCourse( x )
 
 <?php
 
-echo alertUser(
-    "Click on tile <button class=\"tiles\" disabled>1A</button> etc to see the
-    list of courses running at this time.");
+echo printInfo( "Click on tile <button class=\"tiles\" disabled>1A</button> etc to see the
+    list of courses running at this time." );
 
 $table = slotTable(  );
 echo $table;
@@ -136,16 +127,18 @@ if( $sem == 'AUTUMN' )
 else
     $springSelected = 'selected';
 
+/* Enrollment table. */
+echo "<h3>Courses running in " . __ucwords__( $sem) . ", $year</h3>";
+
 // Show select semester/year.
 $form = selectYearSemesterForm( $year, $sem );
+
 echo $form;
 
-/* Enrollment table. */
-echo "<h1>Courses in " . __ucwords__( $sem) . ", $year semester</h1>";
 
 $showEnrollText = 'Show Enrollement';
-echo '<div style="font-size:small">
-    <table border="1"> <tr>
+echo '<div class="important">
+    <table> <tr>
         <td> <i class="fa fa-flag-o fa-2x"></i>
         To enroll, visit <a class="clickable" href="user_manages_courses.php">My Courses</a>
         link in your home page after login. </td>
@@ -174,11 +167,12 @@ $header = '<tr><th>Course/Instructors</th><th>Schedule</th><th>Slot/Venue</th><t
 $enrollments = array( );
 ksort( $slotCourses );
 
-$table = '<table border="1">';
+$html = '';
 foreach( $slotCourses as $slot => $courses )
 {
     foreach( $courses as $c )
     {
+        $div = '<div class="important">';
         $cid = $c[ 'course_id' ];
         $courseTable = '<table class="show_course">';
         $courseTable .= $header;
@@ -211,17 +205,14 @@ foreach( $slotCourses as $slot => $courses )
             $regTable .= '</table>';
         }
 
-        $table .= '<table border="0" class="course">';
-        $table .= "<tr> <td> $courseTable </td>";
-        $table .= "<td> $regTable </td></tr>";
+        $div .= $courseTable;
+        $div .= $regTable;
+        $div .= '</div> <br />';
     }
+    $html .= $div;
 }
 
-$table .= "</table>";
-
-echo '<div style="font-size:small">';
-echo $table;
-echo '</div>';
+echo $html;
 
 
 /*******************************************************************************

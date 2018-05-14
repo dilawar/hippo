@@ -142,13 +142,14 @@ table.table_in_table tr td
 
 /* Show course */
 table.show_course {
-    max-width: var(--maxwidth);
-    width: 650px;
+    width: 100%;
+    table-layout: auto;
     border-spacing: 1px 10px;
     border-collapse: separate;
 }
 
 table.show_course tr{
+    width: 100%;
     border-radius:10px;
 }
 
@@ -159,7 +160,8 @@ table.show_course tr td:nth-child(1)
 table.show_course tr td
 {
     background-color: var(--tabletdcolor);
-    width: 20%;
+    width: 30%;
+    min-width: 10%;
     padding:10px;
     font-size:small;
     vertical-align: top;
@@ -325,7 +327,7 @@ div.info {
 }
 
 div.important {
-    background-color: rgba(0,0,100,0.1);
+    background-color: rgba(200,200,200,0.2);
     border: 2px solid lightblue;
     border-radius: 20px;
     padding: 10px;
@@ -889,7 +891,6 @@ div.fa_note {
    padding-left: 10px;
    margin-top:10px;
 }
-
 
 
 div.bordered {

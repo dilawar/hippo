@@ -2287,7 +2287,7 @@ function getPresentationTitle( $presentation )
 function jcToHTML( $jc )
 {
     $jcInfo = getJCInfo( $jc[ 'jc_id' ] );
-    $html = '<h3 style="width:600px">'
+    $html = '<h3>'
         . $jc['jc_id'] . ' | ' . $jc['title'] . '</h3>';
 
     $presenter = getLoginInfo( $jc[ 'presenter' ] );
@@ -2295,7 +2295,7 @@ function jcToHTML( $jc )
 
     $html .= "<strong> $pName </strong>";
     $html .= presentationToHTML( $jc );
-    $html .= "<div width=600px><hr width=800px align=left> </div>";
+    $html .= "<div><hr /> </div>";
 
     return $html;
 }
