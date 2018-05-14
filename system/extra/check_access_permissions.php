@@ -18,7 +18,7 @@ function isAuthenticated( )
 
 function requiredPrivilege( $role )
 {
-    $user = __get__( $_SESSION, 'user', '' );
+    $user = whoAmI();
     if( ! $user )
         return false;
 
@@ -58,11 +58,11 @@ function allOfTheseRoles( $roles )
     if( ! $roles )
         return false;
 
-    $user = __get__( $_SESSION, 'user', '' );
+    $user = whoAmI();
     if( ! $user )
         return false;
 
-    $userRoles = getRoles( $_SESSION['user'] );
+    $userRoles = getRoles( $user );
     foreach( $roles as $role )
         if( ! in_array( $role, $userRoles ) )
             return false;
@@ -76,11 +76,8 @@ function mustHaveAnyOfTheseRoles( $roles )
 
     if( anyOfTheseRoles( $roles ) )
         return true;
-    else
-    {
-        echo printWarning( "You don't have permission to access this page" );
-        redirect( site_url() . "/welcome" );
-    }
+
+    return false;
 }
 
 function mustHaveAllOfTheseRoles( $roles ) : bool
@@ -90,8 +87,8 @@ function mustHaveAllOfTheseRoles( $roles ) : bool
 
     if( allOfTheseRoles( $roles ) )
         return true;
-    else
-        return false;
+
+    return false;
 }
 
 

@@ -4,7 +4,7 @@ require_once BASEPATH.'autoload.php';
 
 echo userHTML( );
 
-$groups = getEventsOfUser( $_SESSION['user'] );
+$groups = getEventsOfUser( whoAmI() );
 if( count( $groups ) < 1 )
     echo alertUser( "No upcoming events." );
 else 
