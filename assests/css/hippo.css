@@ -32,9 +32,9 @@ body {
 
 
 h1.title {
-    line-height: 1.35;
-    font-size: xx-large;
-    text-align: center;
+    font-family: 'Fira Sans';
+    font-size: 72;
+    font-variant: small-caps;
 }
 
 pre {
