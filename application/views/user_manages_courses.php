@@ -34,7 +34,7 @@ foreach( $myCourses as $c )
             'course_registration'
             , 'student_id,year,semester,course_id'
             , 'status'
-            , array( 'student_id' => $_SESSION[ 'user' ], 'year' => $year
+            , array( 'student_id' => whoAmI(), 'year' => $year
                 , 'semester' => $sem, 'course_id' => $c[ 'course_id' ]
                 , 'status' => 'INVALID'
             )
@@ -43,7 +43,6 @@ foreach( $myCourses as $c )
 }
 
 $mySlots = array_unique( $mySlots );
-
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -57,14 +56,13 @@ $today = strtotime( 'today' );
 // Running course this semester.
 $courseMap = array( );
 $options = array( );
-
 $blockedCourses = array( );
 foreach( $runningCourses as $c )
 {
     $cstart = strtotime( $c[ 'start_date' ] );
 
     // Registration is allowed within 4 weeks.
-    if( $today > strtotime( '-14 day', $cstart) && $today <= strtotime( '+14 day', $cstart ) )
+    if( $today <= strtotime( '+14 day', $cstart ) )
     {
         // Ignore any course which is colliding with any registered course.
         $cid = $c[ 'course_id' ];
@@ -88,19 +86,20 @@ foreach( $runningCourses as $c )
 
 echo "<h2>Registration form</h2>";
 $courseSelect = arrayToSelectList( 'course_id', $options, $courseMap );
-$default = array( 'student_id' => $_SESSION[ 'user' ]
+$default = array( 'student_id' => whoAmI()
                 , 'semester' => $sem
                 , 'year' => $year
                 , 'course_id' => $courseSelect
                 );
 
-echo alertUser( "Any course running on already registered slot will not appear in your
-    registration form."
-    );
+// echo alertUser( "Any course running on already registered slot will not appear in your
+    // registration form."
+    // );
 echo alertUser(
-    "Courses will be visible in registration form from -2 weeks to +2 weeks from the
-    <tt>start date</tt>."
+    "Courses will be visible in registration form upto 14 days from <tt>start date</tt>."
+    , false
     );
+
 echo '<form method="post" action="manage_course/register">';
 echo dbTableToHTMLTable( 'course_registration'
     , $default
@@ -124,26 +123,30 @@ echo '<table class="1">';
 echo '<tr>';
 $action = 'drop';
 
-if( count( $myCourses ) > 0 )
-{
+if(count($myCourses) > 0)
     echo "<h1>You are registered for following courses for $sem $year</h1>";
 
-}
-
-if( count( $myCourses ) > 0 )
+if(count($myCourses) > 0)
 {
     echo ' <br />';
     // Dropping policy
-    echo noteWithFAIcon( " <strong>Policy for dropping courses </strong> <br />
-        Upto 30 days from starting of course, you are free to drop a course.
-        After that, you need to write to your course instructor and academic office.
-        ", "fa-bell-o" );
+    echo noteWithFAIcon( 
+        colored("<strong>Policy for dropping courses </strong><br />", "blue") .
+        "Upto 30 days from starting of course, you are free to drop a course.
+        After that, you need to contact appropriate authority."
+        , "fa-bell-o" );
 }
 
 $count = 0;
-foreach( $myCourses as $c )
+
+// Keep cid of course for which feedback is not available but grade has been
+// given.
+$noFeedback = array();
+
+foreach($myCourses as &$c)
 {
     $action = 'drop';
+
     // Break at 3 courses.
     if( $count % 3 == 0 )
         echo '</tr><tr>';
@@ -152,28 +155,51 @@ foreach( $myCourses as $c )
     echo '<form method="post" action="'.site_url("user/courses/update").'">';
     $cid = $c[ 'course_id' ];
     $course = getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
-    if( ! $course )
+
+    if(!$course)
         continue;
 
     // If more than 30 days have passed, do not allow dropping courses.
-    if( strtotime( 'today' ) >
-        strtotime( '+30 day',strtotime($runningCourses[ $cid][ 'start_date' ])))
+    $cstartDate = $runningCourses[$cid]['start_date'];
+    if(strtotime('today') > strtotime('+30 day', strtotime($cstartDate)))
         $action = '';
 
     // TODO: Don't show grades unless student has given feedback.
     $tofilter = 'student_id,registered_on,last_modified_on';
+
+    // Show grade if it is available and user has given feedback.
+    if( __get__($c, 'grade', 'X' ) != 'X' )
+    {
+        $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
+        if($numUnanswered > 0 )
+        {
+            $noFeedback[] = $cid;
+            $c['grade'] = colored( "Grade is available. 
+                    <br />Feedback is due. $numUnanswered unanswered."
+                    , 'darkred'
+                    );
+        }
+    }
+
     echo dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
     echo '</form>';
 
-    // Feeback form
-    $form =  '<form action="'.site_url("user/manage_course/feedback").'" method="post">';
-    $form .= ' <input type="hidden" name="course_id" value="'.$cid.'" />';
-    $form .= ' <input type="hidden" name="semester" value="'.$c['semester'].'" />';
-    $form .= ' <input type="hidden" name="year" value="'.$c['year'].'" />';
-    $form .= ' <button style="float:right" name="response" value="submit">Feeback</button>';
-    $form .= '</form>';
+    if( in_array($cid, $noFeedback) )
+    {
+        // Feeback form
+        $sem = $c['semester'];
+        $year = $c['year'];
+        $form =  '<form action="'.site_url("user/givefeedback/$cid/$sem/$year").'" 
+            method="post">';
+        $form .= ' <button style="float:right" name="response" 
+            value="submit">Feeback</button>';
+        $form .= '</form>';
+        echo $form;
+    }
 
-    echo $form;
+
+    // If feedback is not given for this course, display a button.
+
     echo '</td>';
 
     $count += 1;
@@ -182,28 +208,10 @@ foreach( $myCourses as $c )
 echo '</tr></table>';
 echo '</div>';
 
-// if( $runningCourses )
-// {
-//     echo '<h1> Running courses </h1>';
-//     echo '<div style="font-size:small">';
-//     echo '<table class="info">';
-//     $ignore = 'id,semester,year,comment,ignore_tiles,slot';
-//     $cs = array_values( $runningCourses );
-//     echo arrayHeaderRow( $cs[0], 'info', $ignore );
-//     foreach( $cs as $rc )
-//         echo arrayToRowHTML( $rc, 'info', $ignore );
-//     echo '</table>';
-//     echo '</div>';
-// }
-//
-//
-// echo '<h1>Slots </h1>';
-// echo slotTable( );
-
 echo ' <br /> ';
 echo goBackToPageLink( "user/home", "Go back" );
 
-echo '<h1> My courses </h1>';
+echo '<h1>My courses</h1>';
 
 $user = whoAmI( );
 $myAllCourses = getTableEntries( 'course_registration'
@@ -220,6 +228,11 @@ if( count( $myAllCourses ) > 0 )
     foreach( $myAllCourses as $course )
     {
         $cid = $course[ 'course_id' ];
+
+        if(__get__($course, 'grade', 'X') != 'X')
+            if( in_array($cid, $noFeedback))
+                $course['grade'] = colored('Feedback is due.', 'darkred');
+
         $cname = getCourseName( $cid );
         $course[ 'course_id' ] .= " <br /> $cname";
         echo arrayToRowHTML( $course, 'info', $hide );
@@ -227,9 +240,7 @@ if( count( $myAllCourses ) > 0 )
     echo "</table>";
 }
 else
-{
     echo printInfo( "I could not find any course belonging to '$user' in my database." );
-}
 
 echo goBackToPageLink( "user/home", "Go back" );
 

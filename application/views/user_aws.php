@@ -6,8 +6,9 @@ echo userHTML( );
 
 // AWS schedule.
 echo '<div style="border:1px dotted">';
-$scheduledAWS = scheduledAWSInFuture( $_SESSION['user'] );
-$tempScheduleAWS = temporaryAwsSchedule( $_SESSION[ 'user' ] );
+$user = whoAmI();
+$scheduledAWS = scheduledAWSInFuture( $user);
+$tempScheduleAWS = temporaryAwsSchedule( $user);
 if( $scheduledAWS )
 {
     echo alertUser( "
@@ -43,11 +44,11 @@ else
 
     // Here user can submit preferences.
     $prefs = getTableEntry( 'aws_scheduling_request', 'speaker,status'
-                , array( 'speaker' => $_SESSION[ 'user' ]
+                , array( 'speaker' => $user
                     , 'status' => 'PENDING' ) );
 
     $approved  = getTableEntry( 'aws_scheduling_request', 'speaker,status'
-                , array( 'speaker' => $_SESSION[ 'user' ]
+                , array( 'speaker' => $user
                     , 'status' => 'APPROVED' ) );
 
     if( ! $prefs )
@@ -61,7 +62,7 @@ else
 
         echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/create' ) . '">';
         echo '<button type="submit">Create preference</button>';
-        echo '<input type="hidden" name="speaker" value="' . $_SESSION[ 'user' ] . '">';
+        echo '<input type="hidden" name="speaker" value="' . $user . '">';
         echo '</form>';
     }
     else if( $prefs[ 'status' ] == 'PENDING' )
@@ -124,7 +125,7 @@ if( $scheduledAWS )
     echo "</form>";
 }
 
-$awsRequests = getAwsRequestsByUser( $_SESSION['user'] );
+$awsRequests = getAwsRequestsByUser( $user );
 if( count( $awsRequests ) > 0 )
     echo "<h3>Update pending requests</h3>";
 
@@ -140,7 +141,7 @@ foreach( $awsRequests as $awsr )
 }
 
 echo ' <br /> <br />';
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 
 echo '<h2><i class="fa fa-leanpub"></i> I have learnt \'deeply\' from previous AWSs</h2>';
 
@@ -164,7 +165,7 @@ if( __get__( $_POST, 'response', '' ) == 'write_my_aws' )
 
 
 echo '<br>';
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 echo "<br />";
 
 echo "<h1>Past Annual Work Seminar</h1>";
@@ -178,7 +179,7 @@ echo "</td></tr>";
 echo "</table>";
 echo "<br/>";
 
-$awses = getMyAws( $_SESSION['user'] );
+$awses = getMyAws( $user );
 
 foreach( $awses as $aws )
 {

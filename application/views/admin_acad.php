@@ -155,6 +155,12 @@ echo '
             Manage all courses</a> <br /> Add new courses, or update course description.
         </td>
     </tr>
+    <tr>
+        <td><a class="clickable" href="'.site_url('adminacad/feedbackquestionnaire').'">
+            Course feedback questionnaire</a> 
+            <br /> Prepare course feedback questionnaire.
+        </td>
+    </tr>
   </table>
   ';
 

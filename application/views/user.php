@@ -5,7 +5,7 @@ echo userHTML( );
 
 $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
 // Only show this section if user is eligible for AWS.
-$userInfo = getLoginInfo( $_SESSION[ 'user' ] );
+$userInfo = getLoginInfo( whoAmI() );
 
 $html = '<table class="admin">';
 $html .= '<tr><td>
@@ -17,7 +17,8 @@ $html .= '<tr><td>
 
 if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
 {
-    $html .=  '<td> <i class="fa fa-graduation-cap fa-3x"></i>
+    $html .=  '<td> 
+        <i class="fa fa-graduation-cap fa-3x"></i>
         <a class="clickable" href="'. site_url("/user/aws"). '">My AWS</a> <br />
         List of your Annual Work Seminar <br />
         <small> See your previous AWSs and update them. Check
@@ -51,7 +52,7 @@ $table = '<table class="admin">
          </td>
     </tr>';
 
-if( isJCAdmin( $_SESSION[ 'user' ] ) )
+if( isJCAdmin( whoAmI() ) )
 {
     $table .= '<tr>
         <td>
@@ -134,7 +135,7 @@ echo '<table class="admin">
 if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
 {
    echo "<h1> <i class=\"fa fa-cogs\"></i>   Admin</h1>";
-   $roles =  getRoles( $_SESSION['user'] );
+   $roles =  getRoles(whoAmI() );
 
    $html = "<table class=\"admin\">";
    if( in_array( "ADMIN", $roles ) )
@@ -156,5 +157,6 @@ if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
    $html .= "</tr></table>";
    echo $html;
 }
+
 
 ?>

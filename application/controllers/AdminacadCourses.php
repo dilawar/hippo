@@ -3,6 +3,14 @@
 trait AdminacadCourses 
 {
 
+    function goBackToReferrer( $fallback )
+    {
+        // Send to referrer.
+        if($this->agent->is_referral())
+            redirect($this->agent->referrer());
+        redirect( $fallback );
+    }
+
     public function courses_action($arg = '')
     {
         $response = strtolower($_POST['response']);
@@ -158,6 +166,32 @@ trait AdminacadCourses
                 flashMessage( 'Updated/Inserted slot.' );
         }
         redirect("adminacad/slots");
+    }
+
+    public function addquestion( )
+    {
+        $res = insertIntoTable( 'question_bank'
+            , 'id,category,subcategory,question,choices,status,last_modified_on'
+           ,  $_POST );
+        if( ! $res )
+            printWarning( "Failed to add question to database." );
+        else
+            flashMessage( "Successfully added question to database." );
+
+        // Send to referrer.
+        $this->goBackToReferrer( "adminacad/feedbackquestionnaire" ); 
+    }
+
+
+    public function deletequestion( $qid )
+    {
+        $res = deleteFromTable( 'question_bank', 'id', array( 'id' => $qid ) );
+        if(! $res)
+            printWarning( "Failed to deleted question from database." );
+        else
+            flashMessage( "Successfully deleted question." );
+
+        $this->goBackToReferrer( "adminacad/feedbackquestionnaire" ); 
     }
 }
 

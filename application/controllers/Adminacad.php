@@ -95,6 +95,11 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( 'admin_acad_manages_jc_admins' );
     }
 
+    public function feedbackquestionnaire()
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_course_questionnaire' );
+    }
+
     // ACTION.
     public function next_week_aws_action( )
     {

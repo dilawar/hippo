@@ -1,5 +1,7 @@
 <?php
 
+require_once BASEPATH.'extra/check_access_permissions.php';
+
 /**
  * 
  */
@@ -8,10 +10,24 @@ class HippoHooks
     public function __construct()
     {
         $this->CI =& get_instance();
+
+
     }
 
+    // Somehow I have to make sur that this is not triggered on Info pages.
     public function PreController( )
     {
+        $class = $this->CI->router->fetch_class();
+        if( $class === 'info' ) {
+            // Just check we are inside intranet.
+            if(! isIntranet() )
+            {
+                echo flashMessage( "To access this page, either login first or use intranet." );
+                redirect( "welcome");
+                return;
+            }
+            return;
+        }
 
         // If user is already is authenticated but somehow come to welcome page
         // etc. Move this to home.
@@ -33,6 +49,7 @@ class HippoHooks
             {
                 $this->CI->session->set_flashdata('error', "You are not authenticated yet." );
                 redirect( 'welcome' );
+                return;
             }
         }
     }

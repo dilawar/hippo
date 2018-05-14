@@ -634,13 +634,13 @@ function submitRequest( array $request )
     $hippoDB = initDB();;
     $collision = false;
 
-    if( ! array_key_exists( 'user', $_SESSION ) )
+    if( ! whoAmI() )
     {
         echo printErrorSevere( "Error: I could not determine the name of user" );
         return false;
     }
 
-    $request[ 'created_by' ] = $_SESSION[ 'user' ];
+    $request[ 'created_by' ] = whoAmI();
     $repeatPat = __get__( $request, 'repeat_pat', '' );
 
     if( strlen( $repeatPat ) > 0 )
@@ -1154,7 +1154,7 @@ function getLoginEmail( $login )
     return $res['email'];
 }
 
-function getRoles( $user )
+function getRoles( string $user ) : array
 {
     $hippoDB = initDB();;
 
@@ -3050,7 +3050,7 @@ function getUserJCs( $login )
 
 function getMyJCs( )
 {
-    return getUserJCs( $_SESSION[ 'user' ] );
+    return getUserJCs( whoAmI() );
 }
 
 /* --------------------------------------------------------------------------*/
@@ -3298,5 +3298,90 @@ function getNumberOfRequetsInGroup( string $gid ) : int
         return 0;
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Check if students has given feedback.
+    *
+    * @Param $student
+    * @Param $cid
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
+{
+    $extID = "$year.$sem.$cid";
+
+    $questions = getTableEntries( 'question_bank', 'id'
+        , "status='VALID' AND LOWER(category)='course feedback'"
+        );
+
+    $oldres = getTableEntries( 'poll_response', 'login', 
+        "login='$student' AND external_id='$extID'"
+        );
+
+    $nQuesNotAnswered = count($questions); 
+
+    $res = array();
+    foreach( $questions as $q )
+    {
+        $res = getTableEntry( 'poll_response', 'external_id,question_id,login'
+            , array( 'login'=>$student, 'external_id'=>$extID, 'question_id'=>$q['id']));
+        if( $res )
+            $nQuesNotAnswered -= 1;
+    }
+
+    return $nQuesNotAnswered;
+
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get all questions for given category.
+    *
+    * @Param $category
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getQuestionsWithCategory($category) : array
+{
+    $res = array();
+    $entries = getTableEntries( 'question_bank', 'id'
+        , "status='VALID' AND category='$category'" );
+
+    foreach( $entries as $i => $q )
+        $res[$q['subcategory']][] = $q;
+
+    return $res;
+}
+
+function getOldResponses( $externalID ) : array
+{
+    $responses = array();
+    $entries = getTableEntries('poll_response', 'question_id', "external_id='$externalID' AND status='VALID'");
+
+    foreach($entries as $entry )
+        $responses[$entry['question_id']] = $entry;
+
+    return $responses;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get old course feedback.
+    *
+    * @Param $year
+    * @Param $semester
+    * @Param $cid
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getOldCourseFeedback( $year, $semester, $cid )
+{
+    $res = getOldResponses( "$year.$semester.$cid" );
+    return $res;
+}
 
 ?>

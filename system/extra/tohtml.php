@@ -10,6 +10,7 @@ require_once FCPATH.'scripts/generate_pdf_talk.php';
 
 $useCKEditor = false;
 global $symbUpdate;
+global $symbDelete;
 
 if( $useCKEditor )
     echo '<script src="https://cdn.ckeditor.com/4.6.2/standard/ckeditor.js"></script>';
@@ -719,7 +720,7 @@ function arrayToHtmlTableOfLogins( $logins )
 
 function userHTML( )
 {
-    $user = __get__( $_SESSION, 'user', 'UNKNOWN' );
+    $user = whoAmI();
 
     $html = '<table class="user_float">';
     $html .= '<tr colspan="2"><th>Hi 
@@ -1378,7 +1379,7 @@ function editableAWSTable(int $awsId=-1, array $default=array(), bool $withlogin
 function initUserMsg( $user = null )
 {
     if( ! $user )
-        $user = $_SESSION[ 'user' ];
+        $user = whoAmI();
 
     $msg = "<p> Dear " . loginToText( $user ) . "<p>";
     return $msg;
@@ -2479,6 +2480,127 @@ function showEnrollmenTable( $enrolls, $tdintr=4)
     $table .= '</tr>';
     $table .= '</table>';
     return $table;
+}
+
+function questionBankBySubcategoryToTable( $subcategory, $questions, $controller )
+{
+    global $symbDelete;
+    $table = '<table class="info">';
+    $table .= "<caption> $subcategory </caption>";
+    foreach( $questions as $j => $q )
+    {
+        $qid = $q['id'];
+
+        $table .= '<tr>';
+        $table .= '<td>' . (1+$j) .'</td>';
+        $table .= arrayToRowHTML( $q, 'info', 'id,category,subcategory,status,last_modified_on', true, false );
+
+        // Add forms to delete or modify the question.
+        $table .= '<td>';
+        $table .= '<form action="'.site_url("$controller/deletequestion/$qid"). '" method="post">';
+        $table .= '<button type="submit" title="Delete this question">' . $symbDelete . '</button>';
+        $table .= '</form>';
+        $table .= '</td>';
+
+        $table .= '</tr>';
+    }
+    $table .= '</table>';
+    return $table;
+
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Convert question bank array to html table.
+    *
+    * @Param $qmap. Dictionary or associated array where subcategory is key and  
+    *       Array to question as value.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function questionBankByCategoryToTable( $qmap, $controller )
+{
+
+    $html = '';
+    foreach( $qmap as $subcategory => $questions )
+        $html .= questionBankBySubcategoryToTable( $subcategory, $questions, $controller );
+    return $html;
+
+}
+
+function csvToRadio(string $csv, string $name, string $default='', string $disabled='') : string
+{
+    $csvarray = explode( ',', $csv );
+    $html = '';
+
+    $options = array();
+    foreach( $csvarray as $i => $opt )
+    {
+        $extra = '';
+        if( $default == $opt )
+            $extra .= ' checked';
+
+        $row = "<input type='radio' value='$opt' name='$name' 
+                '$disabled' id='$name$i' $extra /> ";
+
+        $row .= "<label for='$name$i' class='poll'>$opt</label>";
+        $options[] = $row;
+    }
+
+    $html .= implode(' ', $options);
+    return $html;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Convert questions to a poll form. 
+    *
+    * @Param $questions
+    * @Param $responses
+    * @Param $nochangeafater Don't allow changing response after this many days.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function questionsToPoll($questions, $responses = array(), $nochangeafater = 1)
+{
+    $html = '';
+    foreach( $questions as $subcat => $qs )
+    {
+        $table = '<table class="poll">';
+        $table .= "<caption>$subcat</caption>";
+
+        foreach( $qs as $q )
+        {
+            $qid = $q['id'];
+
+
+            $oldres = $responses[$qid];
+
+            $defaultVal = $oldres['response'];
+
+            $extra = '';
+            if( (strtotime('now') - strtotime($oldres['timestamp'])) > $nochangeafater * 24 *3600 )
+                $extra = 'disabled';
+
+            $choices = trim($q['choices']);
+            if( ! $choices )
+                $options = '<textarea cols=50 rows=5 name="qid='.$qid .'"' . " $extra " .'>'.$defaultVal.'</textarea>';
+            else
+                $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal, $extra );
+
+            $row = '<tr>';
+            $row .= '<td>' . $q['question'] . '</td>';
+            $row .= '<td>' . $options . '</td>';
+            $row .= '</tr>';
+            $table .= $row;
+        }
+        $table .= '</table>';
+        $html .= $table;
+    }
+
+    return $html;
 }
 
 ?>

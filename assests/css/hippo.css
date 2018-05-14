@@ -69,10 +69,12 @@ table tr td {
 table.user_float {
     position : fixed;
     top : 1%;
-    left : 70%;
+    right : 10%;
     max-width: 25%;
-    border : 1px solid red;
+    border : 2px solid red;
+    border-radius: 10px;
     font-size : small;
+    padding: 30px 20px;
 }
 
 table.user_float tr td {
@@ -97,15 +99,18 @@ table.public_links {
     width:100%;
     border-collapse: separate;
     border-spacing: 5px 5px;
+    table-layout: fixed;
 }
 
 table.public_links tr td {
     /* border-right: 1px solid; */
-    min-width: 15%;
-    max-width: 25%;
+    min-width: 30px;
     text-align: center;
-    padding-top padding-bottom: 10px;
-    background-color:rgba(100,100,100,0.1);
+    padding-top : 20px;
+    padding-bottom: 5px;
+    /* background-color:rgba(100,100,100,0.1); */
+    background: none;
+    text-decoration: underline;
     border-radius:5px;
 }
 
@@ -436,7 +441,14 @@ button.display_request {
 
 button.submit {
     font-size: x-large;
+    display: inline-block;
+    /* overflow: auto; */
+    float: right;
+    position: inherit;
+    padding: 3px;
+    margin-top: 20px;
 }
+
 
 button.courseInfo {
     border: none;
@@ -634,6 +646,12 @@ table.editable_faculty tr td
     /*min-width : 20%;*/
 }
 
+caption {
+    color: blue;
+    font-variant: small-caps;
+    text-decoration: underline;
+}
+
 div.image {
     max-width: 100%;
 }
@@ -676,12 +694,11 @@ table.request tr:nth-of-type( odd ) {
 /* This implements auto row number in table */
 /* https://stackoverflow.com/a/28320927/1805129 */
 table.info {
-    max-width : var(--maxwidth);
+    max-width: var(--maxwidth);
     /* min-width : 600px; */
     border-spacing: 1px;
     border-collapse: separate;
 }
-
 
 table.info tr td {
     font-family : 'Fira Sans';
@@ -714,6 +731,32 @@ table.infolarge tr td
 table.infolarge tr:nth-of-type( odd )
 {
     background-color: #eee;
+}
+
+/* table for poll */
+table.poll tr:nth-of-type( odd )
+{
+    background-color: #eee;
+}
+
+table.poll {
+    border: 1px;
+    max-width: var(--maxwidth);
+    min-width: 800px;
+}
+
+table.poll tr {
+    padding-top: 10px;
+}
+
+
+/* Second column must be larger */
+table.poll tr td:nth-child(2) {
+    font-size:x-small;
+    min-width: 400px;
+    max-width: 60%;
+    /* text-decoration: underline; */
+    vertical-align: top;
 }
 
 table.tiles {
@@ -966,5 +1009,5 @@ a {
 
 footer {
     position: fixed;
-    top: 94%;
+    top: 90%;
 }

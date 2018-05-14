@@ -37,6 +37,7 @@ class BMVPDO extends PDO
 
     public function initialize( )
     {
+    
         $res = $this->query(
             'CREATE TABLE IF NOT EXISTS holidays (
                 date DATE NOT NULL PRIMARY KEY
@@ -347,6 +348,33 @@ class BMVPDO extends PDO
         $res = $this->query( "
             INSERT IGNORE INTO conditional_tasks (id) VALUES ('COURSE_REGISTRATION')
             ");
+
+        // Questionnaire
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS question_bank (
+                id INT PRIMARY KEY
+                , category VARCHAR(40) NOT NULL
+                , subcategory VARCHAR(40)
+                , question MEDIUMTEXT NOT NULL 
+                , choices VARCHAR(500) 
+                , status ENUM('VALID', 'INVALID' ) default 'VALID'
+                , last_modified_on DATETIME
+                )"
+            );
+
+        // table to record poll.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS poll_response (
+                login VARCHAR(40) NOT NULL
+                , question_id INT NOT NULL
+                , external_id VARCHAR(100) NOT NULL -- e.g. COURSEID.SEMESTER.YEAR
+                , response VARCHAR(1000) NOT NULL -- it could be large text but no longer than 1000 char.
+                , status ENUM('VALID', 'INVALID', 'WITHDRAWN' ) default 'VALID'
+                , timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                , last_modified_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                , UNIQUE KEY(login,question_id,external_id)
+                )"
+            );
 
         // Slots
         $res = $this->query( "
