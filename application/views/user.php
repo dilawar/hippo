@@ -9,8 +9,9 @@ $userInfo = getLoginInfo( whoAmI() );
 
 $html = '<table class="admin">';
 $html .= '<tr><td>
-            <i class="fa fa-book fa-3x"></i>
-            <a class="clickable" href="'. site_url('/user/courses' ) . '">My Courses</a>
+            <i class="fa fa-book fa-2x"></i>
+            <a class="clickable" href="'. site_url('/user/courses' ) . '">
+            My Courses</a>
             <br /> Manage courses for semester  (' . $thisSem . ' ) 
                 <small>Register/deregister courses for this semster. </small>
         </td>';
@@ -18,7 +19,7 @@ $html .= '<tr><td>
 if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
 {
     $html .=  '<td> 
-        <i class="fa fa-graduation-cap fa-3x"></i>
+        <i class="fa fa-graduation-cap fa-2x"></i>
         <a class="clickable" href="'. site_url("/user/aws"). '">My AWS</a> <br />
         List of your Annual Work Seminar <br />
         <small> See your previous AWSs and update them. Check
@@ -55,7 +56,7 @@ if( isJCAdmin( whoAmI() ) )
 {
     $table .= '<tr>
         <td>
-        <i class="fa fa-cogs fa-3x"></i>
+        <i class="fa fa-cogs fa-2x"></i>
         <a class="clickable" href="'. site_url("/user/jc/admin"). '">JC Admin</a> <br />
         Journal club admin</td>
         <td></td>
@@ -72,7 +73,7 @@ $html = '<table class="admin">';
 $html .= '
     <tr>
     <td>
-        <i class="fa fa-hand-pointer-o fa-3x"></i>
+        <i class="fa fa-hand-pointer-o fa-2x"></i>
          <a class="clickable" href="'. site_url("/user/book/venue"). '">Book for small event</a>
          <br />
          E.g. Labmeets,meeting,interview etc.. No email will be sent to Academic community.
@@ -80,7 +81,7 @@ $html .= '
         <a href="'. site_url("/user/show_private") . '"> Manage previous bookings</a> 
     </td>
     <td>
-        <i class="fa fa-comments fa-3x"></i>
+        <i class="fa fa-comments fa-2x"></i>
         <a class="clickable" href="'. site_url("/user/register_talk"). '">Book for Public Event</a>
         <br />
         E.g. talk, seminar, or thesis seminar. Email will be send to academic community.
@@ -96,7 +97,7 @@ echo $html;
 echo "<h1>Community services</h1>";
 echo '<table class="admin">
     <tr>
-        <td> <i class="fa fa-archive fa-3x"></i>
+        <td> <i class="fa fa-archive fa-2x"></i>
             <a class="clickable" href="'. site_url("/user/inventory/browse"). '">Browse inventory</a> <br />
             You can browse inventory. Items listed here can be borrowed.
         </td>
@@ -110,7 +111,7 @@ echo '<table class="admin">
    </tr>
     <tr>
        <td>
-            <i class="fa fa-building fa-3x"></i>
+            <i class="fa fa-building fa-2x"></i>
             <a class="clickable" href="'. site_url("/user/tolet/browse"). '"> Browse TO-LET list</a>
         </td>
        <td>
@@ -129,18 +130,20 @@ if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
 
    $html = "<table class=\"admin\">";
    if( in_array( "ADMIN", $roles ) )
-       $html .= '<tr><td><a class="clickable" href="'. site_url("/admin"). '">
-                <i class="fa fa-lock fa-2x"></i><br />Admin</a></td>';
+       $html .= '<tr><td>
+                <i class="fa fa-lock fa-2x"></i>
+                <a class="clickable" href="'. site_url("/admin"). '"> Admin</a></td>';
 
    if( in_array( "BOOKMYVENUE_ADMIN", $roles ) )
-       $html .= '<td><a class="clickable" href="'. site_url("adminbmv"). '"> 
-           <i class="fa fa-calendar-plus-o fa-2x"></i><br />BookMyVenue Admin</a></td>';
+       $html .= '<td><i class="fa fa-calendar-plus-o fa-2x"></i>
+            <a class="clickable" href="'. site_url("adminbmv"). '"> 
+            BookMyVenue Admin</a></td>';
    else
        $html .= ' <td></td>';
 
    if( in_array( "AWS_ADMIN", $roles ) )
-       $html .= '<td> <a class="clickable" href="'. site_url("/adminacad"). '">
-           <i class="fa fa-graduation-cap fa-2x"></i><br />Academic Admin</a></td>';
+       $html .= '<td><i class="fa fa-graduation-cap fa-2x"></i>
+            <a class="clickable" href="'. site_url("/adminacad"). '">Academic Admin</a></td>';
    else
        $html .= ' <td></td>';
 
