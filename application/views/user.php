@@ -34,7 +34,6 @@ $html .= '</tr></table>';
 echo $html;
 
 // Journal club entry.
-echo ' <h1>Journal clubs</h1> ';
 $table = '<table class="admin">
     <tr>
         <td>
@@ -74,29 +73,20 @@ $html .= '
     <tr>
     <td>
         <i class="fa fa-hand-pointer-o fa-3x"></i>
-         <a class="clickable" href="'. site_url("/user/book/venue"). '">Book Private Event</a>
+         <a class="clickable" href="'. site_url("/user/book/venue"). '">Book for small event</a>
          <br />
-         No email needs to be sent to Academic community e.g. Labmeets,meeting,interview etc.
-         Otherwise use <tt>Book Public Event</tt> link below.
+         E.g. Labmeets,meeting,interview etc.. No email will be sent to Academic community.
+        <br /> <br /> <i class="fa fa-pencil-square-o fa-1x"></i>
+        <a href="'. site_url("/user/show_private") . '"> Manage previous bookings</a> 
     </td>
-    <td>
-        <a href="'. site_url("/user/show_private") . '" class="clickable">
-            Manage My Private Events</a> <br />
-        You can see your private bookings. You can modify their description, and
-        cancel them if neccessary.
-    </td>
-    </tr>
-   <tr>
     <td>
         <i class="fa fa-comments fa-3x"></i>
-        <a class="clickable" href="'. site_url("/user/register_talk"). '">Book Public Event</a>
+        <a class="clickable" href="'. site_url("/user/register_talk"). '">Book for Public Event</a>
         <br />
-        Register a new talk, seminar, or a thesis seminar.
-        <small>Keep the email and photograph of speaker handy, not neccessary but highly recommended.</small>
-    </td>
-    <td>
-        <a class="clickable" href="'. site_url("/user/show_public"). '">Manage My Public Events</a> <br />
-        Edit/update a previously registered public event and book a venue for it.
+        E.g. talk, seminar, or thesis seminar. Email will be send to academic community.
+        <br /> <br /> <i class="fa fa-pencil-square-o fa-1x"></i>
+        
+        <a href="'. site_url("/user/show_public"). '">Manage previous bookings</a>
     </td>
    </tr>
    </table>';

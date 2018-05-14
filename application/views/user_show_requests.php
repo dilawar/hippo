@@ -10,7 +10,6 @@ echo '<h1>Pending booking</h1>';
 if( count( $requests ) < 1 )
     echo alertUser( "No pending request found." );
 
-echo "<div style=\"font-size:x-small;\">";
 foreach( $requests as $request )
 {
     $tobefiltered = Array( 
@@ -33,7 +32,6 @@ foreach( $requests as $request )
     echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
     echo '</form>';
 }
-echo '</div>';
 
 echo goBackToPageLink( "user", "Go back" );
 
@@ -45,7 +43,6 @@ if( count( $groups ) < 1 )
 else 
 {
     echo "<h2>You have following upcoming events </h2>";
-    echo '<div style="font-size:x-small">';
 
     $hide = 'last_modified_on,created_by,external_id,is_public_event' 
                     .  ',calendar_id,calendar_event_id,url,status,description';
@@ -53,7 +50,7 @@ else
     foreach( $groups as $group )
     {
 
-        echo '<div class="grouped items" style="background-color:rgba(255,255,200,0.5)">';
+        echo '<div class="important">';
         $gid = $group['gid'];
 
         echo '<table>';
@@ -109,7 +106,6 @@ else
         echo '</div>';
         echo "<br>";
     }
-    echo '</div>';
 }
 
 echo goBackToPageLink('user', 'Go Back');
