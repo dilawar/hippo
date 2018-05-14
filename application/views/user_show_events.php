@@ -18,6 +18,7 @@ else
     foreach( $groups as $group )
     {
 
+        echo "<div class='important'>";
         $gid = $group['gid'];
         echo '<form method="post" action="'.site_url('user/public_event_edit').'">';
         echo "<strong>Group id $gid </strong>";
@@ -65,6 +66,7 @@ else
             echo '</form>';
         }
         echo '</table>';
+        echo "</div>";
     }
     echo '</div>';
 }

@@ -141,8 +141,8 @@ $(document).ready(function(){
 });
 </script>
 
-<h1><a href="<?= site_url( 'welcome' ) ?>" >
-<img src="./../../data/hippo.svg" width="50px" alt="" /> Hippo</a></h1>
+<h1 class="title"><a href="<?= site_url( 'welcome' ) ?>" >
+<?php echo img( 'data/hippo.svg', false, array('height'=>'60px')); ?> Hippo</a></h1>
 
 <div style="font-size:small" class="header">
 <table class="public_links">

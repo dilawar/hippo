@@ -376,6 +376,19 @@ class BMVPDO extends PDO
                 )"
             );
 
+        // table to record noticeboard.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS notice_board (
+                id INT NOT NULL
+                , login VARCHAR(40) NOT NULL
+                , external_id VARCHAR(50) NOT NULL -- e.g. JCID etc.
+                , message MEDIUMTEXT
+                , status ENUM('VALID', 'INVALID', 'EXPIRED' ) default 'VALID'
+                , timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                , last_modified_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )"
+            );
+
         // Slots
         $res = $this->query( "
             create TABLE IF NOT EXISTS slots (

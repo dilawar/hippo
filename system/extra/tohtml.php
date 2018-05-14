@@ -2287,7 +2287,7 @@ function getPresentationTitle( $presentation )
 function jcToHTML( $jc )
 {
     $jcInfo = getJCInfo( $jc[ 'jc_id' ] );
-    $html = '<h3 style="width:600px">'
+    $html = '<h3>'
         . $jc['jc_id'] . ' | ' . $jc['title'] . '</h3>';
 
     $presenter = getLoginInfo( $jc[ 'presenter' ] );
@@ -2295,7 +2295,7 @@ function jcToHTML( $jc )
 
     $html .= "<strong> $pName </strong>";
     $html .= presentationToHTML( $jc );
-    $html .= "<div width=600px><hr width=800px align=left> </div>";
+    $html .= "<div><hr /> </div>";
 
     return $html;
 }
@@ -2429,6 +2429,7 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
             $row .= '<td>' . loginToText( $info, false) . '</td>';
             $row.= '<td><tt>' . mailto( $info[ 'email' ] ) . '</tt></td>';
             $row .= '<td>' . $r[ 'type' ] . "</td>";
+            $row .= '<td>' . $r[ 'registered_on' ] . "</td>";
             $rows[ $info[ 'first_name'] ] = $row;
             $allEmails[ ] = $info[ 'email'];
         }
@@ -2439,7 +2440,7 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
 
     // Construct enrollment table.
     $table = '<table id="show_enrollmenents" class="' . $table_class . ' sortable">';
-    $table .= '<tr> <th></th> <th>Name</th> <th>Email</th> <th>Type</th>  </tr>';
+    $table .= '<tr> <th></th> <th>Name</th> <th>Email</th> <th>Type</th> <th>Registation Time</th>  </tr>';
     foreach( $rows as $fname => $row )
     {
         $count ++;
