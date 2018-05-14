@@ -6,8 +6,12 @@ trait JC
 {
     public function jc( string $arg = '', string $arg2 = '' )
     {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'user_jc' );
+        $this->load_user_view( 'user_jc' );
+    }
+
+    public function jcadmin( string $arg='' )
+    {
+        $this->load_user_view( 'user_jc_admin.php' );
     }
 
     public function jc_action( string $action  )
