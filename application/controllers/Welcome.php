@@ -14,7 +14,7 @@ class Welcome extends CI_Controller
 
     public function index()
     {
-        $this->loadview('index');
+        $this->loadview('index.php');
     }
 
     public function login( )
