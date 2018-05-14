@@ -331,6 +331,7 @@ div.important {
     border: 2px solid lightblue;
     border-radius: 20px;
     padding: 10px;
+    margin-bottom: 5px;
 }
 
 div.header {
