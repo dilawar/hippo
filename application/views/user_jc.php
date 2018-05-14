@@ -35,7 +35,7 @@ echo $table;
 echo "<h1>Upcoming JC presentations.</h1>";
 
 // Get all upcoming JCs in my JC.
-$mySubs = getUserJCs( $login = $_SESSION[ 'user' ] );
+$mySubs = getUserJCs( $login = whoAmI() );
 
 echo '<table><tr>';
 foreach( $mySubs as $i => $mySub )
