@@ -45,7 +45,9 @@ function bookmyVenueAdminTaskTable( )
             <td>
                 <i class="fa fa-comments-o fa-2x"></i>
                 <a class="clickable" href="'.site_url('adminbmv/manages_talks') .'">Manage talks/seminar</a>
-                <br />Manage talks and seminars. 
+                <br /> <br />
+                <i class="fa fa-search fa-1x"></i>
+                <a href="'.site_url('adminbmv/browse_talks') .'">Browse previous talks</a>
             </td>
             <td>
                 <i class="fa fa-users fa-2x"></i>
