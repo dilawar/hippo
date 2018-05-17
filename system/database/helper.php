@@ -2460,7 +2460,8 @@ function getMyCourses( $sem, $year, $user  ) : array
 {
     $whereExpr = "status='VALID' AND semester='$sem' AND year='$year' AND student_id='$user'";
     $courses = getTableEntries( 'course_registration', 'course_id', $whereExpr );
-    return array_filter( $courses, function( $x ) { return strlen( $x['course_id'] ) > 0; } );
+    return $courses;
+    // return array_filter( $courses, function( $x ) { return strlen( $x['course_id'] ) > 0; } );
 }
 
 /**
