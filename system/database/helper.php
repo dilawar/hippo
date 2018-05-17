@@ -81,7 +81,6 @@ function getChoicesFromGlobalArray( $choices, $key, $default = 'UNKNOWN', $sorte
 function getEventsOfTalkId( $talkId )
 {
     $externalId = getTalkExternalId( $talkId );
-
     $entry = getTableEntry( 'events', 'external_id,status'
         , array( 'external_id' => "$externalId" , 'status' => 'VALID' )
         );
@@ -95,6 +94,38 @@ function getBookingRequestOfTalkId( $talkId )
         , array( 'external_id' => "$externalId", 'status' => 'PENDING' )
         );
     return $entry;
+}
+
+function getTalkIDs( $start_date, $end_date )
+{
+    return executeQuery( 
+        "SELECT external_id, date, start_time, end_time, venue FROM events WHERE
+            status='VALID' AND date>'$start_date' AND date < '$end_date'
+            AND external_id LIKE 'talks.%'
+        "
+        );
+}
+
+function getTalksWithEvent( $start_date, $end_date )
+{
+    $talkIDS = getTalkIDs( $start_date, $end_date );
+    $results = array();
+    foreach( $talkIDS as $i => $tev )
+    {
+        $row = array();
+
+        $exID = explode( '.', $tev['external_id'])[1];
+        $talk = getTableEntry( 'talks', 'id', array( 'id' => $exID ) );
+        $row = array_merge($row, $talk);
+
+        $row['date'] = $tev['date'];
+        $row['start_time'] = $tev['start_time'];
+        $row['venue'] = $tev['venue'];
+
+        $results[] = $row;
+    }
+    return $results;
+
 }
 
 /**
@@ -307,6 +338,15 @@ function getEventsBeteen( $from , $duration )
 {
     $startDate = dbDate( $from );
     $endDate = dbDate( strtotime( $duration, strtotime( $from ) ) );
+    $whereExpr = "date >= '$startDate' AND date <= '$endDate'";
+    $whereExpr .= " AND status='VALID' ";
+    return getTableEntries( 'events', 'date,start_time', $whereExpr );
+}
+
+function getEventsBeteenDates( $fromDate , $endDate )
+{
+    $startDate = dbDate( $fromDate );
+    $endDate = dbDate( $endDate );
     $whereExpr = "date >= '$startDate' AND date <= '$endDate'";
     $whereExpr .= " AND status='VALID' ";
     return getTableEntries( 'events', 'date,start_time', $whereExpr );
