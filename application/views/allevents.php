@@ -6,7 +6,7 @@ require_once BASEPATH . 'autoload.php';
 $venues = getVenues( $sortby = 'id' );
 $venuesDict = array( );
 foreach( $venues as $v )
-    $venuesDict[ $v[ 'id' ] ] = $v;
+    $venuesDict[$v['id']] = $v;
 
 $venuesIds = array_map( function( $v ) { return $v['id']; }, $venues );
 
@@ -20,14 +20,16 @@ echo '<form action="" method="get" accept-charset="utf-8">
     <tr>
         <td> <input  class="datepicker" name="date" value="' .
             $defaults[ 'date' ] . '" /> </td>
-            <td> <button name="response"> <i class="fa fa-check fa-1x"></i>
+            <td> <button name="response"> Select Date</i>
             </button> </td>
     </tr>
     </table>
-    </form>';
+    </form>
+    ';
 
 $calendarDate = humanReadableDate( $defaults[ 'date' ] );
-echo "<h2>Confirmed bookings on $calendarDate </h1>";
+
+echo "<h2>Confirmed bookings for $calendarDate.</h2>";
 
 $events = getEventsOn( $defaults['date' ] );
 $cancelled = getEventsOn( $defaults[ 'date' ], 'CANCELLED' );
@@ -42,9 +44,9 @@ $cancelled = getEventsOn( $defaults[ 'date' ], 'CANCELLED' );
 $requests = getPendingRequestsOnThisDay( $defaults[ 'date' ] );
 $count = 0;
 $eventWidth = 200;
-$maxEventsInLine = 5;
+$maxEventsInLine = 4;
 
-$table = '<table>';
+$table = '<table class="td_as_tile">';
 $table .= '<tr>';
 foreach( $events as $ev )
 {
@@ -84,7 +86,7 @@ echo '<br />';
 
 if( isAuthenticated( ) )
 {
-    echo '<a style="float:left;padding-left:500px"  class="clickable" 
+    echo '<a style="float:right;lign:left;"  class="clickable" 
         href="' . site_url('user/book') . '">Create New Booking</a>';
     echo '<br />';
 }
@@ -101,7 +103,7 @@ $todaySlots = getSlotsAtThisDay( $day, $slots );
 
 $count = 0;
 $eventWidth = 150;
-echo '<table>';
+echo '<table class="td_as_tile">';
 echo '<tr>';
 foreach( $todaySlots as $slot )
 {
@@ -139,7 +141,7 @@ if( count( $requests ) > 0 )
     $count = 0;
     $eventWidth = 150;
     $maxEventsInLine = intval( 900 / $eventWidth );
-    echo '<table width="250px">';
+    echo '<table class="td_as_tile">';
     echo '<tr>';
     foreach( $requests as $ev )
     {
@@ -162,7 +164,7 @@ if( count( $cancelled ) > 0 )
 {
     echo '<h2>Cancelled events</h2>';
     $count = 0;
-    echo '<table>';
+    echo '<table class="td_as_tile">';
     echo '<tr>';
     foreach( $cancelled as $ev )
     {
