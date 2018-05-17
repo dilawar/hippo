@@ -193,7 +193,7 @@ foreach( $slotCourses as $slot => $courses )
             $mailtext = implode( ",", $allEmails );
             $enTable .= '<div>' .  mailto( $mailtext, 'Send email to all students' ) . "</div>";
 
-            $regTable = '<table>';
+            $regTable = '<table style="width:100%;">';
             $regTable .= '<tr>';
             $regTable .= '<td>
                 <button class="show_as_link"

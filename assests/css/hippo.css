@@ -897,6 +897,10 @@ td.infonote {
     min-height: 30px;
 }
 
+th {
+    font-size: small;
+}
+
 div.alert_user {
    max-width : var(--maxwidth);
    min-width: inherit;
@@ -1035,7 +1039,6 @@ a {
     max-width : var(--maxwidth);
     cursor: url;
 }
-
 
 footer {
     position: fixed;
