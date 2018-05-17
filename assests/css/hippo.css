@@ -37,6 +37,11 @@ h1.title {
     font-variant: small-caps;
     vertical-align: bottom;
     display: inline-block;
+    text-decoration: none;
+}
+
+h1 a:hover {
+    text-decoration: none;
 }
 
 pre {
