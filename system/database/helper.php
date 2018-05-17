@@ -1194,8 +1194,11 @@ function getLoginEmail( $login )
     return $res['email'];
 }
 
-function getRoles( string $user ) : array
+function getRoles( $user ) : array
 {
+    if( ! $user )
+        return array();
+
     $hippoDB = initDB();;
 
     if( ! trim( $user ) )

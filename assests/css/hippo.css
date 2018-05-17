@@ -870,9 +870,21 @@ td.db_table_fieldname {
     text-transform : uppercase;
 }
 
-table {
+table.td_as_tile { 
     border-collapse: separate;
     background: none;
+    margin: 10px;
+}
+
+table.td_as_tile tr td {
+    border-radius: 10px;
+    border: 1px solid lightblue;
+    padding: 3px;
+    vertical-align: top;
+    margin: 5px;
+    width: 25%;
+    min-height: 30px;
+
 }
 
 td.infonote {
@@ -880,7 +892,8 @@ td.infonote {
     border: 1px solid lightblue;
     padding: 3px;
     vertical-align: top;
-    margin: 3px;
+    margin: 5px;
+    width: 25%;
     min-height: 30px;
 }
 
