@@ -123,8 +123,6 @@ echo '<table class="1">';
 echo '<tr>';
 $action = 'drop';
 
-if(count($myCourses) > 0)
-    echo "<h1>You are registered for following courses for $sem $year</h1>";
 
 if(count($myCourses) > 0)
 {
@@ -138,6 +136,11 @@ if(count($myCourses) > 0)
 }
 
 $count = 0;
+
+if(count($myCourses) > 0)
+{
+    echo "<h1>You are registered for following " . count($myCourses) . " courses for $sem $year</h1>";
+}
 
 // Keep cid of course for which feedback is not available but grade has been
 // given.
