@@ -1,8 +1,6 @@
 <meta http-equiv="refresh" content="180">
 <?php
-
 require_once BASEPATH . 'autoload.php';
-
 
 // This page displays all events on campus. Select all venues.
 $venues = getVenues( $sortby = 'id' );
@@ -44,9 +42,9 @@ $cancelled = getEventsOn( $defaults[ 'date' ], 'CANCELLED' );
 $requests = getPendingRequestsOnThisDay( $defaults[ 'date' ] );
 $count = 0;
 $eventWidth = 200;
-$maxEventsInLine = intval( 800 / $eventWidth );
+$maxEventsInLine = 5;
 
-$table = '<table width="250px">';
+$table = '<table>';
 $table .= '<tr>';
 foreach( $events as $ev )
 {
@@ -64,8 +62,8 @@ foreach( $events as $ev )
         $background = "yellow";
 
 
-    $width = $eventWidth . "px";
-    $table .= "<td style=\"background:$background;min-width:$width;border:1px dotted;\">";
+    // $width = $eventWidth . "px";
+    $table .= "<td class=\"infonote\" style=\"background:$background;\">";
 
     // Blink if the event is currently happening.
     if( $eventEnd >= $now && $eventStart <= $now )
@@ -103,8 +101,7 @@ $todaySlots = getSlotsAtThisDay( $day, $slots );
 
 $count = 0;
 $eventWidth = 150;
-$maxEventsInLine = intval( 900 / $eventWidth );
-echo '<table width="250px">';
+echo '<table>';
 echo '<tr>';
 foreach( $todaySlots as $slot )
 {
@@ -118,15 +115,15 @@ foreach( $todaySlots as $slot )
         $ev[ 'timestamp' ] = 'NULL';
         $ev[ 'title' ] = getCourseName( $cr[ 'course_id' ] );
 
+        $count += 1;
         if( $count % $maxEventsInLine == 0 )
             echo "</tr><tr>";
 
         $background = 'lightyellow';
         $width = $eventWidth . "px";
-        echo "<td style=\"background:$background;min-width:$width;border:1px dotted;\">";
+        echo "<td class=\"infonote\" style=\"background:$background;\">";
         echo eventToShortHTML( $ev );
         echo "</td>";
-        $count += 1;
     }
 }
 echo '</tr>';
@@ -151,7 +148,7 @@ if( count( $requests ) > 0 )
 
         $background = 'lightyellow';
         $width = $eventWidth . "px";
-        echo "<td style=\"background:$background;min-width:$width;border:1px dotted;\">";
+        echo "<td class=\"infonote\" style=\"background:$background;\">";
         echo requestToShortHTML( $ev );
         echo "</td>";
         $count += 1;
@@ -165,9 +162,7 @@ if( count( $cancelled ) > 0 )
 {
     echo '<h2>Cancelled events</h2>';
     $count = 0;
-    $eventWidth = 150;
-    $maxEventsInLine = intval( 900 / $eventWidth );
-    echo '<table width="250px">';
+    echo '<table>';
     echo '<tr>';
     foreach( $cancelled as $ev )
     {
@@ -176,7 +171,7 @@ if( count( $cancelled ) > 0 )
 
         $background = 'lightyellow';
         $width = $eventWidth . "px";
-        echo "<td style=\"background:$background;min-width:$width;border:1px dotted;\">";
+        echo "<td class=\"infonote\" style=\"background:$background;\">";
         echo eventToShortHTML( $ev );
         echo "</td>";
         $count += 1;

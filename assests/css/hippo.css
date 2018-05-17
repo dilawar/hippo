@@ -870,6 +870,19 @@ td.db_table_fieldname {
     text-transform : uppercase;
 }
 
+table {
+    border-collapse: separate;
+    background: none;
+}
+
+td.infonote {
+    border-radius: 10px;
+    border: 1px solid lightblue;
+    padding: 3px;
+    vertical-align: top;
+    margin: 3px;
+    min-height: 30px;
+}
 
 div.alert_user {
    max-width : var(--maxwidth);
