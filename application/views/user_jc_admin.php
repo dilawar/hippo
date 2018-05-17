@@ -1,18 +1,15 @@
 <?php
-
-require_once 'header.php';
-require_once 'database.php';
-require_once 'tohtml.php';
-require_once 'methods.php';
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
+
+global $symbDelete;
 
 // If current user does not have the privileges, send her back to  home
 // page.
-if( ! isJCAdmin( $_SESSION[ 'user' ] ) )
+if( ! isJCAdmin( whoAmI() ) )
 {
     echo printWarning( "You don't have permission to access this page" );
-    echo goToPage( "user.php", 2 );
+    echo goBackToPageLink( "user/home", "Go back" );
     exit;
 }
 
@@ -52,7 +49,7 @@ $table .= '<td><button name="response" value="Assign Presentation">Assign</butto
 $table .= '</tr></table>';
 
 // Manage ADMIN.
-echo '<form action="user_jc_admin_submit.php" method="post">';
+echo '<form action="'.site_url("user/jc_admin_submit"). '" method="post">';
 echo $table;
 echo '</form>';
 
@@ -65,13 +62,13 @@ foreach( $upcomingJCs as $jcID => $upcomings )
 {
     if( count( $upcomings ) <  1 )
     {
-        echo alertUser( "Nothing found for $jcID" );
+        echo alertUser( "Nothing found for $jcID", false );
         continue;
     }
 
     echo '<td>';
     echo "<h3>Next week entry for $jcID </h3>";
-    echo ' <form action="user_jc_admin_edit_upcoming_presentation.php"
+    echo ' <form action="'.site_url("user/jc_admin_edit_upcoming_presentation") .'"
         method="post" accept-charset="utf-8">';
     echo dbTableToHTMLTable( 'jc_presentations', $upcomings[0], '', 'Edit' );
     echo '</form>';
@@ -90,7 +87,7 @@ foreach( $upcomingJCs as $jcID => $upcomings )
 {
     if( count( $upcomings ) <  1 )
     {
-        echo alertUser( "None found for $jcID" );
+        echo alertUser( "None found for $jcID.", false);
         continue;
     }
 
@@ -98,7 +95,7 @@ foreach( $upcomingJCs as $jcID => $upcomings )
     foreach( $upcomings as $i => $upcoming )
     {
         echo '<tr>';
-        echo '<form method="post" action="user_jc_admin_submit.php">';
+        echo '<form method="post" action="'.site_url('user/jc_admin_submit') .'">';
         echo arrayToRowHTML( $upcoming, 'show_info', $tofilter,  false, false );
         echo '<td> <button name="response" value="Remove Presentation"
             title="Remove this schedule" >' . $symbDelete . '</button></td>';
@@ -120,7 +117,7 @@ if( count( $badJCs ) > 0 )
     foreach( $badJCs as $i => $jc )
     {
         echo '<tr>';
-        echo '<form method="post" action="user_jc_admin_submit.php">';
+        echo '<form method="post" action="'.site_url("user/jc_admin_submit"). '">';
         echo arrayToRowHTML( $jc, 'show_info', $tofilter,  false, false );
         echo '<td> <button name="response" value="Remove Incomplete Presentation"
             title="Remove this schedule" >' . $symbDelete . '</button></td>';
@@ -153,7 +150,7 @@ foreach( $requests as $i => $req )
     echo arrayToVerticalTableHTML( $req, 'info', '', 'id,status' );
 
     // Another form to delete this request.
-    echo ' <form action="user_jc_admin_edit_jc_request.php" method="post">';
+    echo ' <form action="'.site_url("user/jc_admin_edit_jc_request"). '" method="post">';
     echo "<button name='response' onclick='AreYouSure(this)'
             title='Cancel this request'>Cancel</button>";
     echo "<button name='response' title='Reschedule' value='Reschedule'>Reschdule</button>";
@@ -174,7 +171,7 @@ echo goBackToPageLink( 'user.php', 'Go Back' );
 echo "<h1>Manage subscriptions</h1>";
 
 // Show table and task here.
-$form = '<form method="post" action="user_jc_admin_submit.php">';
+$form = '<form method="post" action="'.site_url("user/jc_admin_submit"). '">';
 $form .= '<input type="text" name="logins" placeholder="ram,shyam,jack" />';
 $form .= $jcSelect;
 $form .= ' <button name="response" value="Add">Add Subscription</button>';
@@ -230,7 +227,7 @@ foreach( $jcIds as $currentJC )
     $subTable .= arrayToTHRow( $allSubs[0], 'sorttable', '' );
     foreach( $allSubs as $i => $sub )
     {
-        $subTable .= '<form method="post" action="user_jc_admin_submit.php">';
+        $subTable .= '<form method="post" action="'.site_url("user/jc_admin_submit"). '">';
         $subTable .= '<tr>';
         $subTable .= arrayToRowHTML( $sub, 'sorttable', '', false, false );
         $subTable .= '<input type="hidden" name="login" value="' . $sub[ 'login' ] . '" />';
@@ -260,7 +257,7 @@ foreach( $jcIds as $currentJC )
 // Rate tasks.
 echo '<h1>Rare tasks</h1>';
 echo '
-    <form action="user_jc_admin_edit_jc_request.php" method="post" accept-charset="utf-8">
+    <form action="'.site_url("user/jc_admin_edit_jc_request").'" method="post" accept-charset="utf-8">
 
     <table border="0">
         <tr>

@@ -56,8 +56,8 @@ if( isJCAdmin( whoAmI() ) )
 {
     $table .= '<tr>
         <td>
-        <i class="fa fa-cogs fa-2x"></i>
-        <a class="clickable" href="'. site_url("/user/jc/admin"). '">JC Admin</a> <br />
+        <i class="fa fa-lock fa-2x"></i>
+        <a class="clickable" href="'. site_url("/user/jcadmin"). '">JC Admin</a> <br />
         Journal club admin</td>
         <td></td>
     </tr>';

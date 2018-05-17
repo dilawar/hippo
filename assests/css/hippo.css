@@ -652,9 +652,9 @@ table.editable_faculty tr td
 }
 
 caption {
-    color: blue;
+    /* color: blue; */
     font-variant: small-caps;
-    text-decoration: underline;
+    /* text-decoration: underline; */
 }
 
 div.image {

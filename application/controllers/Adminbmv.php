@@ -23,7 +23,6 @@ class Adminbmv extends CI_Controller
         }
     }
 
-
     // PURE VIEWS
     function index()
     {
@@ -73,6 +72,11 @@ class Adminbmv extends CI_Controller
     public function block_venues($arg = '')
     {
         $this->loadview('bookmyvenue_admin_block_venues');
+    }
+
+    public function browse_talks($arg = '')
+    {
+        $this->loadview('bookmyvenue_admin_browse_events');
     }
 
     // VIEWS WITH ACTION.
