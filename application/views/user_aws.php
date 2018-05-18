@@ -1,5 +1,4 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
 
 echo userHTML( );
@@ -155,7 +154,7 @@ echo ' <form action="" method="post" accept-charset="utf-8">
 
 if( __get__( $_POST, 'response', '' ) == 'write_my_aws' )
 {
-    $cmd = __DIR__ . '/write_aws_using_ai.py';
+    $cmd = FCPATH . '/scripts/write_aws_using_ai.py';
     hippo_shell_exec( $cmd, $awsText, $stderr );
     echo "<p> $awsText </p>";
     echo "<br>";
@@ -195,7 +194,7 @@ foreach( $awses as $aws )
     echo "</form>";
     echo "<br /><br />";
     echo "</div>";
-    echo awsPdfURL( $aws['speaker' ], $aws[ 'date' ] );
+    // echo awsPdfURL( $aws['speaker' ], $aws[ 'date' ] );
 }
 
 echo goBackToPageLink( "user/home", "Go back" );
