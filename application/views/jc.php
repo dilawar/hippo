@@ -45,9 +45,7 @@ if( count( $jcs ) < 1 )
 else
 {
     foreach( $jcs as $jc )
-    {
         echo jcToHTML( $jc );
-    }
 }
 
 echo closePage( );

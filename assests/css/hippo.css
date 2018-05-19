@@ -49,7 +49,7 @@ pre {
 
 input.long {
     min-width: 80%;
-    max-width: 500px;
+    /* max-width: 500px; */
 }
 
 
@@ -374,7 +374,7 @@ div.public_calendar {
 }
 
 div.justify {
-    max-width: 600px;
+    /* max-width: 600px; */
     min-width: 400px;
     text-align: justify;
 }

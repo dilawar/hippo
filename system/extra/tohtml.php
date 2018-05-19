@@ -2244,16 +2244,14 @@ function goBack( $default = '', $delay = 0 )
 
 function presentationToHTML( $presentation )
 {
-    $html = "<div class=\"human_readable\">"
-        . __get__( $presentation, 'description', '' )
-        . "</div>";
+    $html = __get__( $presentation, 'description', '' );
 
     if( ! trim($html) )
         $html .= '<p>Not disclosed yet</p>';
 
     // Add URL and PRESENTATION URL in table.
     $html .= ' <br /> ';
-    $html .= '<table class="sortable">';
+    $html .= '<table class="info">';
     $html .= '<tr><td>URL(s)</td><td>'
                 .  linkify( $presentation['url'] ) . '</td></tr>';
     $html .= '<tr><td>Presention URL</td><td>'
@@ -2287,15 +2285,14 @@ function getPresentationTitle( $presentation )
 function jcToHTML( $jc )
 {
     $jcInfo = getJCInfo( $jc[ 'jc_id' ] );
-    $html = '<h3>'
-        . $jc['jc_id'] . ' | ' . $jc['title'] . '</h3>';
+    $html = '<h3>' . $jc['jc_id'] . ' | ' . $jc['title'] . '</h3>';
 
-    $presenter = getLoginInfo( $jc[ 'presenter' ] );
+    $presenter = getLoginInfo( $jc[ 'presenter' ], true );
     $pName = arrayToName( $presenter );
 
     $html .= "<strong> $pName </strong>";
     $html .= presentationToHTML( $jc );
-    $html .= "<div><hr /> </div>";
+    $html .= '<hr />';
 
     return $html;
 }
