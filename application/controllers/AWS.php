@@ -119,13 +119,48 @@ trait AWS
             else
             {
                 // All action are done. Send user back to aws page.
-                $this->template->load( 'header.php' );
-                $this->template->load( 'user_aws' );
+                $this->load_user_view( 'user_aws' );
             }
         }
         else if( strtolower(trim($arg)) == 'update_upcoming_aws' )
         {
-            $this->load_user_view( "user_aws_update_upcoming_aws.php" );
+            if( strtolower(trim($arg2)) == 'submit')
+            {
+                $res = updateTable( 'upcoming_aws', 'id'
+                    , 'supervisor_1,supervisor_2,tcm_member_1,tcm_member_2,tcm_member_3' .
+                    ',tcm_member_4,title,abstract,is_presynopsis_seminar'
+                    , $_POST
+                );
+
+                if( $res )
+                    echo flashMessage( "Successfully updated entry" );
+                redirect( "user/aws" );
+            }
+            else
+            {
+                // By default go to view.
+                $this->load_user_view( "user_aws_update_upcoming_aws.php" );
+            }
+        }
+        else if( strtolower(trim($arg)) == 'edit_request' )
+        {
+            if( strtolower( $arg2 ) == 'submit' )
+            {
+                $_POST[ 'speaker' ] =  whoAmI();
+                $res = insertIntoTable( 'aws_requests'
+                    , array( 'speaker', 'title', 'abstract', 'supervisor_1', 'supervisor_2'
+                    , 'tcm_member_1', 'tcm_member_2', 'tcm_member_3', 'tcm_member_4' 
+                    , 'date', 'time') 
+                    , $_POST 
+                );
+                if( $res )
+                    echo flashMessage( 'Successfully created a request to edit AWS details ' );
+                else
+                    echo minionEmbarrassed( 'I could not create a request to edit your AWS' );
+                redirect( "user/aws" );
+            }
+            else
+                $this->load_user_view( "user_aws_edit_request" );
         }
         else
         {
