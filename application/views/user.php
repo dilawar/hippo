@@ -93,34 +93,34 @@ $html .= '
    </table>';
 echo $html;
 
-// Community services.
-echo "<h1>Community services</h1>";
-echo '<table class="admin">
-    <tr>
-        <td> <i class="fa fa-archive fa-2x"></i>
-            <a class="clickable" href="'. site_url("/user/inventory/browse"). '">Browse inventory</a> <br />
-            You can browse inventory. Items listed here can be borrowed.
-        </td>
-        <td>
-            <a class="clickable" href="'. site_url("/user/inventory/add"). '">My Inventry Items</a>
-            <br /> <br />
-            Add items to inventory.
-            By adding item here, you are letting others know that
-            they can borrow this item from you.
-        </td>
-   </tr>
-    <tr>
-       <td>
-            <i class="fa fa-building fa-2x"></i>
-            <a class="clickable" href="'. site_url("/user/tolet/browse"). '"> Browse TO-LET list</a>
-        </td>
-       <td>
-             <a class="clickable" href="'. site_url("/user/tolet/create"). '">My TO-LET and Alerts</a> <br />
-            Create email-alerts and create a TO-LET entry for community.
-            Email is sent to registered user.
-        </td>
-   </tr>
-   </table>';
+//// Community services.
+//echo "<h1>Community services</h1>";
+//echo '<table class="admin">
+//    <tr>
+//        <td> <i class="fa fa-archive fa-2x"></i>
+//            <a class="clickable" href="'. site_url("/user/inventory/browse"). '">Browse inventory</a> <br />
+//            You can browse inventory. Items listed here can be borrowed.
+//        </td>
+//        <td>
+//            <a class="clickable" href="'. site_url("/user/inventory/add"). '">My Inventry Items</a>
+//            <br /> <br />
+//            Add items to inventory.
+//            By adding item here, you are letting others know that
+//            they can borrow this item from you.
+//        </td>
+//   </tr>
+//    <tr>
+//       <td>
+//            <i class="fa fa-building fa-2x"></i>
+//            <a class="clickable" href="'. site_url("/user/tolet/browse"). '"> Browse TO-LET list</a>
+//        </td>
+//       <td>
+//             <a class="clickable" href="'. site_url("/user/tolet/create"). '">My TO-LET and Alerts</a> <br />
+//            Create email-alerts and create a TO-LET entry for community.
+//            Email is sent to registered user.
+//        </td>
+//   </tr>
+//   </table>';
 
 
 if( anyOfTheseRoles( 'ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,AWS_ADMIN' ) )
