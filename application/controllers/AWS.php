@@ -123,13 +123,16 @@ trait AWS
                 $this->template->load( 'user_aws' );
             }
         }
+        else if( strtolower(trim($arg)) == 'update_upcoming_aws' )
+        {
+            $this->load_user_view( "user_aws_update_upcoming_aws.php" );
+        }
         else
         {
             if( $arg )
-                $this->session->set_flashdata( 'error', "Unknown action $arg" );
+                flashMessage( "Unnown action $arg", 'error' );
 
-            $this->template->load( 'header.php' );
-            $this->template->load( 'user_aws' );
+            $this->load_user_view( "user_aws" );
         }
     }
 

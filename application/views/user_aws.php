@@ -4,15 +4,14 @@ require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
 // AWS schedule.
-echo '<div style="border:1px dotted">';
+echo '<div class="important">';
 $user = whoAmI();
 $scheduledAWS = scheduledAWSInFuture( $user);
 $tempScheduleAWS = temporaryAwsSchedule( $user);
 if( $scheduledAWS )
 {
-    echo alertUser( "
-        <font color=\"blue\">&#x2620 Your AWS date has been confirmed. It is on " .
-        humanReadableDate( $scheduledAWS[ 'date' ] ) . '.</font>'
+    echo alertUser( "&#x2620 Your AWS date has been confirmed. It is on " .
+        humanReadableDate( $scheduledAWS[ 'date' ] ), false
     );
 
     $disabled = '';
@@ -23,20 +22,18 @@ if( $scheduledAWS )
     }
     else
     {
-    echo printInfo(
-        "By pressing this button, you are confirming your AWS schedule.
-        If you have already acknowledged, this button will be disabled.
-        Please contact academic office in case you want to change your schedule.
-        " );
+        echo printInfo(
+            "By pressing this button, you are confirming your AWS schedule.
+            If you have already acknowledged, this button will be disabled.
+            Please contact academic office in case you want to change your schedule.
+            " );
+
+        echo '<form method="post" action="' . site_url( 'user/aws/acknowledge' ) . "\">
+            <button $disabled name=\"acknowledged\" value=\"YES\">Acknowledge schedule</button>
+            <input type=\"hidden\" name=\"id\" value=\"" . $scheduledAWS[ 'id' ] . "\" >
+            </form>
+            ";
     }
-
-    echo '
-        <form method="post" action="' . site_url( 'user/aws/acknowledge' ) . "\">
-        <button $disabled name=\"acknowledged\" value=\"YES\">Acknowledge schedule</button>
-        <input type=\"hidden\" name=\"id\" value=\"" . $scheduledAWS[ 'id' ] . "\" >
-        </form>
-        ";
-
 }
 else
 {
