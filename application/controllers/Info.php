@@ -62,6 +62,11 @@ class Info extends CI_Controller
         $this->loadview( 'jc.php' );
     }
 
+    public function preprints()
+    {
+        $this->loadview( 'preprints.php');
+    }
+
 }
 
 ?>
