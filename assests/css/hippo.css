@@ -351,9 +351,9 @@ div.header {
     max-width : var(--maxwidth);
     padding-bottom: 10px;
     margin-bottom: 10px;
+    padding: 10px;
     float: top;
     background-color: darkblue;
-    /* font-color: white; */
 }
 
 h1.title a {
