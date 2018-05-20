@@ -87,11 +87,8 @@ echo '<form method="post" enctype="multipart/form-data"
         action="' . site_url( 'user/register_talk/submit' ) . '">';
 
 echo "<h2>Speaker details</h2>";
-echo printInfo( "Email id of speaker is desirable but not required.  ");
 
-echo printInfo(
-    "<strong>First name</strong> and <strong>institute</strong> are required
-    fields.  ");
+echo printInfo( "Email id of speaker is desirable but not required.  ");
 
 echo '<table><tr>';
 echo '<td class="db_table_fieldname">Speaker picture</td><td>';
