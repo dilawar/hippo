@@ -78,17 +78,23 @@ table.user_float {
     top : 1%;
     right : 10%;
     max-width: 25%;
-    border : 2px solid red;
+    border : 1px solid red;
     border-radius: 10px;
     font-size : small;
-    padding: 30px 20px;
 }
 
 table.user_float tr td {
     padding: 5px;
     text-align: right;
-    vertical-align:bottom;
+    vertical-align: bottom;
+    padding: 5px;
+    color: white;
 }
+
+table.user_float a {
+    color: white;
+}
+
 
 table.show_user {
     max-width : var(--maxwidth);
@@ -110,12 +116,10 @@ table.public_links {
 }
 
 table.public_links tr td {
-    /* border-right: 1px solid; */
     min-width: 30px;
     text-align: center;
     padding-top : 20px;
     padding-bottom: 5px;
-    /* background-color:rgba(100,100,100,0.1); */
     background: none;
     text-decoration: underline;
     border-radius:5px;
@@ -130,6 +134,7 @@ table.show_info tr td:nth-child(1)
     max-width : 25%;
     padding:5px;
 }
+
 table.show_info tr td
 {
     background-color: var(--tabletdcolor);
@@ -137,6 +142,7 @@ table.show_info tr td
 }
 
 table.table_in_table {
+
 }
 
 table.table_in_table tr td
@@ -345,6 +351,12 @@ div.header {
     max-width : var(--maxwidth);
     padding-bottom: 20px;
     float: top;
+    background-color: darkblue;
+    /* font-color: white; */
+}
+
+h1.title a {
+    color : white;
 }
 
 div.aws_preference {
@@ -1028,6 +1040,10 @@ a.clickable {
     padding-bottom: 10px;
     margin-bottom: 10px;
     vertical-align: bottom;
+}
+
+a.bright {
+    color : white;
 }
 
 a.clickable_small {

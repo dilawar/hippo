@@ -141,19 +141,18 @@ $(document).ready(function(){
 });
 </script>
 
+<div style="font-size:small" class="header">
 <h1 class="title"><a href="<?= site_url( 'welcome' ) ?>" >
 <?php echo img( 'data/hippo.svg', false, array('height'=>'60px')); ?> Hippo</a></h1>
-
-<div style="font-size:small" class="header">
 <table class="public_links">
     <tr>
-    <td> <a href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
-    <td> <a href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
-    <td> <a href="<?= site_url('info/events') ?>" target="hippo_popup">Talks</a></td>
-    <td> <a href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
-    <td> <a href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
-    <td> <a href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
-    <td> <a href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>
+    <td><a class="bright" href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
+    <td><a class="bright" href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
+    <td><a class="bright" href="<?= site_url('info/events') ?>" target="hippo_popup">Talks</a></td>
+    <td><a class="bright" href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
+    <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
+    <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
+    <td><a class="bright" href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>
     </tr>
 </table>
 </div>
