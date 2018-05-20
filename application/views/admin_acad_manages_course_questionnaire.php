@@ -37,7 +37,7 @@ foreach( $qbank as $ques )
 echo '<h1>Question bank</h1>';
 foreach( $qbankMap as $category => $qbank )
 {
-    echo '<div class="important">';
+    echo '<div class="">';
     echo "<h3> $category </h3>";
     echo questionBankByCategoryToTable( $qbank, $controller );
     echo '<div>';
