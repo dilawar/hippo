@@ -20,7 +20,7 @@ body {
     max-width: var(--maxwidth);
     /* display:block; */
     background-color:var(--background);
-    background-position: 50% 180px;
+    background-position: 50% 200px;
     background-repeat:no-repeat;
     /* background-size: cover; */
     background-size: 80%;
@@ -78,9 +78,11 @@ table.user_float {
     top : 1%;
     right : 10%;
     max-width: 25%;
-    border : 1px solid red;
+    /* border : 1px solid red; */
     border-radius: 10px;
     font-size : small;
+    /* background-color: white; */
+    padding: 3px;
 }
 
 table.user_float tr td {
@@ -88,11 +90,10 @@ table.user_float tr td {
     text-align: right;
     vertical-align: bottom;
     padding: 5px;
-    color: white;
 }
 
 table.user_float a {
-    color: white;
+    color: lightgray;
 }
 
 

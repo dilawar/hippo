@@ -1,5 +1,4 @@
 <?php
-
 require_once BASEPATH.'extra/methods.php';
 require_once BASEPATH.'database.php';
 require_once BASEPATH.'extra/ICS.php';
@@ -723,9 +722,8 @@ function userHTML( )
     $user = whoAmI();
 
     $html = '<table class="user_float">';
-    $html .= '<tr colspan="2"><th>Hi 
-        <i class="fa fa-user"></i><a href="' . site_url( '/user/info' ) . 
-        '">' . $user.' </a> </td>';
+    $html .= '<tr colspan="2"><th><i class="fa fa-user"></i><a href="' . site_url( '/user/info' ) . 
+        '">Hi ' . $user.' </a> </td>';
 
     $html .= '<th><a href="' . site_url('/user/logout') . '">
                     <i class="fa fa-sign-out"></i>SignOut</a></th>';
