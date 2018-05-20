@@ -208,13 +208,18 @@ table.show_aws {
 
 table.show_aws tr td
 {
-    border-top : 2px solid lightblue;
+    vertical-align:top;
+    /* border-top : 2px solid lightblue; */
     text-align : left;
     /* max-width : 500px; */
     max-height: 3cm;
-    background-color:var(--tabletdcolor);
-    padding: 5px;
-    vertical-align: bottom;
+    background-color: var(--tabletdcolor);
+    padding: 10px;
+}
+
+table.show_aws caption {
+    font-weight: bold;
+    font-size: x-large;
 }
 
 table.show_calendar {
@@ -680,7 +685,7 @@ table.editable_faculty tr td
 
 caption {
     /* color: blue; */
-    font-variant: small-caps;
+    /* font-variant: small-caps; */
     /* text-decoration: underline; */
 }
 

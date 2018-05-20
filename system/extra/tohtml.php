@@ -1405,7 +1405,7 @@ function __ucwords__( $text )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function horizontalLine( $width = "600px" )
+function horizontalLine( $width = "100%" )
 {
     return "<div width=$width><hr width=$width align=left> </div>";
 }
@@ -1454,40 +1454,37 @@ function awsToHTML( $aws, $with_picture = false )
     if( strlen( $abstract ) == 0 )
         $abstract = "Not yet disclosed!";
 
-    $html = "<div class=\"show_aws\">";
-
     // Adding css inline screw up the email view. Dont do it.
     $user = $aws[ 'speaker' ];
 
     // Add a table only if there is a picture. Adding TD when there is no picture
     // screws up the formatting of emails.
+    $pic = '';
     if( $with_picture )
-    {
-        $html .=  '<table>';
-        $html .= '<tr>';
-        $imgHtml = getUserPicture( $user, 'hippo' );
-        $html .= "<td float=\"left\"> <div> $imgHtml </div> </td>";
-        $html .= "<td><h2>$speaker on '$title' </h2> </td>";
-        $html .= "</tr>";
-        $html .= "</table>";
-    }
-    else
-        $html .= "<h1>$speaker on '$title' </h1>";
+        $pic = getUserPicture( $user, 'hippo' );
 
-
-    $html .=  '<table class="email" style="width:500px">';
-    $html .= ' <tr> <td>' . smallCaps( 'Supervisors') . '</td>
-             <td>' . implode( ", ", $supervisors ) . '</td>
+    $extra = '<table width="100%">
+            <tr>
+                <td colspan="2"><strong>' . $speaker .'</strong></td>
+            </tr>
+            <tr>
+                <td>' . smallCaps( 'Supervisors') . '</td>
+                <td>' . implode( ", ", $supervisors ) . '</td>
              </tr>
              <tr>
-             <td>' . smallCaps( 'Thesis Committee Members') . '</td>
-             <td>' . implode( ", ", $tcm) . '</td>
+                 <td>' . smallCaps( 'Thesis Committee Members') . '</td>
+                 <td>' . implode( ", ", $tcm) . '</td>
              </tr>
              </table>';
 
-    $html .= "<br>";
-    $html .= "$abstract";
-    $html .= "</div>";
+
+    // Add table.
+    $html = '<table class="show_aws">';
+    $html .= "<caption>$title</caption>";
+    $html .= "<tr><td> $pic </td> <td>$extra</td></tr>";
+    $html .= "<tr><td colspan='2'>$abstract</td></tr>";
+    $html .=  "</table>";
+
     return $html;
 
 }
