@@ -71,7 +71,7 @@ function hippo_shell_exec($cmd, &$stdout=null, &$stderr=null)
     fclose($pipes[2]);
 
     if( $stderr && trim( $stderr ) )
-        echo printWarning( "There was an error executing <pre>$cmd</pre> $stderr. " );
+        printWarning( "There was an error executing <pre>$cmd</pre> $stderr. " );
 
     return proc_close($proc);
 }

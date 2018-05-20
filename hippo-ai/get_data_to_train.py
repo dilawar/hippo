@@ -46,10 +46,7 @@ def main( ):
     with open( '/tmp/_sample.html', 'w' ) as f:
         f.write( ' '.join( data_ ) )
         
-    awsf = html2other.tomd( '/tmp/_sample.html' )
-    with open( awsf, 'r' ) as f:
-        aws = f.read( )
-
+    aws, awsf = html2other.tomd( '/tmp/_sample.html' )
     aws = aws.replace( r'\\', '' )
     words = set( re.findall( r'\w+', aws ) )
     with open( '_words', 'w' ) as f:
