@@ -1886,6 +1886,7 @@ function slotTable( $width = "15px" )
     $days = array( 'Mon', 'Tue', 'Wed', 'Thu', 'Fri' );
 
     $html = '<table class="timetable">';
+    $html .= "<caption>Slot Table</caption>";
     // Generate columns. Each one is 15 min long. Starting from 9am to 6:00pm
     $maxNumCols = intval( ( 18 - 9 ) * 4 );
 
@@ -2445,12 +2446,14 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
 function selectYearSemesterForm( $defaultYear = '', $defaultSem = '' )
 {
     global $symbUpdate;
-    $years = range( intval(getCurrentYear( )) + 1, 2010 );
-    $yearSelect = arrayToSelectList( 'year', $years, array(), false, $defaultYear );
-    $semSelect = arrayToSelectList( 'semester', array( 'SPRING', 'AUTUMN' ), array(), false, $defaultSem );
-    $form = '<form action="" method="get" accept-charset="utf-8">' 
-                . $yearSelect . $semSelect . "<button> $symbUpdate </button>" . 
-            '</form>';
+    $years = range(intval(getCurrentYear( )) + 1, 2010);
+    $yearSelect = arrayToSelectList('year', $years, array(), false, $defaultYear);
+    $semSelect = arrayToSelectList('semester', array( 'SPRING', 'AUTUMN' ), array(), false, $defaultSem);
+    $form = '<form action="" method="get">'; 
+    $form .= "<table><tr> <td> $yearSelect </td><td> $semSelect </td>";
+    $form .= "<td><button class='show_as_link'> Show Courses </button></td>";
+    $form .= "</tr></table>";
+    $form .= '</form>';
     return $form;
 }
 
