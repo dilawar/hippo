@@ -40,7 +40,7 @@ if( $_GET )
 
 $whichDay = $default[ 'date' ];
 
-echo "<h2>Annual Work Seminars on " .  humanReadableDate( $default[ 'date' ] ) . ".</h2>";
+echo "<h3>Annual Work Seminars on " .  humanReadableDate( $default[ 'date' ] ) . ".</h3>";
 
 $awses = getTableEntries( 'annual_work_seminars', 'date' , "date='$whichDay'" );
 $upcoming = getTableEntries( 'upcoming_aws', 'date', "date='$whichDay'" );
