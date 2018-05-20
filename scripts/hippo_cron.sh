@@ -34,5 +34,5 @@ LOG_FILE=/var/log/hippo.log
 
 # cleaup data folder.
 (
-    # cd $SCRIPT_DIR/data && git clean -fxd -e "_mails*" .
+    cd $SCRIPT_DIR/data && git clean -fxd -e "_mails*" .
 )
