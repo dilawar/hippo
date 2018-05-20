@@ -349,7 +349,8 @@ div.important {
 
 div.header {
     max-width : var(--maxwidth);
-    padding-bottom: 20px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
     float: top;
     background-color: darkblue;
     /* font-color: white; */
