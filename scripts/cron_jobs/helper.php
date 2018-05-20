@@ -1,9 +1,5 @@
 <?php
-
-include_once 'methods.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'mail.php';
+require_once __DIR__.'/../../system/autoload.php';
 
 ini_set( 'date.timezone', 'Asia/Kolkata' );
 ini_set( 'log_errors', 1 );
