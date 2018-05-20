@@ -143,7 +143,7 @@ $(document).ready(function(){
 
 <div style="font-size:small" class="header">
 <h1 class="title"><a href="<?= site_url( 'welcome' ) ?>" >
-<?php echo img( 'data/hippo.svg', false, array('height'=>'60px')); ?> Hippo</a></h1>
+<?php echo img( 'data/hippo.white.svg', false, array('height'=>'60px')); ?> Hippo</a></h1>
 <table class="public_links">
     <tr>
     <td><a class="bright" href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
