@@ -1,5 +1,6 @@
 <?php
-require_once 'cron_jobs/helper.php';
+
+require_once __DIR__.'/helper.php';
 
 /*
  * Task 1. If today is Friday. Then prepare a list of upcoming AWS and send out
