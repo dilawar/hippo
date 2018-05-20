@@ -172,6 +172,21 @@ class Admin extends CI_Controller
 
         redirect('admin/faculty');
     }
+
+    // Update configuration
+    public function configuration( $arg='')
+    {
+        if( $_POST['response'] == 'Add Configuration' )
+        {
+            $res = insertOrUpdateTable( 'config'
+                , 'id,value,comment', 'value,comment'
+                , $_POST );
+
+            if( $res )
+                flashMessage( 'Successfully added new config' );
+        }
+        redirect( 'admin');
+    }
 }
 
 ?>
