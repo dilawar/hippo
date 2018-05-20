@@ -6,6 +6,7 @@ require_once BASEPATH.'autoload.php';
 
 require_once __DIR__ . '/AWS.php';
 require_once __DIR__ . '/JC.php';
+require_once __DIR__ . '/JCAdmin.php';
 require_once __DIR__ . '/Booking.php';
 
 /* --------------------------------------------------------------------------*/
@@ -19,6 +20,7 @@ class User extends CI_Controller
     use AWS;
     use Booking;
     use JC;
+    use JCAdmin;
 
     public function load_user_view( $view, $data = array() )
     {
