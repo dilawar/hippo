@@ -1,6 +1,21 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
+
+if( strtotime( 'today' ) == strtotime( 'this monday' ) )
+    $today = dbDate( 'this monday' );
+else
+    $today = dbDate( 'next monday' );
+
+$default = array( 'date' => $today );
+
+$form = '<form method="get" action="">
+            <input class="datepicker" type="text" name="date" value="' .
+                    $default[ 'date' ] . '" > <br />
+            <button type="submit" name="response"
+                    title="Show AWS"
+                    value="show">Show AWSs</button>
+        </form>
+        ';
 
 $table = '<table class="info">
         <tr>
@@ -10,17 +25,10 @@ $table = '<table class="info">
             <td>
                 <a href="'.site_url( 'info/aws/roster'). '"> List of AWS speakers</a>
             </td>
-        </tr>
-        </table>';
-
+            <td>' . $form . 
+            '</td></tr></table>';
 echo $table;
 echo "<br />";
-
-if( strtotime( 'today' ) == strtotime( 'this monday' ) )
-    $today = dbDate( 'this monday' );
-else
-    $today = dbDate( 'next monday' );
-$default = array( 'date' => $today );
 
 if( $_GET )
 {
@@ -30,27 +38,9 @@ if( $_GET )
         $default = array( 'date' => $today );
 }
 
-echo '
-    <form method="get" action="">
-    <table class="aws" border="0">
-        <tr>
-            <td>Select a Monday</td>
-            <td><input class="datepicker" type="text" name="date" value="' .
-                    $default[ 'date' ] . '" ></td>
-            <td><button type="submit" name="response"
-                    title="Show AWS on this day"
-                    value="show">Show AWSs on This Day</button></td>
-        </tr>
-    </table>
-    </form>
-    ';
-
-echo '<br><br>';
-
 $whichDay = $default[ 'date' ];
 
-echo "<h2>Annual Work Seminars on " .
-    humanReadableDate( $default[ 'date' ] ) . " </h2>";
+echo "<h2>Annual Work Seminars on " .  humanReadableDate( $default[ 'date' ] ) . ".</h2>";
 
 $awses = getTableEntries( 'annual_work_seminars', 'date' , "date='$whichDay'" );
 $upcoming = getTableEntries( 'upcoming_aws', 'date', "date='$whichDay'" );
@@ -58,7 +48,7 @@ $awses = array_merge( $awses, $upcoming );
 
 if( count( $awses ) < 1 )
 {
-    echo alertUser( "I could not find any AWS in my database on this day" );
+    echo printInfo( "I could not find any AWS in my database on this day" );
     $holiday = getTableEntry( 'holidays', 'date', array( 'date' => $whichDay ) );
     if( $holiday )
     {
