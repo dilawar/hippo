@@ -54,7 +54,7 @@ pre {
 
 input.long {
     min-width: 80%;
-    max-width: 500px;
+    /* max-width: 500px; */
 }
 
 
@@ -392,7 +392,7 @@ div.public_calendar {
 }
 
 div.justify {
-    max-width: 600px;
+    /* max-width: 600px; */
     min-width: 400px;
     text-align: justify;
 }
@@ -545,21 +545,26 @@ table.condensed tr td:nth-child(odd)
 }
 
 table.input {
-    text-align : left;
+    /* text-align : left; */
     min-width : 400px;
     max-width : var(--maxwidth);
 }
 
 table.input tr td:nth-child(odd) {
-    text-align : right;
-    min-width : 30%;
+    /* text-align : right; */
+    /* min-width : 30%; */
     vertical-align : top;
     font-size : small;
+    max-width: 150px;
+    background-color: var(--tabletdcolor);
 }
 
 table.input tr td:nth-child(even) {
-    text-align : left;
-    min-width : 70%;
+    background-color: var(--tabletdcolor);
+}
+
+table.input tr td {
+    border-top: 1px dotted blue;
 }
 
 table.request {
