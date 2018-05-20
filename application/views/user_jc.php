@@ -1,12 +1,11 @@
 <?php
-
 require BASEPATH.'autoload.php';
 echo userHTML( );
 
 $jcs = getJournalClubs( );
+
 echo '<h1>Journal Clubs</h1>';
 $table = '<table class="info">';
-
 $table .= '<tr>';
 foreach( $jcs as $i => $jc )
 {
@@ -29,8 +28,8 @@ foreach( $jcs as $i => $jc )
 }
 $table .= '</tr>';
 $table .= '</table>';
-echo $table;
 
+echo $table;
 
 echo "<h1>Upcoming JC presentations.</h1>";
 
