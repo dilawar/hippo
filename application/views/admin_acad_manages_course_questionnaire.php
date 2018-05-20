@@ -11,7 +11,12 @@ $defaults = array( 'last_modified_on' => dbDateTime( 'now' )
 $defaults['id'] = getUniqueID( 'question_bank' );
 
 echo ' <h1>Add new question</h1> ';
-echo printInfo( 'Make sure to write proper category and subcategory.' );
+
+echo printInfo( 
+   'Make sure to write proper category and subcategory. For example, course feedback question, 
+    category is <tt>Course Feedback</tt> and while the subtcategories could be <tt>Personal 
+    Qualities Of Instructors</tt>, <tt>Evaluation</tt> etc..'
+    );
 
 // Form to add a question.
 echo '<form action="'.site_url("adminacad/addquestion").'" method="post">';
