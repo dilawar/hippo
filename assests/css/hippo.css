@@ -207,12 +207,13 @@ table.show_aws {
 
 table.show_aws tr td
 {
-    border : 0.5px dotted;
+    border-top : 2px solid lightblue;
     text-align : left;
     /* max-width : 500px; */
     max-height: 3cm;
     background-color:var(--tabletdcolor);
-    padding: 2px;
+    padding: 5px;
+    vertical-align: bottom;
 }
 
 table.show_calendar {
