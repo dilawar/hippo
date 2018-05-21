@@ -77,9 +77,7 @@ $speaker = array(
     , 'designation' => '', 'homepage' => ''
     );
 
-$talk = array( 'created_by' => $_SESSION[ 'user' ]
-            , 'created_on' => dbDateTime( 'now' )
-        );
+$talk = array( 'created_by' => whoAmI(), 'created_on' => dbDateTime('now'));
 
 // Show speaker image here.
 
@@ -89,11 +87,8 @@ echo '<form method="post" enctype="multipart/form-data"
         action="' . site_url( 'user/register_talk/submit' ) . '">';
 
 echo "<h2>Speaker details</h2>";
-echo printInfo( "Email id of speaker is desirable but not required.  ");
 
-echo alertUser(
-    "<strong>First name</strong> and <strong>institute</strong> are required
-    fields.  ");
+echo printInfo( "Email id of speaker is desirable but not required.  ");
 
 echo '<table><tr>';
 echo '<td class="db_table_fieldname">Speaker picture</td><td>';
@@ -115,15 +110,14 @@ echo dbTableToHTMLTable( 'talks', $talk
     );
 
 echo "<h2>Submit booking request</h2>" ;
-echo alertUser( "
+echo printInfo( "
     <i class=\"fa fa-flag\"></i>
     I may not be able to book if there is already a pending
     booking request at your preferred venue/slot. However, I'll register your
-    talk and you can book venue later by visiting <strong>Manage my talks</strong> link
+    talk and you can book venue later by visiting <tt>Book for Public Event</tt> link
     in your HOME page.
     <br />
-    "
-    );
+    ", false);
 
 $venueSelect = venuesToHTMLSelect( );
 echo "<table class=\"editable\" >";

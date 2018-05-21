@@ -72,7 +72,7 @@ echo '<h1>Hippo Configuration</h1>';
 $editable = 'id,value';
 $default = array( );
 
-echo ' <form action="'.site_url('admin/configration') .'" method="post">';
+echo ' <form action="'.site_url('admin/configuration') .'" method="post">';
 echo dbTableToHTMLTable( 'config', $default, $editable, 'Add Configuration' );
 echo '</form>';
 
