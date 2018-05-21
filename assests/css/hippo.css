@@ -931,12 +931,15 @@ td.db_table_fieldname {
 }
 
 table.tableintd {
-    width: 80%;
-    font-family: 'Open Sans';
+    max-width: 80%;
+    min-width: 300px;
+    /* font-family: 'Open Sans'; */
+    font-family: 'EB Garamond';
+    float: left;
 }
 
 table.tableintd tr td {
-    font-size: small;
+    /* font-size: small; */
     padding: 0px;
     padding-bottom: 3px;
     vertical-align: top;

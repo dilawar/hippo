@@ -1463,17 +1463,17 @@ function awsToHTML( $aws, $with_picture = false )
     if( $with_picture )
         $pic = getUserPicture( $user, 'hippo' );
 
-    $extra = '<table style="min-width:100%;float:left;">
+    $extra = '<table class="tableintd">
             <tr>
                 <td colspan="2"><strong>' . $speaker .'</strong></td>
             </tr>
             <tr>
                 <td>' . smallCaps( 'Supervisors') . '</td>
-                <td width=70%>' . implode( ", ", $supervisors ) . '</td>
+                <td>' . implode( ", ", $supervisors ) . '</td>
              </tr>
              <tr>
                  <td>' . smallCaps( 'Thesis Committee Members') . '</td>
-                 <td width=70%>' . implode( ", ", $tcm) . '</td>
+                 <td>' . implode( ", ", $tcm) . '</td>
              </tr>
              </table>';
 
@@ -1481,7 +1481,7 @@ function awsToHTML( $aws, $with_picture = false )
     // Add table.
     $html = '<table class="events">';
     $html .= "<caption>$title</caption>";
-    $html .= "<tr><td> $pic </td><td colspan='3' width=80%>$extra</td></tr>";
+    $html .= "<tr><td> $pic </td><td colspan='3'>$extra</td></tr>";
     $html .= "<tr><td colspan='4'>$abstract</td></tr>";
     $html .=  "</table>";
 
