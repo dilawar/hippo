@@ -65,7 +65,7 @@ img.login_picture {
 
 
 table {
-    font-family : 'Ubuntu';
+    /* font-family : 'Ubuntu'; */
 }
 
 table tr td {
@@ -201,13 +201,13 @@ table.show_speaker tr td  {
 }
 
 
-table.show_aws {
+table.events {
     max-width : var(--maxwidth);
     min-width : 100%;
     border: 3px solid ivory;
 }
 
-table.show_aws tr td
+table.events tr td
 {
     vertical-align:top;
     /* border-top : 2px solid lightblue; */
@@ -221,7 +221,7 @@ table.show_aws tr td
     text-align: left;
 }
 
-table.show_aws caption {
+table.events caption {
     font-weight: bold;
     font-size: x-large;
     font-family: Lora;
@@ -905,6 +905,18 @@ p.note {
 td.db_table_fieldname {
     font-size : x-small;
     text-transform : uppercase;
+}
+
+table.tableintd {
+    width: 80%;
+    font-family: 'Open Sans';
+}
+
+table.tableintd tr td {
+    font-size: small;
+    padding: 0px;
+    padding-bottom: 3px;
+    vertical-align: top;
 }
 
 table.td_as_tile { 

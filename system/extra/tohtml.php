@@ -330,7 +330,7 @@ function eventSummaryHTML( $event, $talk = null)
         $title = $event[ 'title'];
 
     $html = "<h2>" . $title . "</h2>";
-    $html .= '<table class="show_events">';
+    $html .= '<table class="events">';
 
     if( $talk )
     {
@@ -1479,7 +1479,7 @@ function awsToHTML( $aws, $with_picture = false )
 
 
     // Add table.
-    $html = '<table class="show_aws">';
+    $html = '<table class="events">';
     $html .= "<caption>$title</caption>";
     $html .= "<tr><td> $pic </td><td colspan='3' width=80%>$extra</td></tr>";
     $html .= "<tr><td colspan='4'>$abstract</td></tr>";
@@ -1567,69 +1567,53 @@ function talkToHTML( $talk, $with_picture = false )
 
     $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
 
-    $html = '<div class="show_talks">';
-    $html .= '<table border="0"><tr>';
-    $html .= '<td colspan="2"><h1>' . $title . '</h1></td>';
-    $html .= "</tr><tr>";
 
+    $pic = '';
     if( $with_picture )
     {
         $imgpath = getSpeakerPicturePath( $speakerId );
-        $html .= '<td>' . showImage( $imgpath, 'auto', '250px' ) . '</td>';
+        $pic = '<td>' . showImage( $imgpath, 'auto', '250px' ) . '</td>';
     }
 
     // Speaker info
+    $speakerHMTL = speakerToHTML( $speakerArr );
     if( $speakerId > 0 )
         $speakerHMTL = speakerIdToHTML( $speakerId );
-    else
-        $speakerHMTL = speakerToHTML( $speakerArr );
-
-    $html .= '<td>' . $speakerHMTL ;
 
     // Hack: If talk is a THESIS SEMINAR then host is thesis advisor.
+    $host = '<td>Host</td><td>' . loginToHTML( $talk[ 'host' ], false ) . '</td>';
     if( $talk['class'] == 'THESIS SEMINAR' )
-        $html .= '<br />Supervisor: ' . loginToHTML( $talk[ 'host' ], false );
-    else
-        $html .= '<br />Host: ' . loginToHTML( $talk[ 'host' ], false );
+        $host = '<td>Supervisor</td><td>' . loginToHTML( $talk[ 'host' ], false ) . '</td>';
 
-    $html .= '<br /><br />';
-
-    $html .= '<div style="text-decoration:none;">';
-    $html .= '<table><tr>
-                <td class="when"><small>When: </small> ' . $when . '</td>
-            </tr><tr>
-                <td class="where"> <small>Where: </small> ' . $where . '</td>
-            </tr>
-            <tr></tr>
-            <tr>
-                <td><small>Coordinator: </small>' .  loginToHTML( $coordinator, true ) . '</td>';
-    $html .= '</tr>';
-
-
-    // Add links to google,ical.
-    $html .= '<tr>';
-    $html .=  '<td>';
-    $html .= '<a target="_blank" href="' . appURL( ) .'events.php?date='
-                 . $event[ 'date' ] . '">Permanent link</a>';
-
+    // Calendar link.
     $googleCalLink = addToGoogleCalLink( $event );
     $icalLink = eventToICALLink( $event );
 
-    $html .= "</td>";
-    $html .= '</tr>';
+    // side information.
+    $side = '<table class="tableintd">
+            <tr><td colspan="2"><strong>' . $speakerHMTL . '</strong></td></tr>
+            <tr>' . $host . '</tr>
+            <tr><td>When</td><td>' . $when . '</td></tr>
+            <tr> <td>Where</td><td> ' . $where . '</td></tr>
+            <tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
+    // Add links to google,ical.
+    $side .= '<tr>';
+    $side .=  '<td colspan="2">';
+    $side .= '<a target="_blank" href="'.site_url('info/events?date='. $event[ 'date' ])
+                . '">Permanent link</a>';
+    $side .= "</td>";
+    $side .= '</tr>';
+    $side .= '</table>';
 
+    $html = '<table class="events">';
+    $html .= "<caption> $title </caption>";
+    $html .= "<tr><td> $pic </td>";
+    $html .= "<td colspan='3'> $side </td>";
+    $html .= "</tr>";
+    $html .= "<tr><td colspan='5'>" . fixHTML( $talk[ 'description' ] ) . "</td></tr>";
     $html .= '</table>';
-    $html .= '</div>';
-
-    $html .= '</td>';
-    $html .= '</tr></table>';
-
-    $html .= "<p>" . fixHTML( $talk[ 'description' ] ) . '</p>';
-
-    $html .= "</div>";
 
     // Add the calendar links
-    $html .= "<br><br>";
     $html .=  $googleCalLink;
 
     return $html;
