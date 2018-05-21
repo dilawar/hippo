@@ -257,8 +257,7 @@ foreach( $jcIds as $currentJC )
 // Rate tasks.
 echo '<h1>Rare tasks</h1>';
 echo '
-    <form action="'.site_url("user/jc_admin_edit_jc_request").'" method="post" accept-charset="utf-8">
-
+    <form action="'.site_url("user/jc_admin/transfer").'" method="post" accept-charset="utf-8">
     <table border="0">
         <tr>
             <td> <input type="text" name="new_admin"

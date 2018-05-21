@@ -152,7 +152,8 @@ $(document).ready(function(){
     <td><a class="bright" href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
     <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
-    <td><a class="bright" href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>
+    <!--<td><a class="bright" href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>-->
+    <!-- <td><a class="bright" href="<?= site_url('info/preprints') ?>" target="hippo_popup" >Preprints</a></td>-->
     </tr>
 </table>
 </div>

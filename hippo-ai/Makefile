@@ -19,7 +19,7 @@ train : data.json data.h5
 	    -num_layers 3 -max_epochs 1000
 
 generate_sample : 
-	th ./sample.lua -gpu $(GPU) -checkpoint $(LAST_CP) | tee _sample.txt
+	th ./sample.lua -gpu $(GPU) -checkpoint $(LAST_CP) | tee /tmp/_sample.txt
 
 
 sample : generate_sample

@@ -204,6 +204,7 @@ table.show_speaker tr td  {
 table.show_aws {
     max-width : var(--maxwidth);
     min-width : 100%;
+    border: 3px solid ivory;
 }
 
 table.show_aws tr td
@@ -213,13 +214,17 @@ table.show_aws tr td
     text-align : left;
     /* max-width : 500px; */
     max-height: 3cm;
-    background-color: var(--tabletdcolor);
+    /* background-color: var(--tabletdcolor); */
+    background-color: Ivory;
     padding: 10px;
+    line-height: 150%;
+    text-align: left;
 }
 
 table.show_aws caption {
     font-weight: bold;
     font-size: x-large;
+    font-family: Lora;
 }
 
 table.show_calendar {
