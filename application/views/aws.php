@@ -27,6 +27,8 @@ $table = '<table class="info">
             </td>
             <td>' . $form . 
             '</td></tr></table>';
+
+echo "<h3>Annual Work Seminars on " .  humanReadableDate( $default[ 'date' ] ) . ".</h3>";
 echo $table;
 echo "<br />";
 
@@ -40,7 +42,6 @@ if( $_GET )
 
 $whichDay = $default[ 'date' ];
 
-echo "<h3>Annual Work Seminars on " .  humanReadableDate( $default[ 'date' ] ) . ".</h3>";
 
 $awses = getTableEntries( 'annual_work_seminars', 'date' , "date='$whichDay'" );
 $upcoming = getTableEntries( 'upcoming_aws', 'date', "date='$whichDay'" );
