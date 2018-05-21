@@ -185,12 +185,11 @@ foreach( $slotCourses as $slot => $courses )
 
             $regTable = '<table style="width:100%;">';
             $regTable .= '<tr>';
-            $regTable .= '<td>
-                <button class="show_as_link"
-                    onclick="toggleShowHide( this, \'' . $tid . '\' )">Show Enrollments</button>
-                </td>';
+            $regTable .= '<td><button class="show_as_link"
+                        onclick="toggleShowHide( this, \'' . $tid . '\' )">Show Enrollments</button>
+                    </td>';
             $regTable .= '</tr>';
-            $regTable .= "<tr><td id=\"$tid\" style=\"display:none\"> $enTable </td></tr>";
+            $regTable .= "<tr><td width='100%' id=\"$tid\" style=\"display:none\"> $enTable </td></tr>";
             $regTable .= '</table>';
         }
         else

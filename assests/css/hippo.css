@@ -162,7 +162,7 @@ table.show_course {
     border-collapse: separate;
 }
 
-table.show_course tr{
+table.show_course tr {
     width: 100%;
     border-radius:10px;
 }
@@ -599,7 +599,6 @@ table.show_events tr td  {
     background-color: var( --tabletdcolor );
 }
 
-
 table.submit_request tr {
     width : 90%;
 }
@@ -687,6 +686,7 @@ table.editable_faculty tr td
     /*border : 0.5px dotted; */
     /*min-width : 20%;*/
 }
+
 
 caption {
     /* color: blue; */
