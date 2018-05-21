@@ -171,7 +171,7 @@ foreach( $slotCourses as $slot => $courses )
         $courseTable .= '</tr>';
         $courseTable .= '</table>';
 
-        $data = getEnrollmentTableAndEmails( $cid, $enrollments, 'info' );
+        $data = getEnrollmentTableAndEmails( $cid, $enrollments, 'info exportable' );
         $enTable = $data[ 'html_table'];
         $allEmails = $data[ 'enrolled_emails' ];
 
@@ -244,5 +244,11 @@ if( count( $slotUpcomingCourses ) > 0 )
 
 echo '<br>';
 echo closePage( );
-
 ?>
+
+<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+TableExport(document.getElementsByClassName("exportable"));
+</script>
