@@ -3428,4 +3428,19 @@ function getOldCourseFeedback( $year, $semester, $cid )
     return $res;
 }
 
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Find anyone with given login or email.
+    *
+    * @Param $loginOrEmail
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function findAnyoneWithLoginOrEmail( $loginOrEmail )
+{
+    return executeQuery( "SELECT * FROM logins WHERE login='$loginOrEmail' OR email='$loginOrEmail'");
+}
+
 ?>
