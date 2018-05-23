@@ -607,6 +607,22 @@ class BMVPDO extends PDO
                 )"
             );
 
+        // Equipements.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS equipments (
+                id INT PRIMARY KEY
+                , name VARCHAR(50) NOT NULL
+                , vendor VARCHAR(200)
+                , description MEDIUMTEXT
+                , faculty_in_charge VARCHAR(50) NOT NULL
+                , person_in_charge VARCHAR(50) NOT NULL
+                , status ENUM( 'GOOD', 'DELETED', 'BROKEN', 'INVALID' ) DEFAULT 'GOOD'
+                , last_modified_on DATETIME
+                , edited_by VARCHAR(100) default 'HIPPO'
+                , UNIQUE KEY (faculty_in_charge,name)
+                )"
+            );
+
         // Clickable queries
         $res = $this->query( "
             CREATE TABLE IF NOT EXISTS queries (

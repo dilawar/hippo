@@ -8,6 +8,7 @@ require_once __DIR__ . '/AWS.php';
 require_once __DIR__ . '/JC.php';
 require_once __DIR__ . '/JCAdmin.php';
 require_once __DIR__ . '/Booking.php';
+require_once __DIR__ . '/Lab.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -21,6 +22,7 @@ class User extends CI_Controller
     use Booking;
     use JC;
     use JCAdmin;
+    use Lab;
 
     public function load_user_view( $view, $data = array() )
     {
@@ -70,6 +72,10 @@ class User extends CI_Controller
         $this->template->load('bookmyvenue_browse');
     }
 
+    public function equipments( )
+    {
+        $this->load_user_view( "user_manages_equipments");
+    }
  
     public function download( $filename, $redirect = true )
     {
