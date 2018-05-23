@@ -1582,7 +1582,7 @@ function talkToHTML( $talk, $with_picture = false )
 
     // Hack: If talk is a THESIS SEMINAR then host is thesis advisor.
     $host = '<td>Host</td><td>' . loginToHTML( $talk[ 'host' ], false ) . '</td>';
-    if( $talk['class'] == 'THESIS SEMINAR' )
+    if( __substr__('THESIS SEMINAR', $talk['class'] ))
         $host = '<td>Supervisor</td><td>' . loginToHTML( $talk[ 'host' ], false ) . '</td>';
 
     // Calendar link.
