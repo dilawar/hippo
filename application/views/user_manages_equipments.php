@@ -14,12 +14,20 @@ if( count($equipments) > 0)
     foreach($equipments as $i => $equip )
     {
         echo '<tr>';
+        $equipmentID = $equip['id'];
         echo arrayToRowHTML( $equip, 'info', $hide, true, false );
-        echo '<td><button>Delete</button></td>';
-        echo '<td><button>Edit</button></td>';
+        echo '<form action="'.site_url("user/delete_equipment/$equipmentID"). '" method="post">
+               <td><button name="response" onclick="AreYouSure(this)">Delete</button></td>
+            </form>';
+
+        echo '<td>
+                <form action="" method="post">
+                <button name="response" value="update">Update</button>
+                <input type="hidden" name="id" value="'.$equipmentID.'" />
+                </form>
+            </td>';
         echo '</tr>';
     }
-
     echo '</table>';
 }
 
@@ -30,9 +38,15 @@ $newID = getUniqueID( 'equipments');
 $equipment = array( 'id' => $newID, 'faculty_in_charge' => $piOrHost
         , 'last_modified_on' => dbDateTime( 'now' )
         );
-$editable = 'name,vendor,description,person_in_charge';
+
+// If updateing the old entries, use the previous values as default parameters.
+if( __get__($_POST, 'response', '') == 'update')
+    if( __get__($_POST, 'id', 0 )  > 0 )
+        $equipment = getTableEntry( 'equipments', 'id', $_POST );
+
+$editable = 'name,vendor,description,person_in_charge,status';
 echo '<form action="'.site_url("user/add_equipment"). '" method="post" accept-charset="utf-8">';
-echo dbTableToHTMLTable( 'equipments', $equipment, $editable );
+echo dbTableToHTMLTable('equipments', $equipment, $editable);
 echo '</form>';
 
 ?>
