@@ -623,6 +623,22 @@ class BMVPDO extends PDO
                 )"
             );
 
+        // Equipements booking.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS equipment_bookings (
+                id INT PRIMARY KEY
+                , equipment_id INT NOT NULL
+                , date DATE NOT NULL
+                , start_time TIME NOT NULL
+                , end_time TIME NOT NULL
+                , booked_by VARCHAR(50) NOT NULL
+                , status ENUM('VALID', 'INVALID', 'CANCELLED') DEFAULT 'VALID'
+                , comment VARCHAR(200)
+                , created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                , modfied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )"
+            );
+
         // Clickable queries
         $res = $this->query( "
             CREATE TABLE IF NOT EXISTS queries (
