@@ -650,6 +650,16 @@ function arrayToTableHTML( $array, $tablename, $background = ''
     return $table;
 }
 
+function arraysToCombinedTableHTML( $tables, $class, $hide = '' )
+{
+    $html = " <table class='$class'>";
+    $html .= arrayToTHRow( $tables[0], $class, $hide );
+    foreach( $tables as $table )
+        $html .= arrayToRowHTML( $table, $class, $hide );
+    $html .= "</table>";
+    return $html;
+}
+
 // Convert an array to HTML table (vertical)
 function arrayToVerticalTableHTML( $array, $tablename
     , $background = NULL, $tobefilterd = ''

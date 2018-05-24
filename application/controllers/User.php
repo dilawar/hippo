@@ -72,10 +72,6 @@ class User extends CI_Controller
         $this->template->load('bookmyvenue_browse');
     }
 
-    public function equipments( )
-    {
-        $this->load_user_view( "user_manages_equipments");
-    }
  
     public function download( $filename, $redirect = true )
     {
