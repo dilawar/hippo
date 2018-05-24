@@ -9,8 +9,19 @@ trait Lab
         $_POST['edited_by'] = whoAmI();
         $_POST['last_modified_on'] = dbDateTime( 'now' );
 
+        $personInCharge = $_POST['person_in_charge'];
+        if( ! findAnyoneWithEmail( $personInCharge) )
+        {
+            printWarning( "I could not locate <tt>PERSON IN CHARGE</tt> '$personInCharge' in my
+                database. I won't allow this entry. Use a valid email." 
+                );
+            redirect( "user/equipments");
+            return;
+        }
+
         $updatable =  'name,vendor,description,last_modified_on,edited_by,status,person_in_charge';
-        $res = insertOrUpdateTable('equipments', 'id,'.$updatable, $updatable, $_POST);
+        $res = insertOrUpdateTable('equipments', 'id,faculty_in_charge,'.$updatable
+            , $updatable, $_POST);
         if( !$res )
             echo printWarning( "Failed to add equipment.");
         else
