@@ -1057,12 +1057,12 @@ address {
 a[href^="mailto:"] {
   text-decoration: none;
   font-family : monospace;
-  font-size: x-small;
+  font-size: small;
 }
 
 a[href^="mailto:"]::before {
-    content: "\2709";
-    font-size: large;
+    content: "\2709 ";
+    font-size: x-large;
 }
 
 a:link {
@@ -1123,3 +1123,12 @@ footer {
     position: fixed;
     top: 90%;
 }
+
+th {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    text-align: left;
+}
+
+
