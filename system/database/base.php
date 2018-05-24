@@ -615,8 +615,8 @@ class BMVPDO extends PDO
                 , vendor VARCHAR(200)
                 , description MEDIUMTEXT
                 , faculty_in_charge VARCHAR(50) NOT NULL
-                , person_in_charge VARCHAR(50) NOT NULL
-                , status ENUM( 'GOOD', 'DELETED', 'BROKEN', 'INVALID' ) DEFAULT 'GOOD'
+                , person_in_charge VARCHAR(100) NOT NULL
+                , status ENUM( 'GOOD', 'BROKEN', 'INVALID', 'LOST', 'UNKNOWN' ) DEFAULT 'GOOD'
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
                 , UNIQUE KEY (faculty_in_charge,name)
