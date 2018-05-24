@@ -1,7 +1,7 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth : 100%;
+    --maxwidth : 1000px;
 }
 
 
@@ -28,8 +28,32 @@ body {
     background-size: 80%;
     /* background-attachment:fixed; */
     background-attachment: scroll;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin: auto;
+}
+
+div.user_float {
+    position : fixed;
+    top : 1%;
+    width: 80%;
+    max-width: var(--maxwidth);
+    margin:auto;
+}
+
+table.user_float {
+    border-radius: 10px;
+    padding: 3px;
+    float: right;
+}
+
+table.user_float tr td {
+    padding: 5px;
+    text-align: justify;
+    vertical-align: bottom;
+    padding: 5px;
+}
+
+table.user_float a {
+    color: red;
 }
 
 
@@ -93,30 +117,6 @@ table {
 
 table tr td {
     border: 0px;
-}
-
-
-table.user_float {
-    position : fixed;
-    top : 1%;
-    right : 10%;
-    max-width: 25%;
-    /* border : 1px solid red; */
-    border-radius: 10px;
-    font-size : small;
-    /* background-color: white; */
-    padding: 3px;
-}
-
-table.user_float tr td {
-    padding: 5px;
-    text-align: right;
-    vertical-align: bottom;
-    padding: 5px;
-}
-
-table.user_float a {
-    color: lightgray;
 }
 
 

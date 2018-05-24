@@ -731,12 +731,13 @@ function userHTML( )
 {
     $user = whoAmI();
 
-    $html = '<table class="user_float">';
-    $html .= '<tr colspan="2"><th><i class="fa fa-user"></i><a href="' . site_url( '/user/info' ) . 
-        '">Hi ' . $user.' </a> </td>';
+    $html = '<div class="user_float">';
+    $html .= '<table class="user_float">';
+    $html .= '<tr> <td><a href="' . site_url( '/user/info' ) .  '">
+        <i class="fa fa-user-o"></i> Hi ' . $user.' </a> </td>';
 
-    $html .= '<th><a href="' . site_url('/user/logout') . '">
-                    <i class="fa fa-sign-out"></i>SignOut</a></th>';
+    $html .= '<td><a href="' . site_url('/user/logout') . '">
+                    <i class="fa fa-sign-out"></i>SignOut</a></td>';
     $html .= '</tr>';
 
     $html .= '<tr><td><a href="' . site_url( '/user/book' ) . '">
@@ -744,8 +745,8 @@ function userHTML( )
     $html .= '<td><a href="' . site_url( 'user/home' ) . '">
                     <i class="fa fa-home"></i>My Home</a>';
     $html .= '</tr>';
-
     $html .= '</table>';
+    $html .= '</div>';
     return $html;
 }
 
