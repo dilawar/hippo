@@ -4,6 +4,17 @@ require_once BASEPATH. 'autoload.php';
 
 trait Lab 
 {
+    // VIEWS
+    public function equipments( )
+    {
+        $this->load_user_view( "user_manages_equipments");
+    }
+
+    public function browse_equipments( )
+    {
+        $this->load_user_view( "user_browse_equipments" );
+    }
+
     public function add_equipment( $arg = '' )
     {
         $_POST['edited_by'] = whoAmI();
