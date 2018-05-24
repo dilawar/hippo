@@ -98,7 +98,7 @@ $html .= '
     <tr>
     <td>
         <i class="fa fa-hand-arxchive fa-2x"></i>
-         <a class="clickable" href="'. site_url("/user/book/equipments"). '">Book Lab Equipments</a>
+         <a class="clickable" href="'. site_url("/user/browse_equipments"). '">Browse/Book Lab Equipments</a>
     </td>
     <td>
         <i class="fa fa-flask fa-2x"></i>

@@ -31,6 +31,7 @@ if( count($equipments) > 0)
     echo '</table>';
 }
 
+echo goBackToPageLink( "user/home", "Go Home" );
 
 echo '<h1> Add/Update equipment</h1>';
 
@@ -48,6 +49,10 @@ $editable = 'name,vendor,description,person_in_charge,status';
 echo '<form action="'.site_url("user/add_equipment"). '" method="post" accept-charset="utf-8">';
 echo dbTableToHTMLTable('equipments', $equipment, $editable);
 echo '</form>';
+
+echo ' <br />';
+
+echo goBackToPageLink( "user/home", "Go Home" );
 
 ?>
 <script type="text/javascript" charset="utf-8">
