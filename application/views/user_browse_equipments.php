@@ -34,11 +34,16 @@ echo ( "Following " . count( $equipments ). " equipments are available for booki
     for faculty-in-charge " . mailto( $piOrHost ) 
     );
 
-echo arraysToCombinedTableHTML( $equipments, 'info book', 'status,last_modified_on,edited_by' );
-echo ' <table class="info" >';
+if(count($equipments) > 0)
+{
 
-echo '</table>';
+    echo arraysToCombinedTableHTML( $equipments, 'info book', 'status,last_modified_on,edited_by' );
+    echo ' <table class="info" >';
+    echo '</table>';
+}
 
+
+echo ' <br />';
 
 echo goBackToPageLink( "$ref/home", "Go Home" );
 ?>
