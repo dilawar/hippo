@@ -602,7 +602,7 @@ class BMVPDO extends PDO
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
                 , owner VARCHAR(50) NOT NULL
-                , UNIQUE KEY (owner,common_name,vendor,status)
+                , UNIQUE KEY (owner,common_name)
                 )"
             );
 
@@ -648,7 +648,6 @@ class BMVPDO extends PDO
                 , status ENUM( 'EXECUTED', 'INVALID', 'PENDING' ) DEFAULT 'PENDING'
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
-                , UNIQUE KEY (who_can_execute,query,status)
                 )"
             );
 
