@@ -634,7 +634,7 @@ class BMVPDO extends PDO
                 , status ENUM('VALID', 'INVALID', 'CANCELLED') DEFAULT 'VALID'
                 , comment VARCHAR(200)
                 , created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                , modfied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                , modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )"
             );
 
