@@ -93,6 +93,12 @@ $html .= '
 echo $html;
 
 echo '<h1>Lab management</h1>';
+
+echo printNote( 
+    "You can create equipments private to your lab. These equipments can be booked by your lab members. 
+    This is not a replacement for common-equipment booking system." 
+    );
+
 $html = '<table class="admin">';
 $html .= '
     <tr>
