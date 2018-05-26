@@ -59,6 +59,38 @@ trait Lab
         redirect( "user/equipments");
     }
 
+    public function book_equipment( )
+    {
+        $errorMsg = '';
+        foreach( array("equipment_id", "date", "start_time", "end_time") as $k )
+            if( ! __get__($_POST, $k, null) )
+                $errorMsg .= "Error: No $k is selected. <br />";
+
+        if( isDateAndTimeIsInPast( $_POST['date'], $_POST['start_time'] ) )
+        {
+            $errorMsg .= 'You are trying to book in the past. Date ' . $_POST['date'] 
+                . ' and time ' . $_POST['start_time'] . '.';
+        }
+
+        if( $errorMsg )
+        {
+            printWarning( $errorMsg );
+            redirect( 'user/browse_equipments');
+            return;
+        }
+
+        // Everything is fine. Just book it.
+        $res = insertIntoTable( 'equipment_bookings'
+                , 'id,equipment_id,data,start_time,end_time,booked_by,comment'
+                , $_POST 
+            );
+
+        if($res)
+            flashMessage( "Booked succesfully but I did not send any email.");
+
+        redirect( "user/browse_equipments");
+    }
+
 }
 
 ?>
