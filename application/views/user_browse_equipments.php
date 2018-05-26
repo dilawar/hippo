@@ -64,7 +64,7 @@ $multiBook .= "
         <td><input type='text' name='comment' value='' />
     </tr>
     <tr>
-        <td colspan='2'><button style='float:right' type='submit'>Multiple book</button> </td>
+        <td colspan='2'><button style='float:right' type='submit'>Multiple Book</button> </td>
     </tr>
     ";
 $multiBook .= '</table>';
