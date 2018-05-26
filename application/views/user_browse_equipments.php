@@ -10,6 +10,10 @@ $user = whoAmI();
 $piOrHost = getPIOrHost( $user );
 $equipments = getTableEntries( 'equipments', 'name', "status='GOOD' AND faculty_in_charge='$piOrHost'");
 
+$equipmentMap = array();
+foreach( $equipments as $equip )
+    $equipmentMap[ $equip['id']] = $equip;
+
 echo '<h1>Book Equipment</h1>';
 
 echo printNote( '
@@ -80,14 +84,39 @@ echo '</form>';
 echo '</td></tr>';
 echo '</table>';
 
+echo ' <div class="important">';
+echo ' <h2>Booking summary</h2>';
+
+// Only select equipment which belongs to our lab.
+$whereExpr = array();
+foreach( $equipments as $i => $eq )
+    $whereExpr[] = "id='" . $eq['id'] . "'";
+$equipIdsWhere = implode( " OR ", $whereExpr );
+
+$bookings = getTableEntries( 'equipment_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
+
+$hide = 'id,status,modified_on,id,equipment_id';
+echo '<table class="tiles"><tr>';
+foreach( $bookings as $i => $booking )
+{
+    $booking = array('name'=> $equipmentMap[$booking['id']]['name']) + $booking;
+    $html = arrayToVerticalTableHTML($booking, 'info', '', $hide);
+    echo "<td> $html </td>";
+    if( ($i+1) % 4 )
+        echo '</tr><tr>';
+}
+echo '</tr></table>';
+echo '</div>';
+
+
 echo '<h1>Available equipments</h1>';
+
 echo printNote( "Following " . count( $equipments ). " equipments are available for booking 
     for faculty-in-charge " . mailto( $piOrHost )  . '.'
     );
 
 if(count($equipments) > 0)
 {
-
     echo arraysToCombinedTableHTML( $equipments, 'info book', 'status,last_modified_on,edited_by' );
     echo ' <table class="info" >';
     echo '</table>';
