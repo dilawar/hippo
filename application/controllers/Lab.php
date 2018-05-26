@@ -81,7 +81,7 @@ trait Lab
 
         // Everything is fine. Just book it.
         $res = insertIntoTable( 'equipment_bookings'
-                , 'id,equipment_id,data,start_time,end_time,booked_by,comment'
+                , 'id,equipment_id,date,start_time,end_time,booked_by,comment'
                 , $_POST 
             );
 
