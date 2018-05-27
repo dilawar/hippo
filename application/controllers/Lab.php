@@ -2,6 +2,32 @@
 
 require_once BASEPATH. 'autoload.php';
 
+function checkEquipmentBookingRequest( array &$request )
+{
+    $errorMsg = '';
+    foreach( array("equipment_id", "date", "start_time", "end_time") as $k )
+        if( ! __get__($request, $k, null) )
+            $errorMsg .= "Error: No $k is selected. <br />";
+
+    if( isDateAndTimeIsInPast( $request['date'], $request['start_time'] ) )
+    {
+        $errorMsg .= 'You are trying to book in the past. Date ' . $request['date'] 
+            . ' and time ' . $request['start_time'] . '.';
+    }
+    return $errorMsg;
+}
+
+function checkEquipmentMultibookingRequest( array &$request )
+{
+    $errorMsg = '';
+    foreach( array("equipment_id", "day_pattern", "start_time", "end_time") as $k )
+        if( ! __get__($request, $k, null) )
+            $errorMsg .= "Error: No $k is selected. <br />";
+
+    return $errorMsg;
+}
+
+
 trait Lab 
 {
     // VIEWS
@@ -61,17 +87,7 @@ trait Lab
 
     public function book_equipment( )
     {
-        $errorMsg = '';
-        foreach( array("equipment_id", "date", "start_time", "end_time") as $k )
-            if( ! __get__($_POST, $k, null) )
-                $errorMsg .= "Error: No $k is selected. <br />";
-
-        if( isDateAndTimeIsInPast( $_POST['date'], $_POST['start_time'] ) )
-        {
-            $errorMsg .= 'You are trying to book in the past. Date ' . $_POST['date'] 
-                . ' and time ' . $_POST['start_time'] . '.';
-        }
-
+        $errorMsg = checkEquipmentBookingRequest( $_POST );
         if( $errorMsg )
         {
             printWarning( $errorMsg );
@@ -89,6 +105,54 @@ trait Lab
             flashMessage( "Booked succesfully but I did not send any email.");
 
         redirect( "user/browse_equipments");
+    }
+
+    public function multibook_equipment()
+    {
+        $errorMsg = checkEquipmentMultibookingRequest( $_POST );
+        if( $errorMsg )
+        {
+            printWarning( $errorMsg );
+            redirect( 'user/browse_equipments');
+            return;
+        }
+
+        $dayPat = splitAtCommonDelimeters( $_POST['day_pattern'] );
+        $dates = array();
+        for ($i = 0; $i < intval($_POST['num_repeat']); $i++) 
+        {
+            foreach( $dayPat as $day )
+                $dates[] = dbDate( "this $day", "+$i week");
+        }
+
+        $msg = '';
+        foreach( $dates as $date )
+        {
+            $id = getUniqueID( 'equipment_bookings');
+            $_POST['date'] = $date;
+            $_POST['id'] = $id;
+            $_POST['booked_by'] = whoAmI();
+            $res = insertIntoTable( "equipment_bookings"
+                    , 'id,equipment_id,date,start_time,end_time,booked_by,comment'
+                    , $_POST 
+                );
+            if( $res )
+                $msg .= "Successfully booked for $date with id $id. <br />";
+        }
+
+        flashMessage( $msg );
+        redirect( 'user/browse_equipments');
+    }
+
+    public function cancel_equipment_booking( $id )
+    {
+        $res = updateTable( 'equipment_bookings', 'id', 'status'
+            , array( 'id' => $id, 'status' => 'CACELLED' )
+        );
+        if($res)
+            flashMessage( "Successfully cancelled booking.");
+
+        redirect('user/browse_equipments');
     }
 
 }
