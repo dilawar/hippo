@@ -229,7 +229,7 @@ class BMVPDO extends PDO
 
         $res = $this->query( "
             create TABLE IF NOT EXISTS supervisors (
-                email VARCHAR(200) PRIMARY KEY NOT NULL
+                email VARCHAR(80) PRIMARY KEY NOT NULL
                 , first_name VARCHAR( 200 ) NOT NULL
                 , middle_name VARCHAR(200)
                 , last_name VARCHAR( 200 )
@@ -239,7 +239,7 @@ class BMVPDO extends PDO
 
         $res = $this->query( "
             create TABLE IF NOT EXISTS faculty (
-                email VARCHAR(200) PRIMARY KEY NOT NULL
+                email VARCHAR(80) PRIMARY KEY NOT NULL
                 , first_name VARCHAR( 200 ) NOT NULL
                 , middle_name VARCHAR(200)
                 , last_name VARCHAR( 200 )
@@ -258,7 +258,7 @@ class BMVPDO extends PDO
         $res = $this->query( "
             create TABLE IF NOT EXISTS annual_work_seminars (
                 id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
-                , speaker VARCHAR(200) NOT NULL -- user
+                , speaker VARCHAR(80) NOT NULL -- user
                 , date DATE NOT NULL -- final date
                 , time TIME NOT NULL DEFAULT '16:00'
                 , supervisor_1 VARCHAR( 200 ) NOT NULL -- first superviser must be from NCBS
@@ -272,14 +272,13 @@ class BMVPDO extends PDO
                 , is_presynopsis_seminar ENUM( 'YES', 'NO' ) default 'NO'
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
                 , UNIQUE KEY (speaker, date)
-                , FOREIGN KEY (supervisor_1) REFERENCES faculty(email)
                 )"
             );
 
         $res = $this->query( "
             create TABLE IF NOT EXISTS upcoming_aws (
                 id INT AUTO_INCREMENT PRIMARY KEY
-                , speaker VARCHAR(200) NOT NULL -- user
+                , speaker VARCHAR(80) NOT NULL -- user
                 , date DATE NOT NULL -- tentative date
                 , time TIME NOT NULL DEFAULT '16:00'
                 , supervisor_1 VARCHAR( 200 )
@@ -603,7 +602,39 @@ class BMVPDO extends PDO
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
                 , owner VARCHAR(50) NOT NULL
-                , UNIQUE KEY (owner,common_name,vendor,status)
+                , UNIQUE KEY (owner,common_name)
+                )"
+            );
+
+        // Equipements.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS equipments (
+                id INT PRIMARY KEY
+                , name VARCHAR(50) NOT NULL
+                , vendor VARCHAR(200)
+                , description MEDIUMTEXT
+                , faculty_in_charge VARCHAR(50) NOT NULL
+                , person_in_charge VARCHAR(100) NOT NULL
+                , status ENUM( 'GOOD', 'BROKEN', 'INVALID', 'LOST', 'UNKNOWN' ) DEFAULT 'GOOD'
+                , last_modified_on DATETIME
+                , edited_by VARCHAR(100) default 'HIPPO'
+                , UNIQUE KEY (faculty_in_charge,name)
+                )"
+            );
+
+        // Equipements booking.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS equipment_bookings (
+                id INT PRIMARY KEY
+                , equipment_id INT NOT NULL
+                , date DATE NOT NULL
+                , start_time TIME NOT NULL
+                , end_time TIME NOT NULL
+                , booked_by VARCHAR(50) NOT NULL
+                , status ENUM('VALID', 'INVALID', 'CANCELLED') DEFAULT 'VALID'
+                , comment VARCHAR(200)
+                , created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                , modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )"
             );
 
@@ -617,7 +648,6 @@ class BMVPDO extends PDO
                 , status ENUM( 'EXECUTED', 'INVALID', 'PENDING' ) DEFAULT 'PENDING'
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
-                , UNIQUE KEY (who_can_execute,query,status)
                 )"
             );
 

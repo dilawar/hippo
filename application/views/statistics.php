@@ -119,7 +119,7 @@ $venueUsagePie = array( );
 foreach( $venueUsageTime as $v => $t )
     $venueUsagePie[ ] = array( "name" => $v, "y" => $t );
 
-$bookingTable = "<table border='1'>
+$bookingTable = "<table class='info'>
     <tr> <td>Total booking requests</td> <td>" . count( $requests ) . "</td> </tr>
     <tr> <td>Rate of booking (# per day)</td> <td>"
             .   number_format( $rateOfRequests, 2 ) . "</td> </tr>

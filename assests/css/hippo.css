@@ -1,8 +1,9 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth : 100%;
+    --maxwidth : 1000px;
 }
+
 
 /* h1, h2, h3 { */
     /* font-family : 'EB Garamond'; */
@@ -14,7 +15,8 @@
 body {
     /* font-family: "Libre Baskerville"; */
     font-size: 16px;
-    font-family : 'EB Garamond';
+    /* font-family : 'EB Garamond'; */
+    font-family: "Roboto";
     line-height: 120%;
     width: 80%;
     max-width: var(--maxwidth);
@@ -26,13 +28,45 @@ body {
     background-size: 80%;
     /* background-attachment:fixed; */
     background-attachment: scroll;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin: auto;
+}
+
+div.user_float {
+    position : fixed;
+    top : 1%;
+    width: 80%;
+    max-width: var(--maxwidth);
+    margin:auto;
+}
+
+div.sticker {
+    margin: 2px;
+    font-size: small;
+    font-family: Ubuntu;
+    border-radius: 5px;
+    background-color: GhostWhite;
+}
+
+table.user_float {
+    border-radius: 10px;
+    padding: 3px;
+    float: right;
+}
+
+table.user_float tr td {
+    padding: 5px;
+    text-align: justify;
+    vertical-align: bottom;
+    padding: 5px;
+}
+
+table.user_float a {
+    color: red;
 }
 
 
 h1.title {
-    /* font-family: 'Fira Sans'; */
+    font-family: 'Libre Baskerville';
     font-size: 72;
     font-variant: small-caps;
     vertical-align: bottom;
@@ -42,6 +76,27 @@ h1.title {
 
 h1 a:hover {
     text-decoration: none;
+}
+
+h1 {
+    font-family: 'EB Garamond';
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-family: 'EB Garamond';
+    margin-bottom: 10px;
+
+}
+
+h3 {
+    font-family: 'EB Garamond';
+    margin-bottom: 10px;
+}
+
+h4 {
+    font-family: 'EB Garamond';
+    margin-bottom: 10px;
 }
 
 pre {
@@ -65,35 +120,11 @@ img.login_picture {
 
 
 table {
-    font-family : 'Ubuntu';
+    /* font-family : 'Ubuntu'; */
 }
 
 table tr td {
     border: 0px;
-}
-
-
-table.user_float {
-    position : fixed;
-    top : 1%;
-    right : 10%;
-    max-width: 25%;
-    /* border : 1px solid red; */
-    border-radius: 10px;
-    font-size : small;
-    /* background-color: white; */
-    padding: 3px;
-}
-
-table.user_float tr td {
-    padding: 5px;
-    text-align: right;
-    vertical-align: bottom;
-    padding: 5px;
-}
-
-table.user_float a {
-    color: lightgray;
 }
 
 
@@ -151,7 +182,7 @@ table.table_in_table tr td
     border: 1pt dotted lightblue;
     vertical-align: bottom;
     font-size: small;
-    font-family: "Fira Sans";
+    font-family: "Roboto";
 }
 
 /* Show course */
@@ -162,7 +193,7 @@ table.show_course {
     border-collapse: separate;
 }
 
-table.show_course tr{
+table.show_course tr {
     width: 100%;
     border-radius:10px;
 }
@@ -201,13 +232,13 @@ table.show_speaker tr td  {
 }
 
 
-table.show_aws {
+table.events {
     max-width : var(--maxwidth);
     min-width : 100%;
     border: 3px solid ivory;
 }
 
-table.show_aws tr td
+table.events tr td
 {
     vertical-align:top;
     /* border-top : 2px solid lightblue; */
@@ -221,7 +252,7 @@ table.show_aws tr td
     text-align: left;
 }
 
-table.show_aws caption {
+table.events caption {
     font-weight: bold;
     font-size: x-large;
     font-family: Lora;
@@ -599,7 +630,6 @@ table.show_events tr td  {
     background-color: var( --tabletdcolor );
 }
 
-
 table.submit_request tr {
     width : 90%;
 }
@@ -687,6 +717,7 @@ table.editable_faculty tr td
     /*border : 0.5px dotted; */
     /*min-width : 20%;*/
 }
+
 
 caption {
     /* color: blue; */
@@ -907,6 +938,21 @@ td.db_table_fieldname {
     text-transform : uppercase;
 }
 
+table.tableintd {
+    max-width: 80%;
+    min-width: 300px;
+    /* font-family: 'Open Sans'; */
+    font-family: 'EB Garamond';
+    float: left;
+}
+
+table.tableintd tr td {
+    /* font-size: small; */
+    padding: 0px;
+    padding-bottom: 3px;
+    vertical-align: top;
+}
+
 table.td_as_tile { 
     border-collapse: separate;
     background: none;
@@ -939,7 +985,7 @@ th {
 }
 
 div.alert_user {
-   max-width : var(--maxwidth);
+   max-width : 100%;
    min-width: inherit;
    max-width : inherit;
    width: 80%;
@@ -947,7 +993,7 @@ div.alert_user {
 }
 
 div.alert {
-    width : var(--maxwidth);
+    width : 100%;
 }
 
 div.fa_note {
@@ -1019,12 +1065,12 @@ address {
 a[href^="mailto:"] {
   text-decoration: none;
   font-family : monospace;
-  font-size: x-small;
+  font-size: small;
 }
 
 a[href^="mailto:"]::before {
-    content: "\2709";
-    font-size: large;
+    content: "\2709 ";
+    font-size: x-large;
 }
 
 a:link {
@@ -1085,3 +1131,12 @@ footer {
     position: fixed;
     top: 90%;
 }
+
+th {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    text-align: left;
+}
+
+

@@ -93,6 +93,27 @@ function addToGoogleCalLink( array $event )
     return $res;
 }
 
+
+function bookingToHtml( array $booking, $equipmentMap=array() ) : string
+{
+    if( ! $equipmentMap )
+    {
+        $equipments = getTableEntries( 'equipments', 'id' );
+        foreach( $equipments as $e )
+            $equipmentMap[ $e['id'] ] = $e;
+    }
+
+    $eid = $booking['equipment_id'];
+    $name = $equipmentMap[$eid]['name'];
+    $by = $booking['booked_by'];
+
+    $html =  "$name ($eid) by <strong>$by</strong><br />" . humanReadableShortDate($booking['date'])
+        . '<br />' . humanReadableTime($booking['start_time']) 
+        . ' to ' . humanReadableTime( $booking['end_time'] );
+
+    return $html;
+}
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Convert event to ICS file.
@@ -330,7 +351,7 @@ function eventSummaryHTML( $event, $talk = null)
         $title = $event[ 'title'];
 
     $html = "<h2>" . $title . "</h2>";
-    $html .= '<table class="show_events">';
+    $html .= '<table class="events">';
 
     if( $talk )
     {
@@ -650,6 +671,16 @@ function arrayToTableHTML( $array, $tablename, $background = ''
     return $table;
 }
 
+function arraysToCombinedTableHTML( $tables, $class, $hide = '' )
+{
+    $html = " <table class='$class'>";
+    $html .= arrayToTHRow( $tables[0], $class, $hide );
+    foreach( $tables as $table )
+        $html .= arrayToRowHTML( $table, $class, $hide );
+    $html .= "</table>";
+    return $html;
+}
+
 // Convert an array to HTML table (vertical)
 function arrayToVerticalTableHTML( $array, $tablename
     , $background = NULL, $tobefilterd = ''
@@ -721,12 +752,13 @@ function userHTML( )
 {
     $user = whoAmI();
 
-    $html = '<table class="user_float">';
-    $html .= '<tr colspan="2"><th><i class="fa fa-user"></i><a href="' . site_url( '/user/info' ) . 
-        '">Hi ' . $user.' </a> </td>';
+    $html = '<div class="user_float">';
+    $html .= '<table class="user_float">';
+    $html .= '<tr> <td><a href="' . site_url( '/user/info' ) .  '">
+        <i class="fa fa-user-o"></i> Hi ' . $user.' </a> </td>';
 
-    $html .= '<th><a href="' . site_url('/user/logout') . '">
-                    <i class="fa fa-sign-out"></i>SignOut</a></th>';
+    $html .= '<td><a href="' . site_url('/user/logout') . '">
+                    <i class="fa fa-sign-out"></i>SignOut</a></td>';
     $html .= '</tr>';
 
     $html .= '<tr><td><a href="' . site_url( '/user/book' ) . '">
@@ -734,8 +766,8 @@ function userHTML( )
     $html .= '<td><a href="' . site_url( 'user/home' ) . '">
                     <i class="fa fa-home"></i>My Home</a>';
     $html .= '</tr>';
-
     $html .= '</table>';
+    $html .= '</div>';
     return $html;
 }
 
@@ -907,7 +939,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
         $columnText = strtoupper( prettify( $keyName ) );
 
         // Update column text if 'required' is in attributes.
-        $attribs = __get__( $attribMap, $keyName, null );
+        $attribs = __get__( $attribMap, $keyName, '' );
         $required = false;
         if( $attribs )
             if( in_array( 'required', $attribs ) )
@@ -1463,25 +1495,25 @@ function awsToHTML( $aws, $with_picture = false )
     if( $with_picture )
         $pic = getUserPicture( $user, 'hippo' );
 
-    $extra = '<table style="min-width:100%;float:left;">
+    $extra = '<table class="tableintd">
             <tr>
                 <td colspan="2"><strong>' . $speaker .'</strong></td>
             </tr>
             <tr>
                 <td>' . smallCaps( 'Supervisors') . '</td>
-                <td width=70%>' . implode( ", ", $supervisors ) . '</td>
+                <td>' . implode( ", ", $supervisors ) . '</td>
              </tr>
              <tr>
                  <td>' . smallCaps( 'Thesis Committee Members') . '</td>
-                 <td width=70%>' . implode( ", ", $tcm) . '</td>
+                 <td>' . implode( ", ", $tcm) . '</td>
              </tr>
              </table>';
 
 
     // Add table.
-    $html = '<table class="show_aws">';
+    $html = '<table class="events">';
     $html .= "<caption>$title</caption>";
-    $html .= "<tr><td> $pic </td><td colspan='3' width=80%>$extra</td></tr>";
+    $html .= "<tr><td> $pic </td><td colspan='3'>$extra</td></tr>";
     $html .= "<tr><td colspan='4'>$abstract</td></tr>";
     $html .=  "</table>";
 
@@ -1567,69 +1599,53 @@ function talkToHTML( $talk, $with_picture = false )
 
     $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
 
-    $html = '<div class="show_talks">';
-    $html .= '<table border="0"><tr>';
-    $html .= '<td colspan="2"><h1>' . $title . '</h1></td>';
-    $html .= "</tr><tr>";
 
+    $pic = '';
     if( $with_picture )
     {
         $imgpath = getSpeakerPicturePath( $speakerId );
-        $html .= '<td>' . showImage( $imgpath, 'auto', '250px' ) . '</td>';
+        $pic = '<td>' . showImage( $imgpath, 'auto', '250px' ) . '</td>';
     }
 
     // Speaker info
+    $speakerHMTL = speakerToHTML( $speakerArr );
     if( $speakerId > 0 )
         $speakerHMTL = speakerIdToHTML( $speakerId );
-    else
-        $speakerHMTL = speakerToHTML( $speakerArr );
-
-    $html .= '<td>' . $speakerHMTL ;
 
     // Hack: If talk is a THESIS SEMINAR then host is thesis advisor.
-    if( $talk['class'] == 'THESIS SEMINAR' )
-        $html .= '<br />Supervisor: ' . loginToHTML( $talk[ 'host' ], false );
-    else
-        $html .= '<br />Host: ' . loginToHTML( $talk[ 'host' ], false );
+    $host = '<td>Host</td><td>' . loginToHTML( $talk[ 'host' ], false ) . '</td>';
+    if( __substr__('THESIS SEMINAR', $talk['class'] ))
+        $host = '<td>Supervisor</td><td>' . loginToHTML( $talk[ 'host' ], false ) . '</td>';
 
-    $html .= '<br /><br />';
-
-    $html .= '<div style="text-decoration:none;">';
-    $html .= '<table><tr>
-                <td class="when"><small>When: </small> ' . $when . '</td>
-            </tr><tr>
-                <td class="where"> <small>Where: </small> ' . $where . '</td>
-            </tr>
-            <tr></tr>
-            <tr>
-                <td><small>Coordinator: </small>' .  loginToHTML( $coordinator, true ) . '</td>';
-    $html .= '</tr>';
-
-
-    // Add links to google,ical.
-    $html .= '<tr>';
-    $html .=  '<td>';
-    $html .= '<a target="_blank" href="' . appURL( ) .'events.php?date='
-                 . $event[ 'date' ] . '">Permanent link</a>';
-
+    // Calendar link.
     $googleCalLink = addToGoogleCalLink( $event );
     $icalLink = eventToICALLink( $event );
 
-    $html .= "</td>";
-    $html .= '</tr>';
+    // side information.
+    $side = '<table class="tableintd">
+            <tr><td colspan="2"><strong>' . $speakerHMTL . '</strong></td></tr>
+            <tr>' . $host . '</tr>
+            <tr><td>When</td><td>' . $when . '</td></tr>
+            <tr> <td>Where</td><td> ' . $where . '</td></tr>
+            <tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
+    // Add links to google,ical.
+    $side .= '<tr>';
+    $side .=  '<td colspan="2">';
+    $side .= '<a target="_blank" href="'.site_url('info/events?date='. $event[ 'date' ])
+                . '">Permanent link</a>';
+    $side .= "</td>";
+    $side .= '</tr>';
+    $side .= '</table>';
 
+    $html = '<table class="events">';
+    $html .= "<caption> $title </caption>";
+    $html .= "<tr><td> $pic </td>";
+    $html .= "<td colspan='3'> $side </td>";
+    $html .= "</tr>";
+    $html .= "<tr><td colspan='5'>" . fixHTML( $talk[ 'description' ] ) . "</td></tr>";
     $html .= '</table>';
-    $html .= '</div>';
-
-    $html .= '</td>';
-    $html .= '</tr></table>';
-
-    $html .= "<p>" . fixHTML( $talk[ 'description' ] ) . '</p>';
-
-    $html .= "</div>";
 
     // Add the calendar links
-    $html .= "<br><br>";
     $html .=  $googleCalLink;
 
     return $html;

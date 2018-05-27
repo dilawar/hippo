@@ -183,11 +183,14 @@ function getVenues( $sortby = 'total_events DESC, id' )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function executeQuery( $query )
+function executeQuery( $query, $onlyOne = False)
 {
     $hippoDB = initDB();;
     $res = $hippoDB->query( $query );
-    return fetchEntries( $res );
+    $n = -1;
+    if($onlyOne)
+        $n = 1;
+    return fetchEntries( $res, $n  );
 }
 
 function executeURlQueries( $query )
@@ -354,12 +357,17 @@ function getEventsBeteenDates( $fromDate , $endDate )
 
 
 // Fetch entries from database response object
-function fetchEntries( $res, $how = PDO::FETCH_ASSOC ) : array
+function fetchEntries( $res, int $n = -1, $how = PDO::FETCH_ASSOC ) : array
 {
     $array = Array( );
-    if( $res ) {
+    if( $res ) 
+    {
         while( $row = $res->fetch( $how ) )
+        {
             array_push( $array, $row );
+            if( count($array) == $n )
+                break;
+        }
     }
     return $array;
 }

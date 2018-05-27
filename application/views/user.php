@@ -68,7 +68,6 @@ $table .= '</table>';
 echo $table;
 
 echo '<h1>Booking</h1>';
-
 $html = '<table class="admin">';
 $html .= '
     <tr>
@@ -92,6 +91,30 @@ $html .= '
    </tr>
    </table>';
 echo $html;
+
+echo '<h1>Lab management</h1>';
+
+echo printNote( 
+    "You can create equipments private to your lab. These equipments can be booked by your lab members. 
+    This is not a replacement for common-equipment booking system." 
+    );
+
+$html = '<table class="admin">';
+$html .= '
+    <tr>
+    <td>
+        <i class="fa fa-hand-arxchive fa-2x"></i>
+         <a class="clickable" href="'. site_url("/user/browse_equipments"). '">Browse/Book Lab Equipments</a>
+    </td>
+    <td>
+        <i class="fa fa-flask fa-2x"></i>
+         <a class="clickable" href="'. site_url("/user/equipments"). '">Manage Lab Equipments</a>
+    </td>
+    </tr>
+   </table>';
+echo $html;
+
+
 
 //// Community services.
 //echo "<h1>Community services</h1>";
