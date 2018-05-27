@@ -93,6 +93,27 @@ function addToGoogleCalLink( array $event )
     return $res;
 }
 
+
+function bookingToHtml( array $booking, $equipmentMap=array() ) : string
+{
+    if( ! $equipmentMap )
+    {
+        $equipments = getTableEntries( 'equipments', 'id' );
+        foreach( $equipments as $e )
+            $equipmentMap[ $e['id'] ] = $e;
+    }
+
+    $eid = $booking['equipment_id'];
+    $name = $equipmentMap[$eid]['name'];
+    $by = $booking['booked_by'];
+
+    $html =  "$name ($eid) by <strong>$by</strong><br />" . humanReadableShortDate($booking['date'])
+        . '<br />' . humanReadableTime($booking['start_time']) 
+        . ' to ' . humanReadableTime( $booking['end_time'] );
+
+    return $html;
+}
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Convert event to ICS file.

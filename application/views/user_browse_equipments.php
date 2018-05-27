@@ -2,6 +2,8 @@
 require_once BASEPATH.'autoload.php';
 echo userHTML();
 
+global $symbDelete;
+
 $ref = "user";
 if(isset($controller))
     $ref=$controller;
@@ -90,21 +92,31 @@ echo ' <h2>Booking summary</h2>';
 // Only select equipment which belongs to our lab.
 $whereExpr = array();
 foreach( $equipments as $i => $eq )
-    $whereExpr[] = "id='" . $eq['id'] . "'";
+    $whereExpr[] = "equipment_id='" . $eq['id'] . "'";
 $equipIdsWhere = implode( " OR ", $whereExpr );
 
 $bookings = getTableEntries( 'equipment_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
 
-$hide = 'id,status,modified_on,id,equipment_id';
-echo '<table class="tiles"><tr>';
+$hide = 'id,status,modified_on,id,';
+echo '<table><tr>';
 foreach( $bookings as $i => $booking )
 {
-    $booking = array('name'=> $equipmentMap[$booking['id']]['name']) + $booking;
-    $html = arrayToVerticalTableHTML($booking, 'info', '', $hide);
-    echo "<td> $html </td>";
-    if( ($i+1) % 4 )
+    $eid = $booking['equipment_id'];
+    $html = bookingToHtml($booking, $equipmentMap);
+
+    if( whoAmI() == $booking['booked_by'] )
+    {
+        $bid = $booking['id'];
+        $html .= '<form action="'.site_url("user/cancel_equipment_booking/$bid").'">';
+        $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
+            response="cancel">' . $symbDelete . '</button>';
+        $html .= '</form>';
+    }
+    echo "<td><div id='equipment_booking_id_$eid' class='sticker'>$html</div></td>";
+    if( ($i+1) % 5 == 0 )
         echo '</tr><tr>';
 }
+
 echo '</tr></table>';
 echo '</div>';
 

@@ -39,6 +39,14 @@ div.user_float {
     margin:auto;
 }
 
+div.sticker {
+    margin: 2px;
+    font-size: small;
+    font-family: Ubuntu;
+    border-radius: 5px;
+    background-color: GhostWhite;
+}
+
 table.user_float {
     border-radius: 10px;
     padding: 3px;
@@ -977,7 +985,7 @@ th {
 }
 
 div.alert_user {
-   max-width : var(--maxwidth);
+   max-width : 100%;
    min-width: inherit;
    max-width : inherit;
    width: 80%;
@@ -985,7 +993,7 @@ div.alert_user {
 }
 
 div.alert {
-    width : var(--maxwidth);
+    width : 100%;
 }
 
 div.fa_note {
