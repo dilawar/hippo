@@ -1,12 +1,5 @@
 <?php 
-
-include_once "header.php" ;
-include_once "methods.php" ;
-include_once 'tohtml.php' ;
-include_once "check_access_permissions.php" ;
-
-mustHaveAnyOfTheseRoles( Array( 'USER' ) );
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
 $rows = array_merge( getSupervisors( ), getFaculty( ) );
@@ -56,7 +49,7 @@ echo printInfo( "The supervisor is idenfitied by his/her email addreess.
     ");
 
 echo "<form id=\"add_supervisor\" method=\"post\" 
-    action=\"user_update_supervisor_submit.php\">";
+    action=\"".site_url( "user/update_supervisor_submit") ."\">";
 echo "<br>";
 
 echo "<p> Except <tt>URL</tt>, and <tt>MIDDLE NAME</tt>, all fields are mandatory</p>";
@@ -80,6 +73,6 @@ foreach( $rows as $row )
 echo '</tr></table>';
 
 
-echo goBackToPageLink( "user_aws.php", "Go back to AWS" );
+echo goBackToPageLink( "user/aws", "Go back to AWS" );
 
 ?>

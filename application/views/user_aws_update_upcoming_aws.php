@@ -5,9 +5,9 @@ echo userHTML( );
 echo "<h2>You are updating your upcoming AWS </h2>";
 
 echo alertUser( "If you can't find supervisors/TCM members in drop down list,
-    you have to go back and add them. Visit <a class=\"clickable\" href=\"user_update_supervisors.php\">this link</a>
-    to add them.", false
-);
+    you have to go back and add them. Visit <a class=\"clickable\" 
+    href=\"" . site_url("user/update_supervisors") . "\">this link</a>
+    to add them.", false );
 
 echo alertUser( '<strong>DO NOT COPY/PASTE from
     Office/Word/Webpage/etc.</strong> They often contain non-standard special
