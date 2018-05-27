@@ -28,6 +28,16 @@ function checkEquipmentMultibookingRequest( array &$request )
 }
 
 
+function isEquipmentAlreadyBooked( $eid, $date, $start_time, $end_time ) : array
+{
+    $res = executeQuery( "SELECT * FROM equipment_bookings WHERE
+            date='$date' AND NOT (start_time >= '$end_time' OR end_time <= '$start_time')
+            AND status='VALID' AND equipment_id='$eid'" );
+    if($res)
+       return $res[0];
+    return array();
+}
+
 trait Lab 
 {
     // VIEWS
@@ -88,6 +98,16 @@ trait Lab
     public function book_equipment( )
     {
         $errorMsg = checkEquipmentBookingRequest( $_POST );
+        $eid = $_POST['equipment_id'];
+        $date = $_POST['date'];
+        $startTime = $_POST['start_time'];
+        $endTime = $_POST['end_time'];
+
+        $eq = isEquipmentAlreadyBooked( $eid, $date, $startTime, $endTime );
+        if( $eq )
+            $errorMsg = "This equipment has already been 
+                booked by " . $eq['booked_by'] . '. <br />' . arrayToTableHTML( $eq, 'info' );
+
         if( $errorMsg )
         {
             printWarning( $errorMsg );
@@ -128,18 +148,28 @@ trait Lab
         $msg = '';
         foreach( $dates as $date )
         {
-            $id = getUniqueID( 'equipment_bookings');
-            $_POST['date'] = $date;
-            $_POST['id'] = $id;
-            $_POST['booked_by'] = whoAmI();
-            $res = insertIntoTable( "equipment_bookings"
-                    , 'id,equipment_id,date,start_time,end_time,booked_by,comment'
-                    , $_POST 
-                );
-            if( $res )
-                $msg .= "Successfully booked for $date with id $id. <br />";
-        }
+            $eid = $_POST['equipment_id'];
+            $startTime = $_POST['start_time'];
+            $endTime = $_POST['end_time'];
 
+            $eq = isEquipmentAlreadyBooked( $eid, $date, $startTime, $endTime );
+            if( $eq )
+                $msg .= "This equipment is already taken by " . $eq['booked_by'] . '. <br />' 
+                    . arrayToTableHTML( $eq, 'info' ) . ' <br />';
+            else
+            {
+                $id = getUniqueID( 'equipment_bookings');
+                $_POST['date'] = $date;
+                $_POST['id'] = $id;
+                $_POST['booked_by'] = whoAmI();
+                $res = insertIntoTable( "equipment_bookings"
+                        , 'id,equipment_id,date,start_time,end_time,booked_by,comment'
+                        , $_POST 
+                    );
+                if( $res )
+                    $msg .= "Successfully booked for $date with id $id. <br />";
+            }
+        }
         flashMessage( $msg );
         redirect( 'user/browse_equipments');
     }
