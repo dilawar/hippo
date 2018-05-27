@@ -51,6 +51,8 @@ table.user_float {
     border-radius: 10px;
     padding: 3px;
     float: right;
+    border-collapse: separate;
+    border: 2px solid lightblue;
 }
 
 table.user_float tr td {
@@ -272,8 +274,7 @@ table.show_calendar tr td:nth-child(1)
 }
 
 table.show_aws_summary {
-    /* max-width : 1000px; */
-    /* min-width : 100%; */
+
 }
 
 
@@ -285,7 +286,7 @@ table.show_aws_summary tr td
 
 table.show_schedule {
     min-width : 600px;
-    width : 800px;
+    width : 100%;
     max-width : 80%;
 }
 
@@ -565,21 +566,18 @@ button.current_enrollment_type {
     color: red;
 }
 
-/*button.courseInfo:hover {*/
-    /*border : 1px dotted;*/
-    /*text-decoration: none;*/
-/*}*/
-
-table.condensed {
+table.condensed 
+{
     border-spacing: 2px;
     border-collapse: separate;
+    width: 100%;
 }
 
-table.condensed tr td {
+table.condensed tr td 
+{
     font-size: small;
     text-align: top;
     border-top: 1px dotted;
-    padding-left: 10px;
 }
 
 table.condensed tr td:nth-child(odd) 
@@ -814,7 +812,7 @@ table.poll tr:nth-of-type( odd )
 table.poll {
     border: 1px;
     max-width: var(--maxwidth);
-    min-width: 800px;
+    min-width: 100%;
 }
 
 table.poll tr {
