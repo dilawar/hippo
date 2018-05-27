@@ -163,7 +163,7 @@ trait Lab
                 $_POST['id'] = $id;
                 $_POST['booked_by'] = whoAmI();
                 $res = insertIntoTable( "equipment_bookings"
-                        , 'id,equipment_id,date,start_time,end_time,booked_by,comment'
+                        , 'id,equipment_id,vendor,date,start_time,end_time,booked_by,comment'
                         , $_POST 
                     );
                 if( $res )
