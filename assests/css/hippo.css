@@ -568,7 +568,7 @@ button.current_enrollment_type {
 
 table.condensed 
 {
-    border-spacing: 2px;
+    /* border-spacing: 2px; */
     border-collapse: separate;
     width: 100%;
 }
@@ -577,7 +577,7 @@ table.condensed tr td
 {
     font-size: small;
     text-align: top;
-    border-top: 1px dotted;
+    border-top: 1px solid lightblue;
 }
 
 table.condensed tr td:nth-child(odd) 
