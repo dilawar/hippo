@@ -142,7 +142,7 @@ trait Lab
         for ($i = 0; $i < intval($_POST['num_repeat']); $i++) 
         {
             foreach( $dayPat as $day )
-                $dates[] = dbDate( "this $day", "+$i week");
+                $dates[] = dbDate( strtotime("this $day +$i week") );
         }
 
         $msg = '';
@@ -194,7 +194,6 @@ trait Lab
 
         if($res)
             flashMessage( "Successfully removed all bookings equipment with id $eid." );
-                            
 
         redirect( "user/browse_equipments" );
     }
