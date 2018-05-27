@@ -185,6 +185,20 @@ trait Lab
         redirect('user/browse_equipments');
     }
 
+    public function cancel_equipment_bookings( $eid )
+    {
+        $res = updateTable( 'equipment_bookings', 'equipment_id,booked_by'
+            , 'status'
+            , array( 'equipment_id' => $eid, 'status' => 'CANCELLED', 'booked_by' => whoAmI())
+        );
+
+        if($res)
+            flashMessage( "Successfully removed all bookings equipment with id $eid." );
+                            
+
+        redirect( "user/browse_equipments" );
+    }
+
 }
 
 ?>
