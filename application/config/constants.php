@@ -125,5 +125,7 @@ $symbEdit     = '<i class="fa fa-pencil fa-1x"></i>';
 $symbBell     = '<i class="fa fa-bell-o fa-1x"></i>';
 $symbReview   = '<i class="fa fa-eye fa-2x"></i>';
 $symbThumbsUp = '<i class="fa fa-thumbs-o-up"></i>';
+$symbCross    = '<i class="fa fa-times"></i>';
+
 
 ?>

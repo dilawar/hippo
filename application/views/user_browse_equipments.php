@@ -1,8 +1,18 @@
+<script type="text/javascript" charset="utf-8">
+function changeBackgroundById(x, color) 
+{
+    id = x.value;
+    var divs = document.querySelectorAll( '[id^=equipment_booking_id_' + id + ']' );
+    for(var i=0; i < divs.length; i++)
+        divs[i].style.backgroundColor = color;
+}
+</script>
 <?php
 require_once BASEPATH.'autoload.php';
 echo userHTML();
 
 global $symbDelete;
+global $symbCross;
 
 $ref = "user";
 if(isset($controller))
@@ -109,7 +119,16 @@ foreach( $bookings as $i => $booking )
         $bid = $booking['id'];
         $html .= '<form action="'.site_url("user/cancel_equipment_booking/$bid").'">';
         $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
-            response="cancel">' . $symbDelete . '</button>';
+            response="cancel" title="Delete this request">' . $symbCross . '</button>';
+        $html .= '</form>';
+
+        // Create a form to cancel all requests on this equipment.
+        $html .= '<form action="'.site_url("user/cancel_equipment_bookings/$eid").'">';
+        $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
+            response="cancel" title="Cancel all booking for this equipment." 
+            onmouseover="changeBackgroundById(this, \'lightblue\')" 
+            onmouseleave="changeBackgroundById(this, \'white\')"
+            value="'. $eid .'">' . $symbDelete . '</button>';
         $html .= '</form>';
     }
     echo "<td><div id='equipment_booking_id_$eid' class='sticker'>$html</div></td>";
