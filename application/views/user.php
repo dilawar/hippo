@@ -25,7 +25,7 @@ if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
         <small> See your previous AWSs and update them. Check
         the details about upcoming AWS and provide preferred dates.
         </small> <br />
-        <a href="'. site_url("/user/update/supervisors"). '">Update TCM Members/Supervisors</a>
+        <a href="'. site_url("/user/update_supervisors"). '">Update TCM Members/Supervisors</a>
         </td>';
 }
 else
