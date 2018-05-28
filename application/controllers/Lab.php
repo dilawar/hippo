@@ -41,14 +41,14 @@ function isEquipmentAlreadyBooked( $eid, $date, $start_time, $end_time ) : array
 trait Lab 
 {
     // VIEWS
-    public function equipments( )
+    public function inventory_manage( )
     {
-        $this->load_user_view( "user_manages_equipments");
+        $this->load_user_view( "user_inventory_manage");
     }
 
-    public function browse_equipments( )
+    public function inventory_browse( )
     {
-        $this->load_user_view( "user_browse_equipments" );
+        $this->load_user_view( "user_inventory_browse" );
     }
 
     public function add_equipment( $arg = '' )

@@ -105,7 +105,7 @@ foreach( $equipments as $i => $eq )
     $whereExpr[] = "equipment_id='" . $eq['id'] . "'";
 $equipIdsWhere = implode( " OR ", $whereExpr );
 
-$bookings = getTableEntries( 'equipment_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
+$bookings = getTableEntries( 'inventory', 'date', "status='VALID' AND ($equipIdsWhere)");
 
 $hide = 'id,status,modified_on,id,';
 echo '<table><tr>';
