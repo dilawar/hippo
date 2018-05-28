@@ -171,7 +171,7 @@ foreach( $slotCourses as $slot => $courses )
         $courseTable .= '</tr>';
         $courseTable .= '</table>';
 
-        $data = getEnrollmentTableAndEmails( $cid, $enrollments, 'info' );
+        $data = getEnrollmentTableAndEmails( $cid, $enrollments, 'info exportable' );
         $enTable = $data[ 'html_table'];
         $allEmails = $data[ 'enrolled_emails' ];
 
@@ -185,12 +185,11 @@ foreach( $slotCourses as $slot => $courses )
 
             $regTable = '<table style="width:100%;">';
             $regTable .= '<tr>';
-            $regTable .= '<td>
-                <button class="show_as_link"
-                    onclick="toggleShowHide( this, \'' . $tid . '\' )">Show Enrollments</button>
-                </td>';
+            $regTable .= '<td><button class="show_as_link"
+                        onclick="toggleShowHide( this, \'' . $tid . '\' )">Show Enrollments</button>
+                    </td>';
             $regTable .= '</tr>';
-            $regTable .= "<tr><td id=\"$tid\" style=\"display:none\"> $enTable </td></tr>";
+            $regTable .= "<tr><td width='100%' id=\"$tid\" style=\"display:none\"> $enTable </td></tr>";
             $regTable .= '</table>';
         }
         else
@@ -244,5 +243,11 @@ if( count( $slotUpcomingCourses ) > 0 )
 
 echo '<br>';
 echo closePage( );
-
 ?>
+
+<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+TableExport(document.getElementsByClassName("exportable"));
+</script>

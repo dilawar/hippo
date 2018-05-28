@@ -25,7 +25,7 @@ if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
         <small> See your previous AWSs and update them. Check
         the details about upcoming AWS and provide preferred dates.
         </small> <br />
-        <a href="'. site_url("/user/update/supervisors"). '">Update TCM Members/Supervisors</a>
+        <a href="'. site_url("/user/update_supervisors"). '">Update TCM Members/Supervisors</a>
         </td>';
 }
 else
@@ -68,7 +68,6 @@ $table .= '</table>';
 echo $table;
 
 echo '<h1>Booking</h1>';
-
 $html = '<table class="admin">';
 $html .= '
     <tr>
@@ -92,6 +91,30 @@ $html .= '
    </tr>
    </table>';
 echo $html;
+
+echo '<h1>Lab management</h1>';
+
+echo printNote( 
+    "You can create equipments private to your lab. These equipments can be booked by your lab members. 
+    This is not a replacement for common-equipment booking system." 
+    );
+
+$html = '<table class="admin">';
+$html .= '
+    <tr>
+    <td>
+        <i class="fa fa-hand-arxchive fa-2x"></i>
+         <a class="clickable" href="'. site_url("/user/browse_equipments"). '">Browse/Book Lab Equipments</a>
+    </td>
+    <td>
+        <i class="fa fa-flask fa-2x"></i>
+         <a class="clickable" href="'. site_url("/user/equipments"). '">Manage Lab Equipments</a>
+    </td>
+    </tr>
+   </table>';
+echo $html;
+
+
 
 //// Community services.
 //echo "<h1>Community services</h1>";

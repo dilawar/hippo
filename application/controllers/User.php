@@ -8,6 +8,7 @@ require_once __DIR__ . '/AWS.php';
 require_once __DIR__ . '/JC.php';
 require_once __DIR__ . '/JCAdmin.php';
 require_once __DIR__ . '/Booking.php';
+require_once __DIR__ . '/Lab.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -21,6 +22,7 @@ class User extends CI_Controller
     use Booking;
     use JC;
     use JCAdmin;
+    use Lab;
 
     public function load_user_view( $view, $data = array() )
     {
@@ -33,6 +35,13 @@ class User extends CI_Controller
     {
         $this->home();
     }
+
+
+    public function update_supervisors( )
+    {
+        $this->load_user_view( "user_update_supervisors" );
+    }
+
 
     // Show user home.
     public function home()
@@ -205,6 +214,24 @@ class User extends CI_Controller
             flashMessage( "Not implemented yet $action" );
             redirect( 'user/courses' );
         }
+    }
+
+    public function update_supervisor_submit( )
+    {
+        if( trim( $_POST[ 'email'] ) && trim( $_POST[ 'first_name' ] ) )
+        {
+            $res = insertOrUpdateTable( 'supervisors'
+                , 'email,first_name,middle_name,last_name,affiliation,url'
+                , 'first_name,middle_name,last_name,affiliation,url'
+                , $_POST 
+            );
+
+            if( $res )
+                flashMessage( "Successfully added/updated supervisor to list." );
+            else
+                printWarning( "Could not add or update supervisor." );
+        }
+        redirect( "user/home" );
     }
 
     // submit poll.

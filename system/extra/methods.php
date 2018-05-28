@@ -1661,3 +1661,10 @@ function getLoginInfoByName( string $name ) : array
 
     return getLoginInfo( $login, true );
 }
+
+function isDateAndTimeIsInPast( $date, $time )
+{
+    if( strtotime( "$date $time" ) < strtotime( 'now' ) )
+        return true;
+    return false;
+}
