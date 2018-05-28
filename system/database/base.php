@@ -593,16 +593,20 @@ class BMVPDO extends PDO
         $res = $this->query( "
             CREATE TABLE IF NOT EXISTS inventory (
                 id INT PRIMARY KEY
-                , common_name VARCHAR(50) NOT NULL
-                , exact_name VARCHAR(100)
-                , vendor VARCHAR(200)
-                , quantity_with_unit VARCHAR(40) NOT NULL
+                , name VARCHAR(50) NOT NULL
+                , scientific_name VARCHAR(100)
+                , vendor VARCHAR(100) NOT NULL
+                , quantity_with_unit VARCHAR(40) NOT NULL default '1 nos'
                 , description TEXT
                 , status ENUM( 'VALID', 'INVALID', 'DELETED' ) DEFAULT 'VALID'
+                , item_condition ENUM('FUNCTIONAL', 'DSYFUNCTIONAL', 'LOST', 'EXPIRED', 'UNKNOWN') default 'FUNCTIONAL'
+                , expiry_date DATETIME   -- send reminder 1 month in advance.
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
-                , owner VARCHAR(50) NOT NULL
-                , UNIQUE KEY (owner,common_name)
+                , person_in_charge VARCHAR(200) NOT NULL -- could be multiple.
+                , faculty_in_charge VARCHAR(100) NOT NULL -- could be multiple faculty 
+                , requires_booking ENUM('YES', 'NO') default 'NO'
+                , UNIQUE KEY (faculty_in_charge, name)
                 )"
             );
 
