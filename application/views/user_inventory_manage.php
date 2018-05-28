@@ -5,7 +5,7 @@ echo userHTML();
 $piOrHost = getPIOrHost( whoAmI() );
 echo printInfo( "All equipment you create belongs to your PI/HOST (<tt>$piOrHost</tt>)." );
 
-$equipments = getTableEntries( 'equipments', 'name', "faculty_in_charge='$piOrHost'");
+$equipments = getTableEntries( 'inventory', 'name', "faculty_in_charge='$piOrHost'");
 if( count($equipments) > 0)
 {
     $hide = 'id,last_modified_on,edited_by,faculty_in_charge';
@@ -33,7 +33,7 @@ if( count($equipments) > 0)
 
 echo goBackToPageLink( "user/home", "Go Home" );
 
-echo '<h1> Add/Update equipment</h1>';
+echo '<h1> Add/Update inventory item</h1>';
 
 $newID = getUniqueID( 'equipments');
 $equipment = array( 'id' => $newID, 'faculty_in_charge' => $piOrHost
@@ -43,11 +43,15 @@ $equipment = array( 'id' => $newID, 'faculty_in_charge' => $piOrHost
 // If updateing the old entries, use the previous values as default parameters.
 if( __get__($_POST, 'response', '') == 'update')
     if( __get__($_POST, 'id', 0 )  > 0 )
-        $equipment = getTableEntry( 'equipments', 'id', $_POST );
+        $equipment = getTableEntry( 'inventory', 'id', $_POST );
 
-$editable = 'name,vendor,description,person_in_charge,status';
-echo '<form action="'.site_url("user/add_equipment"). '" method="post" accept-charset="utf-8">';
-echo dbTableToHTMLTable('equipments', $equipment, $editable);
+$action = 'Add';
+
+$editable = 'name,scientific_name,vendor,description,person_in_charge,item_condition,expiry_date';
+$editable .= ',quantity_with_unit,edited_by,requires_booking';
+
+echo '<form action="'.site_url("user/add_inventory_item"). '" method="post" accept-charset="utf-8">';
+echo dbTableToHTMLTable('inventory', $equipment, $editable, $action);
 echo '</form>';
 
 echo ' <br />';
