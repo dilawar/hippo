@@ -6,9 +6,9 @@ echo userHTML( );
 
 $requests = getRequestOfUser( whoAmI(), $status = 'PENDING' );
 
-echo '<h1>Pending booking</h1>';
+echo '<h1>Pending requests</h1>';
 if( count( $requests ) < 1 )
-    echo alertUser( "No pending request found." );
+    echo alertUser( "No pending request found.", false );
 
 foreach( $requests as $request )
 {
@@ -33,17 +33,14 @@ foreach( $requests as $request )
     echo '</form>';
 }
 
-echo goBackToPageLink( "user", "Go back" );
-
+echo goBackToPageLink( "user/home", "Go back" );
 
 echo '<h1>Approved booking</h1>';
 $groups = getEventsOfUser( whoAmI() );
 if( count( $groups ) < 1 )
-    echo alertUser( "No upcoming events." );
+    echo alertUser( "No booking found." );
 else 
 {
-    echo "<h2>You have following upcoming events </h2>";
-
     $hide = 'last_modified_on,created_by,external_id,is_public_event' 
                     .  ',calendar_id,calendar_event_id,url,status,description';
 
@@ -53,7 +50,7 @@ else
         echo '<div class="important">';
         $gid = $group['gid'];
 
-        echo '<table>';
+        echo '<table class="info">';
         echo '<form method="post" action="'.site_url('user/private_event_edit').'">';
         echo "<tr><td> <strong>Group id $gid </strong>";
         echo '<button name="response" title="Cancel this group" 
@@ -81,7 +78,7 @@ else
         echo '</table>';
         echo '</form>';
 
-        echo '<table class="condensed">';
+        echo '<table class="info">';
         echo arrayToTHRow( $events[0], 'events', $hide );
         foreach( $events as $event )
         {

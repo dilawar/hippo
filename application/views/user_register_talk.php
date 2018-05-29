@@ -1,10 +1,7 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
-
 echo userHTML( );
 
-// Javascript.
 $faculty = getFaculty( );
 $speakers = getTableEntries( 'speakers' );
 $logins = getTableEntries( 'logins' );
@@ -84,7 +81,7 @@ $talk = array( 'created_by' => whoAmI(), 'created_on' => dbDateTime('now'));
 // Form to upload a picture
 
 echo '<form method="post" enctype="multipart/form-data"
-        action="' . site_url( 'user/register_talk/submit' ) . '">';
+        action="' . site_url( 'user/register_talk_submit' ) . '">';
 
 echo "<h2>Speaker details</h2>";
 
