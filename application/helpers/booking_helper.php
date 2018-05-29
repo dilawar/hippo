@@ -38,9 +38,9 @@ function register_talk_and_optionally_book(array $data) : string
 
     if( $gid )
     {
-        $userInfo = getLoginInfo( $_SESSION[ 'user' ] );
+        $userInfo = getLoginInfo( whoAmI() );
         $userEmail = $userInfo[ 'email' ];
-        $msg = initUserMsg( $_SESSION[ 'user' ] );
+        $msg = initUserMsg( whoAmI() );
 
         $msg .= "<p>Your booking request id $gid has been created. </p>";
         $msg .= arrayToVerticalTableHTML( getRequestByGroupId( $gid )[0], 'request' );
