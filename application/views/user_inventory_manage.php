@@ -50,10 +50,12 @@ $action = 'Add';
 $editable = 'name,scientific_name,vendor,description,person_in_charge,item_condition,expiry_date';
 $editable .= ',quantity_with_unit,edited_by,requires_booking';
 
+echo '<button class="show_as_link"  id="button_show_hide"
+    value="Show" onclick="toggleShowHide( this, \'show_hide\')">Show Form</button>';
+echo '<div id="show_hide" style="display:none">';
 echo '<form action="'.site_url("user/add_inventory_item"). '" method="post" accept-charset="utf-8">';
 echo dbTableToHTMLTable('inventory', $equipment, $editable, $action);
 echo '</form>';
-
 echo ' <br />';
 
 echo goBackToPageLink( "user/home", "Go Home" );
@@ -61,4 +63,24 @@ echo goBackToPageLink( "user/home", "Go Home" );
 ?>
 <script type="text/javascript" charset="utf-8">
     $("#equipments_person_in_charge").attr( "placeholder", "email" );
+</script>
+<script type="text/javascript" charset="utf-8">
+function toggleShowHide(button, elemid)
+{
+    var elem = document.getElementById(elemid);
+    if(button.value == "Show")
+    {
+        elem.style.display="block";
+        button.value = "Hide";
+        button.innerHTML = "Hide Form";
+    }
+    else if(button.value == "Hide")
+    {
+        button.value = "Show";
+        button.innerHTML = "Show Form";
+        elem.style.display="none";
+    }
+    else
+        console.log( "Unsupported action " + button.value );
+}
 </script>
