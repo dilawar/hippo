@@ -21,7 +21,13 @@ trait Booking
     public function show_public( $arg = '' )
     {
         $this->template->set( 'header', 'header.php' );
-        $this->template->load('user_show_events');
+        $this->template->load('user_manages_public_events');
+    }
+
+    public function register_talk( $arg = '' )
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load('user_register_talk');
     }
 
 
@@ -168,8 +174,8 @@ trait Booking
                     , 'hippo@lists.ncbs.res.in'
                 );
 
-                echo flashMessage( "Your request has been submitted." );
-                redirect("$ref/book");
+                echo flashMessage( "Your booking request has been submitted." );
+                redirect("$ref/home");
             }
             else
             {
@@ -188,28 +194,104 @@ trait Booking
         }
     }
 
-    public function register_talk( $arg = '' )
+
+    public function register_talk_submit( )
     {
-        if( $arg == 'submit' )
+        /* ALL EVENTS GENERATED FROM THIS INTERFACE ARE SUITABLE FOR GOOGLE CALENDAR. */
+        // Here I get both speaker and talk details. I need a function which can either 
+        // insert of update the speaker table. Other to create a entry in talks table.
+        // Sanity check 
+        $msg = '';
+        if(!($_POST['first_name'] && $_POST['institute'] && $_POST['title'] && $_POST['description']))
         {
-            $msg = register_talk_and_optionally_book( $_POST );
-            if( "OK" != $msg )
+            $msg = 'Incomplete entry. Required fields: First name, last name, 
+                institute, title and description of talk.';
+            $msg .= arrayToVerticalTableHTML( $_POST, 'info' );
+            flashMessage( "Failed to register following entry. <br /> $msg ." );
+            redirect( "user/register_talk" );
+            return;
+        }
+
+        // Insert the speaker into table. if it already exists, just update.
+        $speaker = addOrUpdateSpeaker( $_POST );
+        $filepath = getSpeakerPicturePathById( $speaker[ 'id' ] );
+
+        if( $_FILES[ 'picture' ] )
+            uploadImage( $_FILES['picture'], $filepath );
+
+        if( $speaker )  // Sepeaker is successfully updated. Move on.
+        {
+            // This entry may be used on public calendar. Putting email anywhere on 
+            // public domain is allowed.
+            $speakerText = loginToText( $speaker, $withEmail = false, $autofix = false );
+            $_POST[ 'speaker' ] = $speakerText;
+            $_POST[ 'speaker_id' ] = $speaker[ 'id' ];
+
+            $res2 = addNewTalk( $_POST );
+            if( $res2 )
             {
-                $msg .= arrayToVerticalTableHTML( $data, "request" );
-                flashMessage( 'Successfully booked', 'error' );
-                redirect( 'user/book' );
+                $talkId = $res2[ 'id'];
+                $msg .= "<p>Successfully registered your talk with id $talkId </p>";
+                $startTime = $_POST[ 'start_time' ];
+                $endTime = $_POST[ 'end_time' ];
+
+                if( isBookingRequestValid( $_POST ) )
+                {
+                    $date = $_POST[ 'end_time' ];
+                    $venue = $_POST[ 'venue' ];
+
+                    if( $venue && $startTime && $endTime && $date )
+                    {
+                        /* Check if there is a conflict between required slot and already 
+                         * booked events or requests. If no then book else redirect user to 
+                         * a page where he can make better decisions.
+                         */
+
+                        $reqs = getRequestsOnThisVenueBetweenTime( $venue, $date
+                            , $startTime, $endTime );
+                        $events = getEventsOnThisVenueBetweenTime( $venue, $date
+                            , $startTime, $endTime );
+                        if( $reqs || $events )
+                        {
+                            $msg .= "<p>There is already an events on $venue on $date
+                                between $startTime and $endTime. 
+                                <br />
+                                I am redirecting you to page where you can browse all venues 
+                               and create suitable booking request.</p>";
+                            $msg .= "<p>You can book a slot for this talk later" 
+                                . " by visiting 'Manage my talks' link in your homepage. </p>";
+
+                            printWarning( $msg );
+                        }
+                        else 
+                        {
+                            // Else create a request with external_id as talkId.
+                            $external_id = getTalkExternalId( $res2 );
+                            $_POST[ 'external_id' ] = $external_id;
+                            $_POST[ 'is_public_event' ] = 'YES';
+
+                            // Modify talk title for calendar.
+                            $_POST[ 'title' ] = __ucwords__( $_POST['class'] ) . " by " . 
+                                $_POST[ 'speaker' ] . ' on \'' . $_POST[ 'title' ] . "'";
+
+                            $res = submitRequest( $_POST );
+                            if($res)
+                                $msg .= "<p>Successfully created booking request. </p>";
+                            else
+                                $msg .= printWarning( "Oh Snap! Failed to create booking request" );
+                        }
+                    }
+                    else
+                        $msg .= "<p>The booking request associtated with talk is invalid.</p>";
+                }
             }
             else
-            {
-                flashMessage( $msg, 'warning' );
-                redirect( 'user/home' );
-            }
+                $msg .= printWarning( "Oh Snap! Failed to add your talk to database." );
         }
         else
-        {
-            $this->template->set( 'header', 'header.php' );
-            $this->template->load('user_register_talk');
-        }
+            $msg .= printWarning( "Oh Snap! Failed to add speaker to database" );
+
+        redirect( "user/register_talk");
     }
 }
 

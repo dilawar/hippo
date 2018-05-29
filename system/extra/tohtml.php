@@ -1876,7 +1876,7 @@ function displayImage( $picpath, $height = 'auto', $width = 'auto', $usemap = ''
 function nullPicPath( $default = 'null' )
 {
     $conf = getConf( );
-    return $conf['data']['user_imagedir'] . '/' . $default . '.jpg' ;
+    return FCPATH . "data/$default.png";
 }
 
 function inlineImageOfSpeakerId( $id, $height = 'auto', $width = 'auto')
