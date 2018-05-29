@@ -24,8 +24,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 // $config['base_url'] = 'http://ghevar.ncbs.res.in/hippoIgnited';
-$config['base_url'] = 'https://intranet.ncbs.res.in/HippoIgnited';
-// $config['base_url'] = '';
+// $config['base_url'] = 'https://intranet.ncbs.res.in/HippoIgnited';
+$config['base_url'] = '';
 
 /*
 |--------------------------------------------------------------------------
