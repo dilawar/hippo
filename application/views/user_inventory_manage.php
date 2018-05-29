@@ -9,7 +9,7 @@ $items = getTableEntries( 'inventory', 'name', "faculty_in_charge='$piOrHost'");
 if( count($items) > 0)
 {
     $hide = 'id,last_modified_on,edited_by,faculty_in_charge,status';
-    echo '<table class="info">';
+    echo '<table class="info sortable exportable">';
     echo arrayToTHRow( $items[0], 'info', $hide );
     foreach($items as $i => $item )
     {
@@ -89,4 +89,11 @@ function toggleShowHide(button, elemid)
     else
         console.log( "Unsupported action " + button.value );
 }
+</script>
+
+<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+TableExport(document.getElementsByClassName("exportable"));
 </script>
