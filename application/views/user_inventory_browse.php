@@ -112,6 +112,7 @@ $bookings = array();
 if($whereExpr)
     $bookings = getTableEntries( 'inventory_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
 
+
 $hide = 'id,status,modified_on,id,';
 echo '<table><tr>';
 foreach( $bookings as $i => $booking )
