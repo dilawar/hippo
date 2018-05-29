@@ -69,8 +69,8 @@ def fixInlineImage( msg ):
     for m in pat.finditer( msg ):
         outfmt = m.group( 'fmt' )
         data = m.group( 'data' )
-        fp = tempfile.NamedTemporaryFile( delete = False, suffix='.'+outfmt )
-        fp.write( data.encode() )
+        fp = tempfile.NamedTemporaryFile( mode='w+b', delete = False, suffix='.'+outfmt )
+        fp.write( base64.decodebytes(data.encode()) )
         fp.close( )
         # Replace the inline image with file name.
         msg = msg.replace( m.group(0), "%s" % fp.name )
