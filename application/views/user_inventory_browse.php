@@ -20,11 +20,13 @@ if(isset($controller))
 
 $user = whoAmI();
 $piOrHost = getPIOrHost( $user );
-$equipments = getTableEntries( 'equipments', 'name', "status='GOOD' AND faculty_in_charge='$piOrHost'");
+$items = getTableEntries( 'inventory', 'name'
+            , "status='VALID' AND requires_booking='YES' AND faculty_in_charge='$piOrHost'"
+        );
 
-$equipmentMap = array();
-foreach( $equipments as $equip )
-    $equipmentMap[ $equip['id']] = $equip;
+$itemMap = array();
+foreach( $items as $equip )
+    $itemMap[ $equip['id']] = $equip;
 
 echo '<h1>Book Equipment</h1>';
 
@@ -33,16 +35,16 @@ echo printNote( '
     can be used to book for multiple days. 
     ' );
 
-$equipIDS = array_map( function($x) { return $x['id']; }, $equipments);
-$enames = array_map( function($x) { return $x['name']; }, $equipments);
-$equipSelect = arrayToSelectList( 'equipment_id', $equipIDS, $enames);
+$equipIDS = array_map( function($x) { return $x['id']; }, $items);
+$enames = array_map( function($x) { return $x['name']; }, $items);
+$equipSelect = arrayToSelectList( 'inventory', $equipIDS, $enames);
 
-$editable = 'equipment_id,date,start_time,end_time,comment';
-$default = array( 'id' => getUniqueID('equipment_bookings')
+$editable = 'inventory_id,date,start_time,end_time,comment';
+$default = array( 'id' => getUniqueID('inventory_bookings')
                     , 'booked_by' => whoAmI() 
                     , 'created_on' => dbDateTime('now')
                     , 'modified_on' => dbDateTime('now')
-                    , 'equipment_id' => $equipSelect
+                    , 'inventory_id' => $equipSelect
                 );
 
 $multiBook = ' <table class="editable_book_equipments">';
@@ -87,7 +89,7 @@ $multiBook .= '</table>';
 
 echo '<table><tr><td>';
 echo '<form action="'. site_url( "user/book_equipment") .'" method="post" accept-charset="utf-8">';
-echo dbTableToHTMLTable( 'equipment_bookings', $default, $editable, 'Book');
+echo dbTableToHTMLTable( 'inventory_bookings', $default, $editable, 'Book');
 echo '</form>';
 echo '</td><td>';
 echo '<form action="'. site_url( "user/multibook_equipment") .'" method="post" accept-charset="utf-8">';
@@ -101,17 +103,20 @@ echo ' <h2>Booking summary</h2>';
 
 // Only select equipment which belongs to our lab.
 $whereExpr = array();
-foreach( $equipments as $i => $eq )
-    $whereExpr[] = "equipment_id='" . $eq['id'] . "'";
+foreach( $items as $i => $eq )
+    $whereExpr[] = "inventory_id='" . $eq['id'] . "'";
 $equipIdsWhere = implode( " OR ", $whereExpr );
 
-$bookings = getTableEntries( 'inventory', 'date', "status='VALID' AND ($equipIdsWhere)");
+// If there is an item to book. Create it.
+$bookings = array();
+if($whereExpr)
+    $bookings = getTableEntries( 'inventory_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
 
 $hide = 'id,status,modified_on,id,';
 echo '<table><tr>';
 foreach( $bookings as $i => $booking )
 {
-    $eid = $booking['equipment_id'];
+    $eid = $booking['inventory_id'];
     $html = bookingToHtml($booking, $equipmentMap);
 
     if( whoAmI() == $booking['booked_by'] )
@@ -140,15 +145,15 @@ echo '</tr></table>';
 echo '</div>';
 
 
-echo '<h1>Available equipments</h1>';
+echo '<h1>Available items</h1>';
 
-echo printNote( "Following " . count( $equipments ). " equipments are available for booking 
+echo printNote( "Following " . count( $items ). " items are available for booking 
     for faculty-in-charge " . mailto( $piOrHost )  . '.'
     );
 
-if(count($equipments) > 0)
+if(count($items) > 0)
 {
-    echo arraysToCombinedTableHTML( $equipments, 'info book', 'status,last_modified_on,edited_by' );
+    echo arraysToCombinedTableHTML( $items, 'info book', 'status,last_modified_on,edited_by' );
     echo ' <table class="info" >';
     echo '</table>';
 }
