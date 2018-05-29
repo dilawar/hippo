@@ -118,7 +118,7 @@ function awsToTex( $aws )
     $extra .= '\end{tabular}';
 
     $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-        , fit to height=18 cm, fit basedim=14pt, enhanced]
+        , fit to height=18 cm, fit basedim=14pt]
         \fontfamily{pnc}\selectfont
     ' . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
 
