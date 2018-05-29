@@ -103,12 +103,12 @@ $html = '<table class="admin">';
 $html .= '
     <tr>
     <td>
-        <i class="fa fa-hand-arxchive fa-2x"></i>
-         <a class="clickable" href="'. site_url("/user/browse_equipments"). '">Browse/Book Lab Equipments</a>
+        <i class="fa fa-hand-archive fa-2x"></i>
+         <a class="clickable" href="'. site_url("/user/inventory_browse"). '">Browse Lab Inventory or Book Equipments</a>
     </td>
     <td>
         <i class="fa fa-flask fa-2x"></i>
-         <a class="clickable" href="'. site_url("/user/equipments"). '">Manage Lab Equipments</a>
+         <a class="clickable" href="'. site_url("/user/inventory_manage"). '">Manage Lab Inventory</a>
     </td>
     </tr>
    </table>';

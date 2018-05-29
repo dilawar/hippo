@@ -41,58 +41,60 @@ function isEquipmentAlreadyBooked( $eid, $date, $start_time, $end_time ) : array
 trait Lab 
 {
     // VIEWS
-    public function equipments( )
+    public function inventory_manage( )
     {
-        $this->load_user_view( "user_manages_equipments");
+        $this->load_user_view( "user_inventory_manage");
     }
 
-    public function browse_equipments( )
+    public function inventory_browse( )
     {
-        $this->load_user_view( "user_browse_equipments" );
+        $this->load_user_view( "user_inventory_browse" );
     }
 
-    public function add_equipment( $arg = '' )
+    public function add_inventory_item( $arg = '' )
     {
-        $_POST['edited_by'] = whoAmI();
+        // $_POST['edited_by'] = whoAmI();
         $_POST['last_modified_on'] = dbDateTime( 'now' );
-
         $personInCharge = $_POST['person_in_charge'];
+
         if( ! findAnyoneWithEmail( $personInCharge) )
         {
             printWarning( "I could not locate <tt>PERSON IN CHARGE</tt> '$personInCharge' in my
                 database. I won't allow this entry. Use a valid email." 
                 );
-            redirect( "user/equipments");
+            redirect( "user/inventory_manage");
             return;
         }
 
-        $updatable =  'name,vendor,description,last_modified_on,edited_by,status,person_in_charge';
-        $res = insertOrUpdateTable('equipments', 'id,faculty_in_charge,'.$updatable
+        $updatable =  'name,scientific_name,vendor,description,last_modified_on,edited_by,';
+        $updatable .= 'status,person_in_charge,requires_booking';
+
+        $res = insertOrUpdateTable('inventory', 'id,faculty_in_charge,'.$updatable
             , $updatable, $_POST);
         if( !$res )
-            echo printWarning( "Failed to add equipment.");
+            echo printWarning( "Failed to add inventory intem.");
         else
-            flashMessage( "Successfully added equipment." );
-        redirect( "user/equipments" );
+            flashMessage( "Successfully added inventory item.." );
+        redirect( "user/inventory_manage" );
     }
 
     // ACTION
-    public function delete_equipment( $equipmentID )
+    public function delete_inventory( $itemID )
     {
         if( $_POST['response'] == 'DO_NOTHING' )
         {
             flashMessage( "User cancelled previous action." );
-            redirect( "user/equipments");
+            redirect( "user/inventory_manage");
             return;
         }
 
-        $res = deleteFromTable( "equipments", 'id', array('id' => $equipmentID));
+        $res = deleteFromTable( "inventory", 'id', array('id' => $itemID));
         if( $res )
-            flashMessage( "Successfully deleted equipment id $equipmentID." );
+            flashMessage( "Successfully deleted equipment id $itemID." );
         else
-            printWarning( "Failed to delete equipment id $equipmentID.");
+            printWarning( "Failed to delete equipment id $itemID.");
 
-        redirect( "user/equipments");
+        redirect( "user/inventory_manage");
     }
 
     public function book_equipment( )
