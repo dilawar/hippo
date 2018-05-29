@@ -30,7 +30,6 @@ trait Booking
         $this->template->load('user_register_talk');
     }
 
-
     public function private_request_edit( $arg = '')
     {
         $gid = $_POST['gid'];
@@ -192,6 +191,142 @@ trait Booking
             flashMessage( $msg1, 'warning' );
             redirect( "$ref/book" );
         }
+    }
+
+    public function manage_talks_action()
+    {
+        $action = strtolower( trim($_POST['response']));
+        if( $action== 'delete' )
+        {
+            // Delete this entry from talks.
+            $res = deleteFromTable( 'talks', 'id', $_POST );
+            if( $res )
+            {
+                flashMessage( 'Successfully deleted entry' );
+                // Now cancel this talk in requests, if there is any.
+                $res = updateTable( 
+                    'bookmyvenue_requests', 'external_id', 'modified_by,status,last_modified_on'
+                    , array( 'external_id' => "talks." . $_POST[ 'id' ] 
+                            , 'status' => 'CANCELLED' 
+                            , 'last_modified_on' => dbDateTime( 'now' )
+                            , 'modified_by' => whoAmI()
+                        )
+                    );
+
+                // Cancel confirmed event associated with this talk if any.
+                $res = updateTable( 
+                    'events', 'external_id', 'modified_by,status,last_modified_on'
+                    , array( 'external_id' => "talks." . $_POST[ 'id' ] 
+                                , 'status' => 'CANCELLED' 
+                                , 'last_modified_on' => dbDateTime( 'now' )
+                                , 'modified_by' => whoAmI()
+                            )
+                    );
+                
+                redirect( "user/show_public" );
+                return;
+            }
+            else
+                echo printWarning( "Failed to delete the talk " );
+        }
+        else if( $action == 'DO_NOTHING' )
+        {
+            echo printInfo( "User said NO!" );
+            redirect( 'user/show_public');
+        }
+        else if( $action == 'edit' )
+        {
+            $this->load_user_view( 'user_manage_talks_action_update', $_POST );
+            return;
+        }
+        else if( $action == 'update' )
+        {
+            $msg = '';
+            $res = updateTable( 'talks', 'id'
+                        , 'class,host,coordinator,title,description'
+                        , $_POST 
+                    );
+
+            if( $res )
+            {
+                $msg .= printInfo( 'Successfully updated entry' );
+                // Now update the related event as wel.
+                $event = getEventsOfTalkId( $_POST[ 'id' ] );
+                $tableName = 'events';
+                if( ! $event )
+                {
+                    $event = getBookingRequestOfTalkId( $_POST[ 'id' ] );
+                    $tableName = 'bookmyvenue_requests';
+                }
+
+                if( $event )
+                {
+                    $res = updateTable( $tableName, 'external_id'
+                                    , 'title,description'
+                                    , array( 'external_id' => "talks." . $_POST[ 'id' ] 
+                                        , 'title' => talkToEventTitle( $_POST )
+                                        , 'description' => $_POST[ 'description' ]
+                                    )
+                        );
+
+                    if( $res )
+                        flashMessage( "Successfully updated associtated event" );
+                }
+            }
+
+            redirect( 'user/show_public' );
+        }
+        else if( $action == 'schedule' )
+        {
+            $external_id = "talks." . $_POST[ 'id' ];
+            $_POST['external_id'] = $external_id;
+            $this->load_user_view( 'user_book', $_POST );
+            // redirect( 'user_book', $_POST );
+            return;
+        }
+        else if($action == 'submit' )
+        {
+            $res = updateTable( 'talks', 'id'
+                        , 'class,host,coordinator,title,description'
+                        , $_POST 
+                    );
+
+            if( $res )
+            {
+                echo printInfo( 'Successfully updated entry' );
+                // Now update the related event as wel.
+                $event = getEventsOfTalkId( $_POST[ 'id' ] );
+                $tableName = 'events';
+                if( ! $event )
+                {
+                    $event = getBookingRequestOfTalkId( $_POST[ 'id' ] );
+                    $tableName = 'bookmyvenue_requests';
+                }
+
+                if( $event )
+                {
+                    $res = updateTable( $tableName, 'external_id'
+                                    , 'title,description'
+                                    , array( 'external_id' => "talks." . $_POST[ 'id' ] 
+                                        , 'title' => talkToEventTitle( $_POST )
+                                        , 'description' => $_POST[ 'description' ]
+                                    )
+                        );
+
+                    if( $res )
+                        echo printInfo( "Successfully updated associtated event" );
+                }
+
+                redirect('user/manage_talk');
+                return;
+            }
+            else
+                echo printWarning( "Failed to update the talk " );
+        }
+        else
+            flashMessage( "Unknown operation $action." );
+            
+        redirect( "user/show_public");
     }
 
 

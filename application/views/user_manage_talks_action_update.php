@@ -1,20 +1,25 @@
 <?php
+require_once BASEPATH.'autoload.php';
 
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'USER' ) );
+echo userHTML();
+$response = __get__($_POST, 'response', '');
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'mail.php';
-include_once 'tohtml.php';
-
-if( ! $_POST[ 'response' ] )
+if( $response == 'edit' )
 {
-    // Go back to previous page.
-    goToPage( "user_manage_talk.php", 0 );
-    exit;
+    echo alertUser( "Here you can change the host, coordinator, title and 
+            description of the talk.", false
+            );
+
+    $id = $_POST[ 'id' ];
+    $talk = getTableEntry( 'talks', 'id', $_POST );
+
+    echo '<form method="post" action="'.site_url("user/manage_talks_action").'">';
+    echo dbTableToHTMLTable('talks', $talk
+        , 'class,coordinator,host,title,description'
+        , 'Update');
+    echo '</form>';
 }
-else if( $_POST[ 'response' ] == 'submit' )
+else if( $response == 'submit' )
 {
     $res = updateTable( 'talks', 'id'
                 , 'class,host,coordinator,title,description'
@@ -46,18 +51,14 @@ else if( $_POST[ 'response' ] == 'submit' )
             if( $res )
                 echo printInfo( "Successfully updated associtated event" );
         }
-
-        echo goToPage( 'user_manage_talk.php' , 0 );
-        exit;
+        echo goToPage( 'user/manage_talk');
     }
     else
         echo printWarning( "Failed to update the talk " );
 }
 else
-    echo printInfo( "Unknown operation " . $_POST[ 'response' ] );
+    echo printInfo( "Unknown operation " . $_POST['response'] . '.' );
     
-
-echo goBackToPageLink( 'user_manage_talk.php', "Go back" );
-exit;
+echo goBackToPageLink( 'user/show_public', "Go Home" );
 
 ?>
