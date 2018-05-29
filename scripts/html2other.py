@@ -14,6 +14,7 @@ import sys
 import os
 import subprocess
 import re
+import six
 import string
 import tempfile
 import base64
@@ -63,36 +64,37 @@ def fixInlineImage( msg ):
 
     Surround each image with \includewrapfig environment.
     """
-
     # Sometime we loose = in the end.
-    pat = re.compile( r'\{data:image/(.+?);base64,(.+?\=?\})', re.DOTALL )
+    pat = re.compile( r'data\:image\/(?P<fmt>.+?);base64,(?P<data>.+?=)', re.DOTALL | re.I )
     for m in pat.finditer( msg ):
-        outfmt = m.group( 1 )
-        data = m.group( 2 )
+        outfmt = m.group( 'fmt' )
+        data = m.group( 'data' )
         fp = tempfile.NamedTemporaryFile( delete = False, suffix='.'+outfmt )
-        fp.write( data )
+        fp.write( data.encode() )
         fp.close( )
         # Replace the inline image with file name.
-        msg = msg.replace( m.group(0), "{%s}" % fp.name )
+        msg = msg.replace( m.group(0), "%s" % fp.name )
 
     # And wrap all includegraphics around by wrapfig
     msg = re.sub( r'(\\includegraphics.+?width\=(.+?)([\],]).+?})'
             , r'\n\\begin{wrapfigure}{R}{\2}\n \1 \n \\end{wrapfigure}'
             , msg, flags = re.DOTALL
             )
-
     return msg
 
 def toTex( infile ):
     outfile = tempfile.mktemp(  prefix = 'hippo', suffix = 'tex'  )
-    msg = _cmd( 'pandoc -f html -t latex -o %s %s' % (outfile, infile ))
-    if os.path.isfile( outfile ):
-        with open( outfile ) as f:
-            msg = fixInlineImage( f.read( ) )
-    else:
-        with open( outfile, 'w' ) as f:
-            f.write( "Could not covert to TeX" );
-    return outfile
+
+    with open(infile, 'r' ) as f:
+        msg = f.read()
+
+    msg = fixInlineImage( msg )
+    infile += 'inlineimagefixed.tex'
+    with open(infile, 'w' ) as f:
+        f.write(msg)
+
+    _cmd( 'pandoc -f html -t latex -o %s %s' % (outfile, infile ))
+    return outfile.strip()
 
 def htmlfile2md( filename ):
     md, mdfile = tomd( filename )
