@@ -25,7 +25,7 @@ body {
     background-position: 50% 200px;
     background-repeat:no-repeat;
     /* background-size: cover; */
-    background-size: 80%;
+    background-size: contain;
     /* background-attachment:fixed; */
     background-attachment: scroll;
     margin: auto;
