@@ -84,16 +84,14 @@ def fixInlineImage( msg ):
 
 def toTex( infile ):
     outfile = tempfile.mktemp(  prefix = 'hippo', suffix = 'tex'  )
-
-    with open(infile, 'r' ) as f:
-        msg = f.read()
-
-    msg = fixInlineImage( msg )
-    infile += 'inlineimagefixed.tex'
-    with open(infile, 'w' ) as f:
-        f.write(msg)
-
     _cmd( 'pandoc -f html -t latex -o %s %s' % (outfile, infile ))
+
+    with open( outfile, 'r' ) as f:
+        tex = f.read()
+    tex = fixInlineImage( tex )
+    with open( outfile, 'w' ) as f:
+        f.write( tex )
+
     return outfile.strip()
 
 def htmlfile2md( filename ):
