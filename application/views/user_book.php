@@ -1,15 +1,20 @@
 <?php
+require_once BASEPATH . 'autoload.php';
 
-/* We use this interface for booking venue. We may also come here from manage
+/* IMP/NOTE: 
+ * We use this interface for booking venue. We may also come here from manage
  * talks page. If a user creates a talk and we come here for a booking; we use
- * the external_id _GET variable.
+ * the external_id _GET variable. 
+ *  
+ *  Make sure to redirect to user manage talk or something similar page after
+ *  booking.
  */
 
-require_once BASEPATH . 'autoload.php';
 
 $ref = 'user';
 if(isset($controller))
     $ref = $controller;
+$goback = "$ref/home";
 
 echo userHTML( );
 
@@ -55,6 +60,7 @@ if( isset( $external_id ) )
 
     // Description is just the title of the talk. Keep it short.
     $defaults[ 'description' ] = $defaults[ 'title' ];
+    $goback = "user/show_public";
 }
 else
 {
@@ -94,7 +100,7 @@ else
 
 /* PAGE */
 echo '<br />';
-echo '<table style="min-width:300px;max-width:500px",border="0">';
+echo '<table style="min-width:500px;max-width:500px",border="0">';
 echo '<form action="" method="post" >';
 echo '
     <tr>
@@ -339,7 +345,8 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
                 $date, $startTime, $endTime, $venueId, $jcAndMeets
             );
 
-        $block = '<form method="post" action="' . site_url( "$ref/bookingrequest" ) . '">';
+        // Send to a controller but also attach $goback  entry.
+        $block = '<form method="post" action="' . site_url( "$ref/bookingrequest/$goback" ) . '">';
         $block .= '<div><tr>';
         if( count( $jclabmeets ) > 0 )
         {
@@ -348,9 +355,8 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
                 $block .= '<div class="">';
                 $block .= '<tr><td colspan="1">';
                 $block .= '<font color=\"red\">ALERT: Though ' . $venue[ 'id' ]
-                    . ' is available
-                    , it is usually booked for following JC/Labmeet. Make sure to check
-                    with booking party before you book this slot. They may book it
+                    . ' is available, it is usually booked for following JC/Labmeet. Make sure 
+                    to check with booking party before you book this slot. They may book it
                     later. </font>';
 
                 $block .= '<div style="font-size:x-small">';
@@ -397,7 +403,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 }
 
 
-echo goBackToPageLink( "$ref/home", "Go back" );
+echo goBackToPageLink( "$goback", "Go back" );
 echo "</body>";
 
 ?>

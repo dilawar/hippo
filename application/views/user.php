@@ -77,16 +77,17 @@ $html .= '
          <br />
          E.g. Labmeets,meeting,interview etc.. No email will be sent to Academic community.
         <br /> <br /> <i class="fa fa-pencil-square-o fa-1x"></i>
-        <a href="'. site_url("/user/show_private") . '"> Manage previous bookings</a> 
+        <a href="'. site_url("/user/show_private") . '"> Manage my private events.</a> 
     </td>
     <td>
         <i class="fa fa-comments fa-2x"></i>
         <a class="clickable" href="'. site_url("/user/register_talk"). '">Book for Public Event</a>
         <br />
-        E.g. talk, seminar, or thesis seminar. Email will be send to academic community.
+        E.g. talk, seminar, public lectures, pre-synopsis/thesis seminar; essentially any event for which 
+        email should be send to academic community.
         <br /> <br /> <i class="fa fa-pencil-square-o fa-1x"></i>
         
-        <a href="'. site_url("/user/show_public"). '">Manage previous bookings</a>
+        <a href="'. site_url("/user/show_public"). '">Manage my public events.</a>
     </td>
    </tr>
    </table>';
