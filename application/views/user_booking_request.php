@@ -8,7 +8,8 @@ $ref = 'user';
 if(isset($controller))
     $ref = $controller;
 
-echo '<ul>
+echo '<div class="important">
+    <ul>
         <li> Set <tt>IS PUBLIC EVENT</tt>  to <tt>YES</tt> if you want your event to appear 
         on NCBS\' google-calendar. <br />
         </li>
@@ -17,6 +18,7 @@ echo '<ul>
                filed under wrong <tt>CLASS</tt>.
         </li>
     </ul>
+    </div>
     ';
 
 $venues = getVenues( $sortby = 'total_events' );
