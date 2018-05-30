@@ -9,12 +9,12 @@ $items = getTableEntries( 'inventory', 'name', "faculty_in_charge='$piOrHost'");
 
 
 // Create link to upload data from excel sheet.
-echo uploadToDbTableLink( 'inventory', 'inventory_manage' );
+echo uploadToDbTableLink( 'inventory', 'id', 'inventory_manage' );
 
 
 if( count($items) > 0)
 {
-    $hide = 'id,last_modified_on,edited_by,faculty_in_charge,status';
+    $hide = 'last_modified_on,edited_by,faculty_in_charge,status';
     echo '<table class="info sortable exportable" id="inventory">';
     echo arrayToTHRow( $items[0], 'info', $hide );
     foreach($items as $i => $item )
