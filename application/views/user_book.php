@@ -14,6 +14,7 @@ require_once BASEPATH . 'autoload.php';
 $ref = 'user';
 if(isset($controller))
     $ref = $controller;
+$goback = "$ref/home";
 
 echo userHTML( );
 
@@ -59,6 +60,7 @@ if( isset( $external_id ) )
 
     // Description is just the title of the talk. Keep it short.
     $defaults[ 'description' ] = $defaults[ 'title' ];
+    $goback = "user/show_public";
 }
 else
 {
@@ -343,7 +345,8 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
                 $date, $startTime, $endTime, $venueId, $jcAndMeets
             );
 
-        $block = '<form method="post" action="' . site_url( "$ref/bookingrequest" ) . '">';
+        // Send to a controller but also attach $goback  entry.
+        $block = '<form method="post" action="' . site_url( "$ref/bookingrequest/$goback" ) . '">';
         $block .= '<div><tr>';
         if( count( $jclabmeets ) > 0 )
         {
@@ -400,7 +403,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 }
 
 
-echo goBackToPageLink( "$ref/home", "Go back" );
+echo goBackToPageLink( "$goback", "Go back" );
 echo "</body>";
 
 ?>

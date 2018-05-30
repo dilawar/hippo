@@ -4,10 +4,11 @@ require_once BASEPATH. 'autoload.php';
 
 trait Booking 
 {
-    public function bookingrequest( $arg = '' )
+    public function bookingrequest( $controller = 'user', $method = 'home' )
     {
         log_message( 'info', 'Creating booking requests' );
         $this->template->set( 'header', 'header.php' );
+        $_POST[ 'goback'] = "$controller/$method";
         $this->template->load( 'user_booking_request', $_POST );
     }
 
@@ -133,9 +134,10 @@ trait Booking
         redirect('user/show_private');
     }
 
-    public function bookingrequest_submit( $ref = '' )
+    public function bookingrequest_submit( $controller = 'user', $method = 'home' )
     {
-        $ref = __get__( $_POST, 'REFERER', 'user' );
+        $goback = "$controller/$method";
+
         $msg = verifyRequest( $_POST );
         if( $msg == "OK" )
         {
@@ -186,13 +188,9 @@ trait Booking
                 );
 
                 echo flashMessage( "Your booking request has been submitted." );
-                redirect("$ref/home");
             }
             else
-            {
                 echo printWarning( "Your request could not be submitted. Please notify the admin." );
-                redirect("$ref/home");
-            }
         }
         else
         {
@@ -201,8 +199,8 @@ trait Booking
             $msg1 .= "<p>Complete entry is following.</p>";
             $msg1 .= arrayToVerticalTableHTML( $_POST, "request" );
             flashMessage( $msg1, 'warning' );
-            redirect( "$ref/book" );
         }
+        redirect( "$goback" );
     }
 
     public function manage_talks_action()
