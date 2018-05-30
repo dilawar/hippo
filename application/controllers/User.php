@@ -338,12 +338,14 @@ class User extends CI_Controller
         $header = $data[0];
         $data = array_slice( $data, 1);
 
+        $query = '';
         foreach( $data as $row )
         {
             if( ! $row or count($row) != count($header) )
                 continue;
 
             $toupdate = array();
+            $allkeys = array();
             $keyval = array();
             foreach( $header as $i => $key )
             {
@@ -354,15 +356,24 @@ class User extends CI_Controller
                 if( !$val or $val == 'NULL' )
                     continue;
 
+                $allkeys[] = $key;
                 if($key != $unique_key)
+                {
                     $toupdate[] = $key;
+                }
 
                 $keyval[$key] = $val;
+                $query .= "$key='$val' ";
             }
 
-            $res = insertOrUpdateTable( $tablename, $unique_key, $toupdate, $keyval ); 
+            $query .= ';';
+            if( getTableEntry( $tablename, $unique_key, $keyval ) )
+                $res = updateTable( $tablename, $unique_key, $toupdate, $keyval );
+            else
+                $res = insertIntoTable( $tablename, $allkeys, $keyval ); 
         }
 
+        // flashMessage( $query );
         redirect( "user/$redirect" );
     }
 
