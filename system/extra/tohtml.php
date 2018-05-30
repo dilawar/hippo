@@ -2633,8 +2633,15 @@ function uploadToDbTableLink( string $tablename, string $unique_key, string $arg
         $to .= "/$arg";
 
     $html = '<form action="'.site_url( "$to") .'" method="post" enctype="multipart/form-data">';
+    $html .= '<table class="upload"><tr>';
+    $html .= "<caption>First download data as spreadsheet, edit it and upload it. You can also 
+        use the form given below to add/edit one entry at a time.</caption>";
+    $html .= '<td>';
     $html .= '<input type="file" name="spreadsheet" value="" accept=".xlsx, .xls, .csv, .odt"/>';
+    $html .= '</td><td>';
     $html .= "<button type='submit'>Upload to $tablename</button>";
+    $html .= '</td></tr>';
+    $html .= '</table>';
     $html .= '</form>';
     return $html;
 }

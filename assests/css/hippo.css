@@ -1048,6 +1048,13 @@ table.repeat_pat tr td  {
     max-width : 30%;
 }
 
+table.upload {
+    border-bottom: 3px solid lightblue;
+}
+
+table.upload tr td {
+}
+
 /* SELECT */
 select.supervisors {
     min-width : 300px;
