@@ -1,7 +1,7 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth : 1000px;
+    --maxwidth : 100%;
 }
 
 
@@ -18,18 +18,19 @@ body {
     /* font-family : 'EB Garamond'; */
     font-family: "Roboto";
     line-height: 120%;
-    width: 80%;
+    width: 70%;
     max-width: var(--maxwidth);
     /* display:block; */
     background-color:var(--background);
     background-position: 50% 200px;
     background-repeat:no-repeat;
     /* background-size: cover; */
-    background-size: contain;
+    background-size: 70%;
     /* background-attachment:fixed; */
     background-attachment: scroll;
     margin: auto;
 }
+
 
 div.user_float {
     position : fixed;
