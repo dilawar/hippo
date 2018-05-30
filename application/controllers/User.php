@@ -36,6 +36,18 @@ class User extends CI_Controller
         $this->home();
     }
 
+    public function redirect( $to = null) 
+    {
+        if( $to )
+            redirect( $to );
+
+        if ($this->agent->is_referral())
+            redirect( $this->agent->referrer() );
+        else
+            redirect( 'user/home' );
+
+    }
+
 
     public function update_supervisors( )
     {
@@ -318,6 +330,16 @@ class User extends CI_Controller
         $this->session->sess_destroy();
         redirect( 'welcome' );
     }
+
+    public function upload_to_db( $tablename, $redirect = 'home')
+    {
+        $filename = $_FILES['spreadsheet']['tmp_name']; $data =
+        $data = read_spreadsheet( $filename );
+        var_dump( $data );
+
+        // redirect( "user/$redirect" );
+    }
+
 }
 
 ?>

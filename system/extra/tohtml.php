@@ -2615,4 +2615,27 @@ function questionsToPoll($questions, $responses = array(), $nochangeafater = 1)
     return $html;
 }
 
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Create upload-link. A except sheet can be uploaded to database
+    * table.
+    *
+    * @Param $tablename
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function uploadToDbTableLink( string $tablename, string $arg = '' ) : string
+{
+    $to = "user/upload_to_db/$tablename";
+    if($arg)
+        $to .= "/$arg";
+
+    $html = '<form action="'.site_url( "$to") .'" method="post" enctype="multipart/form-data">';
+    $html .= '<input type="file" name="spreadsheet" value="" accept=".xlsx, .xls, .csv, .odt"/>';
+    $html .= "<button type='submit'>Upload to $tablename</button>";
+    $html .= '</form>';
+    return $html;
+}
 ?>
