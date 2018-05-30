@@ -94,7 +94,7 @@ else
 
 /* PAGE */
 echo '<br />';
-echo '<table style="min-width:300px;max-width:500px",border="0">';
+echo '<table style="min-width:500px;max-width:500px",border="0">';
 echo '<form action="" method="post" >';
 echo '
     <tr>
