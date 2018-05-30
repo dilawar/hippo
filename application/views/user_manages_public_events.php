@@ -5,6 +5,7 @@ require_once BASEPATH.'autoload.php';
 global $symbDelete;
 global $symbEdit;
 global $symbCalendar;
+global $symbCancel;
 
 echo userHTML( );
 
@@ -52,21 +53,20 @@ else
 foreach( $upcomingTalks as $t )
 {
     // Outer table
+    echo '<div class="important">';
     echo '<table><tr><td>';
     // Get image of speaker if available.
 
     echo inlineImageOfSpeaker( $t['speaker_id'], $height = '100px', $width = '100px' );
-    echo '</td><td>';
+    echo '</td>';
+
+    echo '<td colspan="2">';
     echo '<form method="post" action="'.site_url( "user/manage_talks_action") .'">';
     echo '<table border="0">';
     echo '<tr>';
-
-    echo '<div style="font:small">';
-    echo arrayToTableHTML( $t, 'info', ''
-                , 'speaker_id,created_by,status'
-            );
+    echo '<div style="font:x-small">';
+    echo arrayToTableHTML($t, 'info', '' , 'speaker_id,created_by,status');
     echo '</div>';
-
     echo '</tr><tr>';
     echo '
         <input type="hidden" name="id" value="' . $t[ 'id' ] . '" />
@@ -86,43 +86,42 @@ foreach( $upcomingTalks as $t )
     // Here we disable the schedule button.
     if( ! ($request || $event ) )
         echo '<td><button style="float:right" title="Schedule this talk" 
-        name="response" value="schedule">' . $symbCalendar . '</button></td>';
+            name="response" value="schedule">' . $symbCalendar . '</button></td>';
     else
         echo '<td></td>';
 
     // Put an edit button. 
     echo '<td><button style="float:right" title="Edit this entry"
             name="response" value="edit">' . $symbEdit . '</button></td>';
-
     echo '</tr></table>';
     echo '</form>';
 
     // Close outer table.
-    echo '</td></tr></table>';
+    echo '</td>';
+    echo '</tr></table>';
 
     // Now put a table showing bookmyvenue_requests/events for this talk.
     // To make sure that user dont' confuse these two table as different 
     // talks rather than one talk and one is event/request; reduce the size 
     // of second table.
-    echo "<div style=\"font-size:x-small\">";
     if( $event )
     {
         // If event is already approved, show it here.
         echo "<strong>Above talk has been confirmed and event detail is shown 
             below.</strong>";
+
         $html = arrayToTableHTML( $event, 'events', ''
             , 'eid,class,external_id,url,modified_by,timestamp,calendar_id' . 
             ',status,calendar_event_id,last_modified_on' );
+
         echo $html;
     }
     // Else there might be a pending request.
     else if( $request )
     {
-        echo "<strong>Shown below is the booking request pending review for 
-                above talk. </strong>
-            ";
-        $gid = $request[ 'gid' ];
+        echo "<strong>Shown below is the booking request pending review for above talk. </strong>";
 
+        $gid = $request[ 'gid' ];
         echo arrayToTableHTML( $request, 'requests', ''
             , 'eid,class,external_id,url,modified_by,timestamp,calendar_id' . 
             ',status,calendar_event_id,last_modified_on' );
@@ -135,8 +134,8 @@ foreach( $upcomingTalks as $t )
         echo "<td style=\"float:right\">
             <button name=\"response\" title=\"Edit this request\"
             value=\"edit\"> $symbEdit </button></td>";
+        echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\" />";
         echo "</tr></table>";
-        echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
         echo '</form>';
     }
     echo "</div>";

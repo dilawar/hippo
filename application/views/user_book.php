@@ -1,11 +1,15 @@
 <?php
+require_once BASEPATH . 'autoload.php';
 
-/* We use this interface for booking venue. We may also come here from manage
+/* IMP/NOTE: 
+ * We use this interface for booking venue. We may also come here from manage
  * talks page. If a user creates a talk and we come here for a booking; we use
- * the external_id _GET variable.
+ * the external_id _GET variable. 
+ *  
+ *  Make sure to redirect to user manage talk or something similar page after
+ *  booking.
  */
 
-require_once BASEPATH . 'autoload.php';
 
 $ref = 'user';
 if(isset($controller))
@@ -348,9 +352,8 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
                 $block .= '<div class="">';
                 $block .= '<tr><td colspan="1">';
                 $block .= '<font color=\"red\">ALERT: Though ' . $venue[ 'id' ]
-                    . ' is available
-                    , it is usually booked for following JC/Labmeet. Make sure to check
-                    with booking party before you book this slot. They may book it
+                    . ' is available, it is usually booked for following JC/Labmeet. Make sure 
+                    to check with booking party before you book this slot. They may book it
                     later. </font>';
 
                 $block .= '<div style="font-size:x-small">';

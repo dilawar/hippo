@@ -7,6 +7,8 @@ require_once 'helper/imap.php';
 require_once 'ldap.php';
 require_once 'mail.php';
 
+global $symbClock;
+
 // Error code when uploading images.
 $phpFileUploadErrors = array(
     0 => 'There is no error, the file uploaded with success',
@@ -1068,7 +1070,7 @@ function verifyRequest( array $request ) : string
     // At least 15 minutes event
     if( strtotime( $request['end_time'] ) - strtotime( $request['start_time'] ) < 900 )
     {
-        $msg = "The event must be at least 15 minute long";
+        $msg = "$symbClock The event must be at least 15 minute long";
         $msg .= " Start time " . $request[ 'start_time' ] . " to end time " .
             $request[ 'end_time' ];
         return $msg;

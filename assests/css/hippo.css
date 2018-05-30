@@ -655,6 +655,8 @@ table[class*='editable_'] {
     text-align: left;
     /* background: rgba(250,250,250,1); */
     margin:10px;
+    width: 90%;
+    min-width: 600px;
 }
 
 table[class*='editable_'] tr td {
@@ -1137,4 +1139,7 @@ th {
     text-align: left;
 }
 
+ul {
+    width : 100%;
+}
 

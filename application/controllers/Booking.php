@@ -30,6 +30,13 @@ trait Booking
         $this->template->load('user_register_talk');
     }
 
+    public function book_talk( $talkid )
+    {
+        $external_id = "talks." . $talkid;
+        $data = array('external_id' => $external_id );
+        $this->load_user_view( 'user_book', $data );
+    }
+
     public function private_request_edit( $arg = '')
     {
         $gid = $_POST['gid'];
@@ -157,9 +164,9 @@ trait Booking
             $gid = submitRequest( $_POST );
             if( $gid )
             {
-                $userInfo = getLoginInfo( $_SESSION[ 'user' ] );
+                $userInfo = getLoginInfo( whoAmI() );
                 $userEmail = $userInfo[ 'email' ];
-                $msg = initUserMsg( $_SESSION[ 'user' ] );
+                $msg = initUserMsg( whoAmI() );
                 $msg .= "<p>Your booking request id $gid has been created. </p>";
                 $msg .= arrayToVerticalTableHTML( getRequestByGroupId( $gid )[0], 'request' );
                 sendHTMLEmail( $msg
@@ -236,6 +243,8 @@ trait Booking
         }
         else if( $action == 'edit' )
         {
+            // Here we need to load quick-book interface but with talk-id.
+            // Use _GET method.
             $this->load_user_view( 'user_manage_talks_action_update', $_POST );
             return;
         }
@@ -278,10 +287,8 @@ trait Booking
         }
         else if( $action == 'schedule' )
         {
-            $external_id = "talks." . $_POST[ 'id' ];
-            $_POST['external_id'] = $external_id;
-            $this->load_user_view( 'user_book', $_POST );
-            // redirect( 'user_book', $_POST );
+            $tid = $_POST['id'];
+            redirect( "user/book_talk/$tid" );
             return;
         }
         else if($action == 'submit' )
