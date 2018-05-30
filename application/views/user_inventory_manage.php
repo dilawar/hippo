@@ -51,13 +51,14 @@ if( __get__($_POST, 'response', '') == 'update')
     }
 
 // Button to clear up the form.
-echo '<form action=""><button type="submit">Clear form to add new</button></form>';
+echo '<form action="">
+    <button type="submit">Clear form</button>
+    </form>';
 
 $editable = 'name,scientific_name,vendor,description,person_in_charge,item_condition,expiry_date';
 $editable .= ',quantity_with_unit,edited_by,requires_booking';
 
-echo '<button class="show_as_link"  id="button_show_hide"
-    value="Hide" onclick="toggleShowHide( this, \'show_hide\')">Hide Form</button>';
+echo '<button class="show_as_link"  id="button_show_hide" value="Hide" onclick="toggleShowHide( this, \'show_hide\')">Hide Form</button>';
 echo '<div id="show_hide" style="display:block">';
 echo '<form action="'.site_url("user/add_inventory_item"). '" method="post" accept-charset="utf-8">';
 echo dbTableToHTMLTable('inventory', $inventory, $editable, $whatToDo);
