@@ -8,7 +8,11 @@ $ref = 'user';
 if(isset($controller))
     $ref = $controller;
 
-echo '<ul>
+if(!isset($goback))
+    $goback = "$ref/home";
+
+echo '<div class="important">
+    <ul>
         <li> Set <tt>IS PUBLIC EVENT</tt>  to <tt>YES</tt> if you want your event to appear 
         on NCBS\' google-calendar. <br />
         </li>
@@ -17,6 +21,7 @@ echo '<ul>
                filed under wrong <tt>CLASS</tt>.
         </li>
     </ul>
+    </div>
     ';
 
 $venues = getVenues( $sortby = 'total_events' );
@@ -91,7 +96,7 @@ if(!isset($external_id))
 else
     $default['is_public_event'] = true;
 
-echo '<form method="post" action="' . site_url("user/bookingrequest_submit") . '">';
+echo '<form method="post" action="' . site_url("user/bookingrequest_submit/$goback") . '">';
 echo dbTableToHTMLTable( 'bookmyvenue_requests'
         , $default
         , 'class,title,description,url,is_public_event,end_time' 
@@ -112,4 +117,4 @@ echo submitButton( 'Submit' );
 echo '</form>';
 echo '<br /><br />';
 
-echo goBackToPageLink( "$ref/home", "Go back" );
+echo goBackToPageLink( "$goback", "Go back" );
