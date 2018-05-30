@@ -32,13 +32,6 @@ body {
 }
 
 
-div.user_float {
-    position : fixed;
-    top : 1%;
-    width: 80%;
-    max-width: var(--maxwidth);
-    margin:auto;
-}
 
 div.sticker {
     margin: 2px;
@@ -46,6 +39,14 @@ div.sticker {
     font-family: Ubuntu;
     border-radius: 5px;
     background-color: GhostWhite;
+}
+
+div.user_float {
+    position : fixed;
+    top : 1%;
+    width: 70%;
+    max-width: var(--maxwidth);
+    margin:auto;
 }
 
 table.user_float {
