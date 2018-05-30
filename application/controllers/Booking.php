@@ -37,6 +37,11 @@ trait Booking
         $this->load_user_view( 'user_book', $data );
     }
 
+    public function talk_booking_edit( $talkid )
+    {
+    }
+
+
     public function private_request_edit( $arg = '')
     {
         $gid = $_POST['gid'];
@@ -434,6 +439,17 @@ trait Booking
             $msg .= printWarning( "Oh Snap! Failed to add speaker to database" );
 
         redirect( "user/register_talk");
+    }
+
+    public function talk_booking_delete( $gid )
+    {
+        // deleting $talkid
+        $_POST[ 'gid' ] = $gid;
+        $_POST[ 'status' ] = 'CANCELLED';
+        $res = updateTable( 'bookmyvenue_requests', 'gid', 'status', $_POST ); 
+        if( $res )
+            flashMessage( "Successfully removed booking request for $talkid.");
+        redirect( 'user/show_public' );
     }
 }
 

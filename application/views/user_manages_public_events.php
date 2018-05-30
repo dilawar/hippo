@@ -53,7 +53,7 @@ else
 foreach( $upcomingTalks as $t )
 {
     // Outer table
-    echo '<div class="important">';
+    echo '<div class="important" style="font-size:x-small;">';
     echo '<table><tr><td>';
     // Get image of speaker if available.
 
@@ -126,17 +126,19 @@ foreach( $upcomingTalks as $t )
             , 'eid,class,external_id,url,modified_by,timestamp,calendar_id' . 
             ',status,calendar_event_id,last_modified_on' );
 
-        echo '<form method="post" action="'.site_url("user/requests_edit") .'">';
+        echo '<form method="post" action="'.site_url("user/talk_booking_delete/$gid") .'">';
         echo "<table class=\"show_requests\"><tr>";
         echo "<td><button onclick=\"AreYouSure(this)\" 
-            name=\"response\" title=\"Cancel this request\"> 
-            $symbCancel </button></td>";
+            name=\"response\" title=\"Cancel this request\"> $symbCancel </button></td>";
+        echo '</form>';
+
+        echo '<form method="post" action="'.site_url("user/talk_booking_edit/$gid") .'">';
         echo "<td style=\"float:right\">
             <button name=\"response\" title=\"Edit this request\"
             value=\"edit\"> $symbEdit </button></td>";
         echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\" />";
-        echo "</tr></table>";
         echo '</form>';
+        echo "</tr></table>";
     }
     echo "</div>";
     echo "<hr>";

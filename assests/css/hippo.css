@@ -161,6 +161,7 @@ table.public_links tr td {
 
 table.show_info {
     max-width: var(--maxwidth);
+    width: 100%;
 }
 
 table.show_info tr td:nth-child(1)
