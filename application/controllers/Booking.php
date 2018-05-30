@@ -38,13 +38,18 @@ trait Booking
         $this->load_user_view( 'user_book', $data );
     }
 
-    public function talk_booking_edit( $talkid )
+    public function edit_booking_of_talk( $gid )
     {
+        $data = array( 'gid' => $gid, 'response' => 'edit');
+        $data['goback'] = "user/show_public";
+        $this->load_user_view( 'user_show_requests_edit', $data );
     }
 
 
-    public function private_request_edit( $arg = '')
+    public function private_request_edit($controller='user', $action = 'show_private')
     {
+        $goback = "$controller/$action";
+
         $gid = $_POST['gid'];
         $response = $_POST['response'];
         if( $response == 'delete' )
@@ -52,13 +57,13 @@ trait Booking
             $res = deleteFromTable( 'bookmyvenue_requests', 'gid', $_POST );
             if( $res )
                 flashMessage("Successfully deleted request id $gid");
-            redirect( 'user/show_private');
         }
         else if( $response == 'edit')
         {
             $gid = $_POST['gid'];
             $this->template->load( 'header', 'header.php');
             $this->template->load( "booking_request_edit", $_POST );
+            return;
         }
         else if( $response == 'Update' )
         {
@@ -66,13 +71,11 @@ trait Booking
             $res = updateTable( 'bookmyvenue_requests', 'gid', $editables, $_POST );
             if( $res )
                 flashMessage( "Successfully updated entry" );
-            redirect( 'user/show_private');
         }
         else
-        {
             flashMessage( "Not implemented yet $response." );
-            redirect( 'user/show_private');
-        }
+
+        redirect( $goback );
     }
 
     public function public_event_edit( $arg = '')
@@ -439,7 +442,7 @@ trait Booking
         redirect( "user/register_talk");
     }
 
-    public function talk_booking_delete( $gid )
+    public function delete_booking_of_talk( $gid )
     {
         // deleting $talkid
         $_POST[ 'gid' ] = $gid;
@@ -448,6 +451,15 @@ trait Booking
         if( $res )
             flashMessage( "Successfully removed booking request for $talkid.");
         redirect( 'user/show_public' );
+    }
+
+    public function edit_booking_of_talk_submit( $controller='user', $action = 'show_public' )
+    {
+        $goback = "$controller/$action";
+        $res = updateTable( "bookmyvenue_requests", "gid,rid", "title,description", $_POST );
+        if( $res )
+            flashMessage( "Successfully updated booking request." );
+        redirect( $goback);
     }
 }
 

@@ -126,13 +126,13 @@ foreach( $upcomingTalks as $t )
             , 'eid,class,external_id,url,modified_by,timestamp,calendar_id' . 
             ',status,calendar_event_id,last_modified_on' );
 
-        echo '<form method="post" action="'.site_url("user/talk_booking_delete/$gid") .'">';
+        echo '<form method="post" action="'.site_url("user/delete_booking_of_talk/$gid") .'">';
         echo "<table class=\"show_requests\"><tr>";
         echo "<td><button onclick=\"AreYouSure(this)\" 
             name=\"response\" title=\"Cancel this request\"> $symbCancel </button></td>";
         echo '</form>';
 
-        echo '<form method="post" action="'.site_url("user/talk_booking_edit/$gid") .'">';
+        echo '<form method="post" action="'.site_url("user/edit_booking_of_talk/$gid") .'">';
         echo "<td style=\"float:right\">
             <button name=\"response\" title=\"Edit this request\"
             value=\"edit\"> $symbEdit </button></td>";

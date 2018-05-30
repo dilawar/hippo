@@ -9,7 +9,6 @@ echo userHTML( );
 $user = whoAmI();
 $editables = 'class,is_public_event,title,description';
 
-
 $req = getRequestById( $gid, '1' );
 
 if( $req['created_by'] != $user && mustHaveAllOfTheseRoles( 'BOOKMYVENUE_ADMIN') )
@@ -24,8 +23,10 @@ if( mustHaveAllOfTheseRoles( 'BOOKMYVENUE_ADMIN') )
 echo ' <h2>Current entry is following.</h2>';
 echo arrayToVerticalTableHTML( $req, 'info' );
 
-echo ' <h1>Edit</h1>';
+echo goBackToPageLink( "user/show_private", "Go Back");
+
 echo "<br><br>";
+echo printNote( "Edit to your heart desire." );
 echo '<form method="post" action="">';
 echo dbTableToHTMLTable( 'bookmyvenue_requests'
     , $defaults = $req
