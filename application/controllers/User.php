@@ -331,13 +331,39 @@ class User extends CI_Controller
         redirect( 'welcome' );
     }
 
-    public function upload_to_db( $tablename, $redirect = 'home')
+    public function upload_to_db( $tablename, $unique_key, $redirect = 'home')
     {
         $filename = $_FILES['spreadsheet']['tmp_name']; $data =
         $data = read_spreadsheet( $filename );
-        var_dump( $data );
+        $header = $data[0];
+        $data = array_slice( $data, 1);
 
-        // redirect( "user/$redirect" );
+        foreach( $data as $row )
+        {
+            if( ! $row or count($row) != count($header) )
+                continue;
+
+            $toupdate = array();
+            $keyval = array();
+            foreach( $header as $i => $key )
+            {
+                if(!$key )
+                    continue;
+
+                $val = $row[$i];
+                if( !$val or $val == 'NULL' )
+                    continue;
+
+                if($key != $unique_key)
+                    $toupdate[] = $key;
+
+                $keyval[$key] = $val;
+            }
+
+            $res = insertOrUpdateTable( $tablename, $unique_key, $toupdate, $keyval ); 
+        }
+
+        redirect( "user/$redirect" );
     }
 
 }

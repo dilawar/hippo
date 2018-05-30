@@ -2626,9 +2626,9 @@ function questionsToPoll($questions, $responses = array(), $nochangeafater = 1)
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function uploadToDbTableLink( string $tablename, string $arg = '' ) : string
+function uploadToDbTableLink( string $tablename, string $unique_key, string $arg = '' ) : string
 {
-    $to = "user/upload_to_db/$tablename";
+    $to = "user/upload_to_db/$tablename/$unique_key";
     if($arg)
         $to .= "/$arg";
 
