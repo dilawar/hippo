@@ -6,6 +6,7 @@
 
 - Requires PHP >= 7.x 
 - php7, php7-imap, php7-ldap, php7-imagick
+- php-gd, php-mbstring, php-zip
 - mysql 
 - python-pypandoc
 - sudo pip install mysql-connector-python-rf

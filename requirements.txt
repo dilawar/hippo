@@ -3,4 +3,3 @@ bs4
 networkx
 pillow
 requests
-pandas
