@@ -29,13 +29,14 @@ if( strpos( $thisPage, 'welcome' ) !== false )
     // Select one image from directory _backgrounds.
     // NOTE: In url leading ./../ is important since the url has to be relative
     // to application/views. Not sure why ./../.. did not work.
+    // NOTE: When rewrite engine is on; you may have to teak this path a bit.
     $background = random_jpeg( "temp/_backgrounds" );
     if( $background )
     {
         echo "<script type=\"text/javascript\">
             window.onload = function() {
                 var body = document.getElementsByTagName('body')[0];
-                body.style.backgroundImage = \"url('./../$background')\";
+                body.style.backgroundImage = \"url('./$background')\";
             }; 
             </script>";
     }
