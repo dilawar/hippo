@@ -59,7 +59,7 @@ class Info extends CI_Controller
 
     public function rss( )
     {
-        $this->loadview( 'rss' );
+        redirect( 'Feed/rss' );
     }
 
     public function jc( )
@@ -70,11 +70,6 @@ class Info extends CI_Controller
     public function preprints()
     {
         $this->loadview( 'preprints.php');
-    }
-
-    public function info( )
-    {
-        $this->loadview( 'info.php');
     }
 
 }
