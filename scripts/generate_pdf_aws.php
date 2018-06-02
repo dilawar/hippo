@@ -47,7 +47,8 @@ function awsToTex( $aws )
     if( strlen( trim( $title ) ) < 1 )
         $title = 'Not disclosed yet!';
 
-    $abstract = $aws[ 'abstract' ];
+    $abstract =  rescale_inline_images( $aws['abstract'], '8cm' );
+
     if( strlen( trim( $abstract ) ) < 1 )
         $abstract = 'Not disclosed yet!';
 
