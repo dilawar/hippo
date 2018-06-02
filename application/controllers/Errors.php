@@ -18,9 +18,9 @@ class Errors extends CI_Controller
         $req = $_SERVER['REDIRECT_URL'];
         $uri = explode( '/', $req );
         $page = end( $uri );
-        if( $page == 'events.php' )
+        if( $page == 'allevents.php' )
         {
-            redirect( 'info/events' );
+            redirect( 'info/booking' );
             return;
         }
         elseif( $page == 'rss.php' )
