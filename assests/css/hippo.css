@@ -239,7 +239,8 @@ table.show_speaker tr td  {
 
 table.events {
     max-width : var(--maxwidth);
-    min-width : 100%;
+    min-width : 500px;
+    width: 800px;
     border: 3px solid ivory;
 }
 

@@ -52,3 +52,6 @@ $this->client->setScopes( 'https://www.googleapis.com/auth/calendar');
 
 For rewrite rule to work: see this post https://stackoverflow.com/a/8260985/1805129
 
+    $ sudo a2enmod rewrite
+    $ sudo systemctl restart apache2
+
