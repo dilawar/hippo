@@ -81,7 +81,7 @@ def fixInlineImage( msg ):
 
     # And wrap all includegraphics around by wrapfig
     msg = re.sub( r'(\\includegraphics.+?width\=(.+?)([\],]).+?})'
-            , r'\n\\begin{wrapfigure}{R}{0.45\\linewidth}\n \1 \n \\end{wrapfigure}'
+            , r'\n\\begin{wrapfigure}{R}{0.5\\linewidth}\n \1 \n \\end{wrapfigure}'
             , msg, flags = re.DOTALL
             )
     return msg
