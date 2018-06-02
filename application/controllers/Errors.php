@@ -25,7 +25,7 @@ class Errors extends CI_Controller
         }
         elseif( $page == 'rss.php' )
         {
-            redirect( 'info/rss' );
+            redirect( 'feed/rss' );
             return;
         }
         elseif( $page == 'info.php' )
