@@ -32,6 +32,13 @@ body {
 }
 
 
+div.user_float {
+    position : fixed;
+    top : 1%;
+    width: 70%;
+    max-width: var(--maxwidth);
+    margin:auto;
+}
 
 div.sticker {
     margin: 2px;
