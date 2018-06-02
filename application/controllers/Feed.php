@@ -1,7 +1,5 @@
 <?php
-
-require_once BASEPATH . 'autoload.php';
-require_once BASEPATH.'database.php';
+// require_once BASEPATH.'database.php';
 
 function venueText( $venue )
 {
@@ -121,11 +119,11 @@ class Feed extends CI_Controller
 
         $feed .= '</channel>';
         $feed .= '</rss>';
+        file_put_contents( "/tmp/rss.xml", $feed );
 
         $this->output->set_content_type('application/rss+xml' );
-        // $this->output->set_output( $feed );
-        file_put_contents( "/tmp/rss.xml", $feed );
-        $this->load->view( 'rss', array( 'feed' => $feed ), true );
+        $this->output->set_output( $feed );
+        //$this->load->view( 'rss', array( 'feed' => $feed ), true );
     }
 }
 
