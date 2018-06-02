@@ -62,3 +62,5 @@ p {
 	</div>
 </body>
 </html>
+
+<?php echo( "You requested: " . $_SERVER['REQUEST_URI'] ) ; ?>
