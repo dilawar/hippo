@@ -5,6 +5,7 @@
 </head>
 <body>
 
+
 <?php 
 if(isset($header))
     require_once "$header";
@@ -49,6 +50,7 @@ $symbDelete = ' <i class="fa fa-trash "></i> ';
 
 ?>
     <div id="contents"><?= $contents ?></div>
+    <div id="div_background_image"></div>
     <div id="footer"><?php if(isset($footer)){echo $footer;}else{echo "";} ?></div>
 </body>
 </html>

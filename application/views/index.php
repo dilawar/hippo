@@ -33,12 +33,14 @@ if( strpos( $thisPage, 'welcome' ) !== false )
     $background = random_jpeg( "temp/_backgrounds" );
     if( $background )
     {
-        echo "<script type=\"text/javascript\">
+        echo '<script type="text/javascript">
             window.onload = function() {
-                var body = document.getElementsByTagName('body')[0];
-                body.style.backgroundImage = \"url('./$background')\";
+                var div = document.getElementById("div_background_image");
+                div.style.backgroundImage = "url(' . "./$background" . ')";
+                div.style.width = "100%";
+                div.style.height = "100%";
             }; 
-            </script>";
+            </script>';
     }
 }
 
