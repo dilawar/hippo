@@ -51,3 +51,4 @@ $this->client->setScopes( 'https://www.googleapis.com/auth/calendar');
 # Notes
 
 For rewrite rule to work: see this post https://stackoverflow.com/a/8260985/1805129
+
