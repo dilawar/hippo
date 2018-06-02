@@ -223,7 +223,7 @@ foreach( $jcIds as $currentJC )
     // Sort by last presented on.
     sortByKey( $allSubs, 'Last Presented On' );
 
-    $subTable = '<table class="sortable info">';
+    $subTable = '<table class="sortable info exportable" id="js_subscription">';
     $subTable .= arrayToTHRow( $allSubs[0], 'sorttable', '' );
     foreach( $allSubs as $i => $sub )
     {
@@ -279,3 +279,11 @@ echo '<br />';
 echo goBackToPageLink( "user.php", "Go back" );
 
 ?>
+
+/* <!-- This should be copy pasted --> */
+<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+TableExport(document.getElementsByClassName("exportable"));
+</script>
