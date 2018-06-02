@@ -19,9 +19,6 @@
 <link  href="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
 <script src="<?= base_url() ?>/node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js"></script>
  
-
-
-
 <!-- Font awesome -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
 
@@ -152,6 +149,7 @@ $(document).ready(function(){
     <td><a class="bright" href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
     <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
+    <td><a class="bright" href="http://intranet.ncbs.res.in/HippoIgnited/index.php" target="_blank" >Old Hippo</a></td>
     <!--<td><a class="bright" href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>-->
     <!-- <td><a class="bright" href="<?= site_url('info/preprints') ?>" target="hippo_popup" >Preprints</a></td>-->
     </tr>
