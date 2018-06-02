@@ -1,11 +1,11 @@
 <?php
 
-require_once 'display_content.php';
-require_once 'logger.php' ;
-require_once 'html2text.php';
-require_once 'helper/imap.php';
-require_once 'ldap.php';
-require_once 'mail.php';
+require_once __DIR__.'/display_content.php';
+require_once __DIR__.'/logger.php' ;
+require_once __DIR__.'/html2text.php';
+require_once __DIR__.'/helper/imap.php';
+require_once __DIR__.'/ldap.php';
+require_once __DIR__.'/mail.php';
 
 global $symbClock;
 
