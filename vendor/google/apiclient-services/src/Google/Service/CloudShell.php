@@ -36,7 +36,7 @@ class Google_Service_CloudShell extends Google_Service
       "https://www.googleapis.com/auth/cloud-platform";
 
   public $operations;
-
+  
   /**
    * Constructs the internal representation of the CloudShell service.
    *

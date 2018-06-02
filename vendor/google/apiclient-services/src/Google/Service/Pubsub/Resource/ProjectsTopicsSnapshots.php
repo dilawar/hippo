@@ -26,8 +26,10 @@
 class Google_Service_Pubsub_Resource_ProjectsTopicsSnapshots extends Google_Service_Resource
 {
   /**
-   * Lists the names of the snapshots on this topic.
-   * (snapshots.listProjectsTopicsSnapshots)
+   * Lists the names of the snapshots on this topic. ALPHA: This feature is part
+   * of an alpha release. This API might be changed in backward-incompatible ways
+   * and is not recommended for production use. It is not subject to any SLA or
+   * deprecation policy. (snapshots.listProjectsTopicsSnapshots)
    *
    * @param string $topic The name of the topic that snapshots are attached to.
    * Format is `projects/{project}/topics/{topic}`.

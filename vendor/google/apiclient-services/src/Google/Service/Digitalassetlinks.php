@@ -35,7 +35,7 @@ class Google_Service_Digitalassetlinks extends Google_Service
 
   public $assetlinks;
   public $statements;
-
+  
   /**
    * Constructs the internal representation of the Digitalassetlinks service.
    *

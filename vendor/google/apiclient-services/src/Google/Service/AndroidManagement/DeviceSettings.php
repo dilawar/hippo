@@ -23,6 +23,7 @@ class Google_Service_AndroidManagement_DeviceSettings extends Google_Model
   public $isDeviceSecure;
   public $isEncrypted;
   public $unknownSourcesEnabled;
+  public $verifyAppsEnabled;
 
   public function setAdbEnabled($adbEnabled)
   {
@@ -71,5 +72,13 @@ class Google_Service_AndroidManagement_DeviceSettings extends Google_Model
   public function getUnknownSourcesEnabled()
   {
     return $this->unknownSourcesEnabled;
+  }
+  public function setVerifyAppsEnabled($verifyAppsEnabled)
+  {
+    $this->verifyAppsEnabled = $verifyAppsEnabled;
+  }
+  public function getVerifyAppsEnabled()
+  {
+    return $this->verifyAppsEnabled;
   }
 }

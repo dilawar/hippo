@@ -37,7 +37,7 @@ class Google_Service_AbusiveExperienceReport extends Google_Service
 
   public $sites;
   public $violatingSites;
-
+  
   /**
    * Constructs the internal representation of the AbusiveExperienceReport
    * service.

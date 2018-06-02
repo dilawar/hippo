@@ -26,6 +26,8 @@ class Google_Service_Calendar_ConferenceData extends Google_Collection
   protected $entryPointsType = 'Google_Service_Calendar_EntryPoint';
   protected $entryPointsDataType = 'array';
   public $notes;
+  protected $parametersType = 'Google_Service_Calendar_ConferenceParameters';
+  protected $parametersDataType = '';
   public $signature;
 
   public function setConferenceId($conferenceId)
@@ -85,6 +87,20 @@ class Google_Service_Calendar_ConferenceData extends Google_Collection
   public function getNotes()
   {
     return $this->notes;
+  }
+  /**
+   * @param Google_Service_Calendar_ConferenceParameters
+   */
+  public function setParameters(Google_Service_Calendar_ConferenceParameters $parameters)
+  {
+    $this->parameters = $parameters;
+  }
+  /**
+   * @return Google_Service_Calendar_ConferenceParameters
+   */
+  public function getParameters()
+  {
+    return $this->parameters;
   }
   public function setSignature($signature)
   {

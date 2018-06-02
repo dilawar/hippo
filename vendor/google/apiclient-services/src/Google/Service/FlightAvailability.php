@@ -34,7 +34,7 @@ class Google_Service_FlightAvailability extends Google_Service
 
 
   public $v1;
-
+  
   /**
    * Constructs the internal representation of the FlightAvailability service.
    *
