@@ -69,6 +69,20 @@ function fixHTML( $html, bool $strip_tags = false ) : string
     return $res;
 }
 
+function rescale_inline_images( $html, $width = "60%")
+{
+    $dom = new DOMDocument( );
+    $dom->loadHTML($html);
+    $images = $dom->getElementsByTagName( 'img' );
+    foreach( $images as $img )
+    {
+        $img->setAttribute( 'width', $width );
+        $img->setAttribute( 'height', 'auto' );
+        $img->setAttribute( 'align', 'right' );
+    }
+
+    return $dom->saveHTML();
+}
 
 function addToGoogleCalLink( array $event )
 {
@@ -1509,6 +1523,7 @@ function awsToHTML( $aws, $with_picture = false )
              </tr>
              </table>';
 
+    $abstract = rescale_inline_images( $abstract );
 
     // Add table.
     $html = '<table class="events">';
