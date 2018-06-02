@@ -25,6 +25,7 @@ class Google_Service_TPU_Node extends Google_Collection
   public $health;
   public $healthDescription;
   public $ipAddress;
+  public $labels;
   public $name;
   public $network;
   protected $networkEndpointsType = 'Google_Service_TPU_NetworkEndpoint';
@@ -89,6 +90,14 @@ class Google_Service_TPU_Node extends Google_Collection
   public function getIpAddress()
   {
     return $this->ipAddress;
+  }
+  public function setLabels($labels)
+  {
+    $this->labels = $labels;
+  }
+  public function getLabels()
+  {
+    return $this->labels;
   }
   public function setName($name)
   {

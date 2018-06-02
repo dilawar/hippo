@@ -38,7 +38,7 @@ class Google_Service_StreetViewPublish extends Google_Service
 
   public $photo;
   public $photos;
-
+  
   /**
    * Constructs the internal representation of the StreetViewPublish service.
    *

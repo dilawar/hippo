@@ -19,8 +19,8 @@
  * Service definition for AndroidProvisioningPartner (v1).
  *
  * <p>
- * Automates reseller integration into zero-touch enrollment by assigning
- * devices to customers and creating device reports.</p>
+ * Automates Android zero-touch enrollment for device resellers, customers, and
+ * EMMs.</p>
  *
  * <p>
  * For more information about this service, see the API
@@ -40,7 +40,7 @@ class Google_Service_AndroidProvisioningPartner extends Google_Service
   public $operations;
   public $partners_customers;
   public $partners_devices;
-
+  
   /**
    * Constructs the internal representation of the AndroidProvisioningPartner
    * service.

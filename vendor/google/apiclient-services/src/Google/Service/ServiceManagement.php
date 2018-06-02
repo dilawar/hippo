@@ -50,7 +50,7 @@ class Google_Service_ServiceManagement extends Google_Service
   public $services_configs;
   public $services_consumers;
   public $services_rollouts;
-
+  
   /**
    * Constructs the internal representation of the ServiceManagement service.
    *

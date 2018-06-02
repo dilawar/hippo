@@ -37,7 +37,7 @@ class Google_Service_CloudBuild extends Google_Service
   public $operations;
   public $projects_builds;
   public $projects_triggers;
-
+  
   /**
    * Constructs the internal representation of the CloudBuild service.
    *
@@ -86,6 +86,10 @@ class Google_Service_CloudBuild extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
                 'filter' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -93,10 +97,6 @@ class Google_Service_CloudBuild extends Google_Service
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
-                ),
-                'pageSize' => array(
-                  'location' => 'query',
-                  'type' => 'integer',
                 ),
               ),
             ),

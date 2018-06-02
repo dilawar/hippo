@@ -15,8 +15,11 @@
  * the License.
  */
 
-class Google_Service_Sheets_WaterfallChartSeries extends Google_Model
+class Google_Service_Sheets_WaterfallChartSeries extends Google_Collection
 {
+  protected $collection_key = 'customSubtotals';
+  protected $customSubtotalsType = 'Google_Service_Sheets_WaterfallChartCustomSubtotal';
+  protected $customSubtotalsDataType = 'array';
   protected $dataType = 'Google_Service_Sheets_ChartData';
   protected $dataDataType = '';
   public $hideTrailingSubtotal;
@@ -27,6 +30,20 @@ class Google_Service_Sheets_WaterfallChartSeries extends Google_Model
   protected $subtotalColumnsStyleType = 'Google_Service_Sheets_WaterfallChartColumnStyle';
   protected $subtotalColumnsStyleDataType = '';
 
+  /**
+   * @param Google_Service_Sheets_WaterfallChartCustomSubtotal
+   */
+  public function setCustomSubtotals($customSubtotals)
+  {
+    $this->customSubtotals = $customSubtotals;
+  }
+  /**
+   * @return Google_Service_Sheets_WaterfallChartCustomSubtotal
+   */
+  public function getCustomSubtotals()
+  {
+    return $this->customSubtotals;
+  }
   /**
    * @param Google_Service_Sheets_ChartData
    */

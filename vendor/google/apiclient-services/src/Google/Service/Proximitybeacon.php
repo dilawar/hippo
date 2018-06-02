@@ -40,7 +40,7 @@ class Google_Service_Proximitybeacon extends Google_Service
   public $beacons_diagnostics;
   public $namespaces;
   public $v1beta1;
-
+  
   /**
    * Constructs the internal representation of the Proximitybeacon service.
    *
@@ -253,11 +253,11 @@ class Google_Service_Proximitybeacon extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'projectId' => array(
+                'namespacedType' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'namespacedType' => array(
+                'projectId' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),

@@ -40,7 +40,7 @@ class Google_Service_Vault extends Google_Service
   public $matters;
   public $matters_holds;
   public $matters_holds_accounts;
-
+  
   /**
    * Constructs the internal representation of the Vault service.
    *
@@ -218,6 +218,10 @@ class Google_Service_Vault extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'view' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
               ),
             ),'list' => array(
               'path' => 'v1/matters/{matterId}/holds',
@@ -235,6 +239,10 @@ class Google_Service_Vault extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
+                ),
+                'view' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),'update' => array(

@@ -65,11 +65,15 @@ def fixInlineImage( msg ):
     Surround each image with \includewrapfig environment.
     """
     # Sometime we loose = in the end.
-    pat = re.compile( r'data\:image\/(?P<fmt>.+?);base64,(?P<data>.+?=)', re.DOTALL | re.I )
+    pat = re.compile( r'data\:image\/(?P<fmt>.+?);base64,(?P<data>.+?=+)', re.DOTALL | re.I )
     for m in pat.finditer( msg ):
         outfmt = m.group( 'fmt' )
         data = m.group( 'data' )
         fp = tempfile.NamedTemporaryFile( mode='w+b', delete = False, suffix='.'+outfmt )
+        try:
+            data = data.decode()
+        except Exception as e:
+            pass
         fp.write( base64.decodebytes(data.encode()) )
         fp.close( )
         # Replace the inline image with file name.
@@ -77,7 +81,7 @@ def fixInlineImage( msg ):
 
     # And wrap all includegraphics around by wrapfig
     msg = re.sub( r'(\\includegraphics.+?width\=(.+?)([\],]).+?})'
-            , r'\n\\begin{wrapfigure}{R}{\2}\n \1 \n \\end{wrapfigure}'
+            , r'\n\\begin{wrapfigure}{R}{0.5\\linewidth}\n \1 \n \\end{wrapfigure}'
             , msg, flags = re.DOTALL
             )
     return msg

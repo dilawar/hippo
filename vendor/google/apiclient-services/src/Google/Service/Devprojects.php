@@ -47,7 +47,7 @@ class Google_Service_Devprojects extends Google_Service
   public $projects;
   public $toses;
   public $users;
-
+  
   /**
    * Constructs the internal representation of the Devprojects service.
    *

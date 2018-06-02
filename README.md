@@ -6,6 +6,7 @@
 
 - Requires PHP >= 7.x 
 - php7, php7-imap, php7-ldap, php7-imagick
+- php-gd, php-mbstring, php-zip
 - mysql 
 - python-pypandoc
 - sudo pip install mysql-connector-python-rf
@@ -47,3 +48,6 @@ $this->client->setSubject( 'google-service_account@gservice.com' );
 $this->client->setScopes( 'https://www.googleapis.com/auth/calendar');
 ```
 
+# Notes
+
+For rewrite rule to work: see this post https://stackoverflow.com/a/8260985/1805129

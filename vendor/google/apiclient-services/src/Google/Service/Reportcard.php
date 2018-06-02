@@ -35,7 +35,7 @@ class Google_Service_Reportcard extends Google_Service
 
   public $mutes;
   public $notices;
-
+  
   /**
    * Constructs the internal representation of the Reportcard service.
    *

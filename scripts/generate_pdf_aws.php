@@ -47,7 +47,8 @@ function awsToTex( $aws )
     if( strlen( trim( $title ) ) < 1 )
         $title = 'Not disclosed yet!';
 
-    $abstract = $aws[ 'abstract' ];
+    $abstract =  rescale_inline_images( $aws['abstract'], '8cm' );
+
     if( strlen( trim( $abstract ) ) < 1 )
         $abstract = 'Not disclosed yet!';
 
@@ -117,10 +118,15 @@ function awsToTex( $aws )
     $extra .= '\textbf{Thesis Committee Member(s)} & ' . implode( ", ", $tcm ) . '\\\\';
     $extra .= '\end{tabular}';
 
-    $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-        , fit to height=18 cm, fit basedim=14pt]
-        \fontfamily{pnc}\selectfont
-    ' . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
+    $autoscale = true;
+    if( $autoscale )
+    {
+        $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
+            , fit to height=18 cm, fit basedim=14pt] \fontfamily{pnc}\selectfont ' 
+            . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
+    }
+    else
+        $tex[] = $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '}';
 
     return implode( "\n", $tex );
 
@@ -143,7 +149,7 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
     $awses = array_merge( $awses, $upcomingS );
 
     // Intialize pdf template.
-    $tex = array( "\documentclass[]{article}"
+    $tex = array( "\documentclass[12pt]{article}"
         , "\usepackage[margin=25mm,top=20mm,a4paper]{geometry}"
         , "\usepackage[]{graphicx}"
         , "\usepackage[]{grffile}"

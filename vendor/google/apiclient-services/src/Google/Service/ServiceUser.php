@@ -44,7 +44,7 @@ class Google_Service_ServiceUser extends Google_Service
 
   public $projects_services;
   public $services;
-
+  
   /**
    * Constructs the internal representation of the ServiceUser service.
    *
@@ -116,13 +116,13 @@ class Google_Service_ServiceUser extends Google_Service
               'path' => 'v1/services:search',
               'httpMethod' => 'GET',
               'parameters' => array(
-                'pageSize' => array(
-                  'location' => 'query',
-                  'type' => 'integer',
-                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
+                ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
                 ),
               ),
             ),

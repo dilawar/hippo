@@ -69,6 +69,20 @@ function fixHTML( $html, bool $strip_tags = false ) : string
     return $res;
 }
 
+function rescale_inline_images( $html, $width = "60%")
+{
+    $dom = new DOMDocument( );
+    $dom->loadHTML($html);
+    $images = $dom->getElementsByTagName( 'img' );
+    foreach( $images as $img )
+    {
+        $img->setAttribute( 'width', $width );
+        $img->setAttribute( 'height', 'auto' );
+        $img->setAttribute( 'align', 'right' );
+    }
+
+    return $dom->saveHTML();
+}
 
 function addToGoogleCalLink( array $event )
 {
@@ -1509,6 +1523,7 @@ function awsToHTML( $aws, $with_picture = false )
              </tr>
              </table>';
 
+    $abstract = rescale_inline_images( $abstract );
 
     // Add table.
     $html = '<table class="events">';
@@ -2615,4 +2630,34 @@ function questionsToPoll($questions, $responses = array(), $nochangeafater = 1)
     return $html;
 }
 
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Create upload-link. A except sheet can be uploaded to database
+    * table.
+    *
+    * @Param $tablename
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function uploadToDbTableLink( string $tablename, string $unique_key, string $arg = '' ) : string
+{
+    $to = "user/upload_to_db/$tablename/$unique_key";
+    if($arg)
+        $to .= "/$arg";
+
+    $html = '<form action="'.site_url( "$to") .'" method="post" enctype="multipart/form-data">';
+    $html .= '<table class="upload"><tr>';
+    $html .= "<caption>First download data as spreadsheet, edit it and upload it. You can also 
+        use the form given below to add/edit one entry at a time.</caption>";
+    $html .= '<td>';
+    $html .= '<input type="file" name="spreadsheet" value="" accept=".xlsx, .xls, .csv, .odt"/>';
+    $html .= '</td><td>';
+    $html .= "<button type='submit'>Upload to $tablename</button>";
+    $html .= '</td></tr>';
+    $html .= '</table>';
+    $html .= '</form>';
+    return $html;
+}
 ?>

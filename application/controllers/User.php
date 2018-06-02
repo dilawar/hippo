@@ -36,6 +36,18 @@ class User extends CI_Controller
         $this->home();
     }
 
+    public function redirect( $to = null) 
+    {
+        if( $to )
+            redirect( $to );
+
+        if ($this->agent->is_referral())
+            redirect( $this->agent->referrer() );
+        else
+            redirect( 'user/home' );
+
+    }
+
 
     public function update_supervisors( )
     {
@@ -318,6 +330,53 @@ class User extends CI_Controller
         $this->session->sess_destroy();
         redirect( 'welcome' );
     }
+
+    public function upload_to_db( $tablename, $unique_key, $redirect = 'home')
+    {
+        $filename = $_FILES['spreadsheet']['tmp_name']; $data =
+        $data = read_spreadsheet( $filename );
+        $header = $data[0];
+        $data = array_slice( $data, 1);
+
+        $query = '';
+        foreach( $data as $row )
+        {
+            if( ! $row or count($row) != count($header) )
+                continue;
+
+            $toupdate = array();
+            $allkeys = array();
+            $keyval = array();
+            foreach( $header as $i => $key )
+            {
+                if(!$key )
+                    continue;
+
+                $val = $row[$i];
+                if( !$val or $val == 'NULL' )
+                    continue;
+
+                $allkeys[] = $key;
+                if($key != $unique_key)
+                {
+                    $toupdate[] = $key;
+                }
+
+                $keyval[$key] = $val;
+                $query .= "$key='$val' ";
+            }
+
+            $query .= ';';
+            if( getTableEntry( $tablename, $unique_key, $keyval ) )
+                $res = updateTable( $tablename, $unique_key, $toupdate, $keyval );
+            else
+                $res = insertIntoTable( $tablename, $allkeys, $keyval ); 
+        }
+
+        // flashMessage( $query );
+        redirect( "user/$redirect" );
+    }
+
 }
 
 ?>

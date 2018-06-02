@@ -104,8 +104,6 @@ class Google_Service_CloudMachineLearningEngine_Resource_ProjectsModels extends 
    * be listed.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string filter Optional. Specifies the subset of models to
-   * retrieve.
    * @opt_param string pageToken Optional. A page token to request the next page
    * of results.
    *
@@ -116,6 +114,8 @@ class Google_Service_CloudMachineLearningEngine_Resource_ProjectsModels extends 
    * response message will contain a valid value in the `next_page_token` field.
    *
    * The default value is 20, and the maximum page size is 100.
+   * @opt_param string filter Optional. Specifies the subset of models to
+   * retrieve.
    * @return Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ListModelsResponse
    */
   public function listProjectsModels($parent, $optParams = array())
@@ -141,14 +141,10 @@ class Google_Service_CloudMachineLearningEngine_Resource_ProjectsModels extends 
    * default version to "version_1", the `update_mask` parameter would be
    * specified as `description`, `default_version.name`, and the `PATCH` request
    * body would specify the new value, as follows:     {       "description":
-   * "foo",       "defaultVersion": {         "name":"version_1"       }     } In
-   * this example, the model is blindly overwritten since no etag is given.
+   * "foo",       "defaultVersion": {         "name":"version_1"       }     }
    *
-   * To adopt etag mechanism, include `etag` field in the mask, and include the
-   * `etag` value in your model resource.
-   *
-   * Currently the supported update masks are `description`,
-   * `default_version.name`, `labels`, and `etag`.
+   * Currently the supported update masks are `description` and
+   * `default_version.name`.
    * @return Google_Service_CloudMachineLearningEngine_GoogleLongrunningOperation
    */
   public function patch($name, Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Model $postBody, $optParams = array())

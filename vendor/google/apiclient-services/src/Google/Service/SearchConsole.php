@@ -33,7 +33,7 @@ class Google_Service_SearchConsole extends Google_Service
 
 
   public $urlTestingTools_mobileFriendlyTest;
-
+  
   /**
    * Constructs the internal representation of the SearchConsole service.
    *

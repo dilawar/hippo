@@ -23,6 +23,7 @@ class Google_Service_AndroidManagement_SoftwareInfo extends Google_Model
   public $androidDevicePolicyVersionName;
   public $androidVersion;
   public $bootloaderVersion;
+  public $deviceBuildSignature;
   public $deviceKernelVersion;
   public $securityPatchLevel;
 
@@ -73,6 +74,14 @@ class Google_Service_AndroidManagement_SoftwareInfo extends Google_Model
   public function getBootloaderVersion()
   {
     return $this->bootloaderVersion;
+  }
+  public function setDeviceBuildSignature($deviceBuildSignature)
+  {
+    $this->deviceBuildSignature = $deviceBuildSignature;
+  }
+  public function getDeviceBuildSignature()
+  {
+    return $this->deviceBuildSignature;
   }
   public function setDeviceKernelVersion($deviceKernelVersion)
   {

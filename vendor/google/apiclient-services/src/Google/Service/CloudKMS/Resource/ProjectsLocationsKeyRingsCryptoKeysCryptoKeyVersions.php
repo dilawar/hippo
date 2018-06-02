@@ -124,7 +124,7 @@ class Google_Service_CloudKMS_Resource_ProjectsLocationsKeyRingsCryptoKeysCrypto
     return $this->call('patch', array($params), "Google_Service_CloudKMS_CryptoKeyVersion");
   }
   /**
-   * Restore a CryptoKeyVersion in the DESTROY_SCHEDULED, state.
+   * Restore a CryptoKeyVersion in the DESTROY_SCHEDULED state.
    *
    * Upon restoration of the CryptoKeyVersion, state will be set to DISABLED, and
    * destroy_time will be cleared. (cryptoKeyVersions.restore)

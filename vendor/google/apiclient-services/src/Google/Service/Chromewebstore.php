@@ -38,7 +38,7 @@ class Google_Service_Chromewebstore extends Google_Service
   public $items;
   public $licenses;
   public $payments;
-
+  
   /**
    * Constructs the internal representation of the Chromewebstore service.
    *

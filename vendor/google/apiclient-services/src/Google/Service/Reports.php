@@ -43,7 +43,7 @@ class Google_Service_Reports extends Google_Service
   public $customerUsageReports;
   public $entityUsageReports;
   public $userUsageReport;
-
+  
   /**
    * Constructs the internal representation of the Reports service.
    *

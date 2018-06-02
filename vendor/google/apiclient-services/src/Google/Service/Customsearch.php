@@ -34,7 +34,7 @@ class Google_Service_Customsearch extends Google_Service
 
   public $cse;
   public $cse_siterestrict;
-
+  
   /**
    * Constructs the internal representation of the Customsearch service.
    *

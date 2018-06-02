@@ -40,7 +40,7 @@ class Google_Service_Safebrowsing extends Google_Service
   public $threatListUpdates;
   public $threatLists;
   public $threatMatches;
-
+  
   /**
    * Constructs the internal representation of the Safebrowsing service.
    *
@@ -69,11 +69,11 @@ class Google_Service_Safebrowsing extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'clientId' => array(
+                'clientVersion' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'clientVersion' => array(
+                'clientId' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),

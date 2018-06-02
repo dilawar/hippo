@@ -34,7 +34,7 @@ class Google_Service_FirebaseRemoteConfig extends Google_Service
 
 
   public $projects;
-
+  
   /**
    * Constructs the internal representation of the FirebaseRemoteConfig service.
    *

@@ -138,14 +138,9 @@ class Google_Service_CloudMachineLearningEngine_Resource_ProjectsModelsVersions 
    * For example, to change the description of a version to "foo", the
    * `update_mask` parameter would be specified as `description`, and the `PATCH`
    * request body would specify the new value, as follows:     {
-   * "description": "foo"     } In this example, the version is blindly
-   * overwritten since no etag is given.
+   * "description": "foo"     }
    *
-   * To adopt etag mechanism, include `etag` field in the mask, and include the
-   * `etag` value in your version resource.
-   *
-   * Currently the only supported update masks are `description`, `labels`, and
-   * `etag`, and `expire_time`.
+   * Currently the only supported update mask is`description`.
    * @return Google_Service_CloudMachineLearningEngine_GoogleLongrunningOperation
    */
   public function patch($name, Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Version $postBody, $optParams = array())

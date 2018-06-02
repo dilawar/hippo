@@ -49,7 +49,7 @@ class Google_Service_AndroidEnterprise extends Google_Service
   public $storelayoutclusters;
   public $storelayoutpages;
   public $users;
-
+  
   /**
    * Constructs the internal representation of the AndroidEnterprise service.
    *

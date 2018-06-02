@@ -44,7 +44,7 @@ class Google_Service_FirebaseRules extends Google_Service
   public $projects;
   public $projects_releases;
   public $projects_rulesets;
-
+  
   /**
    * Constructs the internal representation of the FirebaseRules service.
    *
@@ -153,16 +153,6 @@ class Google_Service_FirebaseRules extends Google_Service
             ),'patch' => array(
               'path' => 'v1/{+name}',
               'httpMethod' => 'PATCH',
-              'parameters' => array(
-                'name' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-              ),
-            ),'update' => array(
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'PUT',
               'parameters' => array(
                 'name' => array(
                   'location' => 'path',
