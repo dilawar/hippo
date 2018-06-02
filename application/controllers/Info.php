@@ -57,6 +57,11 @@ class Info extends CI_Controller
 
     }
 
+    public function rss( )
+    {
+        $this->loadview( 'rss' );
+    }
+
     public function jc( )
     {
         $this->loadview( 'jc.php' );

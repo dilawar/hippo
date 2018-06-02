@@ -1,0 +1,37 @@
+<?php
+
+require_once BASEPATH . 'autoload.php';
+
+class Errors extends CI_Controller 
+{
+    // NOTE: Checking for permission is in pre-hook.
+
+    public function loadview( $view, $data = array())
+    {
+        $data['controller'] = 'info';
+        $this->template->set('header', 'header.php');
+        $this->template->load($view);
+    }
+
+    public function page_missing( $arg = '' )
+    {
+        $req = $_SERVER['REDIRECT_URL'];
+        $uri = explode( '/', $req );
+        $page = end( $uri );
+        if( $page == 'events.php' )
+        {
+            redirect( 'info/events' );
+            return;
+        }
+        elseif( $page == 'rss.php' )
+        {
+            redirect( 'info/rss' );
+            return;
+        }
+
+        flashMessage( "Page you have requested is not found <tt>$req</tt>." );
+        redirect( "welcome" );
+    }
+}
+
+?>
