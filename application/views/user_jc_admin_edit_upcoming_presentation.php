@@ -1,35 +1,30 @@
 <?php
-
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-
+require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
-if( ! isJCAdmin( $_SESSION[ 'user' ] ) )
-{
-    echo printWarning( "You do not have permission to access this page." );
-    goToPage( 'user.php' );
-    exit;
-}
+//if( ! isJCAdmin( $_SESSION[ 'user' ] ) )
+//{
+//    echo printWarning( "You do not have permission to access this page." );
+//    goToPage( 'user.php' );
+//    exit;
+//}
 
 
 echo '<h1>Edit presentation entry</h1>';
 
 echo printInfo( "
-    Consider adding <tt>URL</tt>. This is the place user can find material related
-    to this presentation e.g. link to github repo, slideshare, drive etc..
+    Consider adding <tt>URL</tt>. This should be the place people can find material related
+    to this presentation e.g. link to github repo, slideshare, google-drive, dropbox etc. .
     " );
 
-echo alertUser( "We do not keep backup for your entry!" );
+echo printNote( "We do not keep backup for your entry!" );
 
 // If current user does not have the privileges, send her back to  home
 // page.
-if( ! isJCAdmin( $_SESSION[ 'user' ] ) )
+if( ! isJCAdmin( whoAmI() ) )
 {
-    echo printWarning( "You don't have permission to access this page" );
-    echo goToPage( "user.php", 2 );
+    echo printWarning( "How did you manage to come here? You don't have permission to access this page!" );
+    echo goBackToPageLink( "user/home", "Go Home" );
     exit;
 }
 
@@ -59,6 +54,6 @@ if( __get__( $_POST, 'response', '' ) == 'submit' )
 
 
 echo " <br /> <br /> ";
-echo goBackToPageLink( 'user_jc_admin.php', 'Done editing, Go Back' );
+echo goBackToPageLink( 'user/jcadmin', 'Done editing, Go Back' );
 
 ?>

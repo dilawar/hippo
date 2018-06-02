@@ -4,6 +4,11 @@ require_once BASEPATH.'extra/jc.php';
 
 trait JCAdmin
 {
+    // Views.
+    public function jc_admin_edit_upcoming_presentation( )
+    {
+        $this->load_user_view( 'user_jc_admin_edit_upcoming_presentation' );
+    }
 
     public function jc_admin( $arg )
     {
@@ -55,6 +60,8 @@ trait JCAdmin
             redirect( "user/jc" );
         }
     }
+
+
 }
 
 ?>
