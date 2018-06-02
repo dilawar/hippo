@@ -13,21 +13,6 @@ global $symbDelete;
 
 if( $useCKEditor )
     echo '<script src="https://cdn.ckeditor.com/4.6.2/standard/ckeditor.js"></script>';
-?>
-
-<script>
-function displayEvent( button )
-{
-    alert( button.value );
-};
-
-function displayRequest( button )
-{
-    alert( button.value );
-};
-</script>
-
-<?php
 
 /* --------------------------------------------------------------------------*/
 /**
