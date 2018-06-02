@@ -28,6 +28,11 @@ class Errors extends CI_Controller
             redirect( 'info/rss' );
             return;
         }
+        elseif( $page == 'info.php' )
+        {
+            redirect( 'info/info' );
+            return;
+        }
 
         flashMessage( "Page you have requested is not found <tt>$req</tt>." );
         redirect( "welcome" );
