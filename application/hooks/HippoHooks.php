@@ -44,9 +44,11 @@ class HippoHooks
         else
         {
             $page = basename( $_SERVER[ 'PHP_SELF'] );
-            if( ! ( $page == 'index.php' || $page == 'welcome' || $page == 'login') )
+            $page = str_replace( '.php', '', $page );
+
+            if( ! ( $page == 'index' || $page == 'rss' ||  $page == 'welcome' || $page == 'login') )
             {
-                $this->CI->session->set_flashdata('error', "You are not authenticated yet." );
+                $this->CI->session->set_flashdata('error', "You are not authenticated yet." . $page );
                 redirect( 'welcome' );
                 return;
             }
