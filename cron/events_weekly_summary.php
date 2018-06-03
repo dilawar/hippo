@@ -2,7 +2,7 @@
 
 function events_weekly_summary_cron()
 {
-    if( trueOnGivenDayAndTime( 'this sunday', '7:00 pm' ) )
+    if( trueOnGivenDayAndTime( 'this sunday', '19:00' ) )
     {
         echo printInfo( "Today is Sunday 7pm. Send out emails for week events." );
         $thisMonday = dbDate( strtotime( 'this monday' ) );
