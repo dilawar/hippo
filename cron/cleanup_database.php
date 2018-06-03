@@ -1,6 +1,6 @@
 <?php
 
-require_once 'cron_jobs/helper.php';
+require_once __DIR__.'/helper.php';
 
 /* Every monday, check students who are not eligible for AWS anymore */
 if( trueOnGivenDayAndTime( 'this monday', '17:00' ) )
@@ -104,9 +104,9 @@ if( trueOnGivenDayAndTime( 'this sunday', '17:00' ) )
     }
 }
 
-if( trueOnGivenDayAndTime( 'today', '10:15' ) )
+if( trueOnGivenDayAndTime( 'today', '9:30' ) )
 {
-    echo "Cleaning up orphaned events";
+    echo printInfo( "Cleaning up orphaned events" );
     $today = dbDate( 'today' );
     $events = getTableEntries( 'events', 'date', "date>'$date' AND status='VALID' AND external_id !='SELF.-1'" );
     foreach( $events as $ev )

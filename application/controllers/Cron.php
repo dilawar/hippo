@@ -1,6 +1,7 @@
 <?php
 
 require_once BASEPATH.'autoload.php';
+require_once FCPATH.'/cron/cleanup_database.php';
 
 class Cron extends CI_Controller {
 
@@ -9,27 +10,33 @@ class Cron extends CI_Controller {
         echo "Running cron";
 
         // Execute all scripts in ./views/controller/cron folder.
-        $files = array( 'cron/aws_annoy.php'
-            , 'cron/aws_annoy.php'
-            , 'cron/aws_friday_notification.php'
-            , 'cron/aws_friday_notify_faculty.php'
-            , 'cron/aws_monday_morning.php'
-            , 'cron/aws_schedule_fac_student.php'
-            , 'cron/booking_expiring_notice.php'
-            , 'cron/cleanup_database.php'
-            , 'cron/events_everyday_morning.php'
-            , 'cron/events_weekly_summary.php'
-            , 'cron/jc_assign_n_weeks_in_advance.php'
-            , 'cron/jc.php'
-            , 'cron/lablist_every_two_months.php'
-            , 'cron/sync_calendar.php'
+        $tasks = array( 'aws_annoy'
+            , 'aws_annoy'
+            , 'aws_friday_notification'
+            , 'aws_friday_notify_faculty'
+            , 'aws_monday_morning'
+            , 'aws_schedule_fac_student'
+            , 'booking_expiring_notice'
+            , 'cleanup_database'
+            , 'events_everyday_morning'
+            , 'events_weekly_summary'
+            , 'jc_assign_n_weeks_in_advance'
+            , 'jc'
+            , 'lablist_every_two_months'
+            , 'sync_calendar'
         );
 
         foreach( $files as $i => $f )
         {
-            echo printInfo("Executing $f");
-            hippo_shell_exec( "php index.php cron $f" );
+            hippo_shell_exec( "php index.php $f", $stdout, $stderr );
+            echo printInfo($stderr);
+            echo printInfo( $stdout );
         }
+    }
+
+    public function cleanup_database( )
+    {
+        cleanup_database_cron();
     }
 
 }
