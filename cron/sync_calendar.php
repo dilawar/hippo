@@ -1,8 +1,7 @@
 <?php
 
-include_once 'header.php';
-include_once 'methods.php';
-include_once './cron_jobs/helper.php';
+include_once FCPATH.'methods.php';
+include_once __DIR__.'/helper.php';
 
 
 if( trueOnGivenDayAndTime( 'today', '4pm' ) || trueOnGivenDayAndTime( 'today', '8am') )
