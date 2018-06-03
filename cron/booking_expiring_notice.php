@@ -1,10 +1,10 @@
 <?php
-require __DIR__.'/helper.php';
 
-/* Everyday check for recurrent events. On 7 days before last events send
- * and email to person who booked it.
- */
+function booking_expiring_notice_cron()
 {
+    /* Everyday check for recurrent events. On 7 days before last events send
+     * and email to person who booked it.
+     */
     $today = 'today';
     $awayFrom = strtotime( 'now' ) - strtotime( '13:00' );
 

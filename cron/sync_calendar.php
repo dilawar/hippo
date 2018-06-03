@@ -1,14 +1,15 @@
 <?php
 
-include_once FCPATH.'methods.php';
-include_once __DIR__.'/helper.php';
+include_once BASEPATH.'calendar/methods.php';
 
-
-if( trueOnGivenDayAndTime( 'today', '4pm' ) || trueOnGivenDayAndTime( 'today', '8am') )
+function sync_calendar_cron()
 {
-    echo( "executing cron job to synchronize calendar" );
-    $res = shell_exec( 'php ./synchronize_calendar.php' );
-    echo $res;
+    if( trueOnGivenDayAndTime( 'today', '4pm' ) || trueOnGivenDayAndTime( 'today', '8am') )
+    {
+        echo( "executing cron job to synchronize calendar" );
+        synchronize_google_calendar();
+        echo $res;
+    }
 }
 
 

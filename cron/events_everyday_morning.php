@@ -1,57 +1,59 @@
 <?php
-require_once __DIR__ . '/helper.php';
 
-/*
- * Task 2. Send today's event every day at 8am.
- */
-if( trueOnGivenDayAndTime( 'today', '8:00' ) )
+function events_everyday_morning_cron()
 {
-    $today = dbDate( 'today' );
-    error_log( "8am. Event for today" );
-    $todaysEvents = getPublicEventsOnThisDay( $today );
-    $nTalks = 0;
-    if( count( $todaysEvents ) > 0 )
+    /*
+     * Task 2. Send today's event every day at 8am.
+     */
+    if( trueOnGivenDayAndTime( 'today', '8:00' ) )
     {
-        foreach( $todaysEvents as $event )
+        $today = dbDate( 'today' );
+        error_log( "8am. Event for today" );
+        $todaysEvents = getPublicEventsOnThisDay( $today );
+        $nTalks = 0;
+        if( count( $todaysEvents ) > 0 )
         {
-            $external_id = $event[ 'external_id' ];
-
-            // External id has the format TALKS.TALK_ID
-            $talkid = explode( '.', $external_id );
-            if( count( $talkid ) == 2 )
+            foreach( $todaysEvents as $event )
             {
-                $data = array( 'id' => $talkid[1] );
-                $talk = getTableEntry( 'talks', 'id', $data );
-                if( $talk )
+                $external_id = $event[ 'external_id' ];
+
+                // External id has the format TALKS.TALK_ID
+                $talkid = explode( '.', $external_id );
+                if( count( $talkid ) == 2 )
                 {
-                    $html = talkToHTML( $talk );
-                    $nTalks += 1;
-
-                    // Now prepare an email to sent to mailing list.
-                    $macros = array( 'EMAIL_BODY' => $html, 'DATE' => $today );
-                    $subject = "Today (" . humanReadableShortDate( $today ) . "): " ;
-                    $subject .= talkToShortEventTitle( $talk );
-
-                    $template = emailFromTemplate( 'todays_events', $macros );
-
-                    if( array_key_exists( 'email_body', $template ) && $template[ 'email_body' ] )
+                    $data = array( 'id' => $talkid[1] );
+                    $talk = getTableEntry( 'talks', 'id', $data );
+                    if( $talk )
                     {
-                        // Send it out.
-                        $to = $template[ 'recipients' ];
-                        $ccs = $template[ 'cc' ];
-                        $msg = $template[ 'email_body' ];
-                        $attachment = '';
-                        $res = sendHTMLEmail( $msg, $subject, $to, $ccs, $attachment );
-                        if( $res )
-                            echo printInfo( "Email sent successfully" );
+                        $html = talkToHTML( $talk );
+                        $nTalks += 1;
+
+                        // Now prepare an email to sent to mailing list.
+                        $macros = array( 'EMAIL_BODY' => $html, 'DATE' => $today );
+                        $subject = "Today (" . humanReadableShortDate( $today ) . "): " ;
+                        $subject .= talkToShortEventTitle( $talk );
+
+                        $template = emailFromTemplate( 'todays_events', $macros );
+
+                        if( array_key_exists( 'email_body', $template ) && $template[ 'email_body' ] )
+                        {
+                            // Send it out.
+                            $to = $template[ 'recipients' ];
+                            $ccs = $template[ 'cc' ];
+                            $msg = $template[ 'email_body' ];
+                            $attachment = '';
+                            $res = sendHTMLEmail( $msg, $subject, $to, $ccs, $attachment );
+                            if( $res )
+                                echo printInfo( "Email sent successfully" );
+                        }
                     }
                 }
             }
+            ob_flush( );
         }
-        ob_flush( );
+        else
+            error_log( "No event found on day " . $today );
     }
-    else
-        error_log( "No event found on day " . $today );
 }
 
 
