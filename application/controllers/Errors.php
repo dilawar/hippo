@@ -33,6 +33,11 @@ class Errors extends CI_Controller
             redirect( 'info/info' );
             return;
         }
+        elseif( $page == 'execute.php' )
+        {
+            $id = $_GET['id'];
+            redirect( "user/execute/$id" );
+        }
 
         flashMessage( "Page you have requested is not found <tt>$req</tt>." );
         redirect( "welcome" );
