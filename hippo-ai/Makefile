@@ -2,7 +2,7 @@ export PATH:=/opt/bin/:$(PATH)
 PYTHON=`which python3`
 DATA_FILE=/tmp/data.txt
 LAST_CP=$(shell ls -t ./cv/*.t7 | head -n1)
-GPU=1
+GPU=-1
 
 all : sample
 
