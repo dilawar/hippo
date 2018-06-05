@@ -438,14 +438,15 @@ class Adminbmv extends CI_Controller
         $cclist = $_POST[ 'cc' ];
         $subject = $_POST[ 'subject' ];
 
-        $msg =  "<h2>Email content are following</h2>";
+        $err =  "<h2>Email content are following</h2>";
 
         $mdfile = html2Markdown( $msg, true );
         $md = file_get_contents( trim($mdfile) );
 
         if( $md )
         {
-            $msg .= printInfo( "Sending email to $to ($cclist ) with subject $subject" );
+            $err .= printInfo( "Sending email to $to ($cclist ) with subject $subject" );
+
             $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
 
             if( $res )
@@ -455,7 +456,6 @@ class Adminbmv extends CI_Controller
         }
         else
             printWarning( "Could not send email." );
-
         redirect( "adminbmv/manages_talks" );
     }
 
