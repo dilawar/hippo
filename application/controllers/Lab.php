@@ -30,7 +30,7 @@ function checkEquipmentMultibookingRequest( array &$request )
 
 function isEquipmentAlreadyBooked( $eid, $date, $start_time, $end_time ) : array
 {
-    $res = executeQuery( "SELECT * FROM equipment_bookings WHERE
+    $res = executeQuery( "SELECT * FROM inventory_bookings WHERE
             date='$date' AND NOT (start_time >= '$end_time' OR end_time <= '$start_time')
             AND status='VALID' AND equipment_id='$eid'" );
     if($res)
@@ -118,7 +118,7 @@ trait Lab
         }
 
         // Everything is fine. Just book it.
-        $res = insertIntoTable( 'equipment_bookings'
+        $res = insertIntoTable( 'inventory_bookings'
                 , 'id,equipment_id,date,start_time,end_time,booked_by,comment'
                 , $_POST 
             );
@@ -160,11 +160,11 @@ trait Lab
                     . arrayToTableHTML( $eq, 'info' ) . ' <br />';
             else
             {
-                $id = getUniqueID( 'equipment_bookings');
+                $id = getUniqueID( 'inventory_bookings');
                 $_POST['date'] = $date;
                 $_POST['id'] = $id;
                 $_POST['booked_by'] = whoAmI();
-                $res = insertIntoTable( "equipment_bookings"
+                $res = insertIntoTable( "inventory_bookings"
                         , 'id,equipment_id,vendor,date,start_time,end_time,booked_by,comment'
                         , $_POST 
                     );
@@ -173,23 +173,23 @@ trait Lab
             }
         }
         flashMessage( $msg );
-        redirect( 'user/browse_equipments');
+        redirect( 'user/inventory_browse');
     }
 
     public function cancel_equipment_booking( $id )
     {
-        $res = updateTable( 'equipment_bookings', 'id', 'status'
+        $res = updateTable( 'inventory_bookings', 'id', 'status'
             , array( 'id' => $id, 'status' => 'CACELLED' )
         );
         if($res)
             flashMessage( "Successfully cancelled booking.");
 
-        redirect('user/browse_equipments');
+        redirect('user/inventory_browse');
     }
 
     public function cancel_equipment_bookings( $eid )
     {
-        $res = updateTable( 'equipment_bookings', 'equipment_id,booked_by'
+        $res = updateTable( 'inventory_bookings', 'equipment_id,booked_by'
             , 'status'
             , array( 'equipment_id' => $eid, 'status' => 'CANCELLED', 'booked_by' => whoAmI())
         );
@@ -197,7 +197,7 @@ trait Lab
         if($res)
             flashMessage( "Successfully removed all bookings equipment with id $eid." );
 
-        redirect( "user/browse_equipments" );
+        redirect( "user/inventory_browse" );
     }
 
 }
