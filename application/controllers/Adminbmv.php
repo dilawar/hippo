@@ -250,6 +250,7 @@ class Adminbmv extends CI_Controller
                 flashMessage( "Before you can reject a request, you must provide
                     a valid reason (more than 5 characters long)" );
                 redirect("adminbmv/home");
+                return;
             }
         }
 
@@ -266,11 +267,11 @@ class Adminbmv extends CI_Controller
         {
             flashMessage( "I could not find an event.", 'warning');
             redirect("adminbmv/home");
+            return;
         }
         else
         {
             $group = array( );
-
             foreach( $events as $event )
             {
                 $event = explode( '.', $event );
@@ -285,20 +286,13 @@ class Adminbmv extends CI_Controller
 
                 $eventGroupTitle = $eventInfo[ 'title' ];
 
-                try {
+                if( $whatToDo == 'APPROVE' )
+                    $status = 'APPROVED';
+                else
+                    $status = $whatToDo . 'ED';
 
-                    if( $whatToDo == 'APPROVE' )
-                        $status = 'APPROVED';
-                    else
-                        $status = $whatToDo . 'ED';
-
-                    $res = actOnRequest( $gid, $rid, $whatToDo );
-                    $msg .= "<tr><td> $eventText </td><td>". $status ."</td></tr>";
-
-                } catch ( Exception $e ) {
-                    flashMessage( "Failed to update request: " . $e->getMessage( ),'warning');
-                    redirect("adminbmv/home");
-                }
+                $res = actOnRequest( $gid, $rid, $whatToDo );
+                $msg .= "<tr><td> $eventText </td><td>". $status ."</td></tr>";
                 changeIfEventIsPublic( $gid, $rid, $isPublic );
             }
 
@@ -316,7 +310,7 @@ class Adminbmv extends CI_Controller
                 $msg .= $_POST[ 'reason' ];
             }
 
-            error_log( "<pre> $msg </pre>" );
+            $msg .= printWarning( "<pre> $msg </pre>" );
 
             $res = sendHTMLEmail( $msg
                 , "Your booking request '$eventGroupTitle' has been $status"
@@ -324,7 +318,7 @@ class Adminbmv extends CI_Controller
                 , 'hippo@lists.ncbs.res.in'
             );
 
-            flashMessage( 'Successfuly reviewed.' );
+            flashMessage( 'Successfuly reviewed.'  . $msg );
             redirect( 'adminbmv/home' );
         }
     }

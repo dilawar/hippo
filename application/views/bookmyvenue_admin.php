@@ -72,7 +72,6 @@ echo bookmyVenueAdminTaskTable( );
 
 echo '<h1>Pending requests</h1>';
 
-
 $requests = getPendingRequestsGroupedByGID( );
 
 $html = '<div style="font-size:small">';

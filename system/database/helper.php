@@ -800,12 +800,12 @@ function checkCollision( $request )
     *
     * @return
  */
-function approveRequest( $gid, $rid )
+function approveRequest( $gid, $rid ) : bool
 {
     $request = getRequestById( $gid, $rid );
     if(! $reqest )
     {
-        echo printWarning( "No request $gid.$rid found in my database." );
+        printWarning( "No request $gid.$rid found in my database." );
         return false;
     }
 
@@ -813,8 +813,9 @@ function approveRequest( $gid, $rid )
     $collideWith = checkCollision( $request );
     if( ! $collideWith )
     {
-        echo alertUser( "Following request is colliding with another event or request. Rejecting it..", true );
-        echo arrayToTableHTML( $collideWith, 'request' );
+        $msg = "Following request is colliding with another event or request. Rejecting it..";
+        $msg .= arrayToTableHTML( $collideWith, 'request' );
+        printWarning( $msg );
         rejectRequest( $gid, $rid );
         return true;
     }
@@ -855,7 +856,7 @@ function rejectRequest( $gid, $rid )
 }
 
 
-function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify = false )
+function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify = false ) : bool
 {
     $status = "";
     $success = false;
@@ -887,7 +888,7 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify 
         $res = sendHTMLEmail( $msg, $subject, $userEmail, 'hippo@lists.ncbs.res.in');
     }
 
-    return true;
+    return $success;
 }
 
 function changeIfEventIsPublic( $gid, $eid, $status )
