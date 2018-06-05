@@ -79,11 +79,13 @@ class BMVPDO extends PDO
                 , login VARCHAR(100)
                 , email VARCHAR(200)
                 , alternative_email VARCHAR(200)
+                , honorific ENUM( 'Mr', 'Ms', 'Dr', 'Prof', 'Mx', 'Misc' ) 
                 , first_name VARCHAR(200)
                 , last_name VARCHAR(100)
                 , roles SET(
                     'USER', 'ADMIN', 'MEETINGS', 'ACAD_ADMIN', 'BOOKMYVENUE_ADMIN', 'JC_ADMIN'
                     ) DEFAULT 'USER'
+                , designation VARCHAR(40) DEFAULT 'UNKNOWN'
                 , last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , created_on DATETIME
                 , joined_on DATE

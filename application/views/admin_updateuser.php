@@ -2,14 +2,10 @@
 
 require_once BASEPATH.'autoload.php';
 require_once __DIR__.'/snippets/pi_specialization.php';
-
-mustHaveAnyOfTheseRoles( Array( 'ADMIN', 'AWS_ADMIN' ) );
-
 echo userHTML( );
 
-
 $user = __get__($_POST, 'login', '');
-$default = getUserInfo( $user );
+$default = getUserInfo( $user, true );
 $buttonVal = 'Update';
 if( ! $default )
 {
@@ -28,7 +24,7 @@ if( ! $default )
 
 echo '<form method="post" action="' .site_url( "admin/updateuser").'">';
 echo dbTableToHTMLTable( 'logins', $default
-        , 'alternative_email,roles,status,title,eligible_for_aws,joined_on' 
+        , 'alternative_email,honorific,roles,status,title,eligible_for_aws,joined_on' 
                 .  ',valid_until,laboffice,specialization,pi_or_host'
         , $buttonVal
         );
