@@ -75,9 +75,9 @@ function eventToTex( $event, $talk = null )
 
     $logo = '';
     if( $isInstem )
-        $logo = '\includegraphics[height=1.5cm]{' . __DIR__  . '/data/inStem_logo.png}';
+        $logo = '\includegraphics[height=1.5cm]{' . FCPATH  . '/data/inStem_logo.png}';
     else
-        $logo = '\includegraphics[height=1.5cm]{' . __DIR__ . '/data/ncbs_logo.png}';
+        $logo = '\includegraphics[height=1.5cm]{' . FCPATH . '/data/ncbs_logo.png}';
 
 
     // Logo etc.
@@ -126,7 +126,7 @@ function eventToTex( $event, $talk = null )
     }
 
     $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-        , fit to height=18 cm, fit basedim=14pt
+        , fit to height=15 cm, fit basedim=14pt
         ]' . $desc . $extra . '\end{tcolorbox}';
 
     $texText = implode( "\n", $tex );
