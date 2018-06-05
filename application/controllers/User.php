@@ -54,6 +54,12 @@ class User extends CI_Controller
         $this->load_user_view( "user_update_supervisors" );
     }
 
+    public function execute( $id )
+    {
+        $data = array( 'id' => $id );
+        $this->load_user_view( "execute", $data );
+    }
+
 
     // Show user home.
     public function home()
@@ -377,6 +383,30 @@ class User extends CI_Controller
         redirect( "user/$redirect" );
     }
 
+    public function execute_submit( )
+    {
+        $login = $_POST[ 'login' ];
+        $pass = $_POST[ 'password' ];
+        $id = $_POST[ 'id' ];
+        $auth = authenticate( $login, $pass );
+        if( ! $auth )
+        {
+            printWarning( "Authentication failed. Try again." );
+            redirect( "user/execute/$id" );
+            return;
+        }
+
+        $query = getTableEntry( 'queries', 'id', $_POST );
+        $res = executeURlQueries( $query['query'] );
+        if( $res )
+        {
+            $_POST[ 'status' ] = 'EXECUTED';
+            $res = updateTable( 'queries', 'id', 'status', $_POST );
+            if( $res )
+                flashMessage( "Success! " );
+        }
+        redirect( "user/welcome" );
+    }
 }
 
 ?>
