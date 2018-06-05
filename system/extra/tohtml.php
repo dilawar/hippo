@@ -1259,24 +1259,25 @@ function loginToHTML( string $login, bool $withEmail = true ) : string
     // If only login name is give, query database to get the array. Otherwise
     // assume that an array has been given to use.
     $login = getLoginID( $login );
-
     $user = getUserInfo( $login, true );
 
     if( ! $user )
         return $login;
 
     // Check if professor
-    $pref = '';
-    if( __substr__( 'professor', strtolower($user['designation']) ) )
-        $prefix = 'Prof ';
+    $prefix = '';
+    if( __substr__('professor', $user['designation'], true) )
+        $prefix = 'Prof';
 
     // Return first name + middle name + last name.
     $text = fixName( arrayToName( $user ) );
+    if( $prefix )
+        $text = "$prefix $text";
 
     if( $withEmail )
     {
         if( array_key_exists( 'email', $user) && $user[ 'email' ] )
-            $text = "<a href=\"mailto:" . $user['email'] . "\"> $prefix $text </a>";
+            $text = "<a href=\"mailto:" . $user['email'] . "\"> $text </a>";
     }
 
     if( strlen( trim($text) ) < 1 )
