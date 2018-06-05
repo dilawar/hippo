@@ -40,11 +40,11 @@ $picAction .=  '<br>';
 $tab .= $picAction;
 echo $tab;
 
-$info = getUserInfo( whoAmI() );
+$info = getUserInfo( whoAmI(), true );
 
 echo '<h1>Your profile </h1>';
 
-$editables = 'title,first_name,last_name,alternative_email,institute' . 
+$editables = 'title,first_name,honorific,last_name,alternative_email,institute' . 
     ',valid_until,joined_on,pi_or_host,specialization';
 
 $specializations = array_map(
