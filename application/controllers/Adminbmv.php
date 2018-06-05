@@ -79,6 +79,11 @@ class Adminbmv extends CI_Controller
         $this->loadview('bookmyvenue_admin_browse_events');
     }
 
+    public function send_email( )
+    {
+        $this->loadview( 'admin_acad_send_email' );
+    }
+
     // VIEWS WITH ACTION.
     public function block_venue_submit($arg = '')
     {
@@ -425,6 +430,35 @@ class Adminbmv extends CI_Controller
 
         redirect( 'adminbmv/home' );
     }
+
+    public function adminbmv_send_email_action()
+    {
+        $to = $_POST[ 'recipients' ];
+        $msg = $_POST[ 'email_body' ];
+        $cclist = $_POST[ 'cc' ];
+        $subject = $_POST[ 'subject' ];
+
+        $msg =  "<h2>Email content are following</h2>";
+
+        $mdfile = html2Markdown( $msg, true );
+        $md = file_get_contents( trim($mdfile) );
+
+        if( $md )
+        {
+            $msg .= printInfo( "Sending email to $to ($cclist ) with subject $subject" );
+            $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
+
+            if( $res )
+                flashMessage( "Email sent successfully." );
+            else
+                printErrorSevere( "Failed to send email" );
+        }
+        else
+            printWarning( "Could not send email." );
+
+        redirect( "adminbmv/manages_talks" );
+    }
+
 }
 
 ?>

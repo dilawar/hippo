@@ -1,11 +1,7 @@
 <?php
+require_once BASEPATH.'autoload.php';
 
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'AWS_ADMIN', 'ADMIN' ) );
-
-include_once 'methods.php';
-include_once 'database.php';
-include_once 'tohtml.php';
+$ref = $controller;
 
 // We are here to send an email. 
 $email = array( );
@@ -18,14 +14,13 @@ if( $_POST )
     $email[ 'cc' ] = $templ[ 'cc'] ;
     $email[ 'subject'] = $_POST[ 'subject' ];
 
-    echo '<form method="post" action="admin_acad_send_email_action.php">';
-    echo dbTableToHTMLTable( 'emails', $email, 'recipients,cc,subject,email_body' 
-        , 'send' );
+    echo '<form method="post" action="'.site_url( "$controller/send_email_action" ) . '">';
+    echo dbTableToHTMLTable( 'emails', $email, 'recipients,cc,subject,email_body' , 'send' );
     echo '</form>';
 }
 
 
-echo goBackToPageLink( 'admin_acad_email_and_docs.php', 'Go back' );
+echo goBackToPageLink( "$ref/manages_talks", 'Go back' );
 
 
 ?>
