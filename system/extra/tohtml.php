@@ -1261,6 +1261,7 @@ function loginToHTML( string $login, bool $withEmail = true ) : string
     $login = getLoginID( $login );
 
     $user = getUserInfo( $login, true );
+
     if( ! $user )
         return $login;
 
