@@ -7,6 +7,7 @@ function changeBackgroundById(x, color)
         divs[i].style.backgroundColor = color;
 }
 </script>
+
 <?php
 require_once BASEPATH.'autoload.php';
 echo userHTML();
@@ -36,7 +37,10 @@ echo printNote( '
     ' );
 
 $equipIDS = array_map( function($x) { return $x['id']; }, $items);
-$enames = array_map( function($x) { return $x['name']; }, $items);
+$enames = [];
+foreach( $items as $item)
+    $enames[$item['id']] = $item['name'];
+
 $equipSelect = arrayToSelectList( 'inventory', $equipIDS, $enames);
 
 $editable = 'inventory_id,date,start_time,end_time,comment';
