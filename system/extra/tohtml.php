@@ -33,6 +33,11 @@ function alert( $msg )
     echo "<script type='text/javascript'>alert('$msg');</script>";
 }
 
+function p( string $msg ) : string
+{
+    return "<p> $msg </p>";
+}
+
 function fontWithStyle( $msg, $style = "" )
 {
     return "<font style=\"$style;\">$msg</font>";

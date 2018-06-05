@@ -373,14 +373,9 @@ function fetchEntries( $res, int $n = -1, $how = PDO::FETCH_ASSOC ) : array
 }
 
 // Get the request when group id and request id is given.
-function getRequestById( $gid, $rid )
+function getRequestById( string $gid, string $rid ) : array
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( 'SELECT * FROM bookmyvenue_requests WHERE gid=:gid AND rid=:rid' );
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->bindValue( ':rid', $rid );
-    $stmt->execute( );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+    return getTableEntry(  'bookmyvenue_requests', 'gid,rid', ['gid'=>$gid, 'rid'=>$rid] );
 }
 
 // Return a list of requested with same group id.
@@ -800,10 +795,10 @@ function checkCollision( $request )
     *
     * @return
  */
-function approveRequest( $gid, $rid ) : bool
+function approveRequest( string $gid, string $rid ) : bool
 {
     $request = getRequestById( $gid, $rid );
-    if(! $reqest )
+    if(! $request )
     {
         printWarning( "No request $gid.$rid found in my database." );
         return false;
@@ -1397,7 +1392,7 @@ function getTableEntries( $tablename, $orderby = '', $where = '' ) : array
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getTableEntry( $tablename, $whereKeys, $data ) : array
+function getTableEntry( string $tablename,  $whereKeys, array $data) : array
 {
     $hippoDB = initDB();
 

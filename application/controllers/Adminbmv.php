@@ -240,6 +240,7 @@ class Adminbmv extends CI_Controller
     {
         $whatToDo = $_POST['response'];
         $isPublic = $_POST['isPublic'];
+        $warningMsg = '';
 
         // If admin is rejecting and have not given any confirmation, ask for it.
         if( $whatToDo == 'REJECT' )
@@ -255,10 +256,9 @@ class Adminbmv extends CI_Controller
         }
 
         // Else send email.
-        $msg = "<p>Some changes have been made to your request. The update entry 
-            is following. </p>";
-
+        $msg = p("Your booking request has been acted upon by '" . whoAmI() . "'." );
         $msg .= '<table border="0">';
+
         $events = $_POST['events'];
         $userEmail = '';
         $eventGroupTitle = '';
@@ -269,58 +269,80 @@ class Adminbmv extends CI_Controller
             redirect("adminbmv/home");
             return;
         }
+
+        $group = array( );
+        $err = '';
+        foreach( $events as $event )
+        {
+            $event = explode( '.', $event );
+            $gid = $event[0]; $rid = $event[1];
+
+            // Get event info from gid and rid of event as passed to $_POST.
+            $eventInfo = getRequestById( $gid, $rid );
+            if( ! $eventInfo )
+            {
+                $warningMsg .= p( "No booking request found for gid $gid and rid $rid." );
+                continue;
+            }
+
+            $userEmail = getLoginEmail(  $eventInfo[ 'created_by' ] );
+            $eventText = eventToText( $eventInfo );
+
+            $group[] = $eventInfo;
+            $eventGroupTitle = $eventInfo[ 'title' ];
+
+            if( $whatToDo == 'APPROVE' )
+                $status = 'APPROVED';
+            else
+                $status = $whatToDo . 'ED';
+
+            $res = actOnRequest( $gid, $rid, $whatToDo );
+            if( ! $res )
+            {
+                $warningMsg .= p("Failed to act on request $event.");
+                continue;
+            }
+
+            // Check if the status request is changed. If not there is some
+            // error.
+            $req = getRequestById( $gid, $rid );
+            $msg .= printInfo( json_encode( $req ) );
+            if( $req['status'] != $status )
+            {
+                $warningMsg .= p( "Failed to $status of request $gid.$rid", true );
+                continue;
+            }
+
+            $msg .= "<tr><td> $eventText </td><td>". $status ."</td></tr>";
+            changeIfEventIsPublic( $gid, $rid, $isPublic );
+        }
+
+        $msg .= "</table>";
+
+        // Append user email to front.
+        $email = p("Dear " . loginToText( $group[0]['created_by' ], true )) . $msg;
+
+        // Name of the admin to append to the email.
+        $admin = getLoginEmail( whoAmI() );
+
+        if( $whatToDo == 'REJECT' && strlen( $_POST[ 'reason' ] ) > 5 )
+        {
+            $email .= p("Following reason was given by $admin");
+            $email .= $_POST[ 'reason' ];
+        }
+
+        if( $warningMsg )
+            printWarning( $warningMsg );
         else
         {
-            $group = array( );
-            foreach( $events as $event )
-            {
-                $event = explode( '.', $event );
-                $gid = $event[0]; $rid = $event[1];
-
-                // Get event info from gid and rid of event as passed to $_POST.
-                $eventInfo = getRequestById( $gid, $rid );
-                $userEmail = getLoginEmail(  $eventInfo[ 'created_by' ] );
-
-                $eventText = eventToText( $eventInfo );
-                array_push( $group, $eventInfo );
-
-                $eventGroupTitle = $eventInfo[ 'title' ];
-
-                if( $whatToDo == 'APPROVE' )
-                    $status = 'APPROVED';
-                else
-                    $status = $whatToDo . 'ED';
-
-                $res = actOnRequest( $gid, $rid, $whatToDo );
-                $msg .= "<tr><td> $eventText </td><td>". $status ."</td></tr>";
-                changeIfEventIsPublic( $gid, $rid, $isPublic );
-            }
-
-            $msg .= "</table>";
-
-            // Append user email to front.
-            $msg = "<p>Dear " . loginToText( $group[0]['created_by' ], true ) . '</p>' . $msg;
-
-            // Name of the admin to append to the email.
-            $admin = getLoginEmail( $_SESSION[ 'user' ] );
-
-            if( $whatToDo == 'REJECT' && strlen( $_POST[ 'reason' ] ) > 5 )
-            {
-                $msg .= "<p>Following reason was given by $admin </p>";
-                $msg .= $_POST[ 'reason' ];
-            }
-
-            $msg .= printWarning( "<pre> $msg </pre>" );
-
+            flashMessage( "Successfuly reviewed '$eventGroupTitle'." );
             $res = sendHTMLEmail( $msg
                 , "Your booking request '$eventGroupTitle' has been $status"
                 , $userEmail
                 , 'hippo@lists.ncbs.res.in'
             );
-
-            flashMessage( 'Successfuly reviewed.'  . $msg );
-            redirect( 'adminbmv/home' );
         }
+        redirect( 'adminbmv/home' );
     }
 
     // MANAGES TALK
