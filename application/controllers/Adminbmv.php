@@ -297,7 +297,7 @@ class Adminbmv extends CI_Controller
                 $status = $whatToDo . 'ED';
 
             $res = actOnRequest( $gid, $rid, $whatToDo );
-            if( ! $res )
+            if(! $res)
             {
                 $warningMsg .= p("Failed to act on request $event.");
                 continue;
@@ -306,7 +306,6 @@ class Adminbmv extends CI_Controller
             // Check if the status request is changed. If not there is some
             // error.
             $req = getRequestById( $gid, $rid );
-            $msg .= printInfo( json_encode( $req ) );
             if( $req['status'] != $status )
             {
                 $warningMsg .= p( "Failed to $status of request $gid.$rid", true );
