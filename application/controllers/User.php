@@ -121,7 +121,7 @@ class User extends CI_Controller
         if( $arg == 'action' && $_POST )
         {
             // Not all login can be queried from ldap. Let user edit everything.
-            $where = "valid_until,first_name,last_name,title,pi_or_host,specialization" . 
+            $where = "valid_until,honorific,first_name,last_name,title,pi_or_host,specialization" . 
                         ",institute,laboffice,joined_on,alternative_email";
 
             $_POST['login'] = whoAmI();
