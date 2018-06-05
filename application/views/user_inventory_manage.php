@@ -61,7 +61,8 @@ echo '<form action="">
     <button type="submit">Clear form</button>
     </form>';
 
-$editable = 'name,scientific_name,vendor,description,person_in_charge,item_condition,expiry_date';
+$editable = 'name:required,scientific_name,vendor:required,description,' . 
+    'person_in_charge:required,item_condition,expiry_date';
 $editable .= ',quantity_with_unit,edited_by,requires_booking';
 
 echo '<button class="show_as_link"  id="button_show_hide" value="Hide" onclick="toggleShowHide( this, \'show_hide\')">Hide Form</button>';
