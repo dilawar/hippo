@@ -1,25 +1,19 @@
 <?php
 
-function printErrorSevere($msg, $flash = false )
+function printErrorSevere($msg, $append = false )
 {
-    $err = '<div class="alert alert-danger">'.$msg.'</div>';
-
-    if($flash)
+    if($append)
         $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . "<p>$msg </p>";
-
     error_log( $msg );
-    return $err;
+    return $msg;
 }
 
 
-function printWarning($msg, $flash = true)
+function printWarning($msg, $append = true)
 {
-    $warn ="<div class=\"alert alert-warning\">
-        <i class='fa fa-exclamation-circle fa-2x'></i> ".$msg."</div>";
-    error_log( $msg );
-    if( $flash )
-        $_SESSION['warning'] = $msg;
-    return $warn;
+    if( $append )
+        $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . p($msg);
+    return $msg;
 }
 
 function flashMessage( $msg, $category = 'success' )
