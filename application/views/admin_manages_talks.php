@@ -114,7 +114,7 @@ foreach( $upcomingTalks as $t )
         if( $event )
         {
             // If event is already approved, show it here.
-            echo alertUser( "<strong>This talk is confirmed.</strong>" );
+            echo alertUser( "<strong>This talk is confirmed.</strong>", false );
 
             $html = arrayToVerticalTableHTML( $event, 'events', 'lightyellow'
                 , 'eid,class,url,modified_by,timestamp,calendar_id' . 
