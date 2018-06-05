@@ -336,8 +336,11 @@ function requestToShortHTML( $request )
 }
 
 
-function eventSummaryHTML( $event, $talk = null)
-{
+function eventSummaryHTML( $event, $talk = null) : string
+{ 
+    if( ! $talk || ! $event )
+        return '';
+
     $date = humanReadableDate( $event[ 'date' ] );
     $startT = humanReadableTime( $event[ 'start_time' ] );
     $endT = humanReadableTime( $event[ 'end_time' ] );
@@ -355,9 +358,9 @@ function eventSummaryHTML( $event, $talk = null)
     if( $talk )
     {
         $speaker = $talk[ 'speaker' ];
-        $html .= "<tr><td> Host </td><td>" . loginToHTML( $talk[ 'host' ] ) ."</td></tr>";
+        $html .= "<tr><td> Host </td><td>" . loginToHTML( __get__($talk, 'host','')) ."</td></tr>";
         $html .= "<tr><td> Coordinator </td><td>" .
-                     loginToHTML( $talk[ 'coordinator' ] ) ."</td></tr>";
+                     loginToHTML( __get__($talk,'coordinator','') ) ."</td></tr>";
     }
 
     $html .= "<tr><td> Where </td><td>  $venue </td></tr>";
