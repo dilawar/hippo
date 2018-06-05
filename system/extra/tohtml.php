@@ -1521,8 +1521,8 @@ function awsToHTML( $aws, $with_picture = false )
     $abstract = rescale_inline_images( $abstract );
 
     // Add table.
-    $html = '<table class="events">';
-    $html .= "<caption>$title</caption>";
+    $html = "<h1>$title</h1>";
+    $html .= '<table class="events">';
     $html .= "<tr><td> $pic </td><td colspan='3'>$extra</td></tr>";
     $html .= "<tr><td colspan='4'>$abstract</td></tr>";
     $html .=  "</table>";
@@ -1647,8 +1647,8 @@ function talkToHTML( $talk, $with_picture = false )
     $side .= '</tr>';
     $side .= '</table>';
 
-    $html = '<table class="events">';
-    $html .= "<caption> $title </caption>";
+    $html = "<h1> $title </h1>";
+    $html .= '<table class="events">';
     $html .= "<tr><td> $pic </td>";
     $html .= "<td colspan='3'> $side </td>";
     $html .= "</tr>";
