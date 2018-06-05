@@ -431,7 +431,7 @@ class Adminbmv extends CI_Controller
         redirect( 'adminbmv/home' );
     }
 
-    public function adminbmv_send_email_action()
+    public function send_email_action()
     {
         $to = $_POST[ 'recipients' ];
         $msg = $_POST[ 'email_body' ];
@@ -449,7 +449,7 @@ class Adminbmv extends CI_Controller
             $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
 
             if( $res )
-                flashMessage( "Email sent successfully." );
+                flashMessage( "Email sent successfully. $msg. <tt> $res </tt>." );
             else
                 printErrorSevere( "Failed to send email" );
         }
