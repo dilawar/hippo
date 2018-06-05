@@ -1266,7 +1266,7 @@ function loginToHTML( string $login, bool $withEmail = true ) : string
         return $login;
 
     // Check if professor
-    $pref = '';
+    $prefix = '';
     if( __substr__( 'professor', strtolower($user['designation']) ) )
         $prefix = 'Prof ';
 
