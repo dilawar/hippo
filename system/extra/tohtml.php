@@ -1264,13 +1264,18 @@ function loginToHTML( string $login, bool $withEmail = true ) : string
     if( ! $user )
         return $login;
 
+    // Check if professor
+    $pref = '';
+    if( __substr__( 'professor', strtolower($user['designation']) ) )
+        $prefix = 'Prof ';
+
     // Return first name + middle name + last name.
     $text = fixName( arrayToName( $user ) );
 
     if( $withEmail )
     {
         if( array_key_exists( 'email', $user) && $user[ 'email' ] )
-            $text = "<a href=\"mailto:" . $user['email'] . "\"> $text </a>";
+            $text = "<a href=\"mailto:" . $user['email'] . "\"> $prefix $text </a>";
     }
 
     if( strlen( trim($text) ) < 1 )

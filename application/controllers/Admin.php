@@ -38,8 +38,8 @@ class Admin extends CI_Controller
 
     public function updateuser( $user = '' )
     {
-        $toUpdate = 'roles,title,joined_on,eligible_for_aws,laboffice' .
-           ',status,valid_until,alternative_email,pi_or_host,specialization';
+        $toUpdate = 'roles,honorific,title,joined_on,eligible_for_aws,laboffice' .
+           ',status,valid_until,alternative_email,pi_or_host,specialization,designation';
         $res = updateTable( 'logins', 'login', $toUpdate, $_POST );
         if( $res )
             echo flashMessage("Successfully updated.");
