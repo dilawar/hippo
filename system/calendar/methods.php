@@ -34,21 +34,20 @@ function synchronize_google_calendar( )
     // Update all public events first.
     echo printInfo( "Putting local updates from $total events to google calendar " );
 
-    for ($i = 0; $i < $total; $i++)
+    for($i = 0; $i < $total; $i++)
     {
-        echo printInfo( "+ Updating event index $i" );
-        ob_flush( );
+        printInfo( "+ Updating event index $i." );
         $event = $publicEvents[ $i ];
         try
         {
             if( $calendar->exists( $event ) )
-                $gevent = $calendar->updateEvent( $event );
+                $gevent = $calendar->updateEvent($event);
             else
-                $gevent = $calendar->addNewEvent( $event );
+                $gevent = $calendar->addNewEvent($event);
         }
         catch ( Exception $e )
         {
-            echo printWarning( "Failed to add or update event: " . $e->getMessage( ) );
+            printWarning( p("Failed to add or update event: " . $e->getMessage()) );
         }
 
     }
@@ -75,9 +74,7 @@ function synchronize_google_calendar( )
                 " because this event is not found in local database " );
             echo "</br>";
             $calendar->deleteEvent( $event );
-            ob_flush(); flush( );
         }
-
     }
 }
 
