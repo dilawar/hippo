@@ -174,7 +174,7 @@ class Adminbmv extends CI_Controller
     public function synchronize_calendar( )
     {
         $res = synchronize_google_calendar( );
-        redirect( 'adminabmv/home' );
+        redirect( 'adminbmv/home' );
     }
 
     public function venues_action($arg='')

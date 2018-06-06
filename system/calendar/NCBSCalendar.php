@@ -134,8 +134,8 @@ class NCBSCalendar
                 , "Error was " .  $e->getMessage()
             );
         }
-        flush();
-        ob_flush( );
+        // flush();
+        // ob_flush( );
         return null;
     }
 
@@ -220,8 +220,8 @@ class NCBSCalendar
             );
         }
 
-        echo str_repeat( ' ', 1024 * 64 );
-        flush();
+        // echo str_repeat( ' ', 1024 * 64 );
+        // flush();
         return $gevent;
     }
 
@@ -278,8 +278,8 @@ class NCBSCalendar
         }
         return $event;
 
-        flush();
-        ob_flush( );
+        // flush();
+        // ob_flush( );
     }
 
     /**

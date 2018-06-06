@@ -25,7 +25,7 @@ function synchronize_google_calendar( )
     $calendar = new NCBSCalendar( $conf[ 'google calendar']['calendar_id'] );
     $everythingWentOk = true;
 
-    echo alertUser( "Synchronizing google calendar ..." );
+    echo alertUser( "Synchronizing google calendar ...", false );
 
     // Get the list of public events.
     $publicEvents = getPublicEvents( 'today', 'VALID', 14 );
