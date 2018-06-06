@@ -56,7 +56,8 @@ class Adminbmv extends CI_Controller
 
     public function venues( )
     {
-        $this->loadview( 'bookmyvenue_admin_manages_venues.php', $data );
+        $data = array();
+        $this->loadview( 'bookmyvenue_admin_manages_venues.php', $data);
     }
 
     public function email_and_docs($arg = '')
