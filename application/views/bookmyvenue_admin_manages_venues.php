@@ -5,7 +5,6 @@ echo userHTML( );
 
 $symbDelete = '<i class="fa fa-trash"></i>';
 
-
 $default = array( );
 
 $venues = getVenues( $sortby = 'id' );
