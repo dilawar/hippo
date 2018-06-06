@@ -85,6 +85,12 @@ class Adminbmv extends CI_Controller
         $this->loadview( 'admin_acad_send_email' );
     }
 
+    public function edittalk( $id )
+    {
+        $data = [ 'talkid' => $id ];
+        $this->loadview( 'admin_manages_talk_update', $data );
+    }
+
     // VIEWS WITH ACTION.
     public function block_venue_submit($arg = '')
     {
@@ -472,6 +478,53 @@ class Adminbmv extends CI_Controller
         }
         else
             printWarning( "Could not send email." );
+        redirect( "adminbmv/manages_talks" );
+    }
+
+    public function update_talk_action( )
+    {
+        $res = updateTable( 'talks', 'id'
+            , 'class,host,coordinator,title,description'
+            , $_POST );
+
+        if( $res )
+        {
+            // TODO: Update the request or event associated with this entry as well.
+            $externalId = getTalkExternalId( $_POST );
+
+            $talk = getTableEntry( 'talks', 'id', $_POST );
+            assert( $talk );
+
+            $success = true;
+
+            $event = getEventsOfTalkId( $_POST[ 'id' ] ); 
+            $request = getBookingRequestOfTalkId( $_POST[ 'id' ] );
+
+            if( $event )
+            {
+                echo printInfo( "Updating event related to this talk" );
+                $event[ 'title' ] = talkToEventTitle( $talk );
+                $event[ 'description' ] = $talk[ 'description' ];
+                $res = updateTable( 'events', 'gid,eid', 'title,description', $event );
+                if( $res )
+                    echo printInfo( "... Updated successfully" );
+                else
+                    $success = false;
+            }
+            else if( $request )
+            {
+                echo printInfo( "Updating booking request related to this talk" );
+                $request[ 'title' ] = talkToEventTitle( $talk );
+                $request[ 'description' ] = $talk[ 'description' ];
+                $res = updateTable( 'bookmyvenue_requests', 'gid,eid', 'title,description', $request );
+            }
+        }
+
+        if( ! $res )
+            printErrorSevere( "Failed to update talk" );
+        else
+            flashMessage( 'Successfully updated entry' );
+
         redirect( "adminbmv/manages_talks" );
     }
 
