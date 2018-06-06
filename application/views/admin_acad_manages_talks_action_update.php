@@ -1,12 +1,6 @@
 <?php
+require_once BASEPATH.'autoload.php';
 
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'AWS_ADMIN', 'BOOKMYVENUE_ADMIN' ) );
-
-include_once 'header.php';
-include_once 'database.php';
-include_once 'mail.php';
-include_once 'tohtml.php';
 
 if( ! $_POST[ 'response' ] )
 {
