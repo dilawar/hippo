@@ -151,7 +151,8 @@ echo " <br /> <br />";
 echo '<div id="show_hide">';
 echo "<h1>Your booked events in last $months months</h1>";
 $hide = 'id,speaker_id,created_by,status';
-echo arraysToCombinedTableHTML( $talks, 'info', $hide );
+if( $talks )
+    echo arraysToCombinedTableHTML( $talks, 'info', $hide );
 echo '</div>';
 ?>
 
