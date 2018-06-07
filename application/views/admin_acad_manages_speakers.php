@@ -1,17 +1,12 @@
 <?php
-
-include_once 'header.php';
-include_once 'check_access_permissions.php';
-
-mustHaveAnyOfTheseRoles( array( 'AWS_ADMIN', 'BOOKMYVENUE_ADMIN' ) );
-
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
+require_once BASEPATH.'autoload.php';
+global $symbDelete;
 
 echo userHTML( );
 
-// Javascript.
+$ref = $controller;
+
+// For Javascript.
 $faculty = getFaculty( );
 $speakers = getTableEntries( 'speakers' );
 $logins = getTableEntries( 'logins' );
@@ -93,9 +88,7 @@ $speaker = array(
     , 'designation' => '' , 'homepage' => ''
     );
 
-$talk = array( 'created_by' => $_SESSION[ 'user' ]
-            , 'created_on' => dbDateTime( 'now' )
-        );
+$talk = [ 'created_by' => whoAmI(), 'created_on' => dbDateTime('now') ];
 
 
 // Form to upload a picture
@@ -103,8 +96,7 @@ $talk = array( 'created_by' => $_SESSION[ 'user' ]
 echo "<h1>Speaker details</h1>";
 
 echo alertUser( "If you know the speaker id, use the id (its an interger value), else I'll
-    try to find the speaker." 
-    );
+    try to find the speaker." , false);
 echo '<form method="post" action="">';
 echo '<input id="speakers_id" name="id" type="text" value="" >';
 echo '<button type="submit" name="response" value="show">Show details</button>';
@@ -145,8 +137,7 @@ echo printInfo(
     "<strong>First name</strong> and <strong>institute</strong> are required
     fields.  ");
 
-echo '<form method="post" enctype="multipart/form-data"
-        action="admin_acad_manages_speakers_action.php">';
+echo '<form method="post" enctype="multipart/form-data" action="' . site_url( "$ref/manages_speakers_action") . '">';
 
 echo '<table><tr>';
 echo '<td class="db_table_fieldname">Speaker picture</td><td>';

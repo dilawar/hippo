@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
 require_once BASEPATH.'calendar/methods.php';
-
+include_once __DIR__ . '/AdminSharedFunc.php';
 
 class Adminbmv extends CI_Controller
 {
@@ -455,76 +455,18 @@ class Adminbmv extends CI_Controller
 
     public function send_email_action()
     {
-        $to = $_POST[ 'recipients' ];
-        $msg = $_POST[ 'email_body' ];
-        $cclist = $_POST[ 'cc' ];
-        $subject = $_POST[ 'subject' ];
-
-        $err =  "<h2>Email content are following</h2>";
-
-        $mdfile = html2Markdown( $msg, true );
-        $md = file_get_contents( trim($mdfile) );
-
-        if( $md )
-        {
-            $err .= printInfo( "Sending email to $to ($cclist ) with subject $subject" );
-
-            $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
-
-            if( $res )
-                flashMessage( "Email sent successfully. $msg. <tt> $res </tt>." );
-            else
-                printErrorSevere( "Failed to send email" );
-        }
+        $res = admin_send_email( $_POST );
+        if( $res['error'] )
+            printWarning( $res['error'] );
         else
-            printWarning( "Could not send email." );
+            flashMessage( "Sucessfully sent email. " . $res['message'] );
+
         redirect( "adminbmv/manages_talks" );
     }
 
     public function update_talk_action( )
     {
-        $res = updateTable( 'talks', 'id'
-            , 'class,host,coordinator,title,description'
-            , $_POST );
-
-        if( $res )
-        {
-            // TODO: Update the request or event associated with this entry as well.
-            $externalId = getTalkExternalId( $_POST );
-
-            $talk = getTableEntry( 'talks', 'id', $_POST );
-            assert( $talk );
-
-            $success = true;
-
-            $event = getEventsOfTalkId( $_POST[ 'id' ] ); 
-            $request = getBookingRequestOfTalkId( $_POST[ 'id' ] );
-
-            if( $event )
-            {
-                echo printInfo( "Updating event related to this talk" );
-                $event[ 'title' ] = talkToEventTitle( $talk );
-                $event[ 'description' ] = $talk[ 'description' ];
-                $res = updateTable( 'events', 'gid,eid', 'title,description', $event );
-                if( $res )
-                    echo printInfo( "... Updated successfully" );
-                else
-                    $success = false;
-            }
-            else if( $request )
-            {
-                echo printInfo( "Updating booking request related to this talk" );
-                $request[ 'title' ] = talkToEventTitle( $talk );
-                $request[ 'description' ] = $talk[ 'description' ];
-                $res = updateTable( 'bookmyvenue_requests', 'gid,eid', 'title,description', $request );
-            }
-        }
-
-        if( ! $res )
-            printErrorSevere( "Failed to update talk" );
-        else
-            flashMessage( 'Successfully updated entry' );
-
+        $msg = admin_update_talk( $_POST );
         redirect( "adminbmv/manages_talks" );
     }
 

@@ -1580,9 +1580,7 @@ function arrayToName( $arr, $with_email = false )
  */
 function talkToHTML( $talk, $with_picture = false )
 {
-
     $speakerId = intval( $talk[ 'speaker_id' ] );
-
     // If speaker id is > 0, then use it to fetch the entry. If not use the
     // speaker name. There was a design problem in the begining, some speakers
     // do not have unique id but only email. This has to be fixed.
@@ -1619,7 +1617,7 @@ function talkToHTML( $talk, $with_picture = false )
     if( $with_picture )
     {
         $imgpath = getSpeakerPicturePath( $speakerId );
-        $pic = '<td>' . showImage( $imgpath, 'auto', '250px' ) . '</td>';
+        $pic = showImage( $imgpath, 'auto', '200px' );
     }
 
     // Speaker info
@@ -1643,25 +1641,20 @@ function talkToHTML( $talk, $with_picture = false )
             <tr><td>When</td><td>' . $when . '</td></tr>
             <tr> <td>Where</td><td> ' . $where . '</td></tr>
             <tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
-    // Add links to google,ical.
-    $side .= '<tr>';
-    $side .=  '<td colspan="2">';
-    $side .= '<a target="_blank" href="'.site_url('info/events?date='. $event[ 'date' ])
-                . '">Permanent link</a>';
-    $side .= "</td>";
-    $side .= '</tr>';
     $side .= '</table>';
 
     $html = "<h1> $title </h1>";
-    $html .= '<table class="events">';
-    $html .= "<tr><td> $pic </td>";
-    $html .= "<td colspan='3'> $side </td>";
-    $html .= "</tr>";
-    $html .= "<tr><td colspan='5'>" . fixHTML( $talk[ 'description' ] ) . "</td></tr>";
-    $html .= '</table>';
+    $html .= '<table class="info" style="width:600px;">';
+    $html .= '<tr>';
+    $html .= "<td> $pic </td>";
+    $html .= "<td colspan='2'> $side </td>";
+    $html .= "</tr></table>";
+    $html .= '<div class="human_readable">' . fixHTML( $talk['description'] ) . '</div>';
 
     // Add the calendar links
     $html .=  $googleCalLink;
+    $html .= '<a target="_blank" href="'.site_url('info/events?date='. $event[ 'date' ])
+                . '">Permanent link</a>';
 
     return $html;
 }

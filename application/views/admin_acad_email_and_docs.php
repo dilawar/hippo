@@ -1,5 +1,4 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
@@ -189,7 +188,7 @@ else if( $default[ 'task' ] == 'Today\'s events' )
             );
 
         $templ = htmlspecialchars( json_encode( $templ ) );
-        echo '<form method="post" action="'.site_url('adminbmv/send_email').'">
+        echo '<form method="post" action="'.site_url("$ref/send_email").'">
                 <button type="submit">Send email</button>
                 <input type="hidden" name="subject" value="'. $subject . '" >
                 <input type="hidden" name="template" value="'. $templ . '" >
