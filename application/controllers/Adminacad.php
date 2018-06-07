@@ -69,36 +69,11 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view('admin_acad_grade_course.php', $data );
     }
 
-    // VIEWS are here. Actions are in AdminacadCourses
-    public function courses( )
+    public function talks()
     {
-        $this->load_adminacad_view( 'admin_acad_manages_current_courses' );
+        $this->load_adminacad_view( 'admin_manages_talks' );
     }
 
-    public function allcourses( )
-    {
-        $this->load_adminacad_view( 'admin_acad_manages_courses' );
-    }
-
-    public function slots()
-    {
-        $this->load_adminacad_view( 'admin_acad_manages_slots' );
-    }
-
-    public function jc()
-    {
-        $this->load_adminacad_view( 'admin_acad_manages_jc' );
-    }
-
-    public function jc_admins( )
-    {
-        $this->load_adminacad_view( 'admin_acad_manages_jc_admins' );
-    }
-
-    public function feedbackquestionnaire()
-    {
-        $this->load_adminacad_view( 'admin_acad_manages_course_questionnaire' );
-    }
 
     // ACTION.
     public function next_week_aws_action( )
