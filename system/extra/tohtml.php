@@ -1569,6 +1569,85 @@ function arrayToName( $arr, $with_email = false )
     return speakerName( $arr, $with_email );
 }
 
+function talkToHTMLLarge( $talk, $with_picture = true ) : string
+{
+    $speakerId = intval( $talk[ 'speaker_id' ] );
+    // If speaker id is > 0, then use it to fetch the entry. If not use the
+    // speaker name. There was a design problem in the begining, some speakers
+    // do not have unique id but only email. This has to be fixed.
+    if( $speakerId > 0 )
+    {
+        $speakerArr = getTableEntry( 'speakers', 'id', array( 'id' => $speakerId ) );
+        $speakerName = speakerName( $speakerId );
+    }
+    else
+    {
+        $speakerArr = getSpeakerByName( $talk[ 'speaker' ] );
+        $speakerName = speakerName( $speakerArr );
+    }
+
+    $coordinator = __get__( $talk, 'coordinator', '' );
+
+
+    $hostEmail = $talk[ 'host' ];
+
+    // Either NCBS or InSTEM.
+    $hostInstitite = emailInstitute( $hostEmail );
+
+    // Get its events for venue and date.
+    $event = getEventsOfTalkId( $talk[ 'id' ] );
+
+    $where = venueSummary( $event[ 'venue' ] );
+    $when = humanReadableDate( $event[ 'date' ] ) . ', ' .
+            humanReadableTime( $event[ 'start_time'] );
+
+    $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
+
+
+    $pic = '';
+    if( $with_picture )
+    {
+        $imgpath = getSpeakerPicturePath( $speakerId );
+        $pic = showImage( $imgpath, 'auto', '200px' );
+    }
+
+    // Speaker info
+    $speakerHMTL = speakerToHTML( $speakerArr );
+    if( $speakerId > 0 )
+        $speakerHMTL = speakerIdToHTML( $speakerId );
+
+    // Hack: If talk is a THESIS SEMINAR then host is thesis advisor.
+    $host = '<td>Host</td><td>' . loginToHTML( $talk[ 'host' ], false ) . '</td>';
+    if( __substr__('THESIS SEMINAR', $talk['class'] ))
+        $host = '<td>Supervisor</td><td>' . loginToHTML( $talk[ 'host' ], false ) . '</td>';
+
+    // Calendar link.
+    $googleCalLink = addToGoogleCalLink( $event );
+    $icalLink = eventToICALLink( $event );
+
+    // side information.
+    $html = "<h1> $title </h1>";
+    $left = '<table class="info">';
+    $left .= "<tr><td colspan='2'> $pic </td></tr>";
+    $left .= '<tr><td colspan="2"><strong>' . $speakerHMTL . '</strong></td></tr>
+            <tr>' . $host . '</tr>
+            <tr><td>When</td><td>' . $when . '</td></tr>
+            <tr> <td>Where</td><td> ' . $where . '</td></tr>
+            <tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
+    $left .=  "<tr><td>$googleCalLink </td>";
+    $left .= '<td><a target="_blank" href="'.site_url('info/events?date='. $event[ 'date' ])
+                . '">Permanent link</a></td></tr>';
+    $left .= "</table>";
+
+    $right = '<div class="human_readable">' . fixHTML( $talk['description'] ) . '</div>';
+
+    $html .= '<div style="width: 100%; overflow: hidden;">
+                <div style="width: 30%; float: left;">' . $left . '</div>
+                <div style="margin-left: 31%;">' . $right . '</div>
+            </div>';
+
+    return $html;
+}
 
 /**
     * @brief Convert an event entry to HTML.
@@ -1838,7 +1917,7 @@ function googleCaledarURL( )
     return $url;
 }
 
-function inlineImage( $picpath, $class = 'inline_image', $height = 'auto', $width = 'auto' )
+function inlineImage( $picpath, $class = 'inline_image', $width = 'auto', $height = 'auto' )
 {
     if( ! file_exists( $picpath ) )
         $picpath = nullPicPath( );
