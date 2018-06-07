@@ -355,7 +355,7 @@ trait Booking
             $msg = 'Incomplete entry. Required fields: First name, last name, 
                 institute, title and description of talk.';
             $msg .= arrayToVerticalTableHTML( $_POST, 'info' );
-            flashMessage( "Failed to register following entry. <br /> $msg ." );
+            printWarning( "Failed to register entry. Information:<br /> $msg ." );
             redirect( "user/register_talk" );
             return;
         }
