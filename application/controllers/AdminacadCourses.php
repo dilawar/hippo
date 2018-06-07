@@ -3,6 +3,36 @@
 trait AdminacadCourses 
 {
 
+    public function courses( )
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_current_courses' );
+    }
+
+    public function allcourses( )
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_courses' );
+    }
+
+    public function slots()
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_slots' );
+    }
+
+    public function jc()
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_jc' );
+    }
+
+    public function jc_admins( )
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_jc_admins' );
+    }
+
+    public function feedbackquestionnaire()
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_course_questionnaire' );
+    }
+
     function goBackToReferrer( $fallback )
     {
         // Send to referrer.
