@@ -61,7 +61,7 @@ echo '<br />';
 echo '<table class="admin">
     <tr>
         <td> <a class="clickable_small"
-            href="'.site_url('adminacad/requests').'">Manage ' . count( $pendingRequests) .
+            href="'.site_url('adminacad/aws_edit_requests').'">Manage ' . count( $pendingRequests) .
             ' pending requests</a>
         </td>
         <td> <a class="clickable_small" href="'.site_url('adminacad/email_and_docs').'">Emails and Documents</td>

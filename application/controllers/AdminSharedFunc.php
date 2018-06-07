@@ -86,8 +86,8 @@ function admin_update_speaker( array $data ) : array
 
     if( $data['response'] == 'DO_NOTHING' )
     {
-        $final['message'] = "User said do nothing.";
-        return;
+        $final['error'] = "User said do nothing.";
+        return $final;
     }
 
     if( $data['response'] == 'delete' )
