@@ -740,8 +740,7 @@ function getLoginPicturePath( $login, $default = 'null' )
 function getUserPicture( $user, $default = 'null' )
 {
     $picPath = getLoginPicturePath( $user, $default );
-    $html ='<img class="login_picture" width="200px"
-        height="auto" src="' . dataURI( $picPath, 'image/jpg' ) . '" >';
+    $html ='<img class="login_picture" src="' . dataURI( $picPath, 'image/jpg' ) . '" >';
 
     return $html;
 }
