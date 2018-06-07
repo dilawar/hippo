@@ -102,10 +102,10 @@ foreach( $requests as $r )
 
     // If a request is coming from talk, use different background.
     $color = '';
-    if( strpos( $r[ 'external_id'], 'talks.' ) !== false )
-        $color = 'lightyellow';
+    if( __substr__('talks.', __get__($r, 'external_id','')))
+        $color = 'yellow';
 
-    $html .= "<tr style='background-color:$color'>";
+    $html .= "<tr style=\"background-color:$color\">";
     // $html .= '<td>';
     $html .= '<form action="'.site_url('adminbmv/review'). '" method="post">';
     // Hide some buttons to send information to next page.
