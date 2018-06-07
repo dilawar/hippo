@@ -75,6 +75,11 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( 'admin_manages_talks' );
     }
 
+    public function manages_speakers( )
+    {
+        $this->load_adminacad_view( 'admin_acad_manages_speakers' );
+    }
+
     public function edittalk( $id )
     {
         $this->load_adminacad_view( 'admin_manages_talk_update', [ 'talkid' => $id ] );
@@ -512,6 +517,17 @@ class Adminacad extends CI_Controller
         redirect( 'adminacad/manages_talks' );
     }
 
+    public function manages_speakers_action( )
+    {
+        $res = admin_update_speaker( $_POST );
+
+        if( $res['error'] )
+            printWarning( $res['error'] );
+        else
+            flashMessage( $res['message'] );
+
+        redirect( "adminacad/manages_speakers");
+    }
 
 }
 

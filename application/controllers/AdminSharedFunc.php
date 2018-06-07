@@ -80,4 +80,100 @@ function admin_send_email( array $data ) : array
     return $res;
 }
 
+function admin_update_speaker( array $data ) : array
+{
+    $final = [ 'message' => '', 'error' => '' ];
+
+    if( $data['response'] == 'DO_NOTHING' )
+    {
+        $final['message'] = "User said do nothing.";
+        return;
+    }
+
+    if( $data['response'] == 'delete' )
+    {
+        // We may or may not get email here. Email will be null if autocomplete was
+        // used in previous page. In most cases, user is likely to use autocomplete
+        // feature.
+        if( strlen($data[ 'id' ]) > 0 )
+            $res = deleteFromTable( 'speakers', 'id', $data );
+        else
+            $res = deleteFromTable( 'speakers', 'first_name,last_name,institute', $data );
+
+        if( $res )
+             $final['message'] = "Successfully deleted entry";
+        else
+            $final['error'] = minionEmbarrassed( "Failed to delete speaker from database" );
+
+        return $final;
+    }
+
+    if( $data['response'] == 'submit' )
+    {
+        // If there is not speaker id, then  create a new speaker.
+        $sid = __get__( $data, 'id', -1 );
+        $res = null;
+
+        if( $sid < 0 )  // Insert a new enetry.
+        {
+            // Insert a new entry.
+            $speakerId = getUniqueFieldValue( 'speakers', 'id' );
+            $data[ 'id' ] = intval( $speakerId ) + 1;
+            $sid = $data[ 'id' ];
+            $res = insertIntoTable( 'speakers'
+                        , 'id,honorific,email,first_name,middle_name,last_name,' .
+                            'designation,department,homepage,institute'
+                        , $data
+                        );
+        }
+        else // Update the speaker.
+        {
+            if( __get__( $data, 'id', 0 ) > 0 )
+                $whereKey = 'id';
+            else
+                $whereKey = 'first_name,middle_name,last_name';
+
+            $speaker = getTableEntry( 'speakers', $whereKey, $data );
+            if( $speaker )
+            {
+                // Update the entry
+                $res = updateTable( 'speakers', $whereKey
+                    , 'honorific,email,first_name,middle_name,last_name,' .
+                    'designation,department,homepage,institute'
+                    , $data
+                );
+
+                // Update all talks speaker entries.
+                $res = updateTable( 'talks', 'speaker_id', 'speaker'
+                    , array( 'speaker_id' => $sid, 'speaker' => speakerName( $sid ) )
+                );
+
+                if( $res )
+                    $final['message'] .= printInfo( " .. updated related talks as well " );
+
+            }
+        }
+
+        // After inserting new speaker, upload his/her image.
+        if( array_key_exists( 'picture', $_FILES ) && $_FILES[ 'picture' ]['name'] )
+        {
+            $imgpath = getSpeakerPicturePath( $sid );
+            $final['message'] .= printInfo( "Uploading speaker image to $imgpath .. " );
+            $res = uploadImage( $_FILES[ 'picture' ], $imgpath );
+            if( ! $res )
+                $final['error'] .= minionEmbarrassed( "Could not upload speaker image to $imgpath" );
+        }
+
+        if( $res )
+            $final['message'] .= 'Updated/Inserted speaker';
+        else
+            $final['error'] .= printInfo( "Failed to update/insert speaker" );
+
+        return $final;
+    }
+
+    $final['error'] .= alertUser( "Unknown/unsupported operation " . $data[ 'response' ] );
+    return $final;
+}
+
 ?>
