@@ -4,6 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 require_once BASEPATH.'autoload.php';
 require_once __DIR__.'/AdminacadCourses.php';
 require_once __DIR__.'/AdminacadJC.php';
+require_once __DIR__.'/AdminSharedFunc.php';
 
 class Adminacad extends CI_Controller
 {
@@ -69,9 +70,35 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view('admin_acad_grade_course.php', $data );
     }
 
-    public function talks()
+    public function manages_talks()
     {
         $this->load_adminacad_view( 'admin_manages_talks' );
+    }
+
+    public function edittalk( $id )
+    {
+        $this->load_adminacad_view( 'admin_manages_talk_update', [ 'talkid' => $id ] );
+    }
+
+    public function deletetalk( $id )
+    {
+        printWarning( 
+            "Sorry but you are not allowed to delete talk. Only Bookmyvenue Admin can do that." 
+            );
+        redirect( "adminacad/manages_talks" );
+    }
+
+    public function scheduletalk( $id )
+    {
+        printWarning( 
+            "Sorry but you are not allowed to schedule talk. Only Bookmyvenue Admin can do that." 
+            );
+        redirect( "adminacad/manages_talks" );
+    }
+
+    public function send_email( )
+    {
+        $this->load_adminacad_view( 'admin_acad_send_email' );
     }
 
 
@@ -467,6 +494,24 @@ class Adminacad extends CI_Controller
         // Go to view.
         redirect( "adminacad/gradecourse/$year/$semester/$courseid");
     }
+
+    public function update_talk_action( )
+    {
+        admin_update_talk( $_POST );
+        redirect( 'adminacad/manages_talks' );
+    }
+
+    public function send_email_action()
+    {
+        $res = admin_send_email( $_POST );
+        if($res['error'])
+            printWarning( p("Failed to send email.") . $res['error'] );
+        else
+            flashMessage( $res['message'] );
+
+        redirect( 'adminacad/manages_talks' );
+    }
+
 
 }
 

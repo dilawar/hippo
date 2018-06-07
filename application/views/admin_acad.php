@@ -225,8 +225,8 @@ echo '
 echo '<h1>Manage talks and seminars</h1>';
 echo '<table class="admin">';
 echo '<tr>
-        <td> <a class="clickable" href="'.site_url('adminacad/talks').'">Manage talks/seminar</td>
-        <td> <a class="clickable" href="'.site_url('adminacad/speakers').'">Manage talk/seminar speakers</td>
+        <td> <a class="clickable" href="'.site_url('adminacad/manages_talks').'">Manage talks/seminar</td>
+        <td> <a class="clickable" href="'.site_url('adminacad/manages_speakers').'">Manage talk/seminar speakers</td>
     </tr>';
 echo '</table>';
 
