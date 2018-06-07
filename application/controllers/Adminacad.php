@@ -106,7 +106,6 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( 'admin_acad_send_email' );
     }
 
-
     // ACTION.
     public function next_week_aws_action( )
     {

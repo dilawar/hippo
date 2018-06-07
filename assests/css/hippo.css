@@ -421,8 +421,9 @@ div.aws_preference {
 }
 
 div.human_readable {
-    width: 600px;
-    text-align: justify;
+    min-width: 400px;
+    max-width: 600px;
+    /* text-align: justify; */
     line-height: 1.5;
 }
 
@@ -953,8 +954,8 @@ td.db_table_fieldname {
 table.tableintd {
     max-width: 80%;
     min-width: 300px;
-    /* font-family: 'Open Sans'; */
-    font-family: 'EB Garamond';
+    font-family: 'Ubuntu';
+    font-size: small;
     float: left;
 }
 
