@@ -28,9 +28,8 @@ $venues = getVenues( $sortby = 'total_events' );
 
 if(! isset($date))
 {
-    echo printErrorSevere( "No valid day is selected. Please go back and select a valid date.", false );
+    echo printErrorSevere( "No valid day is selected. Please go back and select a valid date." );
     echo goBack( );
-    echo goBackToPageLink( "user/home", "Go Home" );
     exit;
 }
 
@@ -113,8 +112,13 @@ echo '<input type="hidden" name="REFERER" value="' . $ref . '" >';
 echo "<br />";
 echo repeatPatternTable( 'repeat_pat' );
 echo '<br />';
-echo submitButton( 'Submit' );
+echo '<button name="response" value="submit" style="float:right">Submit</button>';
 echo '</form>';
 echo '<br /><br />';
 
-echo goBackToPageLink( "$goback", "Go back" );
+echo goBackToPageLink( $goback, "Go back" );
+?>
+
+<script type="text/javascript" charset="utf-8">
+    $("input#bookmyvenue_requests_title").attr( "placeholder", "Minimum 8 characters");
+</script>
