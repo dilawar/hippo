@@ -1048,14 +1048,26 @@ table.index tr td {
 }
 
 table.repeat_pat {
-    border: 1px dotted;
     min-width: 500px;
     max-width : var(--maxwidth);
 }
 
-table.repeat_pat tr td  {
-    min-width: 200px;
-    max-width : 30%;
+/* table.repeat_pat tr td:nth-child(1) { */
+    /* width: 200px; */
+    /* max-width: 200px; */
+/* } */
+
+table.repeat_pat tr td
+{
+    width: 25%;
+    border-top: 1px dotted;
+}
+
+table.repeat_pat input
+{
+    width: 175px;
+    max-width: 300px;
+
 }
 
 table.upload {
