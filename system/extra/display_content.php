@@ -1,5 +1,9 @@
 <?php
 
+// Otherwise $_SESSION is undefined on command line.
+session_start();
+
+
 function printErrorSevere($msg, $append = false )
 {
     if($append)
