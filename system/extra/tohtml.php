@@ -1635,25 +1635,27 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
             <tr> <td>Where</td><td> ' . $where . '</td></tr>
             <tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
     $left .=  "<tr><td>$googleCalLink </td>";
-    $left .= '<td><a target="_blank" href="'.site_url('info/events?date='. $event[ 'date' ])
+    $left .= '<td><a target="_blank" href="'.site_url('info/events') . '?date='. $event[ 'date' ]
                 . '">Permanent link</a></td></tr>';
     $left .= "</table>";
 
     $right = '<div class="human_readable">' . fixHTML( $talk['description'] ) . '</div>';
 
     $html .= '<div style="width: 100%; overflow: hidden;">
-                <div style="width: 30%; float: left;">' . $left . '</div>
-                <div style="margin-left: 31%;">' . $right . '</div>
+                <div style="width: 30%;min-width:250px; float: left;margin-right:5px;">' 
+                    . $left . '</div>
+                <div style="margin-left: 32%;">' . $right . '</div>
             </div>';
 
     return $html;
 }
 
 /**
-    * @brief Convert an event entry to HTML.
+    * @brief Convert an event entry to HTML. This is suitable for sending html
+    * emails. Prefer talkToHTMLLarge for displaying on hippo.
     *
     * @param $talk Talk/event entry.
-    * @param $with_picture Fetch entry with picture.
+    * @param DEPRECATED: $with_picture Fetch entry with picture.
     *
     * @return
  */
@@ -1692,13 +1694,6 @@ function talkToHTML( $talk, $with_picture = false )
     $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
 
 
-    $pic = '';
-    if( $with_picture )
-    {
-        $imgpath = getSpeakerPicturePath( $speakerId );
-        $pic = showImage( $imgpath, 'auto', '200px' );
-    }
-
     // Speaker info
     $speakerHMTL = speakerToHTML( $speakerArr );
     if( $speakerId > 0 )
@@ -1714,7 +1709,7 @@ function talkToHTML( $talk, $with_picture = false )
     $icalLink = eventToICALLink( $event );
 
     // side information.
-    $side = '<table class="tableintd">
+    $side = '<table class="show_info">
             <tr><td colspan="2"><strong>' . $speakerHMTL . '</strong></td></tr>
             <tr>' . $host . '</tr>
             <tr><td>When</td><td>' . $when . '</td></tr>
@@ -1723,16 +1718,13 @@ function talkToHTML( $talk, $with_picture = false )
     $side .= '</table>';
 
     $html = "<h1> $title </h1>";
-    $html .= '<table class="info" style="width:600px;">';
-    $html .= '<tr>';
-    $html .= "<td> $pic </td>";
-    $html .= "<td colspan='2'> $side </td>";
-    $html .= "</tr></table>";
+    $html .= $side;
+    $html .= ' <br />';
     $html .= '<div class="human_readable">' . fixHTML( $talk['description'] ) . '</div>';
 
     // Add the calendar links
     $html .=  $googleCalLink;
-    $html .= '<a target="_blank" href="'.site_url('info/events?date='. $event[ 'date' ])
+    $html .= '<a target="_blank" href="'.site_url('info/events') . '?date=' . $event[ 'date' ]
                 . '">Permanent link</a>';
 
     return $html;
