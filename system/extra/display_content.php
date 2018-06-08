@@ -1,9 +1,5 @@
 <?php
 
-// Otherwise $_SESSION is undefined on command line.
-session_start();
-
-
 function printErrorSevere($msg, $append = false )
 {
     if($append)
@@ -16,13 +12,15 @@ function printErrorSevere($msg, $append = false )
 function printWarning($msg, $append = true)
 {
     if( $append )
-        $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . p($msg);
+        if(isset($_SESSION))
+            $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . p($msg);
     return $msg;
 }
 
 function flashMessage( $msg, $category = 'success' )
 {
-    $_SESSION[ $category ] = $msg;
+    if(isset($_SESSION))
+        $_SESSION[ $category ] = $msg;
 }
 
 function printInfo( $msg )
@@ -42,7 +40,8 @@ function alertUser( $msg, $flash = true )
 {
     $info ="<div class=\"alert alert-warning\"> <i class=\"fa fa-exclamation-circle fa-1x\"></i> " . $msg . "</div>";
     if($flash)
-        $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . "<p>$msg </p>";
+        if(isset($_SESSION))
+            $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . "<p>$msg </p>";
     return $info;
 }
 
