@@ -49,7 +49,6 @@ function events_everyday_morning_cron()
                     }
                 }
             }
-            ob_flush( );
         }
         else
             error_log( "No event found on day " . $today );
