@@ -64,7 +64,7 @@ else
     foreach( $awses as $aws )
     {
         $user = $aws[ 'speaker' ];
-        $awstext = awsToHTML( $aws, $with_picture = true );
+        $awstext = awsToHTMLLarge( $aws, $with_picture = true );
 
         // Link to pdf file.
         // $awstext .= awsPdfURL( $aws[ 'speaker' ], $aws['date' ] );
