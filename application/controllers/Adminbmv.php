@@ -91,7 +91,48 @@ class Adminbmv extends CI_Controller
         $this->loadview( 'admin_manages_talk_update', $data );
     }
 
+    public function edit( )
+    {
+        $this->loadview( 'bookmyvenue_admin_edit', $_POST );
+    }
+
     // VIEWS WITH ACTION.
+    public function edit_action( )
+    {
+        // If is_public_event is set to NO then purge calendar id and event id.
+        if( $_POST[ 'is_public_event' ] == 'NO' )
+        {
+            if( strlen( $_POST[ 'calendar_event_id' ] ) > 1 )
+            {
+                $_POST[ 'calendar_id' ] = '';
+                $_POST[ 'calendar_event_id' ] = '';
+            }
+        }
+
+        $where = 'gid,eid';
+        if( "Yes" == $_POST['update_all'] )
+            $where = 'gid';
+
+        $res = updateTable( 'events', $where
+            , array( 'is_public_event', 'class', 'title', 'description', 'status' )
+            , $_POST 
+        );
+
+        if( $res )
+        {
+            $gid = $_POST['gid']; $eid = $_POST['eid'];
+            flashMessage( "Succesfully update event(s) - $gid $eid." );
+            // TODO: may be we can call calendar API here. currently we are relying 
+            // on synchronize google calendar feature.
+            redirect( 'adminbmv/home' );
+            return;
+        }
+        else
+            printWarning( "Above events were not updated" );
+
+        redirect( "adminbmv/home" );
+    }
+
     public function block_venue_submit($arg = '')
     {
         $venues = __get__( $_POST, 'venue' );
