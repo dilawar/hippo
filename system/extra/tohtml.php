@@ -1518,9 +1518,9 @@ function awsToHTMLLarge( $aws, $with_picture = true )
     $html = "<h1>$title</h1>";
     $right = '<div class="human_readable">' . fixHTML( $abstract ) . '</div>';
     $html .= '<div style="width: 100%; overflow: hidden;">
-                <div style="width: 30%;min-width:250px; float: left;margin-right:5px;">' 
+                <div style="width: 30%;min-width:250px; float: left;margin-right:25px;">' 
                     . $left . '</div>
-                <div style="margin-left: 32%;">' . $right . '</div>
+                <div style="margin-left: 0%;">' . $right . '</div>
             </div>';
     return $html;
 }
