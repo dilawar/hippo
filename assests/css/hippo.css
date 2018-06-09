@@ -306,7 +306,7 @@ table.show_schedule tr td
 {
     font-family: Fira Sans;
     background-color: var(--tabletdcolor);
-    border : 1px dotted;
+    border-top : 1px solid gray;
     border-spacing: 4px;
     width: 50%;
     font-size: small;

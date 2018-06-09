@@ -737,12 +737,18 @@ function getLoginPicturePath( $login, $default = 'null' )
     *
     * @return
  */
-function getUserPicture( $user, $default = 'null' )
+function getUserPicture( $user, $default = 'null', $width='200px' )
 {
     $picPath = getLoginPicturePath( $user, $default );
-    $html ='<img class="login_picture" src="' . dataURI( $picPath, 'image/jpg' ) . '" >';
-
+    $html ='<img class="login_picture" width="'. $width . '" height="auto"
+                src="' . dataURI( $picPath, 'image/jpg' ) . '" >';
     return $html;
+}
+
+function getUserPicturePath( $user )
+{
+    $picPath = getLoginPicturePath( $user, $default );
+    return $picPath;
 }
 
 

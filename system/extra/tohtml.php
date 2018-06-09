@@ -1455,6 +1455,76 @@ function horizontalLine( $width = "100%" )
     return "<div width=$width><hr width=$width align=left> </div>";
 }
 
+function awsToHTMLLarge( $aws, $with_picture = true )
+{
+    $speaker = __ucwords__( loginToText( $aws[ 'speaker' ] , false ));
+    $supervisors = array( __ucwords__(
+                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
+                          ,  __ucwords__(
+                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
+                        );
+    $supervisors = array_filter( $supervisors );
+    $tcm = array( );
+    array_push( $tcm, __ucwords__(
+                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
+                , __ucwords__(
+                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
+                ,  __ucwords__(
+                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
+                , __ucwords__(
+                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
+              );
+    $tcm = array_filter( $tcm );
+    $title = $aws[ 'title' ];
+    if( strlen( $title ) == 0 )
+        $title = "Not disclosed yet.";
+
+    $abstract = $aws[ 'abstract' ];
+    if( strlen( $abstract ) == 0 )
+        $abstract = "Not disclosed yet!";
+
+    // Adding css inline screw up the email view. Dont do it.
+    $user = $aws[ 'speaker' ];
+
+    // Add a table only if there is a picture. Adding TD when there is no picture
+    // screws up the formatting of emails.
+    $pic = '';
+    if( $with_picture )
+    {
+        $imgpath = getLoginPicturePath( $user );
+        $pic = showImage( $imgpath, 'auto', '200px' );
+    }
+
+    $left = '<table class="info">
+                <tr> 
+                    <td colspan="2">'. $pic . '</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>' . $speaker .'</strong></td>
+                </tr>
+                <tr>
+                    <td>' . smallCaps( 'Supervisors') . '</td>
+                    <td>' . implode( ", ", $supervisors ) . '</td>
+                 </tr>
+                 <tr>
+                     <td>' . smallCaps( 'Thesis Committee Members') . '</td>
+                     <td>' . implode( ", ", $tcm) . '</td>
+                 </tr>
+             </table>';
+
+    $abstract = rescale_inline_images( $abstract );
+
+    // Add table.
+    $html = "<h1>$title</h1>";
+    $right = '<div class="human_readable">' . fixHTML( $abstract ) . '</div>';
+    $html .= '<div style="width: 100%; overflow: hidden;">
+                <div style="width: 30%;min-width:250px; float: left;margin-right:25px;">' 
+                    . $left . '</div>
+                <div style="margin-left: 0%;">' . $right . '</div>
+            </div>';
+    return $html;
+}
+
 /**
     * @brief NOTE: Must not have any decoration. Used in sending emails.
     * Squirrel mail html2text may not work properly.
@@ -1489,7 +1559,7 @@ function awsToHTML( $aws, $with_picture = false )
 
     $title = $aws[ 'title' ];
     if( strlen( $title ) == 0 )
-        $title = "Not yet disclosed!";
+        $title = "Not disclosed yet.";
 
 
     if( __get__( $aws, 'is_presynopsis_seminar', 'NO' ) == 'YES' )
@@ -1497,7 +1567,7 @@ function awsToHTML( $aws, $with_picture = false )
 
     $abstract = $aws[ 'abstract' ];
     if( strlen( $abstract ) == 0 )
-        $abstract = "Not yet disclosed!";
+        $abstract = "Not disclosed yet!";
 
     // Adding css inline screw up the email view. Dont do it.
     $user = $aws[ 'speaker' ];
@@ -1506,7 +1576,7 @@ function awsToHTML( $aws, $with_picture = false )
     // screws up the formatting of emails.
     $pic = '';
     if( $with_picture )
-        $pic = getUserPicture( $user, 'hippo' );
+        $pic = getUserPicture( $user, 'hippo', '200px' );
 
     $extra = '<table class="tableintd">
             <tr>

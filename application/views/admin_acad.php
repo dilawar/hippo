@@ -122,7 +122,7 @@ if( isset( $_POST[ 'response' ] ))
 /*
  * Course work,
  */
-echo '<h1>COURSES</h1>';
+echo '<h1>Courses</h1>';
 echo '
   <table class="admin">
     <tr>

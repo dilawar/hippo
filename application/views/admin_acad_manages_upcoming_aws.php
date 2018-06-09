@@ -182,7 +182,7 @@ echo "<h1>Temporary assignments</h1>";
 echo printInfo("Three methods are available for scheduling AWS. First one is default.");
 
 $methodTable  = "<form method=\"post\" action=\"".site_url('adminacad/schedule_upcoming_aws'). "\">";
-$methodTable .= ' <table border="0"> ';
+$methodTable .= ' <table> ';
 $methodTable .= '<tr><td>';
 $methodTable .= '<button name="method" value="reschedule_default">
     <strong>Recompute (DEFAULT)</strong></button>';
@@ -295,7 +295,7 @@ foreach( $scheduleMap as $date => $schedule )
 
         $csvLine .= $lastAwsDate . ',';
 
-        $info = '<table border="0" style="">';
+        $info = '<table class="info">';
         if( count( $pastAWSes) == 0 )
             $info .= "<tr><td>Joining Date</td><td> $lastAwsDate </td></tr>";
         else
