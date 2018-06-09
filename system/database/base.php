@@ -536,6 +536,8 @@ class BMVPDO extends PDO
                 , venue VARCHAR(100) NOT NULL
                 , time TIME
                 , description TEXT
+                , scheduling_method VARCHAR(20) DEFAULT 'RANDOM'
+                , send_email_on_days VARCHAR(30) -- csv list otherwise 3 days before the day
                 , UNIQUE KEY(id,day,time,venue)
                 )"
             );
@@ -559,6 +561,8 @@ class BMVPDO extends PDO
                 , presenter VARCHAR(100) NOT NULL -- login from logins table.
                 , description TEXT
                 , date DATE NOT NULL
+                , time TIME NOT NULL -- usually the default time from journal_club.
+                , venue VARCHAR(30) NOT NULL -- usually the default venue from journal_clubs
                 , status ENUM( 'VALID', 'INVALID', 'CANCELLED' ) default 'VALID'
                 , url VARCHAR(500) -- URL of paper
                 , presentation_url VARCHAR(500) -- URL of presentation
