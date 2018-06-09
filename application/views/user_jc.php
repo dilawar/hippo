@@ -36,7 +36,7 @@ echo "<h1>Upcoming JC presentations.</h1>";
 // Get all upcoming JCs in my JC.
 $mySubs = getUserJCs( $login = whoAmI() );
 
-echo '<table><tr>';
+echo '<table class="show_info"><tr>';
 foreach( $mySubs as $i => $mySub )
 {
     $jcID = $mySub['jc_id' ];
@@ -52,7 +52,7 @@ foreach( $mySubs as $i => $mySub )
         echo arrayToVerticalTableHTML( $upcoming, 'info', '', 'id,status' );
         echo '</td>';
 
-        if( ($i+1) % 4 == 0 )
+        if( ($i+1) % 3 == 0 )
            echo '</tr><tr>';
     }
 }
@@ -64,7 +64,6 @@ $myPresentations = getUpcomingPresentationsOfUser( whoAmI( ) );
 if( count( $myPresentations ) > 0 )
 {
     echo '<h1>Your upcoming presentation(s)</h1>';
-
     foreach( $myPresentations as $upcoming )
     {
         if( $upcoming[ 'acknowledged' ] == 'NO' )
@@ -84,10 +83,13 @@ if( count( $myPresentations ) > 0 )
     }
 }
 else
+{
+    echo '<br />';
     echo printInfo( 'No JC presentation has been assigned for you. If you have something 
         cool to present, raise a <a class="clickable" 
         href="'.site_url('user/jc_request').'">presentation request</a>.' 
     );
+}
 
 
 echo '<h1>Presentation requests in your JCs</h1>';
@@ -106,9 +108,9 @@ foreach( $mySubs as $sub )
 if( count( $allreqs ) > 0 )
 {
     echo printInfo(
-        "Following presentation requests have been made. If you like any paper to
-        be presented, please vote for it. Voting is anonymous and only seen by
-        JC coordinators.
+        "Following presentation requests are available along with preferred presentation date.
+        If you like this paper, vote for it. Voting is anonymous and can only be seen by
+        JC coordinators. Number of votes will be visible to presenter.
         "
     );
 
