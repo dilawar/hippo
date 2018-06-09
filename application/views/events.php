@@ -45,7 +45,9 @@ else
         $talk = getTableEntry( 'talks', 'id', array( 'id' => $talkId ) );
         if( $talk )
         {
+            $talkHtml .= '<div class="notice">';
             $talkHtml .= talkToHTMLLarge( $talk, $with_picture = true );
+            $talkHtml .= '</div>';
 
             $talkHtml .= "<br>";
             // Link to pdf file.
