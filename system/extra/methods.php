@@ -745,6 +745,12 @@ function getUserPicture( $user, $default = 'null', $width='200px' )
     return $html;
 }
 
+function getUserPicturePath( $user )
+{
+    $picPath = getLoginPicturePath( $user, $default );
+    return $picPath;
+}
+
 
 function getSpeakerPicturePath( $speaker )
 {
