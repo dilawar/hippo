@@ -3,10 +3,10 @@
 require_once BASEPATH.'autoload.php';
 
 // Some symbols.
-$symbEdit = '<i class="fa fa-pencil"></i>';
-$symbCancel = '<i class="fa fa-times"></i>';
-$symbDelete = '<i class="fa fa-trash-o"></i>';
-$symbAccept = '<i class="fa fa-check"></i>';
+global $symbEdit;
+global $symbCancel;
+global $symbDelete;
+global $symbAccept;
 
 echo userHTML( );
 
@@ -39,7 +39,7 @@ foreach( $upcomingAWSs as $aws )
 echo '<h1>Annual Work Seminar for upcoming week</h1>';
 
 if( count( $upcomingAwsNextWeek ) < 1 )
-    echo alertUser( "No AWS found." );
+    echo alertUser( "No AWS found for upcoming week.", false );
 else
 {
     $table = '<div style="font-size:small">';
@@ -54,9 +54,9 @@ else
         $table .= '<input type="hidden", name="id" , value="' . $upcomingAWS[ 'id' ] . '"/>';
         $table .= '</td><td>';
         $table .= '<button name="response" title="Edit/format the abstract" value="format_abstract">' . $symbEdit . '</button>';
-        $table .= '<br>';
-        $table .= '<button onclick="AreYouSure(this)" name="response"
-               . title="Remove this entry from schedule" value="delete">' . $symbCancel . '</button>';
+        // $table .= '<br>';
+        //$table .= '<button onclick="AreYouSure(this)" name="response"
+        //       . title="Remove this entry from schedule" value="delete">' . $symbCancel . '</button>';
         $table .= '</td></tr>';
         $table .= '</table>';
         $table .= '</form>';
@@ -128,20 +128,28 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
 
         $pi = getPIOrHost( $aws[ 'speaker' ] );
         $specialization = getSpecialization( $aws[ 'speaker' ], $pi );
+        $awsID = $aws['id'];
 
         // Speaker PI if any.
         $speakerTable .=  '<td>' . piSpecializationHTML( $pi, $specialization ) . '</td>';
 
-        $form = '<form action="'.site_url('adminadcad/action'). '" method="post" accept-charset="utf-8">';
-        $form .= '<input type="hidden", name="date" , value="' . $aws[ 'date' ] . '"/>';
-        $form .= '<input type="hidden", name="speaker" , value="' . $aws[ 'speaker' ] . '"/>';
-        $form .= '<button name="response" onclick="AreYouSure(this)"
+        $form = '<form action="'.site_url("adminacad/upcoming_aws_action"). '" method="post">';
+        $form .= '<input type="hidden", name="date", value="' . $aws[ 'date' ] . '"/>';
+        $form .= '<input type="hidden", name="speaker", value="' . $aws[ 'speaker' ] . '"/>';
+        // Create a hidden form which gets active when someone clicks on delete
+        // this entry.
+        $divId = 'delete_aws_form_' . $awsID;
+        $delete = '<div id="' . $divId . '" style="display:none;">';
+        $delete .= '<textarea name="reason" cols="20" rows="5" 
+                        placeholder="reason for removing (at least 8 chars). Email is also sent to PI."
+                    ></textarea>';
+        $delete .= '<button name="response" onclick="AreYouSure(this)"
                     title="Delete this entry" >' . $symbDelete . '</button>';
+        $delete .= '</div>';
+        $form .= "<a onclick=\"toggleShowHide( this, '$divId', 'Delete This Entry')\">Remove this entry</a> $delete";
         $form .= '</form>';
 
         $speakerTable .= '<td>' . $form . '</td>';
-
-
         $speakerTable .= '</td>';
         $speakerTable .=  '</tr></table>';
 
@@ -338,3 +346,5 @@ echo '<br><br>';
 echo goBackToPageLink( "adminacad/home", "Go back" );
 
 ?>
+
+

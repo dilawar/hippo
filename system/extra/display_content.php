@@ -4,6 +4,9 @@ function printErrorSevere($msg, $append = false )
 {
     if($append)
         $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . "<p>$msg </p>";
+    else
+        $_SESSION['warning'] =  "<p>$msg </p>";
+
     error_log( $msg );
     return $msg;
 }

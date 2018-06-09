@@ -38,6 +38,13 @@ function p( string $msg ) : string
     return "<p> $msg </p>";
 }
 
+function prompt( $msg )
+{
+    echo("<script type='text/javascript'> var answer = prompt('". $msg ."'); </script>");
+    $answer = "<script type='text/javascript'> document.write(answer); </script>";
+    return($answer);
+}
+
 function fontWithStyle( $msg, $style = "" )
 {
     return "<font style=\"$style;\">$msg</font>";
