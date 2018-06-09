@@ -4,6 +4,7 @@ require_once BASEPATH.'extra/jc.php';
 
 trait JC 
 {
+    // VIEWS
     public function jc( string $arg = '', string $arg2 = '' )
     {
         $this->load_user_view( 'user_jc' );
@@ -14,6 +15,12 @@ trait JC
         $this->load_user_view( 'user_jc_admin.php' );
     }
 
+    public function jc_request( )
+    {
+        $this->load_user_view("user_manages_jc_presentation_requests");
+    }
+
+    // ACTION.
     public function jc_action( string $action  )
     {
         if( $action == 'Unsubscribe' )

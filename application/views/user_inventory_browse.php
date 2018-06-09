@@ -29,12 +29,8 @@ $itemMap = array();
 foreach( $items as $equip )
     $itemMap[ $equip['id']] = $equip;
 
-echo '<h1>Book Equipment</h1>';
+// Show book-equipment form only if items for booking are available.
 
-echo printNote( '
-    Use either of the two forms given below. First one is to book for single time only. Form on right
-    can be used to book for multiple days. 
-    ' );
 
 $equipIDS = array_map( function($x) { return $x['id']; }, $items);
 $enames = [];
@@ -91,19 +87,29 @@ $multiBook .= "
     ";
 $multiBook .= '</table>';
 
-echo '<table><tr><td>';
-echo '<form action="'. site_url( "user/book_equipment") .'" method="post" accept-charset="utf-8">';
-echo dbTableToHTMLTable( 'inventory_bookings', $default, $editable, 'Book');
-echo '</form>';
-echo '</td><td>';
-echo '<form action="'. site_url( "user/multibook_equipment") .'" method="post" accept-charset="utf-8">';
-echo $multiBook;
-echo '</form>';
-echo '</td></tr>';
-echo '</table>';
+if( count($items) > 0)
+{
+    echo '<h1>Book Equipment</h1>';
+    echo printNote( '
+        Use either of the two forms given below. First one is to book for single time only. Form on right
+        can be used to book for multiple days. 
+        ' );
+    echo '<table><tr><td>';
+    echo '<form action="'. site_url( "user/book_equipment") .'" method="post" accept-charset="utf-8">';
+    echo dbTableToHTMLTable( 'inventory_bookings', $default, $editable, 'Book');
+    echo '</form>';
+    echo '</td><td>';
+    echo '<form action="'. site_url( "user/multibook_equipment") .'" method="post">';
+    echo $multiBook;
+    echo '</form>';
+    echo '</td></tr>';
+    echo '</table>';
+}
+else
+{
+    echo printNote( "I could not find any equipment which requires booking." );
+}
 
-echo ' <div class="important">';
-echo ' <h2>Booking summary</h2>';
 
 // Only select equipment which belongs to our lab.
 $whereExpr = array();
@@ -116,44 +122,48 @@ $bookings = array();
 if($whereExpr)
     $bookings = getTableEntries( 'inventory_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
 
-
 $hide = 'id,status,modified_on,id,';
-echo '<table><tr>';
-foreach( $bookings as $i => $booking )
+if( count( $bookings ) > 0 )
 {
-    $eid = $booking['inventory_id'];
-    $html = bookingToHtml($booking, $equipmentMap);
-
-    if( whoAmI() == $booking['booked_by'] )
+    echo ' <div class="important">';
+    echo ' <h2>Booking summary</h2>';
+    echo '<table><tr>';
+    foreach( $bookings as $i => $booking )
     {
-        $bid = $booking['id'];
-        $html .= '<form action="'.site_url("user/cancel_equipment_booking/$bid").'">';
-        $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
-            response="cancel" title="Delete this request">' . $symbCross . '</button>';
-        $html .= '</form>';
+        $eid = $booking['inventory_id'];
+        $html = bookingToHtml($booking, $equipmentMap);
 
-        // Create a form to cancel all requests on this equipment.
-        $html .= '<form action="'.site_url("user/cancel_equipment_bookings/$eid").'">';
-        $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
-            response="cancel" title="Cancel all booking for this equipment." 
-            onmouseover="changeBackgroundById(this, \'lightblue\')" 
-            onmouseleave="changeBackgroundById(this, \'white\')"
-            value="'. $eid .'">' . $symbDelete . '</button>';
-        $html .= '</form>';
+        if( whoAmI() == $booking['booked_by'] )
+        {
+            $bid = $booking['id'];
+            $html .= '<form action="'.site_url("user/cancel_equipment_booking/$bid").'">';
+            $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
+                response="cancel" title="Delete this request">' . $symbCross . '</button>';
+            $html .= '</form>';
+
+            // Create a form to cancel all requests on this equipment.
+            $html .= '<form action="'.site_url("user/cancel_equipment_bookings/$eid").'">';
+            $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
+                response="cancel" title="Cancel all booking for this equipment." 
+                onmouseover="changeBackgroundById(this, \'lightblue\')" 
+                onmouseleave="changeBackgroundById(this, \'white\')"
+                value="'. $eid .'">' . $symbDelete . '</button>';
+            $html .= '</form>';
+        }
+        echo "<td><div id='equipment_booking_id_$eid' class='sticker'>$html</div></td>";
+        if( ($i+1) % 5 == 0 )
+            echo '</tr><tr>';
     }
-    echo "<td><div id='equipment_booking_id_$eid' class='sticker'>$html</div></td>";
-    if( ($i+1) % 5 == 0 )
-        echo '</tr><tr>';
+
+    echo '</tr></table>';
+    echo '</div>';
 }
-
-echo '</tr></table>';
-echo '</div>';
-
 
 echo '<h1>Available items</h1>';
 
 echo printNote( "Following " . count( $items ). " items are available for booking 
-    for faculty-in-charge " . mailto( $piOrHost )  . '.'
+    for faculty-in-charge " . mailto( $piOrHost )  . ". Whey  don't you 
+    <a href=\"". site_url( "user/inventory_manage") . "\">Add Items To Inventory</a>."
     );
 
 if(count($items) > 0)
