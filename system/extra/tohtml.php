@@ -1489,7 +1489,7 @@ function awsToHTML( $aws, $with_picture = false )
 
     $title = $aws[ 'title' ];
     if( strlen( $title ) == 0 )
-        $title = "Not yet disclosed!";
+        $title = "Not disclosed yet.";
 
 
     if( __get__( $aws, 'is_presynopsis_seminar', 'NO' ) == 'YES' )
@@ -1497,7 +1497,7 @@ function awsToHTML( $aws, $with_picture = false )
 
     $abstract = $aws[ 'abstract' ];
     if( strlen( $abstract ) == 0 )
-        $abstract = "Not yet disclosed!";
+        $abstract = "Not disclosed yet!";
 
     // Adding css inline screw up the email view. Dont do it.
     $user = $aws[ 'speaker' ];
@@ -1506,7 +1506,7 @@ function awsToHTML( $aws, $with_picture = false )
     // screws up the formatting of emails.
     $pic = '';
     if( $with_picture )
-        $pic = getUserPicture( $user, 'hippo' );
+        $pic = getUserPicture( $user, 'hippo', '200px' );
 
     $extra = '<table class="tableintd">
             <tr>
