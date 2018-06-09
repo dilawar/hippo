@@ -719,7 +719,7 @@ function getThumbnail( $originalImage )
     *
     * @return
  */
-function getLoginPicturePath( $login, $default = 'null' )
+function getLoginPicturePath( $login, $default = 'hippo' )
 {
     $conf = getConf( );
     $picPath = $conf['data']['user_imagedir'] . '/' . $login . '.jpg';
