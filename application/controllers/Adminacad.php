@@ -112,13 +112,19 @@ class Adminacad extends CI_Controller
         $this->execute_aws_action( $_POST['response'], 'upcoming_aws' );
     }
 
+    public function upcoming_aws_action()
+    {
+        $this->execute_aws_action( $_POST['response'] );
+    }
+
     public function updateaws($arg = '')
     {
         $response = strtolower($_POST['response']);
         if($response == 'do_nothing')
         {
             flashMessage( 'User cancelled last action.' );
-            redirect( 'adminacad/home' );
+            redirect( 'adminacad/upcoming_aws' );
+            return;
         }
         elseif($response == 'delete' )
         {
@@ -126,6 +132,9 @@ class Adminacad extends CI_Controller
             $res = deleteFromTable( 'annual_work_seminars', 'id', $_POST );
             if( $res )
                 flashMessage( "Successfully deleted AWS entry $id" );
+
+            redirect( "adminaws/upcoming_aws");
+            return;
         }
         elseif($response == 'update' )
         {
@@ -246,10 +255,9 @@ class Adminacad extends CI_Controller
     {
         if( ! $response)
         {
-            flashMessage( 'Empty response from user.', 'warning');
             redirect("adminacad/$ref");
+            return;
         }
-
         else if( $response == 'format_abstract' )
         {
             $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws_reformat.php');
@@ -268,26 +276,40 @@ class Adminacad extends CI_Controller
                 flashMessage( "Could not remove $speaker.", "warning");
 
             redirect( "adminacad/$ref" );
+            return;
         }
-        else if( $response == 'delete' )
+        else if( $response == 'delete' ) 
         {
+            $reason = __get__( $_POST, 'reason', '' );
+            if( strlen( trim($reason)) < 8 )
+            {
+                printErrorSevere( "I did not remove this AWS because reason you gave 
+                    was NOT at least 8 chracter long." );
+                redirect( "adminacad/upcoming_aws" );
+                return;
+            }
+
             $speaker = $_POST['speaker'];
             $date = $_POST['date'];
             $res = clearUpcomingAWS( $speaker, $date );
+            $piOrHost = getPIOrHost( $speaker );
+
             if( $res )
             {
                 flashMessage( "Successfully cleared upcoming AWS of $speaker on $date." );
-
                 $admin = whoAmI();
                 // Notify the hippo list.
                 $msg = "<p>Hello " . loginToHTML( $_POST[ 'speaker' ] ) . "</p>";
                 $msg .= "<p>
                     Your upcoming AWS schedule has been removed by Hippo admin ($admin).
                      If this is a  mistake, please write to acadoffice@ncbs.res.in
-                    as soon as possible.
+                    immediately.
                     </p>
                     <p> The AWS schedule which is removed is the following </p>
                     ";
+                
+                $msg .= p( "Following reason was given by admin." );
+                $msg .= p( $reason );
 
                 $data = array( );
 
@@ -296,23 +318,30 @@ class Adminacad extends CI_Controller
 
                 $msg .= arrayToVerticalTableHTML( $data, 'info' );
 
+                $cclist = "acadoffice@ncbs.res.in,hippo@lists.ncbs.res.in";
+                if($piOrHost)
+                    $cclist .= ",$piOrHost";
+
                 sendHTMLEmail( $msg
-                    , "Your AWS schedule has been removed from upcoming AWS list"
-                    , $to = getLoginEmail( $_POST[ 'speaker' ] )
-                    , $cclist = "acadoffice@ncbs.res.in,hippo@lists.ncbs.res.in"
-                );
+                        , "Your ($speaker) AWS schedule has been removed from upcoming AWSs"
+                        , $to = getLoginEmail( $_POST[ 'speaker' ] )
+                        , $cclist 
+                    );
                 redirect( "adminacad/$ref");
+                return;
             }
         }
         else if( $response == "do_nothing" )
         {
             flashMessage( "User cancelled the previous operation.");
             redirect( "adminacad/$ref");
+            return;
         }
         else
         {
             flashMessage( "Not yet implemented $response.");
             redirect( "adminacad/$ref");
+            return;
         }
     }
 

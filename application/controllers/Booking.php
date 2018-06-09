@@ -6,10 +6,17 @@ trait Booking
 {
     public function bookingrequest( $controller = 'user', $method = 'home' )
     {
-        log_message( 'info', 'Creating booking requests' );
-        $this->template->set( 'header', 'header.php' );
-        $_POST[ 'goback'] = "$controller/$method";
-        $this->template->load( 'user_booking_request', $_POST );
+        if( __get__( $_POST, 'venue', '' ) )
+        {
+            $_POST[ 'goback'] = "$controller/$method";
+            $this->load_user_view( 'user_booking_request', $_POST );
+            return;
+        }
+        else 
+        {
+            flashMessage( "Invlid use of page." );
+            redirect( 'user/book' );
+        }
     }
 
     // Function to show the user's booking.
@@ -197,11 +204,13 @@ trait Booking
         }
         else
         {
-            $msg1 = "There was an error in request.";
-            $msg1 .= "<p>$msg</p>";
-            $msg1 .= "<p>Complete entry is following.</p>";
-            $msg1 .= arrayToVerticalTableHTML( $_POST, "request" );
+            $msg1 = "There was an error in request. <br /> $msg";
+            // $msg1 .= arrayToVerticalTableHTML( $_POST, "request" );
             flashMessage( $msg1, 'warning' );
+
+            // Send use back to page.
+            $this->load_user_view( "user_booking_request", $_POST );
+            return;
         }
         redirect( "$goback" );
     }

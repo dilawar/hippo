@@ -38,6 +38,13 @@ function p( string $msg ) : string
     return "<p> $msg </p>";
 }
 
+function prompt( $msg )
+{
+    echo("<script type='text/javascript'> var answer = prompt('". $msg ."'); </script>");
+    $answer = "<script type='text/javascript'> document.write(answer); </script>";
+    return($answer);
+}
+
 function fontWithStyle( $msg, $style = "" )
 {
     return "<font style=\"$style;\">$msg</font>";
@@ -131,14 +138,6 @@ function eventToICAL( array $event ) : string
 {
     $ics = new ICS( $event );
     return $ics;
-}
-
-function submitButton( $value )
-{
-    return '<div style="float:right"> 
-        <button class="submit" name="response" value="' . $value . '">
-            <i class="fa fa-check"></i></button>
-        </div>';
 }
 
 function eventToICALLink( $event )
@@ -1810,7 +1809,7 @@ function downloadTextFile( $filepath, $msg = 'Download file', $class = 'download
 //     </td>
 function repeatPatternTable( $className )
 {
-    $html = '<h4>RECURRENT EVENTS (optional)</h4>';
+    $html = '<h3>Recurrent Event? (optional)</h3>';
 
     $html .= "<p style=\"color:blue\">Some examples of recurrent events.</p>";
 
