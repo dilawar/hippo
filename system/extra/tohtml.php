@@ -2442,18 +2442,28 @@ function getPresentationTitle( $presentation )
     return $title;
 }
 
-function jcToHTML( $jc )
+function jcToHTML( $jc, $sticker = false )
 {
     $jcInfo = getJCInfo( $jc[ 'jc_id' ] );
-    $html = '<h3>' . $jc['jc_id'] . ' | ' . $jc['title'] . '</h3>';
+    if( ! $sticker )
+    {
+        $html = '<h3>' . $jc['jc_id'] . ' | ' . $jc['title'] . '</h3>';
+        $html .= humanReadableDate( $jc['date'] ) . '<br/>';
+        $presenter = getLoginInfo( $jc[ 'presenter' ], true );
+        $pName = arrayToName( $presenter );
 
-    $presenter = getLoginInfo( $jc[ 'presenter' ], true );
-    $pName = arrayToName( $presenter );
-
-    $html .= "<strong> $pName </strong>";
-    $html .= presentationToHTML( $jc );
-    $html .= '<hr />';
-
+        $html .= "<strong> $pName </strong>";
+        $html .= presentationToHTML( $jc );
+    }
+    else
+    {
+        $html = $jc['jc_id'] . ' | ' . $jc['title'] ;
+        $html .= ' <br />';
+        $presenter = getLoginInfo( $jc[ 'presenter' ], true );
+        $pName = arrayToName( $presenter );
+        $html .= humanReadableDate( $jc['date'] );
+        $html .= " <br /> <strong> $pName </strong>";
+    }
     return $html;
 }
 
