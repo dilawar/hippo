@@ -2900,7 +2900,7 @@ function getTableColumnTypes( $tableName, $columnName )
 
 }
 
-function getPIOrHost( $login )
+function getPIOrHost( string $login ) : string
 {
     // A. Search in table logins.
     $hippoDB = initDB();;
@@ -2923,7 +2923,6 @@ function getPIOrHost( $login )
         }
         return $mostRecentAWS[ 'supervisor_1'];
     }
-
     return '';
 }
 

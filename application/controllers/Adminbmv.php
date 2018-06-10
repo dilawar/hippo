@@ -303,7 +303,7 @@ class Adminbmv extends CI_Controller
             }
         }
 
-        // Else send email.
+        // Else start prepare email.
         $msg = p("Your booking request has been acted upon by '" . whoAmI() . "'." );
         $msg .= '<table border="0">';
 
@@ -369,6 +369,12 @@ class Adminbmv extends CI_Controller
         // Append user email to front.
         $email = p("Dear " . loginToText( $group[0]['created_by' ], true )) . $msg;
 
+        if( $warningMsg )
+        {
+            $email .= p( "Also note the following glitch. It is probably an important imformation." );
+            $email .= $warningMsg;
+        }
+
         // Name of the admin to append to the email.
         $admin = getLoginEmail( whoAmI() );
 
@@ -383,7 +389,7 @@ class Adminbmv extends CI_Controller
         else
         {
             flashMessage( "Successfuly reviewed '$eventGroupTitle'." );
-            $res = sendHTMLEmail( $msg
+            $res = sendHTMLEmail( $email
                 , "Your booking request '$eventGroupTitle' has been $status"
                 , $userEmail
                 , 'hippo@lists.ncbs.res.in'
