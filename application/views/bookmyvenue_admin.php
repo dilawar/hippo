@@ -75,7 +75,7 @@ echo '<h1>Pending requests</h1>';
 $requests = getPendingRequestsGroupedByGID( );
 
 $html = '<div style="font-size:small">';
-$html .= '<table class="info">';
+$html .= '<table id="pending_requests" class="info sortable exportable">';
 
 $tohide = 'last_modified_on,status,modified_by,timestamp,url,external_id,gid,rid';
 foreach( $requests as &$r )
@@ -139,7 +139,6 @@ echo goBackToPageLink( "adminbmv/home", "Go home" );
 
 echo '<h1>Upcoming (approved) events in next 4 weeks </h1>';
 
-
 // Let admin search.
 echo '<form action="" method="post" accept-charset="utf-8">
     <input name="query" value="" placeholder="Search using creator or title"></input>
@@ -169,7 +168,7 @@ if( count( $events ) > 0 )
     $html = '<div style="font-size:small;">';
     $event = $events[0];
 
-    $html .= "<table class=\"info\">";
+    $html .= "<table id=\"approved_events\" class=\"info sortable exportable\">";
     $tofilter = 'eid,calendar_id,calendar_event_id' .
         ',external_id,gid,last_modified_on,status,url';
 
@@ -203,5 +202,12 @@ if( count( $events ) > 0 )
 }
 
 echo goBackToPageLink( "adminbmv/home", "Go home" );
-
 ?>
+
+<!-- This should be copy pasted -->
+<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+TableExport(document.getElementsByClassName("exportable"));
+</script>
