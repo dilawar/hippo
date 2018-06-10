@@ -41,7 +41,6 @@ $jcInfo = getJCInfo( $_POST['jc_id'] );
 if( ! __get__($_POST, 'venue', '') )
 {
     $venues = getVenuesNames( );
-    $default
     $venueSelect = arrayToSelectList( 'venue', $venues, array(), false,  $jcInfo['venue'] );
     $_POST['venue'] = $venueSelect;
 }
