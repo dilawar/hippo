@@ -26,8 +26,9 @@ echo $table;
 
 echo ' <h2>List of AWS Speakers</h2> ';
 echo alertUser( "If your name is not on this list, please write to "
-    . mailto( "acadoffice@ncbs.res.in", "Academic Office" ) . "."
-);
+        . mailto( "acadoffice@ncbs.res.in", "Academic Office" ) . "."
+        , false
+    );
 
 $speakers = getAWSSpeakers( );
 

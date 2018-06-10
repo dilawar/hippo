@@ -23,7 +23,8 @@ $table = '<table class="info">
                 <a href="'.site_url('info/aws/search'). '">Click to search AWS database.</a>
             </td>
             <td>
-                <a href="'.site_url( 'info/aws/roster'). '"> List of AWS speakers</a>
+                <a href="'.site_url( 'info/aws/roster'). '"> List of AWS speakers <br /> 
+                    and upcoming AWSs</a>
             </td>
             <td>' . $form . 
             '</td></tr></table>';
