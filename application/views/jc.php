@@ -12,12 +12,9 @@ if( $_GET )
         $default = array( 'date' => $today );
 }
 
-echo "<h2>Journal Clubs  on " . humanReadableDate( $default[ 'date' ] ) . " </h2>";
-echo '
-    <form method="get" action="">
-    <table class="aws" border="0">
+echo '<form method="get" action="">
+    <table class="info">
         <tr>
-            <td>Select a day</td>
             <td><input class="datepicker" type="text" name="date" value="' .
                     $default[ 'date' ] . '" ></td>
             <td><button type="submit" name="response"
@@ -28,24 +25,29 @@ echo '
     </form>
     ';
 
-echo '<br><br>';
-
 $whichDay = $default[ 'date' ];
 
-$jcs = getTableEntries( 'jc_presentations', 'date'
-    , "date='$whichDay' AND status='VALID'" 
-    );
+$jcs = getTableEntries( 'jc_presentations', 'date', "date >= '$whichDay' AND status='VALID'" );
 
 if( count( $jcs ) < 1 )
 {
-    echo alertUser( "I could not find any Journal Club in my database on this day." );
-    echo printInfo( "That's all I know!" );
-    echo "<br><br>";
+    echo alertUser( "This is embarrassing. I could not find any JC scheduled. That's all I know!", false );
+    echo "<br />";
 }
 else
 {
+    // Display details of JCs which are withing this week. Otherwise just show
+    // the summary.
+    echo "<h2>Upcoming presentations in Journal Clubs</h2>";
     foreach( $jcs as $jc )
-        echo jcToHTML( $jc );
+    {
+        if( strtotime( $jc['date'] ) < strtotime( $whichDay ) + 7*24*3600 )
+            echo jcToHTML( $jc );
+        else
+            echo jcToHTML( $jc, true );
+
+        echo horizontalLine();
+    }
 }
 
 echo closePage( );
