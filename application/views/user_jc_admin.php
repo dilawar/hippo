@@ -137,9 +137,8 @@ echo printInfo( 'You can reschedule or cancel the request. Please let the
     requester know before doing anything evil.'
 );
 
-$requests = getTableEntries( 'jc_requests', 'date'
-    , "date>='$today' AND status='VALID' "
-    );
+$requests = getTableEntries( 'jc_requests', 'date', "date>='$today' AND status='VALID'");
+
 echo '<table class="info">';
 echo '<th>Request</th><th>Votes</th>';
 
@@ -150,7 +149,7 @@ foreach( $requests as $i => $req )
     echo arrayToVerticalTableHTML( $req, 'info', '', 'id,status' );
 
     // Another form to delete this request.
-    echo ' <form action="'.site_url("user/jc_admin_edit_jc_request"). '" method="post">';
+    echo ' <form action="'.site_url("user/jc_request_action"). '" method="post">';
     echo "<button name='response' onclick='AreYouSure(this)'
             title='Cancel this request'>Cancel</button>";
     echo "<button name='response' title='Reschedule' value='Reschedule'>Reschdule</button>";

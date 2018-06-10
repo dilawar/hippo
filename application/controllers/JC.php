@@ -10,10 +10,6 @@ trait JC
         $this->load_user_view( 'user_jc' );
     }
 
-    public function jcadmin( string $arg='' )
-    {
-        $this->load_user_view( 'user_jc_admin.php' );
-    }
 
     public function jc_request( )
     {
