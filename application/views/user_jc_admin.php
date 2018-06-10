@@ -276,7 +276,7 @@ echo '
 
 echo '<br />';
 echo '<br />';
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 
 ?>
 
