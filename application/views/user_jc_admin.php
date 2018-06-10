@@ -57,7 +57,7 @@ echo '</form>';
 // NOTE: We assume that arrays are sorted according to DATE.
 echo '<table>';
 echo '<tr>';
-echo "<h2>Next presentation in your JCs</h2>";
+echo "<h2>Upcoming presentations in your JC(s)</h2>";
 foreach( $upcomingJCs as $jcID => $upcomings )
 {
     if( count( $upcomings ) <  1 )

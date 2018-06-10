@@ -7,31 +7,34 @@ $venues = getVenues( );
 echo "<h1>List of Journal Clubs</h1>";
 $jcs = getTableEntries( 'journal_clubs', 'id', "status!='INVALID'" );
 
-echo '<table><tr>';
+echo '<table class="tiles"><tr>';
 foreach( $jcs as $i => $jc )
 {
     echo '<td>';
     echo arrayToVerticalTableHTML( $jc, 'info' );
-    echo '</td>';
 
     // Form to update.
     echo '<form action="" method="post" accept-charset="utf-8">';
-    echo '<td><button type="submit" name="response" value="Edit">Edit</button>';
+    echo '<button name="response" value="Edit">Edit</button>';
     echo '<input type="hidden" name="id" value="' . $jc['id'] . '" />';
     echo '</form>';
 
     // Form to detele.
     echo '<form action="'.site_url('adminacad/jc_action').'" method="post">';
-    echo '<button type="submit" name="response" value="Delete">Delete</button></td>';
+    echo '<button name="response" value="Delete">Delete</button>';
     echo '<input type="hidden" name="id" value="' . $jc['id'] . '" />';
     echo '</form>';
-    if($i+1%2 == 0)
+    echo '</td>';
+
+    if(($i+1)%3 == 0)
         echo '</tr><tr>';
 
 }
-echo '</tr></table>';
+echo '</tr>';
+echo '</table>';
+echo goBackToPageLink( "adminacad/home", "Go back" );
 
-$editables = 'id,title,status,description,day,time,venue';
+$editables = 'title,status,description,day,time,venue,scheduling_method,send_email_on_days';
 $action = 'Add';
 $default = array(
     'venue' => venuesToHTMLSelect( $venues )
@@ -39,7 +42,6 @@ $default = array(
 
 if( __get__( $_POST, 'response', '' ) == 'Edit' )
 {
-    $editables = 'title,status,description,day,time,venue';
     $default = getTableEntry( 'journal_clubs', 'id', $_POST );
     $default[ 'venue' ] = venuesToHTMLSelect( $venues, false, 'venue', array( $default['venue'] )  );
     $action = 'Update';
@@ -50,9 +52,12 @@ if( __get__( $_POST, 'response', '' ) == 'Edit' )
 echo "<h1>$action Journal Club </h1>";
 
 echo '<form action="'.site_url('adminacad/jc_action').'" method="post">';
-echo dbTableToHTMLTable( 'journal_clubs', $default, $editables, $action );
+echo dbTableToHTMLTable( 'journal_clubs', $default, "id,$editables", $action );
 echo '</form>';
 
 echo goBackToPageLink( "adminacad/home", "Go back" );
 
 ?>
+<script type="text/javascript" charset="utf-8">
+    $('#journal_clubs_send_email_on_days').attr( 'placeholder', 'Tue,Fri' );
+</script>

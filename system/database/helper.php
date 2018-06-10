@@ -174,6 +174,15 @@ function getVenues( $sortby = 'total_events DESC, id' )
     return $res;
 }
 
+function getVenuesNames( )
+{
+    $res = executeQuery( "SELECT id FROM venues ORDER BY id" );
+    $names = array();
+    foreach( $res as $v )
+        $names[] = $v['id'];
+    return $names;
+}
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Execute given query.

@@ -856,14 +856,15 @@ table.poll tr td:nth-child(2) {
 
 table.tiles {
     min-width: 100px;
-    max-width: var(--maxwidth);
+    margin-right: 20px;
 }
 
 table.tiles tr td {
-    max-width: 20%px;
     min-width: 50px;
     font-size: x-small;
-    border: 1px dotted;
+    border-top: 1px solid lightgray;
+    /* border-right: 1px solid lightgray; */
+    padding:  4px;
 }
 
 table.show_card {

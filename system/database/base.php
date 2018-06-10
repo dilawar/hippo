@@ -536,7 +536,8 @@ class BMVPDO extends PDO
                 , venue VARCHAR(100) NOT NULL
                 , time TIME
                 , description TEXT
-                , scheduling_method VARCHAR(20) DEFAULT 'RANDOM'
+                , scheduling_method ENUM( 'DONT SCHEDULE', 'RANDOM', 'ALPHABETICAL', 'DAYS_ON_CAMPUS', 'NUM_JC_SO_FAR' 
+                    ) DEFAULT 'RANDOM'
                 , send_email_on_days VARCHAR(30) -- csv list otherwise 3 days before the day
                 , UNIQUE KEY(id,day,time,venue)
                 )"

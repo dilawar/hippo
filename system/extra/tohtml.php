@@ -148,7 +148,7 @@ function eventToICALLink( $event )
     $prop[ 'dtstart' ] = $event[ 'date' ] . ' ' . $event[ 'start_time' ];
     $prop[ 'dtend' ] = $event[ 'date' ] . ' ' . $event[ 'end_time' ];
     $prop[ 'description' ] = substr( html2Markdown( $event[ 'description' ]), 0, 200 );
-    $prop[ 'location' ] = venueToText( $event[ 'venue' ] );
+    $prop[ 'location' ] = venueToText( $event['venue'] );
     $prop[ 'summary' ] = $event[ 'title' ];
 
     $ical = eventToICAL( $prop );
