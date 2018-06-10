@@ -29,6 +29,11 @@ function booking_expiring_notice_cron()
                     );
 
             $to = getLoginEmail( $createdBy );
+            if( ! $to )
+            {
+                echo printInfo( "Invalid email." );
+                continue;
+            }
 
             echo printInfo( "Group id $gid by $to last event $lastEventOn" );
 
