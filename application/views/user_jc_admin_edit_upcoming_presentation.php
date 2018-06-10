@@ -28,14 +28,30 @@ if( ! isJCAdmin( whoAmI() ) )
     exit;
 }
 
-$editables = 'title,description,url';
+$editables = 'title,description,url,time,venue';
 
 if( __get__( $_POST, 'response', '' ) == 'Reschdule' )
 {
     $editables = 'date';
 }
 
-echo '<form action="#" method="post" accept-charset="utf-8">';
+
+// get default parameters for this JC.
+$jcInfo = getJCInfo( $_POST['jc_id'] );
+if( ! __get__($_POST, 'venue', '') )
+{
+    $venues = getVenuesNames( );
+    $default
+    $venueSelect = arrayToSelectList( 'venue', $venues, array(), false,  $jcInfo['venue'] );
+    $_POST['venue'] = $venueSelect;
+}
+
+if( __get__($_POST, 'time', '00:00:00') == "00:00:00" )
+{
+    $_POST['time'] = $jcInfo['time'];
+}
+
+echo '<form action="" method="post" accept-charset="utf-8">';
 echo dbTableToHTMLTable( 'jc_presentations', $_POST, $editables );
 echo '</form>';
 
@@ -43,7 +59,7 @@ if( __get__( $_POST, 'response', '' ) == 'submit' )
 {
 
     $res = updateTable( 'jc_presentations', 'id,jc_id,presenter,date'
-        , 'title,description,url', $_POST
+        , 'title,description,url,time,venue', $_POST
     );
 
     if( $res )

@@ -8,8 +8,15 @@ trait AdminacadJC
         $response = strtolower($_POST['response']);
         if( $response == 'add' )
         {
+            if( ! __get__($_POST,'id', '') )
+            {
+                printErrorSevere( "Invalid id for JC.");
+                redirect( "adminacad/jc");
+                return;
+            }
+
             $res = insertIntoTable( 'journal_clubs'
-                , 'id,title,day,status,time,venue,description'
+                , 'id,title,day,status,time,venue,description,send_email_on_days,scheduling_method'
                 , $_POST
             );
 
@@ -20,7 +27,7 @@ trait AdminacadJC
         {
             $res = updateTable( 'journal_clubs'
                 , 'id'
-                , 'title,day,status,time,venue,description'
+                , 'title,day,status,time,venue,description,send_email_on_days,scheduling_method'
                 , $_POST
             );
 
