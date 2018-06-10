@@ -158,13 +158,10 @@ else if( $default[ 'task' ] == 'Today\'s events' )
     $html = '';
     foreach( $entries as $entry )
     {
-        if( $entry[ 'is_public_event' ] == 'NO' )
-            continue;
+        //if( $entry[ 'is_public_event' ] == 'NO' )
+        //    continue;
 
-        if( ! array_key_exists( 'external_id', $entry ) )
-            continue;
-
-        if( ! $entry[ 'external_id' ] )
+        if( ! __get__( $entry, 'external_id', '' ) )
             continue;
 
         $talkid = explode( '.', $entry[ 'external_id' ])[1];
