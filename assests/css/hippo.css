@@ -1175,6 +1175,10 @@ footer {
     top: 90%;
 }
 
+div.bottom a {
+    color: blue;
+}
+
 th {
     padding-left: 10px;
     padding-right: 10px;
