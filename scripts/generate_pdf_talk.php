@@ -117,7 +117,7 @@ function eventToTex( $event, $talk = null )
     $extra = '';
     if( $talk )
     {
-        $extra .= '\newline \vspace{1.5cm} \vfill ';
+        $extra .= '\newline \vspace{1cm} \vfill';
         $extra .= "\begin{tabular}{ll}\n";
         $extra .= '{\bf Host} & ' . html2Tex( loginToHTML($talk[ 'host' ]) ) . '\\\\';
         if( $talk[ 'coordinator' ] )
@@ -126,7 +126,7 @@ function eventToTex( $event, $talk = null )
     }
 
     $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-        , fit to height=15 cm, fit basedim=14pt
+        , fit to height=17 cm, fit basedim=16pt
         ]' . $desc . $extra . '\end{tcolorbox}';
 
     $texText = implode( "\n", $tex );
