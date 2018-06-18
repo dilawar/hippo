@@ -1,3 +1,6 @@
+<p align="center">
+<img src="https://user-images.githubusercontent.com/34600369/41531871-d050fa18-72ec-11e8-82e8-9d6067b1a59d.png" width="450">
+
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/209e3bc107ba462c99d6342ea15ece70)](https://www.codacy.com/app/dilawar/HippoIgnited?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dilawar/HippoIgnited&amp;utm_campaign=Badge_Grade)
 
 # NCBS Hippo
