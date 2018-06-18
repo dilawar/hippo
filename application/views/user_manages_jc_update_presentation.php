@@ -1,26 +1,18 @@
 <?php
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-
-include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles( array( 'USER' ) );
-
+include_once BASEPATH.'autoload.php';
 echo userHTML( );
 
 echo '<h1>Edit presentation entry</h1>';
 
 if( __get__( $_POST, 'response', '' ) == 'Edit'
-    or __get__( $_POST, 'response', '') == 'Save'
-    )
+    or __get__( $_POST, 'response', '') == 'Save' )
 {
-    echo printInfo( "
+    echo printNote( "
         Consider adding <tt>URL</tt>. This is the place user can find material related
         to this presentation e.g. link to github repo, slideshare, drive etc..
         " );
-    echo alertUser( "We do not keep backup for your entry!" );
+    echo printNote( "We do not keep backup for your entry!" );
     $editables = 'title,description,url,presentation_url';
 
     echo '<form action="#" method="post" accept-charset="utf-8">';
@@ -33,9 +25,11 @@ if( __get__( $_POST, 'response', '' ) == 'Edit'
     {
         if( $_POST[ 'response' ] == 'Save' )
         {
-            echo printInfo( 'Successfully saved your presentation entry.' );
+            echo flashMessage( 'Successfully saved your presentation entry. To 
+                go back, click on <a disabled>Done Editing</a> link at the bottom of page.
+                ' );
             // We do not exit from here. User might want to edit some more.
-            echo goBackToPageLink( "user_jc.php", "Done editing" );
+            echo goBackToPageLink( "user/jc", "Done editing" );
         }
     }
 }
@@ -70,8 +64,8 @@ else if( __get__( $_POST, 'response', '' ) == 'Acknowledge' )
     if( $res )
     {
         echo printInfo( 'Successfully acknowleged  your JC presentation.' );
-        //goToPage( 'user_jc.php', 1 );
-        //exit;
+        goToPage( "user/jc" );
+        exit;
     }
 }
 else
@@ -80,11 +74,11 @@ else
         'This action ' . $_POST[ 'response' ]
         . ' is not supported yet'
     );
-    goToPage( 'user_jc.php', 3 );
+    goToPage( 'user/jc' );
     exit;
 }
 
 echo ' <br />';
-echo goBackToPageLink( 'user_jc.php', 'Go Back' );
+echo goBackToPageLink( 'user/jc', 'Go Back' );
 
 ?>
