@@ -206,6 +206,43 @@ trait JC
         }
         redirect( 'user/jcadmin' );
     }
+
+    public function jc_update_action( )
+    {
+        if( __get__( $_POST, 'response', '' ) == 'Add My Vote' )
+        {
+            $_POST[ 'status' ] = 'VALID';
+            $_POST[ 'voted_on' ] = dbDate( 'today' );
+            $res = insertOrUpdateTable( 'votes', 'id,voter,voted_on'
+                , 'status,voted_on', $_POST );
+            if( $res )
+                echo printInfo( 'Successfully voted.' );
+        }
+        else if( __get__( $_POST, 'response', '' ) == 'Remove My Vote' )
+        {
+            $_POST[ 'status' ] = 'CANCELLED';
+            $res = updateTable( 'votes', 'id,voter', 'status', $_POST );
+            if( $res )
+                echo printInfo( 'Successfully removed  your vote.' );
+        }
+        else if( __get__( $_POST, 'response', '' ) == 'Acknowledge' )
+        {
+            $_POST[ 'acknowledged' ] = 'YES';
+            $res = updateTable( 'jc_presentations', 'id', 'acknowledged', $_POST );
+            if( $res )
+                echo printInfo( 'Successfully acknowleged  your JC presentation.' );
+        }
+        else if( __get__( $_POST, 'response', '' ) == 'Save' )
+        {
+            $res = updateTable( 'jc_presentations', 'id', 'title,description,url,presentation_url', $_POST );
+            if( $res )
+                echo printInfo( 'Successfully edited  your JC presentation.' );
+        }
+        else
+            echo alertUser( 'This action ' . $_POST[ 'response' ] . ' is not supported yet');
+
+        redirect( "user/jc" );
+    }
 }
 
 ?>
