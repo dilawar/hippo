@@ -16,6 +16,11 @@ trait JC
         $this->load_user_view("user_manages_jc_presentation_requests");
     }
 
+    public function jc_update_presentation( )
+    {
+        $this->load_user_view( "user_manages_jc_update_presentation" );
+    }
+
     // ACTION.
     public function jc_action( string $action  )
     {
@@ -196,7 +201,7 @@ trait JC
         }
         else
         {
-            echo alertUser( "Response " . $_POST[ 'response' ] . ' is not known or not
+            printWarning( "Response " . $_POST[ 'response' ] . ' is not known or not
                 supported yet' );
         }
         redirect( 'user/jcadmin' );
