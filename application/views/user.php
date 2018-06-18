@@ -43,7 +43,7 @@ $table = '<table class="admin">
             Vote on presentation requests.
          </td>
         <td>
-            <a class="clickable" href="'. site_url("/user/jc/presentation_requests"). '">
+            <a class="clickable" href="'. site_url("/user/jc_presentation_requests"). '">
                 My JC Presentation Requests</a>
             <br />
             Submit a journal paper and a preferred date to present it. You can submit
