@@ -151,7 +151,7 @@ class User extends CI_Controller
         else if( $arg == 'upload_picture' && $_POST )
         {
             $conf = getConf( );
-            $picPath = $conf['data']['user_imagedir'] . '/' . $_SESSION[ 'user' ] . '.jpg';
+            $picPath = $conf['data']['user_imagedir'] . '/' . whoAmI()  . '.jpg';
             if( $_POST[ 'Response' ] == 'upload' )
             {
                 $img = $_FILES[ 'picture' ];
