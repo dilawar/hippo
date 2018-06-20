@@ -16,21 +16,23 @@ function fixJCSchedule( string $loginOrEmail, array $data ) : array
     $login = explode( '@', $loginOrEmail)[0];
 
     $data[ 'status' ] = 'VALID';
-    $data[ 'id' ] = getUniqueID( 'jc_presentations' );
     $data[ 'presenter' ] = $loginOrEmail;
-    $data[ 'title' ] = 'Not yet available';
 
     if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
-        $res = updateTable( 'jc_presentations', 'presenter,jc_id,date', 'status', $data );
+        $res = updateTable( 'jc_presentations', 'presenter,jc_id,date,time,venue', 'status', $data );
     else
+    {
+        $data[ 'id' ] = getUniqueID( 'jc_presentations' );
+        $data[ 'title' ] = 'Not yet available';
         $res = insertIntoTable( 'jc_presentations'
             , 'id,presenter,jc_id,date,time,venue,title,status', $data );
+    }
 
     $msg = '';
     if( ! $res  )
     {
         $date = $data[ 'date'] ;
-        $msg .= p( "Failed to assign $presenter on $date. " );
+        $msg .= p( "Failed to assign <tt>$loginOrEmail</tt> on $date. " );
         return array( 'success' => false, 'message' => $msg );
     }
 
