@@ -11,11 +11,10 @@ require_once BASEPATH . 'autoload.php';
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function fixJCSchedule( $loginOrEmail, $data )
+function fixJCSchedule( string $loginOrEmail, array $data )
 {
     $login = explode( '@', $loginOrEmail)[0];
     $newId = getUniqueID( 'jc_presentations' );
-    $data[ 'title' ] = '';
     $data[ 'status' ] = 'VALID';
     $data[ 'id' ] = getUniqueID( 'jc_presentations' );
     $data[ 'presenter' ] = $loginOrEmail;
@@ -28,7 +27,7 @@ function fixJCSchedule( $loginOrEmail, $data )
     if( ! $entry  )
     {
         $date = $data[ 'date'] ;
-        echo printInfo( "Failed to assign $presenter on $date. " );
+        echo flashMessage( "Failed to assign $presenter on $date. ", true );
         return array( );
     }
 
@@ -68,7 +67,7 @@ function fixJCSchedule( $loginOrEmail, $data )
         // Add clickableQuery to outgoing mail.
         $body = $mail[ 'email_body' ];
         $body = addClickabelURLToMail( $body, $clickableURL );
-        $res = sendHTMLEmail( $body, $subject, $to, $cclist );
+        sendHTMLEmail( $body, $subject, $to, $cclist );
     }
     return $res;
 }
