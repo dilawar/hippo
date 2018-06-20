@@ -76,6 +76,7 @@ if( count( $myPresentations ) > 0 )
         // If it is MINE then make it editable.
         echo ' <form action="'.site_url('user/jc_update_presentation') .'" method="post" >';
         $action = 'Edit';
+
         if( $upcoming[ 'acknowledged' ] == 'NO' )
             $action = 'Acknowledge';
         echo dbTableToHTMLTable( 'jc_presentations', $upcoming, '', $action );
