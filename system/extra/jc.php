@@ -18,17 +18,23 @@ function fixJCSchedule( string $loginOrEmail, array $data ) : array
     $data[ 'status' ] = 'VALID';
     $data[ 'presenter' ] = $loginOrEmail;
 
+    $msg = '';
+    $msg = json_encode( $data );
+
     if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
+    {
         $res = updateTable( 'jc_presentations', 'presenter,jc_id,date,time,venue', 'status', $data );
+        $msg .= 'X';
+    }
     else
     {
+        $msg .= 'Y';
         $data[ 'id' ] = getUniqueID( 'jc_presentations' );
         $data[ 'title' ] = 'Not yet available';
         $res = insertIntoTable( 'jc_presentations'
             , 'id,presenter,jc_id,date,time,venue,title,status', $data );
     }
 
-    $msg = '';
     if( ! $res  )
     {
         $date = $data[ 'date'] ;
