@@ -240,12 +240,12 @@ trait JCAdmin
             $_POST['time'] = $jcInfo['time'];
 
         $res = assignJCPresentationToLogin( $_POST['presenter'],  $_POST );
+    
         if( $res['success'] )
             $msg .= p( 'Assigned user ' . $_POST[ 'presenter' ] .
-            ' to present a paper on ' . dbDate( $_POST['date' ] ) 
-        );
+            ' to present a paper on ' . dbDate( $_POST['date' ] ) );
         else
-            $msg .= p( $res['message'] );
+            $msg .= p( __get__($res, 'message', 'No information! Lame.') );
 
         return $msg;
     }
