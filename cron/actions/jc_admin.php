@@ -11,10 +11,10 @@ require_once BASEPATH . 'autoload.php';
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function fixJCSchedule( string $loginOrEmail, array $data )
+function fixJCSchedule( string $loginOrEmail, array $data ) : array
 {
     $login = explode( '@', $loginOrEmail)[0];
-    $newId = getUniqueID( 'jc_presentations' );
+
     $data[ 'status' ] = 'VALID';
     $data[ 'id' ] = getUniqueID( 'jc_presentations' );
     $data[ 'presenter' ] = $loginOrEmail;
@@ -27,11 +27,11 @@ function fixJCSchedule( string $loginOrEmail, array $data )
     if( ! $entry  )
     {
         $date = $data[ 'date'] ;
-        echo flashMessage( "Failed to assign $presenter on $date. ", true );
-        return array( );
+        $msg = flashMessage( "Failed to assign $presenter on $date. ", true );
+        return array( 'success' => false, 'message' => $msg );
     }
 
-    echo printInfo( 'Assigned user ' . $loginOrEmail .
+    $msg = printInfo( 'Assigned user ' . $loginOrEmail .
         ' to present a paper on ' . dbDate( $data['date' ] )
         );
 
@@ -49,9 +49,7 @@ function fixJCSchedule( string $loginOrEmail, array $data )
     $qid = insertClickableQuery( $login, "jc_presentation.$id", $clickableQ );
 
     if( $qid )
-    {
-        echo printInfo( "Successfully inserted clickable query" );
-    }
+        $msg .= printInfo( "Successfully inserted clickable query" );
 
     $clickableURL = queryToClickableURL( $qid, 'Click Here To Acknowledge' );
     $mail = emailFromTemplate( 'NOTIFY_PRESENTER_JC_ASSIGNMENT', $macros );
@@ -67,9 +65,13 @@ function fixJCSchedule( string $loginOrEmail, array $data )
         // Add clickableQuery to outgoing mail.
         $body = $mail[ 'email_body' ];
         $body = addClickabelURLToMail( $body, $clickableURL );
-        sendHTMLEmail( $body, $subject, $to, $cclist );
+        $res1 = sendHTMLEmail( $body, $subject, $to, $cclist );
+        if( $res1 )
+            $msg .= p("Succesfully sent email." );
+        else
+            $msg .= p("Could not sent email." );
     }
-    return $res;
+    return array( 'success' => true, 'message' => $msg);
 }
 
 function assignJCPresentationToLogin( $loginOrEmail, $data )
