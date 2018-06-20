@@ -17,7 +17,19 @@ trait JC
 
     public function jc_update_presentation( )
     {
-        $this->load_user_view( "user_manages_jc_update_presentation" );
+        if( __get__( $_POST, 'response', '' ) == 'Acknowledge' )
+        {
+            $_POST[ 'acknowledged' ] = 'YES';
+            $res = updateTable( 'jc_presentations', 'id', 'acknowledged', $_POST );
+            if( $res )
+                flashMessage( 'Successfully acknowleged  your JC presentation.' );
+            redirect( "user/jc" );
+            return;
+        }
+        else
+        {
+            $this->load_user_view( "user_manages_jc_update_presentation" );
+        }
     }
 
     // ACTION.
@@ -78,13 +90,6 @@ trait JC
             $res = updateTable( 'votes', 'id,voter', 'status', $_POST );
             if( $res )
                 echo printInfo( 'Successfully removed  your vote.' );
-        }
-        else if( __get__( $_POST, 'response', '' ) == 'Acknowledge' )
-        {
-            $_POST[ 'acknowledged' ] = 'YES';
-            $res = updateTable( 'jc_presentations', 'id', 'acknowledged', $_POST );
-            if( $res )
-                echo printInfo( 'Successfully acknowleged  your JC presentation.' );
         }
         else if( __get__( $_POST, 'response', '' ) == 'Save' )
         {
