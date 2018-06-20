@@ -10,8 +10,7 @@ trait JC
         $this->load_user_view( 'user_jc' );
     }
 
-
-    public function jc_request( )
+    public function jc_presentation_requests( )
     {
         $this->load_user_view("user_manages_jc_presentation_requests");
     }

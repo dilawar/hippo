@@ -130,5 +130,6 @@ $symbCalendar = '<i class="fa fa-calendar"></i>';
 $symbClock    = '<i class="fa fa-clock"></i>';
 $symbCancel   = '<i class="fa fa-times"></i>';
 $symbAccept   = ' <i class="fa fa-check"></i>';
+$proxy        = 'http://proxy.ncbs.res.in:3128';
 
 ?>
