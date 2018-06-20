@@ -1,6 +1,6 @@
 <?php
 
-require_once 'actions/jc_admin.php';
+require_once BASEPATH. "extra/jc.php";
 
 ////////////////////////////////////////////////////////////////////////////
 // JOURNAL CLUB

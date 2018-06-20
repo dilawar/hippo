@@ -1,5 +1,7 @@
 <?php
 
+require_once BASEPATH . 'autoload.php';
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Assign user to a JC presentation and send an email.
@@ -9,30 +11,31 @@
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function fixJCSchedule( $login, $data )
+function fixJCSchedule( string $loginOrEmail, array $data ) : array
 {
+    $login = explode( '@', $loginOrEmail)[0];
 
-    $newId = getUniqueID( 'jc_presentations' );
-    $data[ 'title' ] = '';
     $data[ 'status' ] = 'VALID';
     $data[ 'id' ] = getUniqueID( 'jc_presentations' );
-    $data[ 'presenter' ] = $login;
+    $data[ 'presenter' ] = $loginOrEmail;
     $data[ 'title' ] = 'Not yet available';
 
-    $entry = insertOrUpdateTable( 'jc_presentations'
-        , 'id,presenter,jc_id,date,title', 'status'
-        , $data );
+    if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
+        $res = updateTable( 'jc_presentations', 'status', $data );
+    else
+        $res = insertIntoTable( 'jc_presentations'
+            , 'id,presenter,jc_id,date,time,venue,title,status', $data );
 
-    if( ! $entry  )
+    $msg = '';
+    if( ! $res  )
     {
         $date = $data[ 'date'] ;
-        echo printInfo( "Failed to assign $presenter on $date. " );
-        return array( );
+        $msg .= p( "Failed to assign $presenter on $date. " );
+        return array( 'success' => false, 'message' => $msg );
     }
 
-    echo printInfo( 'Assigned user ' . $login .
-        ' to present a paper on ' . dbDate( $data['date' ] )
-        );
+    $msg .= p( 'Assigned user ' . $loginOrEmail .  
+            ' to present a paper on ' . dbDate( $data['date' ] ));
 
     $macros = array(
         'PRESENTER' => arrayToName( getLoginInfo( $login ) )
@@ -48,29 +51,35 @@ function fixJCSchedule( $login, $data )
     $qid = insertClickableQuery( $login, "jc_presentation.$id", $clickableQ );
 
     if( $qid )
-    {
-        echo printInfo( "Successfully inserted clickable query" );
-    }
+        $msg .= printInfo( "Successfully inserted clickable query" );
 
     $clickableURL = queryToClickableURL( $qid, 'Click Here To Acknowledge' );
     $mail = emailFromTemplate( 'NOTIFY_PRESENTER_JC_ASSIGNMENT', $macros );
 
-    $to = getLoginEmail( $login );
-    $cclist = $mail['cc'];
-    $subject = $data[ 'jc_id' ] . ' | Your presentation date has been fixed';
+    $to = getLoginEmail( $loginOrEmail );
 
-    // Add clickableQuery to outgoing mail.
-    $body = $mail[ 'email_body' ];
-    $body = addClickabelURLToMail( $body, $clickableURL );
-    $res = sendHTMLEmail( $body, $subject, $to, $cclist );
-    return $res;
+    if( $to )
+    {
+        $cclist = $mail['cc'];
+        $subject = $data[ 'jc_id' ] . ' | Your presentation date has been fixed';
+
+        // Add clickableQuery to outgoing mail.
+        $body = $mail[ 'email_body' ];
+        $body = addClickabelURLToMail( $body, $clickableURL );
+        $res1 = sendHTMLEmail( $body, $subject, $to, $cclist );
+        if( $res1 )
+            $msg .= p("Succesfully sent email." );
+        else
+            $msg .= p("Could not sent email." );
+    }
+
+    return array( 'success' => true, 'message' => $msg);
 }
 
-function assignJCPresentationToLogin( $login, $data )
+function assignJCPresentationToLogin( string $loginOrEmail, array $data ) : array
 {
     // Make sure the only valid login is used and not the email id.
-    $login = explode( '@', $login )[0];
-    return fixJCSchedule( $login, $data );
+    return fixJCSchedule( $loginOrEmail, $data );
 }
 
 ?>
