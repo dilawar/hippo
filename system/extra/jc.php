@@ -21,7 +21,7 @@ function fixJCSchedule( string $loginOrEmail, array $data ) : array
     $data[ 'title' ] = 'Not yet available';
 
     if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
-        $res = updateTable( 'jc_presentations', 'status', $data );
+        $res = updateTable( 'jc_presentations', 'presenter,jc_id,date', 'status', $data );
     else
         $res = insertIntoTable( 'jc_presentations'
             , 'id,presenter,jc_id,date,time,venue,title,status', $data );
