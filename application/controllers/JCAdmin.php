@@ -236,8 +236,8 @@ trait JCAdmin
         }
 
         $jcInfo = getJCInfo( $_POST['jc_id'] );
-        if( __get__( $_POST, 'time',  '' ) )
-            $_POST['time'] = $jcInfo['time'];
+        $_POST['time'] = $jcInfo['time'];
+        $_POST['venue'] = $jcInfo['venue'];
 
         $res = assignJCPresentationToLogin( $_POST['presenter'],  $_POST );
     
