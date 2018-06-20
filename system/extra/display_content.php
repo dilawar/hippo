@@ -14,6 +14,8 @@ function printErrorSevere($msg, $append = false )
 
 function printWarning($msg, $append = true)
 {
+    if( ! $msg )
+        $msg = '';
     if( $append )
         if(isset($_SESSION))
             $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . p($msg);

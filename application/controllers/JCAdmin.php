@@ -292,14 +292,12 @@ trait JCAdmin
             }
 
             $res = assignJCPresentationToLogin( $_POST['presenter'],  $_POST );
-            if( $res )
-            {
+            if( $res['success'] )
                 flashMessage( 'Assigned user ' . $_POST[ 'presenter' ] .
-                    ' to present a paper on ' . dbDate( $_POST['date' ] ) , true
+                    ' to present a paper on ' . dbDate( $_POST['date' ] ) 
                 );
-            }
             else
-                echo printWarning("Failed to assign anyone.");
+                echo printWarning( $res['message'] );
 
             redirect( 'user/jcadmin' );
             return;
@@ -316,12 +314,10 @@ trait JCAdmin
                 $cclist = 'hippo@ncbs.res.in,jccoords@ncbs.res.in';
 
                 $subject = $data[ 'jc_id' ] . ' | Your presentation date has been removed';
-                $msg = '<p>
-                    Your presentation scheduled on ' . humanReadableDate( $data['date'] )
-                    . ' has been removed by JC coordinator ' . $_SESSION[ 'user' ]
-                    . '</p>';
+                $msg = p(' Your presentation scheduled on ' . humanReadableDate( $data['date'] )
+                    . ' has been removed by JC coordinator ' . $_SESSION[ 'user' ] );
 
-                $msg .= '<p> If it is a mistake, please contant your JC coordinator. </p>';
+                $msg .= p('If it is a mistake, please contant your JC coordinator.');
                 $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
                 if( $res )
                 {
