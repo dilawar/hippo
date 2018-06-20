@@ -201,6 +201,55 @@ trait JCAdmin
         redirect( "user/jcadmin" );
     }
 
+    public function jc_admin_assign_presentation( )
+    {
+        $anyError = false;
+        $msg = '';
+
+        if( strtotime( $_POST[ 'date' ]) < strtotime( 'today' ) )
+        {
+            $msg .= p("You cannot assign JC presentation in the past. Trying to do so again 
+                would be lame!");
+            $msg .= p( " Assignment date: " . humanReadableDate( $_POST[ 'date' ] ) );
+            $anyError = true;
+            echo printWarning( $msg );
+            redirect( "user/jcadmin" );
+        }
+
+        $login = getLoginID( $_POST[ 'presenter' ] );
+        $loginInfo = getLoginInfo( $login );
+
+        if( ! $loginInfo )
+        {
+            $msg .= p( "I could not find $login in database. Searching for speaker database." );
+
+            // Probably a special speaker.
+            $presenter = $_POST[ 'presenter' ];
+            $someone = findAnyoneWithEmail( $presenter );
+            if( ! $someone )
+            {
+                $msg .= p( " Could not find <tt>$login</tt> anywhere. Lame!" );
+                printWarning( $msg );
+                $anyError = true;
+                redirect( "user/jcadmin" );
+            }
+        }
+
+        $jcInfo = getJCInfo( $_POST['jc_id'] );
+        if( __get__( $_POST, 'time',  '' ) )
+            $_POST['time'] = $jcInfo['time'];
+
+        $res = assignJCPresentationToLogin( $_POST['presenter'],  $_POST );
+        if( $res['success'] )
+            $msg .= p( 'Assigned user ' . $_POST[ 'presenter' ] .
+            ' to present a paper on ' . dbDate( $_POST['date' ] ) 
+        );
+        else
+            $msg .= p( $res['message'] );
+
+        return $msg;
+    }
+
     public function jc_admin_submit( )
     {
         if( __get__( $_POST, 'response', '' ) == 'Add' )
@@ -261,44 +310,8 @@ trait JCAdmin
         }
         else if( $_POST['response'] == 'Assign Presentation' )
         {
-            $anyError = false;
-            if( strtotime( $_POST[ 'date' ]) < strtotime( 'today' ) )
-            {
-                $msg = p("You cannot assign JC presentation in the past. Trying to do so again 
-                    would be lame!");
-                $msg .= p( " Assignment date: " . humanReadableDate( $_POST[ 'date' ] ) );
-                $anyError = true;
-                echo printWarning( $msg );
-                redirect( "user/jcadmin" );
-            }
-
-            $login = getLoginID( $_POST[ 'presenter' ] );
-            $loginInfo = getLoginInfo( $login );
-
-            if( ! $loginInfo )
-            {
-                $msg = p( "I could not find $login in database. Searching for speaker database." );
-
-                // Probably a special speaker.
-                $presenter = $_POST[ 'presenter' ];
-                $someone = findAnyoneWithEmail( $presenter );
-                if( ! $someone )
-                {
-                    $msg .= p( " Could not find <tt>$login</tt> anywhere. Lame!" );
-                    printWarning( $msg );
-                    $anyError = true;
-                    redirect( "user/jcadmin" );
-                }
-            }
-
-            $res = assignJCPresentationToLogin( $_POST['presenter'],  $_POST );
-            if( $res['success'] )
-                flashMessage( 'Assigned user ' . $_POST[ 'presenter' ] .
-                    ' to present a paper on ' . dbDate( $_POST['date' ] ) 
-                );
-            else
-                echo printWarning( $res['message'] );
-
+            $msg = $this->jc_admin_assign_presentation( );
+            flashMessage( $msg );
             redirect( 'user/jcadmin' );
             return;
         }

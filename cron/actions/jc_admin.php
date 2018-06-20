@@ -20,20 +20,22 @@ function fixJCSchedule( string $loginOrEmail, array $data ) : array
     $data[ 'presenter' ] = $loginOrEmail;
     $data[ 'title' ] = 'Not yet available';
 
-    $entry = insertOrUpdateTable( 'jc_presentations'
-        , 'id,presenter,jc_id,date,title', 'status'
-        , $data );
+    if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
+        $res = updateTable( 'jc_presentations', 'status', $data );
+    else
+        $res = insertIntoTable( 'jc_presentations'
+            , 'id,presenter,jc_id,date,time,venue,title,status', $data );
 
-    if( ! $entry  )
+    $msg = '';
+    if( ! $res  )
     {
         $date = $data[ 'date'] ;
-        $msg = flashMessage( "Failed to assign $presenter on $date. ", true );
+        $msg .= p( "Failed to assign $presenter on $date. " );
         return array( 'success' => false, 'message' => $msg );
     }
 
-    $msg = printInfo( 'Assigned user ' . $loginOrEmail .
-        ' to present a paper on ' . dbDate( $data['date' ] )
-        );
+    $msg .= p( 'Assigned user ' . $loginOrEmail .  
+            ' to present a paper on ' . dbDate( $data['date' ] ));
 
     $macros = array(
         'PRESENTER' => arrayToName( getLoginInfo( $login ) )
