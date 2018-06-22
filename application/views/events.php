@@ -47,6 +47,7 @@ else
             if( strtotime($event['date']) < strtotime( $whichDay) + 7*24*3600 )
             {
                 $talkHtml .= '<div class="notice">';
+                $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML( $event ) . '</p>';
                 $talkHtml .= talkToHTMLLarge( $talk, $with_picture = true );
                 $talkHtml .= '</div>';
 
@@ -58,6 +59,7 @@ else
             }
             else
             {
+                $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML( $event ) . '</p>';
                 $talkHtml .= talkToEventTitle( $talk );
             }
             $talkHtml .= horizontalLine( );

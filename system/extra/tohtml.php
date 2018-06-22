@@ -28,6 +28,13 @@ function purifyHTML( $html )
     return $html;
 }
 
+function whereWhenHTML( $event )
+{
+    return humanReadableTime( $event['start_time'] ) . ', '
+        . humanReadableDate( $event['date'] ) . ' | ' 
+        . $event['venue' ] ;
+}
+
 function alert( $msg )
 {
     echo "<script type='text/javascript'>alert('$msg');</script>";
