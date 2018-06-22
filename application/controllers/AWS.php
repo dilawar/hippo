@@ -171,6 +171,36 @@ trait AWS
         }
     }
 
+    public function aws_acknowledge( )
+    {
+        $user = whoAmI();
+        $data = array( 'speaker' => $user );
+        $data = array_merge( $_POST, $data );
+        echo( "Sending your acknowledgment to database " );
+        $res = updateTable( 'upcoming_aws', 'id,speaker', 'acknowledged', $data );
+
+        $msg = '';
+        if( $res )
+        {
+            $msg .= p( 
+                "You have successfully acknowledged your AWS schedule. 
+                Please mark your calendar as well." 
+            );
+
+            $email = "<p>" . loginToHTML( $user ) . " has just acknowledged his/her AWS date. </p>";
+            $email .= "<p>" . humanReadableDate( 'now' ) . "</p>";
+            $subject = loginToText( $user ) . " has acknowledged his/her AWS date";
+
+            $to = 'acadoffice@ncbs.res.in';
+            $cc = 'hippo@lists.ncbs.res.in';
+            sendHTMLEmail( $email, $subject, $to, $cc );
+        }
+        else
+             printWarning( "Failed to update database ..." );
+
+        redirect( 'user/aws' );
+    }
+
 }
 
 ?>

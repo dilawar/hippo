@@ -28,7 +28,7 @@ if( $scheduledAWS )
             Please contact academic office in case you want to change your schedule.
             " );
 
-        echo '<form method="post" action="' . site_url( 'user/aws/acknowledge' ) . "\">
+        echo '<form method="post" action="' . site_url( 'user/aws_acknowledge' ) . "\">
             <button $disabled name=\"acknowledged\" value=\"YES\">Acknowledge schedule</button>
             <input type=\"hidden\" name=\"id\" value=\"" . $scheduledAWS[ 'id' ] . "\" >
             </form>
