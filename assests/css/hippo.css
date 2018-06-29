@@ -408,9 +408,9 @@ div.notice {
     background-color: rgba(200,200,200,0.2);
     padding: 10px;
     margin-bottom: 5px;
-    /* font-family: 'Roboto'; */
-    font-family: 'Open Sans';
-    font-size: small;
+    font-family: 'Roboto';
+    /* font-family: 'Open Sans'; */
+    /* font-size: small; */
 }
 
 div.header {
