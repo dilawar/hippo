@@ -1754,7 +1754,6 @@ function talkToHTML( $talk, $with_picture = false )
 
     $coordinator = __get__( $talk, 'coordinator', '' );
 
-
     $hostEmail = $talk[ 'host' ];
 
     // Either NCBS or InSTEM.
@@ -1768,7 +1767,6 @@ function talkToHTML( $talk, $with_picture = false )
             humanReadableTime( $event[ 'start_time'] );
 
     $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
-
 
     // Speaker info
     $speakerHMTL = speakerToHTML( $speakerArr );
@@ -1796,7 +1794,7 @@ function talkToHTML( $talk, $with_picture = false )
     $html = "<h1> $title </h1>";
     $html .= $side;
     $html .= ' <br />';
-    $html .= '<div class="human_readable">' . fixHTML( $talk['description'] ) . '</div>';
+    $html .= fixHTML( $talk['description'] );
 
     // Add the calendar links
     $html .=  $googleCalLink;
