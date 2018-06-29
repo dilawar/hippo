@@ -1180,10 +1180,17 @@ a {
 footer {
     position: fixed;
     top: 90%;
+    /* margin-top: 500px; */
 }
 
-div.bottom a {
-    color: blue;
+footer *  {
+    text-color: lightgreen;
+    color: lightgreen;
+}
+
+div.bottom * {
+    color: lightgreen;
+    text-color: lightgreen;
 }
 
 th {
