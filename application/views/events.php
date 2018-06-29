@@ -9,9 +9,8 @@ if( __get__($_GET, 'date', '' ) )
 
 
 $form = ' <form method="get" action="">
-    <table class="info">
+    <table class="show_info">
         <tr>
-            <td>Select date</td>
             <td><input class="datepicker" type="text" name="date" value="' .
                     $default[ 'date' ] . '" ></td>
             <td><button type="submit" name="response"
