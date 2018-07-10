@@ -1675,3 +1675,15 @@ function isDateAndTimeIsInPast( $date, $time )
         return true;
     return false;
 }
+
+function findIncompleteEntries( array $arr, string $keys ) : string
+{
+    $missing = array();
+    $keys = explode( ',', $keys );
+    foreach( $keys as $key )
+    {
+        if( ! __get__( $arr, $key, '') )
+            $missing[] = $key;
+    }
+    return implode( ',', $missing );
+}
