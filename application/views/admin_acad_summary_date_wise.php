@@ -1,12 +1,5 @@
 <?php
-
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-include_once 'check_access_permissions.php';
-
-mustHaveAllOfTheseRoles( array( 'AWS_ADMIN' ) );
+require_once BASEPATH.'autoload.php';
 
 ?>
 
@@ -123,6 +116,7 @@ for ($i = 0; $i < intval(30 * $numMonths / 7); $i++)
 $table .= "</table>";
 echo $table;
 
-echo goBackToPageLink( "admin_acad.php", "Go back" );
+$ref = $controller;
+echo goBackToPageLink( "$ref", "Go back" );
 
 ?>

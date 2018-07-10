@@ -1,12 +1,7 @@
 <?php
+include_once BASEPATH.'autoload.php';
 
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
-include_once 'check_access_permissions.php';
-
-mustHaveAllOfTheseRoles( array( 'AWS_ADMIN' ) );
+$ref = $controller;
 
 $speakerPiMap = array( );
 // Collect all faculty
@@ -86,18 +81,19 @@ foreach( $speakerPiMap as $pi => $logins )
     * @{ */
 /**  @} */
 
-echo '
-    <form action="admin_acad_aws_speakers_action.php"
-        method="post" accept-charset="utf-8">
-    <table border="0">
-    <tr>
-        <td><input type="text" name="login" id="login" placeholder="Speaker id"/></td>
-        <td><input type="text" name="pi_or_host" id="pi_or_host" placeholder="supervisor email"/></td>
-        <td><button type="submit" name="response" value="update_pi_or_host">Update Speaker PI/HOST</button></td>
-    </tr>
-    </table>
-    </form>
-    ';
+if( $ref == "adminacad" )
+{
+    echo '
+        <form action="'.site_url( "$ref/aws_speakers_action" ) . '" method="post">
+        <table border="0">
+        <tr>
+            <td><input type="text" name="login" id="login" placeholder="Speaker id"/></td>
+            <td><input type="text" name="pi_or_host" id="pi_or_host" placeholder="supervisor email"/></td>
+            <td><button type="submit" name="response" value="update_pi_or_host">Update Speaker PI/HOST</button></td>
+        </tr>
+        </table>
+        </form>';
+}
 
 
 echo ' <h2>Table of active speakers</h2> ';
@@ -132,8 +128,6 @@ foreach( $speakerPiMap as $pi => $speakers )
     echo $table;
 }
 
-
-echo goBackToPageLink( "admin_acad.php", "Go back" );
-
+echo goBackToPageLink( "$ref", "Go back" );
 
 ?>

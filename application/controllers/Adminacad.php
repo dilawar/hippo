@@ -5,13 +5,11 @@ require_once BASEPATH.'autoload.php';
 require_once __DIR__.'/AdminacadCourses.php';
 require_once __DIR__.'/AdminacadJC.php';
 require_once __DIR__.'/AdminSharedFunc.php';
-require_once __DIR__.'/AWS.php';
 
 class Adminacad extends CI_Controller
 {
     use AdminacadCourses;
     use AdminacadJC;
-    use AWS;
 
     public function load_adminacad_view( $view, $data = array() )
     {
@@ -19,11 +17,6 @@ class Adminacad extends CI_Controller
         $this->template->set( 'header', 'header.php' );
         $this->template->load( $view, $data );
     }
-
-    //public function load_user_view( $view, $data =array() )
-    //{
-    //    $this->load_adminacad_view( $view, $data );
-    //}
 
     // VIEWS ONLY.
     public function index()
@@ -116,6 +109,21 @@ class Adminacad extends CI_Controller
     public function update_upcoming_aws( )
     {
         $this->load_adminacad_view( "admin_acad_update_upcoming_aws" );
+    }
+
+    public function aws_speakers( )
+    {
+        $this->load_adminacad_view( "admin_acad_aws_speakers" );
+    }
+
+    public function summary_user_wise( )
+    {
+        $this->load_adminacad_view( "admin_acad_summary_user_wise" );
+    }
+
+    public function summary_date_wise( )
+    {
+        $this->load_adminacad_view( "admin_acad_summary_date_wise" );
     }
 
     // ACTION.
@@ -686,6 +694,21 @@ class Adminacad extends CI_Controller
             flashMessage( "Successfully updated AWS entry." );
 
         redirect( 'adminacad' );
+    }
+
+    // Add a speaker to PI/HOST.
+    public function aws_speakers_action( )
+    {
+        // Show only this user.
+        $login = $_POST[ 'login' ];
+        $pi = $_POST[ 'pi_or_host' ];
+        if( $login )
+        {
+            $res = updateTable( 'logins', 'login', 'pi_or_host', $_POST );
+            if( $res )
+                echo flashMessage( "Successfully updated/added $login to $pi." );
+        }
+        redirect( "adminacad" );
     }
 }
 
