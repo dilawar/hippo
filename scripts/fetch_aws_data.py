@@ -138,7 +138,7 @@ def slots_data( ):
 
 def speaker_data( ):
     speakers = { }
-    keys = tuple( 'login,pi_or_host,specialization,nAWS,last_aws_on'.split( ','))
+    keys = tuple( 'login,pi_or_host,specialization,nAWS,last_aws_on,title'.split( ','))
     for l in speakers_:
         if l in upcoming_aws_:
             print( '-> Name is in upcoming AWS. Ignoring' )
@@ -154,6 +154,7 @@ def speaker_data( ):
         nAws = len( aws_.get( l, [] ) )
         vals.append( '%d' % nAws )
         vals.append( '%s' % lastAwsDate( l ) )
+        vals.append( '%s' % speakers_[l].get( 'title', 'UNKNOWN'))
 
         d = dict( zip(keys, vals) )
         speakers[ l ] = d 

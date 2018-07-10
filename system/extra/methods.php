@@ -799,7 +799,7 @@ function rescheduleAWS( $method = 'reschedule_default' )
     else if( $method == 'reschedule_group_greedy' )
         $scriptPath = FCPATH.'./scripts/schedule_aws_greedy_groupwise.py';
     else
-        $scriptPath = FCPATH.'./script/schedule_aws.py';
+        $scriptPath = FCPATH.'./scripts/schedule_aws.py';
 
     // echo("Executing $scriptPath with timeout 60 secs.");
     $command = "timeout 60 $scriptPath";

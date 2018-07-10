@@ -110,9 +110,17 @@ def add_edge( speaker, slot ):
     date, si = slot
     lastAWS = g_.node[ speaker ]['last_aws_on']
     dayDiff = (slot[0] - lastAWS).days
+    nAWS = int( g_.node[ speaker ]['nAWS'] )
+
+    # if speaker is int-phd and this is her first AWS, then make sure not to
+    # assign before 80 weeks.
+    speakerType = g_.node[speaker]['title']
+    if nAWS == 0 and speakerType in [ 'INTPHD', 'MSC' ]:
+        if dayDiff < 560:
+            return
+
     if dayDiff < ideal_gap_:
         return 
-    nAWS = int( g_.node[ speaker ]['nAWS'] )
     cost = compute_cost.computeCost( date, lastAWS, nAWS )
     g_.add_edge( speaker, slot, capacity = 1, weight = cost )
 

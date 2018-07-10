@@ -588,6 +588,7 @@ def main( outfile ):
         ans = computeSchedule( )
     except Exception as e:
         _logger.warn( "Failed to schedule. Error was %s" % e )
+
     try:
         print_schedule( ans, outfile )
     except Exception as e:
@@ -595,14 +596,16 @@ def main( outfile ):
 
     if ans:
         commit_schedule( ans )
+        print( 'Committed schedule.' )
     else:
-        print( 'Failed to compute schedule' )
+        print( 'Failed to commit schedule.' )
         return -1
-    try:
-        write_graph( )
-    except Exception as e:
-        _logger.error( "Could not write graph to file" )
-        _logger.error( "\tError was %s" % e )
+
+    #try:
+    #    write_graph( )
+    #except Exception as e:
+    #    _logger.error( "Could not write graph to file" )
+    #    _logger.error( "\tError was %s" % e )
     db_.close( )
 
 if __name__ == '__main__':
