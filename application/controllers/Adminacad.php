@@ -106,6 +106,26 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( 'admin_acad_send_email' );
     }
 
+    public function update_upcoming_aws( )
+    {
+        $this->load_adminacad_view( "admin_acad_update_upcoming_aws" );
+    }
+
+    public function aws_speakers( )
+    {
+        $this->load_adminacad_view( "admin_acad_aws_speakers" );
+    }
+
+    public function summary_user_wise( )
+    {
+        $this->load_adminacad_view( "admin_acad_summary_user_wise" );
+    }
+
+    public function summary_date_wise( )
+    {
+        $this->load_adminacad_view( "admin_acad_summary_date_wise" );
+    }
+
     // ACTION.
     public function next_week_aws_action( )
     {
@@ -659,6 +679,38 @@ class Adminacad extends CI_Controller
         echo printWarning( "Unknown request " . $_POST[ 'response' ] );
         redirect( 'adminacad/aws_edit_requests');
     }
+
+
+    public function update_upcoming_aws_submit(  )
+    {
+
+        $res = updateTable( 'upcoming_aws', 'id'
+                    , 'supervisor_1,supervisor_2,tcm_member_1,tcm_member_2,tcm_member_3' 
+                        .  ',tcm_member_4,title,abstract'
+                    , $_POST
+                );
+
+        if( $res )
+            flashMessage( "Successfully updated AWS entry." );
+
+        redirect( 'adminacad' );
+    }
+
+    // Add a speaker to PI/HOST.
+    public function aws_speakers_action( )
+    {
+        // Show only this user.
+        $login = $_POST[ 'login' ];
+        $pi = $_POST[ 'pi_or_host' ];
+        if( $login )
+        {
+            $res = updateTable( 'logins', 'login', 'pi_or_host', $_POST );
+            if( $res )
+                echo flashMessage( "Successfully updated/added $login to $pi." );
+        }
+        redirect( "adminacad" );
+    }
+
 }
 
 ?>

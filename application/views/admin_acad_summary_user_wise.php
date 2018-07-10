@@ -1,9 +1,5 @@
 <?php
-
-include_once 'header.php';
-include_once 'database.php';
-include_once 'tohtml.php';
-include_once 'methods.php';
+require_once BASEPATH.'autoload.php';
 
 echo "<h3>Annual Work Seminars Summary</h3>";
 
@@ -72,8 +68,8 @@ foreach( $awsGroupedBySpeaker as $speaker => $awses )
 {
     $i +=1 ;
     $speaker = getLoginInfo( $speaker );
-    $fname = $speaker['first_name'];
-    $lname = $speaker['last_name'];
+    $fname = __get__( $speaker, 'first_name', '' );
+    $lname = __get__( $speaker, 'last_name', '' );
     $login = __get__( $speaker, 'login', '' );
     if( ! $login )
         continue;
@@ -99,6 +95,7 @@ foreach( $awsGroupedBySpeaker as $speaker => $awses )
 $table .= "</table>";
 echo $table;
 
-echo goBackToPageLink( "admin_acad.php", "Go back" );
+$ref = $controller;
+echo goBackToPageLink( "$ref", "Go back" );
 
 ?>
