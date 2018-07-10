@@ -5,11 +5,13 @@ require_once BASEPATH.'autoload.php';
 require_once __DIR__.'/AdminacadCourses.php';
 require_once __DIR__.'/AdminacadJC.php';
 require_once __DIR__.'/AdminSharedFunc.php';
+require_once __DIR__.'/AWS.php';
 
 class Adminacad extends CI_Controller
 {
     use AdminacadCourses;
     use AdminacadJC;
+    use AWS;
 
     public function load_adminacad_view( $view, $data = array() )
     {
@@ -17,6 +19,11 @@ class Adminacad extends CI_Controller
         $this->template->set( 'header', 'header.php' );
         $this->template->load( $view, $data );
     }
+
+    //public function load_user_view( $view, $data =array() )
+    //{
+    //    $this->load_adminacad_view( $view, $data );
+    //}
 
     // VIEWS ONLY.
     public function index()
@@ -104,6 +111,11 @@ class Adminacad extends CI_Controller
     public function send_email( )
     {
         $this->load_adminacad_view( 'admin_acad_send_email' );
+    }
+
+    public function update_upcoming_aws( )
+    {
+        $this->load_adminacad_view( "admin_acad_update_upcoming_aws" );
     }
 
     // ACTION.
@@ -658,6 +670,22 @@ class Adminacad extends CI_Controller
         }
         echo printWarning( "Unknown request " . $_POST[ 'response' ] );
         redirect( 'adminacad/aws_edit_requests');
+    }
+
+
+    public function update_upcoming_aws_submit(  )
+    {
+
+        $res = updateTable( 'upcoming_aws', 'id'
+                    , 'supervisor_1,supervisor_2,tcm_member_1,tcm_member_2,tcm_member_3' 
+                        .  ',tcm_member_4,title,abstract'
+                    , $_POST
+                );
+
+        if( $res )
+            flashMessage( "Successfully updated AWS entry." );
+
+        redirect( 'adminacad' );
     }
 }
 
