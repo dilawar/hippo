@@ -289,7 +289,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
             $all = array_merge( $all, $reqs );
 
         // If there is already any request or event on this venue, do not book.
-        $ignore = 'is_public_event,url,description,status,gid,rid,'
+        $ignore = 'is_public_event,url,description,gid,rid,'
             . 'external_id,modified_by,timestamp'
             . ',calendar_id,calendar_event_id,last_modified_on';
 
