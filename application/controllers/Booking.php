@@ -237,14 +237,12 @@ trait Booking
 
                 // Cancel confirmed event associated with this talk if any.
                 $res = updateTable( 
-                    'events', 'external_id', 'modified_by,status,last_modified_on'
+                    'events', 'external_id', 'status,last_modified_on'
                     , array( 'external_id' => "talks." . $_POST[ 'id' ] 
                                 , 'status' => 'CANCELLED' 
                                 , 'last_modified_on' => dbDateTime( 'now' )
-                                , 'modified_by' => whoAmI()
                             )
                     );
-                
                 redirect( "user/show_public" );
                 return;
             }
@@ -339,7 +337,7 @@ trait Booking
                         echo printInfo( "Successfully updated associtated event" );
                 }
 
-                redirect('user/manage_talk');
+                redirect('user/show_public');
                 return;
             }
             else
@@ -359,13 +357,15 @@ trait Booking
         // insert of update the speaker table. Other to create a entry in talks table.
         // Sanity check 
         $msg = '';
-        if(!($_POST['first_name'] && $_POST['institute'] && $_POST['title'] && $_POST['description']))
+        $missing = findIncompleteEntries( $_POST, 'first_name,institute,title,description');
+        if( $missing )
         {
-            $msg = 'Incomplete entry. Required fields: First name, last name, 
-                institute, title and description of talk.';
+            $msg .= p( "Incomplete required fields: $missing." );
             $msg .= arrayToVerticalTableHTML( $_POST, 'info' );
-            printWarning( "Failed to register entry. Information:<br /> $msg ." );
-            redirect( "user/register_talk" );
+            flashMessage( "Failed to register your talk. <br />
+                You submitted following information:<br /> $msg" 
+                );
+            $this->load_user_view( "user_register_talk", $_POST );
             return;
         }
 
@@ -388,7 +388,6 @@ trait Booking
             if( $res2 )
             {
                 $talkId = $res2[ 'id'];
-                $msg .= "<p>Successfully registered your talk with id $talkId </p>";
                 $startTime = $_POST[ 'start_time' ];
                 $endTime = $_POST[ 'end_time' ];
 
@@ -412,13 +411,11 @@ trait Booking
                         {
                             $msg .= "<p>There is already an events on $venue on $date
                                 between $startTime and $endTime. 
-                                <br />
-                                I am redirecting you to page where you can browse all venues 
-                               and create suitable booking request.</p>";
+                                <br />";
                             $msg .= "<p>You can book a slot for this talk later" 
-                                . " by visiting 'Manage my talks' link in your homepage. </p>";
-
-                            printWarning( $msg );
+                                . " by visiting <tt>'Manage my public events'</tt> link in 
+                                your homepage. </p>";
+                            echo printWarning( $msg );
                         }
                         else 
                         {
@@ -443,12 +440,16 @@ trait Booking
                 }
             }
             else
-                $msg .= printWarning( "Oh Snap! Failed to add your talk to database." );
+                $msg .= minionEmbarrassed( "Failed to add your talk to database." );
         }
         else
-            $msg .= printWarning( "Oh Snap! Failed to add speaker to database" );
+            $msg .= minionEmbarrassed( "Failed to add speaker to database." );
 
-        redirect( "user/register_talk");
+        $msg .= p("I am almost sure that I have successfully registered your talk.");
+        $msg .= p( "If something unexpected has happened, curse my creator and write to my 
+                    current overloards. It helps to attach screenshots.");
+        echo flashMessage( $msg );
+        redirect( "user/show_public");
     }
 
     public function delete_booking_of_talk( $gid )

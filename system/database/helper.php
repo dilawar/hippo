@@ -2230,9 +2230,9 @@ function getSpeakers( )
     *
     * @param $data
     *
-    * @return
+    * @return Id of talk or empty array.
  */
-function addNewTalk( $data )
+function addNewTalk( array $data ) : array
 {
     $hippoDB = initDB();;
     // Get the max id
@@ -2248,8 +2248,8 @@ function addNewTalk( $data )
     // Return the id of talk.
     if( $res )
         return array( "id" => $id );
-    else
-        return null;
+
+    return array();
 }
 
 /**

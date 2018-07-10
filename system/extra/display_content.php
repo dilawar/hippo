@@ -57,13 +57,14 @@ function noteWithFAIcon( $msg, $fa )
     return $icon . $msg;
 }
 
-function minionEmbarrassed( $msg, $info = '' )
+function minionEmbarrassed( string $msg, string $info = '' ) : string
 {
-    echo "<p class=\"embarassed\"> This is embarassing! <br>";
-    echo " $msg <br> $info ";
-    echo "I have logged this error!. ";
-    error_log( "FAILED : " . $msg );
-    echo "</p>";
+    $r = "<p class=\"embarassed\"> This is embarassing! <br>";
+    $r .= " $msg <br> $info ";
+    $r .= "I have logged this error!. ";
+    error_log( "FAILED : " . $r );
+    $r .= "</p>";
+    return $r;
 }
 
 function printNote( $msg )
