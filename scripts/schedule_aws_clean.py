@@ -22,6 +22,8 @@ specs_ = [ ]
 facs_ = defaultdict( set )
 
 def strToDate( date ):
+    if date == 'None' or date is None:
+        date = '1970-01-31'
     return datetime.datetime.strptime( date, '%Y-%m-%d' ).date()
 
 def short( pi ):
@@ -85,6 +87,7 @@ def init( ):
 
     speakers = g_.successors( 'source' )
     for s in speakers:
+        lastAWSOn = g_.node[s]['last_aws_on']
         g_.node[s]['last_aws_on'] = strToDate( g_.node[s]['last_aws_on'] )
         spec = g_.node[s]['specialization'] 
         specs_.append( spec )
