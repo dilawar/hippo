@@ -68,29 +68,35 @@ if( $_POST && array_key_exists( 'running_course', $_POST ) )
 $runningCoursesHTML  = "<h2>Following courses are running in $sem $year.</h2>";
 $runningCoursesHTML .= '<table class="info sortable">';
 
-$tobefilterd = 'id,semester,year';
-$runningCoursesHTML .= arrayHeaderRow( $runningCourses[0], 'info', $tobefilterd );
-foreach( $runningCourses as $course )
+if( count($runningCourses) > 0 )
 {
-    $cname = getCourseName( $course[ 'course_id'] );
-    $course['course_id'] = '<strong>'. $course['course_id'] . '</strong><br> ' . $cname;
+    $tobefilterd = 'id,semester,year';
+    $runningCoursesHTML .= arrayHeaderRow( $runningCourses[0], 'info', $tobefilterd );
+    foreach( $runningCourses as $course )
+    {
+        $cname = getCourseName( $course[ 'course_id'] );
+        $course['course_id'] = '<strong>'. $course['course_id'] . '</strong><br> ' . $cname;
 
-    if(isCourseActive($course))
-        $course['course_id'] .= "<blink>$symbBell</blink>";
+        if(isCourseActive($course))
+            $course['course_id'] .= "<blink>$symbBell</blink>";
 
-    $runningCoursesHTML .= '<tr>';
-    $runningCoursesHTML .= arrayToRowHTML($course, 'aws', $tobefilterd, true, false);
-    $runningCoursesHTML .=  '<td>
-        <form action="" method="post">
-            <button type="submit" value="Edit">Edit</button>
-            <input type="hidden" name="running_course" value="' 
-                .  $course[ 'id' ] . ': ' . $cname .  '" />
-        </form></td>';
-    $runningCoursesHTML .= '</tr>';
+        $runningCoursesHTML .= '<tr>';
+        $runningCoursesHTML .= arrayToRowHTML($course, 'aws', $tobefilterd, true, false);
+        $runningCoursesHTML .=  '<td>
+            <form action="" method="post">
+                <button type="submit" value="Edit">Edit</button>
+                <input type="hidden" name="running_course" value="' 
+                    .  $course[ 'id' ] . ': ' . $cname .  '" />
+            </form></td>';
+        $runningCoursesHTML .= '</tr>';
+    }
+    $runningCoursesHTML .= '</table>';
+    echo $runningCoursesHTML;
 }
-$runningCoursesHTML .= '</table>';
-
-echo $runningCoursesHTML;
+else
+{
+    echo p( "No courses found for this semester: $sem/$year." );
+}
 
 
 /* --------------------------------------------------------------------------*/
@@ -107,7 +113,6 @@ if( $action == 'Add' )
 else
     echo "<h1>Edit following course </h1>";
 
-// echo '<form method="post" action="admin_acad_manages_current_courses_action.php">';
 echo '<form method="post" action="'.site_url('adminacad/courses_action') .'">';
 $default[ 'slot' ] = $slotSelect;
 $default[ 'venue' ] = $venueSelect;
