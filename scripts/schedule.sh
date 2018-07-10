@@ -19,6 +19,7 @@
 
 set -e
 set -o nounset                              # Treat unset variables as an error
+set -x
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 GRAPHMLFILE="/tmp/__aws_data.graphml"
