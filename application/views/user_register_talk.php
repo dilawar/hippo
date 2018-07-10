@@ -38,7 +38,7 @@ $( function() {
     var emails = <?php echo json_encode( $speakersIds ); ?>;
 
     $( "#talks_host" ).autocomplete( { source : host });
-    $( "#talks_host" ).attr( "placeholder", "email of speaker" );
+    $( "#talks_host" ).attr( "placeholder", "email of host" );
 
     $( "#talks_coordinator" ).autocomplete( { source : logins.concat( host ) });
     $( "#talks_coordinator" ).attr( "placeholder", "email of coordinator" );
@@ -93,7 +93,7 @@ echo '<input type="file" name="picture" id="picture" value="" />';
 echo '</td></tr></table>';
 
 echo dbTableToHTMLTable( 'speakers', $speaker
-    , 'honorific,email,homepage,first_name:required,middle_name,last_name'
+    , 'honorific,email,homepage,first_name:required,middle_name,last_name:required'
         . ',designation,department,institute:required'
     , ''
     );
@@ -101,7 +101,7 @@ echo dbTableToHTMLTable( 'speakers', $speaker
 
 echo "<h2>Talk information</h2>" ;
 echo dbTableToHTMLTable( 'talks', $talk
-    , 'class,host,coordinator,title,description'
+    , 'class:required,host:required,coordinator,title:required,description:required'
     , ''
     , $hide = 'id,speaker,status'
     );
