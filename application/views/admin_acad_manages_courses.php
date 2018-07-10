@@ -71,8 +71,7 @@ if( __get__( $_POST, 'reponse', 'Edit' ) && __get__( $_POST, 'id', false ) )
 
 echo '<h3>Add/Edit course details</h3>';
 
-// echo '<form method="post" action="admin_acad_manages_courses_action.php">';
-echo '<form method="post" action="'.site_url('adminacad/upcomingcourses_action').'">';
+echo '<form method="post" action="'.site_url('adminacad/all_courses_action').'">';
 echo dbTableToHTMLTable( 'courses_metadata', $course
         , 'id,credits:required,name:required,description,'
             . 'instructor_1:required,instructor_2,instructor_3'
