@@ -227,11 +227,27 @@ class User extends CI_Controller
         {
             echo "Give feedback";
         }
+        else if( $action == 'drop' )
+        {
+            $_POST['status'] = 'DROPPED';
+            $_POST['student_id'] = whoAmI();
+            $res = updateTable( 'course_registration'
+                        , 'student_id,semester,year,course_id'
+                        , 'status'
+                        , $_POST 
+                    );
+            if( $res )
+                flashMessage( "Successfully dropped course." );
+            else
+                flashMessage( "Something went wrong. Couldn't drop the course." );
+        }
         else
         {
             flashMessage( "Not implemented yet $action" );
             redirect( 'user/courses' );
         }
+
+        redirect( 'user/courses' );
     }
 
     public function update_supervisor_submit( )

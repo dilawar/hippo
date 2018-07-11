@@ -154,8 +154,6 @@ foreach($myCourses as &$c)
     if( $count % 3 == 0 )
         echo '</tr><tr>';
 
-    echo '<td>';
-    echo '<form method="post" action="'.site_url("user/courses/update").'">';
     $cid = $c[ 'course_id' ];
     $course = getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
 
@@ -184,6 +182,9 @@ foreach($myCourses as &$c)
         }
     }
 
+    // Show form.
+    echo '<td>';
+    echo '<form method="post" action="'.site_url("user/manage_course/$action").'">';
     echo dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
     echo '</form>';
 
