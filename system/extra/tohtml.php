@@ -309,7 +309,7 @@ function requestsToHTMLReviewForm( $requests )
 
 
 // Return a short description of event.
-function eventToText( $event )
+function eventToText( array $event ) : string
 {
     $html = 'By ' . $event['created_by'] . ', ';
     $html .= '';
