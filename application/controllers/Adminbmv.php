@@ -136,18 +136,39 @@ class Adminbmv extends CI_Controller
     public function block_venue_submit($arg = '')
     {
         $venues = __get__( $_POST, 'venue' );
-        $dates = __get__( $_POST, 'dates' );
-        $dates = explode( ',', $dates );
+        $startDate = __get__( $_POST, 'start_date', '' );
+        $msg = '';
+
+        if( ! $startDate )
+        {
+            flashMessage( "No date selected." );
+            redirect( "adminbmv/block_venues" );
+            return;
+        }
+
+        $endDate = __get__( $_POST, 'end_date', $startDate );
+        $msg .= p( "User specified range : $startDate to $endDate." );
+
+
+        $nDays = (strtotime($endDate) - strtotime($startDate))/24/3600;
+
+        // Both inclusive else a single date wont work.
+        $dates = [];
+        for ($i = 0; $i <= $nDays; $i++) {
+            $dates[] = dbDate( strtotime($startDate) + $i * 24 * 3600 );
+        }
+
         $startTime = __get__( $_POST, 'start_time' );
         $endTime = __get__( $_POST, 'end_time' );
         $gid = intval( getUniqueFieldValue( 'bookmyvenue_requests', 'gid' ) ) + 1;
         $rid = 0;
+
         foreach( $venues as $venue )
         {
+            $blockedDates = '';
             foreach( $dates as $date )
             {
-                $date = dbDate( trim( $date ) );
-                $title = __get__( $_POST, 'reason', '' );
+                $title = __get__( $_POST, 'reason', 'BLOCKED BY '. whoAmI() );
                 $class = __get__( $_POST, 'class', 'UNKNOWN' );
 
                 if( strlen( $title ) < 8 )
@@ -178,8 +199,13 @@ class Adminbmv extends CI_Controller
                 if( $res )
                     flashMessage( "Request $gid.$rid is approved and venue has been blocked." );
                 $rid ++;
+
+                $blockedDates .= " $date ";
              }
+
+            $msg .= p( "$venue is blockd for $blockedDates. ");
         }
+        flashMessage( $msg );
         redirect( 'adminbmv/block_venues' );
     }
 

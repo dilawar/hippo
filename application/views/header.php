@@ -17,7 +17,10 @@
 <script src="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
 <link  href="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.css" rel="stylesheet" type="text/css" />
 <link  href="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-<script src="<?= base_url() ?>/node_modules/jquery-ui-multi-date-picker/dist/jquery-ui.multidatespicker.js"></script>
+
+<!-- Multi-dates pickers -->
+<link  href="<?= base_url() ?>/node_modules/jquery-ui-multidatespicker/jquery-ui.multidatespicker.css" rel="stylesheet" type="text/css" />
+<script src="<?= base_url() ?>/node_modules/jquery-ui-multidatespicker/jquery-ui.multidatespicker.js"></script>
  
 <!-- Font awesome -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
@@ -62,8 +65,7 @@ $(function(){
 <!-- Make sure date is in yyyy-dd-mm format e.g. 2016-11-31 etc. -->
 <script>
 $( function() {
-    var today = new Date();
-    var tomorrow = (new Date()).setDate( today.getDate( ) + 1 );
+    var date = new Date();
     $( "input.multidatespicker" ).multiDatesPicker( {
         dateFormat : "yy-m-d"
     });
@@ -150,8 +152,6 @@ $(document).ready(function(){
     <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
     <td><a class="bright" href="http://intranet.ncbs.res.in/HippoIgnited/index.php" target="_blank" >Old Hippo</a></td>
-    <!--<td><a class="bright" href="<?= site_url('info/map') ?>" target="hippo_popup" >Map</a></td>-->
-    <!-- <td><a class="bright" href="<?= site_url('info/preprints') ?>" target="hippo_popup" >Preprints</a></td>-->
     </tr>
 </table>
 </div>
