@@ -10,7 +10,9 @@ if(isset($controller))
     $ref = $controller;
 
 /* Let user select venues and select the date to block them. */
-echo ' <h1> Block venues on certain dates and times </h1> ';
+echo '<h1>Block venues on certain dates and times </h1>';
+
+echo p("Note that venues are immediately blocked. They won't go for approval." );
 
 $venues      = getVenues( );
 $venueSelect = venuesToHTMLSelect( $venues, true );
