@@ -564,7 +564,7 @@ class Adminacad extends CI_Controller
                 return;
             }
             else
-                echo printWarning( "Could not update the AWS table" );
+                echo printWarning( "Could not update the AWS table." );
         }
         else
             echo printWarning( "Unknown request " . $_POST[ 'response' ] );

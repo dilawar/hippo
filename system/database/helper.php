@@ -3455,4 +3455,20 @@ function findAnyoneWithLoginOrEmail( $loginOrEmail )
     return executeQuery( "SELECT * FROM logins WHERE login='$loginOrEmail' OR email='$loginOrEmail'");
 }
 
+function getSchedulingRequests( string $user ) : array
+{
+    $today = dbDate( 'today' );
+    $res = executeQuery( "UPDATE aws_scheduling_request SET status='CANCELLED'
+                WHERE first_preference < '$today' AND second_preference < '$today'"
+            );
+    $res = getTableEntries( 'aws_scheduling_request', 'first_preference'
+        ,  "(first_preference > '$today' OR second_preference > '$today')
+                AND speaker='$user' AND status!='CANCELLED' "
+        );
+
+    if( count($res) > 0 )
+        return $res[0];
+    return [];
+}
+
 ?>

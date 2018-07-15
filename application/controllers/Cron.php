@@ -97,9 +97,10 @@ class Cron extends CI_Controller {
         jc_assign_n_weeks_in_advance_cron();
     }
 
-    public function remove_old_aws_scheduling_prefs( )
+    public function remove_old_aws_prefs( )
     {
-        remove_old_aws_scheduling_prefs( );
+        if( trueOnGivenDayAndTime( 'this sunday', '14:15' ) )
+            remove_old_aws_scheduling_prefs( );
     }
 
     public function jc()
