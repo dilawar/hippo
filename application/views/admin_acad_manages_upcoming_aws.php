@@ -114,7 +114,6 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
 
         // Check if user has requested AWS schedule and has it been approved.
         $request = getSchedulingRequests( $aws['speaker'] );
-
         if( $request )
             $speakerHTML .= '<br />' . preferenceToHtml( $request );
 
