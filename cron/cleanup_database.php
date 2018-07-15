@@ -23,7 +23,10 @@ function cleanup_database_cron( )
 
         /* Now removing students with THESIS SEMINAR */
         echo printInfo( "Removing students who have given thesis seminar" );
-        $thesisSeminars = getTableEntries( 'talks', 'id' , "class='THESIS SEMINAR'" );
+        $thesisSeminars = getTableEntries( 'talks', 'id'
+                , "class='THESIS SEMINAR' OR class='PRESYNOPSIS THESIS SEMINAR'" 
+            );
+
         foreach( $thesisSeminars as $talk )
         {
             $speaker = getSpeakerByID( $talk['speaker_id'] ) or getSpeakerByName( $talk[ 'speaker' ] );
@@ -36,21 +39,6 @@ function cleanup_database_cron( )
             }
         }
 
-        // Also cleanup the AWS preferences.
-        $today = dbDate( 'today' );
-        $prefs = getTableEntries( 'aws_scheduling_request'
-            , 'id'
-            , "first_preference < '$today' AND 'second_preference' < '$today' AND status='APPROVED'"
-        );
-
-        foreach( $prefs as $p )
-        {
-            echo printInfo( "Removing preferences " . $p['id'] );
-
-            // Since we don't have expired field.
-            $p[ 'status' ] = 'CANCELLED';
-            updateTable( 'aws_scheduling_request', 'id', 'status', $p );
-        }
     }
 
     /* Every monday, check students who are not eligible for AWS anymore */
