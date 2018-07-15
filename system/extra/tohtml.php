@@ -2196,6 +2196,7 @@ function preferenceToHtml( $request )
         $prefs[ ] = humanReadableDate( $request[ 'second_preference' ] );
 
     $html .= implode( ' <br /> ', $prefs );
+    $html .= '<br />' . $request['status'];
     $html .= '</div>';
     return $html;
 }

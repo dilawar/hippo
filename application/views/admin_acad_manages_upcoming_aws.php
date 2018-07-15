@@ -26,7 +26,6 @@ $(function() {
 });
 </script>
 
-
 <?php
 
 $upcomingAWSs = getUpcomingAWS( );
@@ -114,12 +113,7 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
             ' (' .  $aws['speaker'] . ')' );
 
         // Check if user has requested AWS schedule and has it been approved.
-        $request = getTableEntry( 
-            'aws_scheduling_request'
-            , 'speaker,status'
-            , array( 'status' => 'APPROVED', 'speaker' => $aws[ 'speaker' ])
-        );
-
+        $request = getSchedulingRequests( $aws['speaker'] );
         if( $request )
             $speakerHTML .= '<br />' . preferenceToHtml( $request );
 

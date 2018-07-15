@@ -15,6 +15,7 @@ require_once FCPATH . './cron/jc_assign_n_weeks_in_advance.php';
 require_once FCPATH . './cron/jc.php';
 require_once FCPATH . './cron/lablist_every_two_months.php';
 require_once FCPATH . './cron/sync_calendar.php';
+require_once FCPATH . './cron/remove_old_aws_schedule.php';
 
 class Cron extends CI_Controller {
 
@@ -94,6 +95,12 @@ class Cron extends CI_Controller {
     public function jc_assign_n_weeks_in_advance()
     {
         jc_assign_n_weeks_in_advance_cron();
+    }
+
+    public function remove_old_aws_prefs( )
+    {
+        if( trueOnGivenDayAndTime( 'this sunday', '14:15' ) )
+            remove_old_aws_scheduling_prefs( );
     }
 
     public function jc()
