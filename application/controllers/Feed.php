@@ -20,14 +20,18 @@ function feedDate( $date )
     return humanReadableDate( $date );
 }
 
-function todayTomorrow( $date, $venue )
+function todayTomorrowWeek( $date )
 {
-    if( strtotime( $date ) == strtotime( 'today' ) )
-        return "Today, $venue";
-    else if( strtotime( $date ) <= (strtotime( 'today' ) + 24 * 3600 ) )
-        return "Tomorrow, $venue";
+    $today = strtotime( 'today' );
+    $thisMonday = strtotime( 'Monday this week' ); // If today is monday then return it else last monday.
+    if( strtotime( $date ) == $today )
+        return "Today | ";
+    else if( strtotime( $date ) <= ($today + 24 * 3600 ) )
+        return "Tomorrow | ";
+    else if( strtotime( $date ) - $thisMonday < 7 * 24 * 3600 )
+        return "This Week | ";
 
-    return "$venue";
+    return "";
 }
 
 function sanitize( $title )
@@ -97,8 +101,7 @@ class Feed extends CI_Controller
             if( strlen( $e[ 'title' ] ) < 2 )
                 continue;
 
-            $eventXML .= "<title>" . todayTomorrow( $e['date'], $e['venue'] ) . ' : ' . 
-                            sanitize( $e[ 'title'] ) . "</title>";
+            $eventXML .= "<title>" . todayTomorrowWeek( $e['date'] ) . sanitize($e['title']) . " @" . $e['venue'] . "</title>";
 
             $eventXML .= "<link> https://ncbs.res.in/hippo/events.php?date=" . $e['date'] . 
                         "</link>";
@@ -110,6 +113,7 @@ class Feed extends CI_Controller
                             . ', ' . venueText( $e[ 'venue' ], false )
                             . "</description>";
 
+            // This is an abuse of RSS protocol.
             $eventXML .= "<pubDate> " . date( 'r', strtotime($e['date'] . ' ' . $e['start_time'] ) ) . "</pubDate>";
             $eventXML .= "</item>";
 
