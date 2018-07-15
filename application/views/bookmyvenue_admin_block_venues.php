@@ -1,7 +1,5 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
-include_once BASEPATH.'extra/helper.php';
 
 echo userHTML( );
 
@@ -24,8 +22,9 @@ $classSelect = arrayToSelectList( 'class'
 $form   = '<form action="'. site_url("$ref/block_venue_submit") .'" method="post" accept-charset="utf-8">';
 $table  = '<table class="tasks">';
 $table .= "<tr> <td> <strong>Select one or more venues </strong> </td><td> $venueSelect </td> </tr>";
-$table .= '<tr><td>Pick dates</td>
-            <td> <input type="text" name="dates" class="multidatespicker" value="" /></td></tr>';
+$table .= '<tr><td>Date range</td>
+            <td> <input type="text" name="start_date" class="datepicker" value="" /> 
+             to <input type="text" name="end_date" class="datepicker" value="" /></td></tr>';
 $table .= '<tr> <td>Start Time</td>
             <td> <input type="text" name="start_time" class="timepicker" value="" /></td></tr>';
 $table .= '<tr> <td>End Time</td>
