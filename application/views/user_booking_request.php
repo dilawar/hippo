@@ -48,8 +48,8 @@ else
 
 $startTime = dbTime( $_POST[ 'start_time' ] );
 
-// This is END time of event. It may come from user from ./quickbook.php or use 
-// default of 1 hrs in future.
+// This is END time of event. It may have come from user from user_book.php,
+// default of 1 hrs in future from the start_time of event..
 $defaultEndTime = __get__( $_POST, 'end_time'
     , date( 'H:i', strtotime( $startTime ) + 60*60 )
     );
