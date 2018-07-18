@@ -205,7 +205,7 @@ function executeQuery( $query, $onlyOne = False)
 function executeQueryReadonly( $query )
 {
     $hippoDB = initDB();;
-    $hippoDB->query( $query );
+     $hippoDB->query( $query );
 }
 
 function executeURlQueries( $query )
@@ -2213,7 +2213,6 @@ function getEmailByName( $name )
     return $res['email'];
 }
 
-
 function getUpcomingEmails( $from = null )
 {
     $hippoDB = initDB();;
@@ -3465,7 +3464,7 @@ function getSchedulingRequests( string $user ) : array
 {
     $today = dbDate( 'today' );
 
-    executeQueryReadonly( "UPDATE aws_scheduling_request SET status='CANCELLED'
+    executeQuery( "UPDATE aws_scheduling_request SET status='CANCELLED'
                 WHERE first_preference < '$today' AND second_preference < '$today'"
         );
 

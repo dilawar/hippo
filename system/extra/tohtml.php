@@ -1951,7 +1951,7 @@ function repeatPatternTable( $className )
     *
     * @return
  */
-function emailFromTemplate( $templateName, $options )
+function emailFromTemplate( string $templateName, array &$options ) : array
 {
     $templ = getEmailTemplateById( $templateName );
     $desc = $templ['description'];
@@ -1965,9 +1965,7 @@ function emailFromTemplate( $templateName, $options )
     }
 
     foreach( $options as $key => $value )
-    {
         $desc = str_replace( "@$key@", $value, $desc );
-    }
 
     $templ[ 'email_body' ] = $desc;
     return $templ;

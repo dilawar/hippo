@@ -183,29 +183,39 @@ trait Booking
             {
                 $userInfo = getLoginInfo( whoAmI() );
                 $userEmail = $userInfo[ 'email' ];
-                $msg = initUserMsg( whoAmI() );
-                $msg .= "<p>Your booking request id $gid has been created. </p>";
-                $msg .= arrayToVerticalTableHTML( getRequestByGroupId( $gid )[0], 'request' );
-                sendHTMLEmail( $msg
-                    , "Your booking request (id-$gid) has been recieved"
-                    , $userEmail 
-                );
 
-                // Send email to hippo@lists.ncbs.res.in 
-                sendHTMLEmail( "<p>Details are following </p>" . $msg
-                    , "A new booking request has been created by $userEmail"
-                    , 'hippo@lists.ncbs.res.in'
-                );
+                $data = [ 'USER' => loginToText( whoAmI() ) ];
+                $rgroup = getRequestByGroupId( $gid );
+                $data[ 'BOOKING_REQUEST']= arrayToVerticalTableHTML($rgroup[0], 'request');
 
-                echo flashMessage( "Your booking request has been submitted." );
+                if( count( $rgroup ) > 0 )
+                {
+                    $data[ 'NUMBER_OF_REQUESTS'] = count( $rgroup );
+                    $subject = "Your booking request (id-$gid) has been recieved";
+                    $template = emailFromTemplate( 'BOOKING_NOTIFICATION', $data );
+
+                    sendHTMLEmail( $template['email_body'], $subject, $userEmail, $template['cc'] );
+                    echo flashMessage( "Your booking request has been submitted." );
+                }
+                else
+                {
+                    flashMessage( "Something went wrong. No event could be generated OR
+                        I could not register your booking request. 
+                        Please write to hippo@lists.ncbs.res.in if this is my mistake!" 
+                    );
+                }
             }
             else
-                echo printWarning( "Your request could not be submitted. Please notify the admin." );
+            {
+                echo printWarning( "Something went wrong. No event could be generated OR
+                    I could not register your booking request. 
+                    Please write to hippo@lists.ncbs.res.in if this is my mistake!" 
+                );
+            }
         }
-        else
+        else // $msg was on 'OK'
         {
             $msg1 = "There was an error in request. <br /> $msg";
-            // $msg1 .= arrayToVerticalTableHTML( $_POST, "request" );
             flashMessage( $msg1, 'warning' );
 
             // Send use back to page.
