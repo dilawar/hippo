@@ -5,6 +5,16 @@ global $symbDelete;
 echo userHTML( );
 
 $ref = $controller;
+if( $ref == 'user' )
+{
+    // make sure that he is either admin of JC.
+    if( ! isJCAdmin( whoAmI() ) )
+    {
+        echo flashMessage( "Only JC Admin can access this page." );
+        redirect( "$ref/home" );
+        exit;
+    }
+}
 
 // For Javascript.
 $faculty = getFaculty( );
