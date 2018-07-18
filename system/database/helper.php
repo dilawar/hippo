@@ -1150,7 +1150,7 @@ function getLoginIds( )
     *
     * @return Array.
  */
-function getUserInfo( string $user, bool $query_ldap = false ) : array
+function getUserInfo( string $user, bool $query_ldap = false, bool $search_everywhere = false ) : array
 {
     $res = getTableEntry( 'logins', 'login', array( 'login' => $user ) );
     $title = '';
@@ -1166,6 +1166,10 @@ function getUserInfo( string $user, bool $query_ldap = false ) : array
         foreach( $ldap as $key => $val )
             $res[ $key ] = $val;
 
+    // Still not foud, then search speakers.
+    if( ! $res && $search_everywhere )
+        $res = getTableEntry( 'speakers', 'email', [ 'email' => $user ] );
+
     // If title was found in database, overwrite ldap info.
     if( $title )
         $res[ 'title' ] = $title;
@@ -1173,9 +1177,9 @@ function getUserInfo( string $user, bool $query_ldap = false ) : array
     return $res;
 }
 
-function getLoginInfo( string $login_name, bool $query_ldap = false ) : array
+function getLoginInfo( string $login_name, bool $query_ldap = false, bool $search_everywhere = false ) : array
 {
-    return getUserInfo( $login_name, $query_ldap );
+    return getUserInfo( $login_name, $query_ldap, $search_everywhere );
 }
 
 function getLoginByEmail( $email )
@@ -1333,6 +1337,8 @@ function findAnyoneWithEmail( $email )
     $res = getTableEntry( 'faculty', 'email', array( 'email' => $email ) );
     if( ! $res )
         $res = getTableEntry( 'supervisors', 'email', array('email' => $email));
+    if( ! $res )
+        $res = getTableEntry( 'speakers', 'email', array('email' => $email));
     if( ! $res )
         $res = getTableEntry( 'logins', 'email', array('email' => $email));
     return $res;

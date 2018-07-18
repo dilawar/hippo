@@ -113,6 +113,7 @@ function admin_update_speaker( array $data ) : array
         // If there is not speaker id, then  create a new speaker.
         $sid = __get__( $data, 'id', -1 );
         $res = null;
+        $warning = '';
 
         if( $sid < 0 )  // Insert a new enetry.
         {
@@ -143,14 +144,22 @@ function admin_update_speaker( array $data ) : array
                     , $data
                 );
 
-                // Update all talks speaker entries.
-                $res = updateTable( 'talks', 'speaker_id', 'speaker'
-                    , array( 'speaker_id' => $sid, 'speaker' => speakerName( $sid ) )
-                );
+                // Update all talks related to  this speaker..
+                try 
+                {
+                    $sname =  speakerName( $sid );
+                    $res = updateTable( 'talks', 'speaker_id', 'speaker'
+                        , array( 'speaker_id' => $sid, 'speaker' => $sname )
+                    );
+                        
+                } catch (Exception $e) 
+                {
+                    $warning .= printWarning( "Failed to update some talks by this speaker " .
+                        $e->getMessage() );
+                }
 
                 if( $res )
                     $final['message'] .= printInfo( " .. updated related talks as well " );
-
             }
         }
 
@@ -165,7 +174,7 @@ function admin_update_speaker( array $data ) : array
         }
 
         if( $res )
-            $final['message'] .= 'Updated/Inserted speaker';
+            $final['message'] .= 'Updated/Inserted speaker. <br />' . $warning;
         else
             $final['error'] .= printInfo( "Failed to update/insert speaker" );
 
