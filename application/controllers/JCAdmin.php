@@ -1,13 +1,18 @@
 <?php
 require_once BASEPATH.'autoload.php';
 require_once BASEPATH.'extra/jc.php';
+require_once __DIR__.'/AdminSharedFunc.php';
 
 trait JCAdmin
 {
     // Views.
-    public function jc_admin_edit_upcoming_presentation( )
+    public function jc_admin_edit_upcoming_presentation( $id = '' )
     {
-        $this->load_user_view( 'user_jc_admin_edit_upcoming_presentation' );
+        $data = array();
+        if( $id )
+            $data['id'] = $id;
+
+        $this->load_user_view( 'user_jc_admin_edit_upcoming_presentation', $data );
     }
 
     public function jcadmin( string $arg='' )
@@ -18,6 +23,12 @@ trait JCAdmin
     public function jc_admin_reschedule_request( )
     {
         $this->load_user_view( "user_jc_admin_edit_jc_request" );
+    }
+
+    public function jc_admin_add_outside_speaker( )
+    {
+        // $this->load_user_view( "user_jc_admin_add_outside_speaker" );
+        $this->load_user_view( "admin_acad_manages_speakers" );
     }
 
     // Actions.
@@ -85,27 +96,26 @@ trait JCAdmin
         redirect( "user/jcadmin" );
     }
 
-    public function edit_jc_request( )
-    {
-        if( __get__( $_POST, 'id', null ) )
-        {
-            echo '<h1>Edit presentation request</h1>';
-            $editables = 'date';
-            if( __get__( $_POST, 'response', '' ) == 'Reschedule' )
-                $editables = 'date';
-
-            $entry = getTableEntry( 'jc_requests', 'id', $_POST );
-            echo '<form action="#" method="post" accept-charset="utf-8">';
-            echo dbTableToHTMLTable( 'jc_requests', $entry, $editables );
-            echo '</form>';
-
-            echo " <br /> <br /> ";
-            echo "<strong>Afer your are finished editing </strong>";
-            echo goBackToPageLink( 'user_jc_admin.php', 'Go Back' );
-        }
-        redirect( "user/jcadmin");
-        return;
-    }
+    // public function edit_jc_request( $id = '' )
+    // {
+        // if( __get__( $_POST, 'id', null ) )
+        // {
+            // echo '<h1>Edit presentation request</h1>';
+            // $editables = 'date';
+            // if( __get__( $_POST, 'response', '' ) == 'Reschedule' )
+                // $editables = 'date';
+//
+            // $entry = getTableEntry( 'jc_requests', 'id', $_POST );
+            // echo '<form action="#" method="post" accept-charset="utf-8">';
+            // echo dbTableToHTMLTable( 'jc_requests', $entry, $editables );
+            // echo '</form>';
+//
+            // echo " <br /> <br /> ";
+            // echo "<strong>Afer your are finished editing </strong>";
+        // }
+        // redirect( "user/jcadmin");
+        // return;
+    // }
 
     public function transfer_admin_role( )
     {
@@ -228,7 +238,7 @@ trait JCAdmin
             $someone = findAnyoneWithEmail( $presenter );
             if( ! $someone )
             {
-                $msg .= p( " Could not find <tt>$login</tt> anywhere. Lame!" );
+                $msg .= p( " Could not find <tt>$login ($someone)</tt> anywhere. Lame!" );
                 printWarning( $msg );
                 $anyError = true;
                 redirect( "user/jcadmin" );
@@ -356,6 +366,29 @@ trait JCAdmin
                 supported yet' );
         }
         redirect( 'user/jcadmin' );
+    }
+
+    public function manages_speakers_action( )
+    {
+        $res = admin_update_speaker( $_POST );
+
+        if( $res['error'] )
+            printWarning( $res['error'] );
+        else
+            flashMessage( $res['message'] );
+
+        redirect( "user/jcadmin");
+    }
+
+    public function jc_admin_edit_jc_submit( )
+    {
+        $res = updateTable( 'jc_presentations', 'id,jc_id,presenter,date'
+            , 'title,description,url,time,venue', $_POST
+        );
+        if( $res )
+            flashMessage( 'Successfully updated presentation entry' );
+
+        redirect('user/jcadmin');
     }
 }
 

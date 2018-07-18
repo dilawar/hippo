@@ -3,6 +3,7 @@ require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
 global $symbDelete;
+global $symbEdit;
 
 // If current user does not have the privileges, send her back to  home
 // page.
@@ -37,13 +38,15 @@ foreach( $jcIds as $jc_id )
 
 
 echo '<h1>Schedule JC presentations</h1>';
+
 // Manage presentation.
-echo printInfo( 'Assign a presentation manually.' );
+echo p( '<a href="'.site_url( 'user/jc_admin_add_outside_speaker') . '">
+    Click here</a> to add outside speaker. You must have his/her email id.' );
 
 $table = '<table>';
 $table .= '<tr>';
 $table .= '<td> <input class="datepicker" name="date" placeholder="pick date" /> </td>';
-$table .= '<td> <input name="presenter" placeholder="login id" /> </td>';
+$table .= '<td> <input name="presenter" placeholder="login id or email" /> </td>';
 $table .= "<td> $jcSelect </td>";
 $table .= '<td><button name="response" value="Assign Presentation">Assign</button></td>';
 $table .= '</tr></table>';
@@ -94,13 +97,19 @@ foreach( $upcomingJCs as $jcID => $upcomings )
     echo arrayToTHRow( $upcomings[0], 'show_info', $tofilter );
     foreach( $upcomings as $i => $upcoming )
     {
+        $jid = $upcoming['id'];
         echo '<tr>';
         echo '<form method="post" action="'.site_url('user/jc_admin_submit') .'">';
         echo arrayToRowHTML( $upcoming, 'show_info', $tofilter,  false, false );
-        echo '<td> <button name="response" value="Remove Presentation"
+        echo '<td><button name="response" value="Remove Presentation"
             title="Remove this schedule" >' . $symbDelete . '</button></td>';
         echo "<input type='hidden' name='id' value='" . $upcoming['id'] . "' />";
         echo '</form>';
+        echo '<form action="'.site_url("user/jc_admin_edit_upcoming_presentation/$jid") .'" method="post">
+            <td>
+            <button name="response" title="Edit this entry" value="Edit">' . $symbEdit . '</button>
+            </td>
+            </form>';
         echo '</tr>';
     }
 }

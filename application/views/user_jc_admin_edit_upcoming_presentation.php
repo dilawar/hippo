@@ -2,14 +2,6 @@
 require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
-//if( ! isJCAdmin( $_SESSION[ 'user' ] ) )
-//{
-//    echo printWarning( "You do not have permission to access this page." );
-//    goToPage( 'user.php' );
-//    exit;
-//}
-
-
 echo '<h1>Edit presentation entry</h1>';
 
 echo printInfo( "
@@ -35,6 +27,12 @@ if( __get__( $_POST, 'response', '' ) == 'Reschdule' )
     $editables = 'date';
 }
 
+// If only id of the jc is given, create $_POST array by fetching the details.
+if( $id )
+{
+    echo p("We are given id of JC entry $id." );
+    $_POST = getTableEntry( 'jc_presentations', 'id', [ 'id' => $id ] );
+}
 
 // get default parameters for this JC.
 $jcInfo = getJCInfo( $_POST['jc_id'] );
@@ -50,25 +48,12 @@ if( __get__($_POST, 'time', '00:00:00') == "00:00:00" )
     $_POST['time'] = $jcInfo['time'];
 }
 
-echo '<form action="" method="post" accept-charset="utf-8">';
+echo '<form action="'. site_url( 'user/jc_admin_edit_jc_submit') . '" 
+    method="post" accept-charset="utf-8">';
 echo dbTableToHTMLTable( 'jc_presentations', $_POST, $editables );
 echo '</form>';
 
-if( __get__( $_POST, 'response', '' ) == 'submit' )
-{
-
-    $res = updateTable( 'jc_presentations', 'id,jc_id,presenter,date'
-        , 'title,description,url,time,venue', $_POST
-    );
-
-    if( $res )
-    {
-        echo printInfo( 'Successfully updated presentation entry' );
-    }
-}
-
-
 echo " <br /> <br /> ";
-echo goBackToPageLink( 'user/jcadmin', 'Done editing, Go Back' );
+echo goBackToPageLink( 'user/jcadmin', 'Go Back' );
 
 ?>

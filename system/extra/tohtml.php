@@ -1612,7 +1612,7 @@ function awsToHTML( $aws, $with_picture = false )
 
 }
 
-function speakerName( $speaker, $with_email = false )
+function speakerName( $speaker, $with_email = false ) : string
 {
     // NOTE: Do not use is_int here.
     if( is_numeric( $speaker ) )                        // Got an id.
@@ -2453,7 +2453,7 @@ function jcToHTML( $jc, $sticker = false )
     {
         $html = '<h3>' . $jc['jc_id'] . ' | ' . $jc['title'] . '</h3>';
         $html .= humanReadableDate( $jc['date'] ) . '<br/>';
-        $presenter = getLoginInfo( $jc[ 'presenter' ], true );
+        $presenter = getLoginInfo( $jc[ 'presenter' ], true, true);
         $pName = arrayToName( $presenter );
 
         $html .= "<strong> $pName </strong>";
@@ -2463,7 +2463,7 @@ function jcToHTML( $jc, $sticker = false )
     {
         $html = $jc['jc_id'] . ' | ' . $jc['title'] ;
         $html .= ' <br />';
-        $presenter = getLoginInfo( $jc[ 'presenter' ], true );
+        $presenter = getLoginInfo( $jc[ 'presenter' ], true, true );
         $pName = arrayToName( $presenter );
         $html .= humanReadableDate( $jc['date'] );
         $html .= " <br /> <strong> $pName </strong>";
