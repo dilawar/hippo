@@ -46,8 +46,8 @@ else
     $editable = array( 'id', 'recipients', 'cc', 'when_to_send', 'description' );
 
 echo dbTableToHTMLTable( 'email_templates', $defaults, $editable, $todo);
-echo '<button onclick="AreYouSure( this, \'DeleteTemplate\' )" 
-    name="response" title="Delete this entry" value="delete">' . $symbDelete 
+echo '<button onclick="AreYouSure( this, \'delete\' )" 
+    name="response" title="Delete this entry">' . $symbDelete 
     . '</button>';
 echo "</form>";
 
