@@ -28,10 +28,13 @@ if( __get__( $_POST, 'response', '' ) == 'Reschdule' )
 }
 
 // If only id of the jc is given, create $_POST array by fetching the details.
-if( $id )
+if( isset($id) )
 {
-    echo p("We are given id of JC entry $id." );
-    $_POST = getTableEntry( 'jc_presentations', 'id', [ 'id' => $id ] );
+    if($id)
+    {
+        echo p("We are given id of JC entry $id." );
+        $_POST = getTableEntry( 'jc_presentations', 'id', [ 'id' => $id ] );
+    }
 }
 
 // get default parameters for this JC.
