@@ -122,14 +122,14 @@ function sendHTMLEmail( string $msg, string $sub, string $to, string $cclist = '
 
     if( ! array_key_exists( 'send_emails', $conf['global' ] ) )
     {
-        echo printErrorSevere( "Email service has not been configured." );
+        echo printInfo( "Email service has not been configured." );
         error_log( "Mail service is not configured" );
         return false;
     }
 
     if( $conf['global']['send_emails' ] == false )
     {
-        echo alertUser( "<br>Sending emails has been disabled in this installation" );
+        echo printInfo( "<br>Sending emails has been disabled in this installation" );
         return false;
     }
 

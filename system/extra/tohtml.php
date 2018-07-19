@@ -1951,7 +1951,7 @@ function repeatPatternTable( $className )
     *
     * @return
  */
-function emailFromTemplate( string $templateName, array &$options ) : array
+function emailFromTemplate( string $templateName, array $options ) : array
 {
     $templ = getEmailTemplateById( $templateName );
     $desc = $templ['description'];

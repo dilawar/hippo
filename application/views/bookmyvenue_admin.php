@@ -1,5 +1,4 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
 
 global $symbReview;
@@ -101,7 +100,7 @@ foreach( $requests as $r )
         {
             $rid = $r['gid'] . '-' . $r['rid'];
             $msg = p("Following request has expired since no one has acted on it." );
-            $msg .= arrayToTableHTML( $r );
+            $msg .= arrayToTableHTML( $r, 'info' );
             $subject = "Request id  $rid is expired.";
             $to = mailto( $r['created_by'] );
             $cclist = 'hippo@lists.ncbs.res.in';

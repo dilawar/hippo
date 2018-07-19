@@ -1,17 +1,15 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
 
 // Get the referece page. These tasks are shared by both ADMIN_ACAD and
 // ADMINBMV. Controller must set controller parameter.
 $ref = $controller;
-
 echo userHTML( );
 
-$symbEdit = ' <i class="fa fa-pencil fa-2x"></i>';
-$symbDelete = ' <i class="fa fa-trash fa-2x"></i>';
-$symbCalendar = ' <i class="fa fa-calendar fa-2x"></i>';
-$symbCancel = ' <i class="fa fa-trash fa-2x"></i>';
+global $symbEdit;
+global $symbDelete;
+global $symbCalendar;
+global $symbCancel;
 
 
 // Logic for POST requests.
