@@ -137,7 +137,7 @@ echo '</br>';
  */
 if( count( $requests ) > 0 )
 {
-    echo "<h2>Pending approval </h2>";
+    echo "<h2>Pending approval</h2>";
     $count = 0;
     $eventWidth = 150;
     $maxEventsInLine = intval( 900 / $eventWidth );
