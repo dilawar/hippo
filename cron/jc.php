@@ -24,14 +24,16 @@ function jc_cron( )
 
                 $title = getPresentationTitle( $presentation );
                 $day = date( 'l', strtotime( $jcInfo[ 'day' ] ) );
-                $presenter = loginToText( $presentation[ 'presenter' ], false );
+
+                $presenter = getLoginInfo( $presenter[ 'presenter' ], true, true );
+                $presenter = arrayToName( $presenter );
 
                 $macro = array(
                     'VENUE' => venueSummary( $jcInfo[ 'venue' ] )
                     , 'TITLE' => $title
                     , 'DATE' => humanReadableDate( $presentation['date'] )
                     , 'TIME' => humanReadableTime( $jcInfo[ 'time' ] )
-                    , 'PRESENTER' => loginToHTML( $presentation[ 'presenter' ] )
+                    , 'PRESENTER' => $presenter
                     , 'DESCRIPTION' => presentationToHTML( $presentation )
                     , 'TABLE_OF_JC_COORDINATORS' => $tableOfJCCoords
                 );
