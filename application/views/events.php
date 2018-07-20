@@ -7,7 +7,6 @@ $default = array( 'date' => $today );
 if( __get__($_GET, 'date', '' ) )
     $default[ 'date' ] = $_GET[  'date' ];
 
-
 $form = ' <form method="get" action="">
     <table class="show_info">
         <tr>
