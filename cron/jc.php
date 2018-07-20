@@ -25,7 +25,7 @@ function jc_cron( )
                 $title = getPresentationTitle( $presentation );
                 $day = date( 'l', strtotime( $jcInfo[ 'day' ] ) );
 
-                $presenter = getLoginInfo( $presenter[ 'presenter' ], true, true );
+                $presenter = getLoginInfo( $presentation[ 'presenter' ], true, true );
                 $presenter = arrayToName( $presenter );
 
                 $macro = array(
