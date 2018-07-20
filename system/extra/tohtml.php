@@ -325,7 +325,8 @@ function eventToShortHTML( $event )
 {
     $startT = date( 'H:i', strtotime( $event[ 'start_time' ] ) );
     $endT = date( 'H:i', strtotime( $event[ 'end_time' ] ) );
-    $html = '<tt>' .  __get__( $event, 'title', '' ) . ' (' . $event['class'] . ')</tt>';
+    $html = colored(  __get__( $event, 'title', '' ), 'FireBrick' ) . 
+        ' (' . $event['class'] . ')</tt>';
     $html .= '<br>' . $startT . ' to ' . $endT;
     $html .= ' </tt> @ <strong>' . $event['venue'] . '</strong>, ';
     $html .= '</br><small>Booked by ' . mailto($event['created_by']) . '</small><br/>';
@@ -336,13 +337,13 @@ function requestToShortHTML( $request )
 {
     $startT = date( 'H:i', strtotime( $request[ 'start_time' ] ) );
     $endT = date( 'H:i', strtotime( $request[ 'end_time' ] ) );
-    $html = '<tt>' .  __get__( $request, 'title', '' ) . ' (' . $request['class'] . ')</tt>';
+    $html =  colored( __get__( $request, 'title', '' ), 'FireBrick') 
+        . ' (' . $request['class'] . ')';
+    $html .= '<tt>(' . $request['gid'] . ')</tt>';
     $html .= '<br>' . $startT . ' to ' . $endT;
     $html .= ' </tt> @ <strong>' . $request['venue'] . '</strong>, ';
-    $html .= '</br><small>Requested by ' . mailto($request['created_by']) . '</small>';
-    $html .= '<br><small>Created on: ' . humanReadableDate( $request['timestamp']) .
-                    ' ' . humanReadableTime( $request['timestamp'] ) .
-                    '</small><br/>';
+    $html .= '<br /><small>Requested by ' . mailto($request['created_by']) . '</small>';
+    $html .= '<br /><small>Created on: ' . humanReadableDate( $request['timestamp']);
     return $html;
 }
 

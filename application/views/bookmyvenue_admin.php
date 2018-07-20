@@ -70,30 +70,32 @@ echo userHTML( );
 echo bookmyVenueAdminTaskTable( );
 
 echo '<h1>Pending requests</h1>';
-$requests = getPendingRequestsGroupedByGID( );
-echo p("Total " . count($requests) . " requests are pending." );
+$reqGrouped = getPendingRequestsGroupedByGID( );
+echo p("Total " . count($reqGrouped) . " requests are pending." );
 
-
-$html = '<div style="font-size:small">';
+$html = '<div>';
 $html .= '<input type="text" id="filter_requests" placeholder="Type to filter">';
 $html .= '<table id="pending_requests" class="info sortable exportable">';
-
 $tohide = 'last_modified_on,status,modified_by,timestamp,url,external_id,gid,rid';
-foreach( $requests as &$r )
-{
-    $r['metadata'] = '<small>(' . $r['gid'].'.'.$r['rid'] .')'
-        . ' <br />' . $r['timestamp'] 
-        . ' <br />' . $r['status']
-        . '</small>';
 
+// Using reference is missing the last event. Surprising! So we create a new
+// array and add.
+$requests = array();
+foreach( $reqGrouped as $r )
+{
+    $r['metadata'] = '(' . $r['gid'].'.'.$r['rid'] .')'
+        . ' <br />' . $r['timestamp'] 
+        . ' <br />' . $r['status'];
+    $requests[] = $r;
 }
 
 $html .= arrayToTHRow( $requests[0], 'request', $tohide );
 foreach( $requests as $r )
 {
     // If request date has passed, ignore it.
-    if( strtotime( $r[ 'date' ] ) < strtotime( '-1 day' ) )
+    if( strtotime( $r[ 'date' ] ) < strtotime( '-2 day' ) )
     {
+        echo $r['gid'] . ',';
         // TODO: Do not show requests which are more than 1 days old. Their status
         // remains PENDING all the time. Dont know what to do such
         // unapproved/expired requests.
@@ -111,13 +113,16 @@ foreach( $requests as $r )
         continue;
     }
 
-    // If a request is coming from talk, use different background.
+    // If a request is coming from talk or in near future
     $color = '';
-    if( __substr__('talks.', __get__($r, 'external_id','')))
+    if( strtotime($r['date']) <= strtotime( 'tomorrow') + 3600*24*5 )
+        $color = 'lightblue';
+
+    // If it is talk use yellow.
+    if( __substr__('talks.', __get__($r, 'external_id',''))) 
         $color = 'yellow';
 
     $html .= "<tr style=\"background-color:$color\">";
-    // $html .= '<td>';
     $html .= '<form action="'.site_url('adminbmv/review'). '" method="post">';
     // Hide some buttons to send information to next page.
     $html .= '<input type="hidden" name="gid" value="' . $r['gid'] . '" />';
@@ -126,7 +131,6 @@ foreach( $requests as $r )
     $html .= '<td style="background:white"><button name="response" 
             value="Review" title="Review request"> ' .  $symbReview . '</button>';
     $html .= '</form>';
-    // $html .= '</td>';
 
     // Another form to quickly approve. Visible only if there are not many
     // subrequests.
