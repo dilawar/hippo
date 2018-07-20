@@ -70,10 +70,12 @@ echo userHTML( );
 echo bookmyVenueAdminTaskTable( );
 
 echo '<h1>Pending requests</h1>';
-
 $requests = getPendingRequestsGroupedByGID( );
+echo p("Total " . count($requests) . " requests are pending." );
+
 
 $html = '<div style="font-size:small">';
+$html .= '<input type="text" id="filter_requests" placeholder="Type to filter">';
 $html .= '<table id="pending_requests" class="info sortable exportable">';
 
 $tohide = 'last_modified_on,status,modified_by,timestamp,url,external_id,gid,rid';
@@ -149,10 +151,7 @@ echo goBackToPageLink( "adminbmv/home", "Go home" );
 echo '<h1>Upcoming (approved) events in next 4 weeks </h1>';
 
 // Let admin search.
-echo '<form action="" method="post" accept-charset="utf-8">
-    <input name="query" value="" placeholder="Search using creator or title"></input>
-    <button type="submit" name="response" value="search">Search</button>
-</form>';
+echo '<input id="filter_events" placeholder="Type to filter"></input>';
 
 if( __get__( $_POST, 'response', '' ) == 'search' )
 {
@@ -219,4 +218,27 @@ echo goBackToPageLink( "adminbmv/home", "Go home" );
 <script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));
+</script>
+
+<script type="text/javascript" charset="utf-8">
+var $rowsRequest = $('#pending_requests tr');
+$('#filter_requests').keyup(function() {
+    var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+
+    $rowsRequest.show().filter(function() {
+        var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+        return !~text.indexOf(val);
+    }).hide();
+});
+</script>
+
+<script type="text/javascript" charset="utf-8">
+var $rowsEvent = $('#approved_events tr');
+$('#filter_events').keyup(function() {
+    var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+    $rowsEvent.show().filter(function() {
+        var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+        return !~text.indexOf(val);
+    }).hide();
+});
 </script>
