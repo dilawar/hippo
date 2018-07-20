@@ -798,6 +798,23 @@ function venuesToHTMLCheck( $groupedVenues, $grouped )
     return $html;
 }
 
+function venueSummaryHTML( $venue ) : string
+{
+    if( is_string( $venue ) )
+        $venue = getVenueById( $venue );
+
+    $vname = trim($venue['name']);
+
+    $html = '<table style="width:100%;table-layout:fixed;font-size:small"><tr>';
+    $html .= "<td colspan=2>
+        <font style='font-variant:small-caps;color:blue;font-size:x-large'>$vname</font>
+        </td><td><tt>" . $venue[ 'type' ] . '</tt> </td><td>' .
+        $venue['building_name'] . '</td><td>' . $venue['location'] . '</td>'
+        ;
+    $html .= '</tr></table>';
+    return $html;
+}
+
 function venueSummary( $venue )
 {
     if( is_string( $venue ) )

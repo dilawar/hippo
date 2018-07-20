@@ -219,7 +219,6 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 
     $venues = getVenues( $sortby = 'name' );
 
-
     $table = '<table class="info">';
     foreach ($venues as $venue)
     {
@@ -252,7 +251,6 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
             $skipMsg .= " No projector. ";
             $skip = true;
         }
-
 
         // Similarly, openair.
         if( $_POST[ 'openair' ] == 'YES' && ! ($venue[ 'type' ] == 'OPEN AIR') )
@@ -388,7 +386,7 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
             name="end_time" value="' . $defaults[ 'end_time' ] . '" >';
         $block .= '<input type="hidden"
             name="venue" value="' . $venue[ 'id' ] . '" >';
-        $venueT = venueSummary( $venue );
+        $venueT = venueSummaryHTML( $venue );
         $block .= "<td>$venueT</td>";
         $block .= '<td> <button type="submit" title="Book this venue">Book</button></td>';
         $block .= '</tr></div>';
