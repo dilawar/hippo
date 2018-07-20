@@ -3470,10 +3470,6 @@ function getSchedulingRequests( string $user ) : array
 {
     $today = dbDate( 'today' );
 
-    executeQuery( "UPDATE aws_scheduling_request SET status='CANCELLED'
-                WHERE first_preference < '$today' AND second_preference < '$today'"
-        );
-
     $res = getTableEntries( 'aws_scheduling_request', 'id'
         ,  "(first_preference > '$today' OR second_preference > '$today')
                 AND speaker='$user' AND status!='CANCELLED' "
