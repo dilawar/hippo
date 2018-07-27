@@ -54,9 +54,11 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( "admin_acad_email_and_docs" );
     }
 
-    public function enrollments()
+    public function enrollments( $year = null, $semester = null )
     {
-        $this->load_adminacad_view( 'admin_acad_manages_enrollments' );
+        $url = 'admin_acad_manages_enrollments';
+        $data = ['year' => $year, 'semester' => $semester ];
+        $this->load_adminacad_view( $url, $data );
     }
 
     public function grades( )
@@ -397,7 +399,9 @@ class Adminacad extends CI_Controller
         else
             printWarning( "Failed to execute your wish!" );
 
-        redirect( 'adminacad/enrollments' );
+        $year = $_POST['year'];
+        $semester = $_POST['semester'];
+        redirect( "adminacad/enrollments/$year/$semester" );
     }
 
     public function quickenroll( )
@@ -458,7 +462,9 @@ class Adminacad extends CI_Controller
                 echo printWarning( "Failed to enroll $login to $courseId." );
         }
 
-        redirect( 'adminacad/enrollments' );
+        $year = $data['year'];
+        $semester = $data['semester'];
+        redirect( "adminacad/enrollments/$year/$semester" );
     }
 
     // Scheduling request.
