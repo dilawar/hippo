@@ -1612,6 +1612,11 @@ function splitAtCommonDelimeters( $text, $ext = '')
     return $res;
 }
 
+function splitAt( string $text, string $delim ) : array
+{
+    return explode( $delim, $text );
+}
+
 function removeAWSSpeakerFromList( string $speaker )
 {
     $data = array( 'eligible_for_aws' => 'NO', 'login' => $speaker );

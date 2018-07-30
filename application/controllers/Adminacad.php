@@ -405,21 +405,21 @@ class Adminacad extends CI_Controller
         $enrolls = explode( PHP_EOL, $_POST[ 'enrollments' ] );
         foreach( $enrolls as $i => $en )
         {
-            $l = splitAtCommonDelimeters( $en, ':' );
-
+            $l = splitAt( $en, ':' );
             $email = $l[0];
+
+            // Forgot AUDIT/CREDIT
             if( count( $l ) < 2 )
             {
-                printWarning( "Partial information in <tt>$en</tt>. Missing CREDIT/AUDIT info. 
-                    Assuming <tt>CREDIT</tt>." 
+                printWarning( "Partial information in <tt>$en</tt>.
+                    Missing CREDIT/AUDIT info. Assuming <tt>CREDIT</tt>." 
                     );
                 $etype = 'CREDIT';
             }
             else
                 $etype = $l[1];
 
-
-            if( ! in_array( $etype, array( 'AUDIT', 'CREDIT' ) ) )
+            if( ! in_array( $etype, array( 'AUDIT', 'CREDIT', 'DROPPED' ) ) )
             {
                 echo printWarning( "Unknown registration type: '$etype'. Ignoring ..." );
                 continue;
