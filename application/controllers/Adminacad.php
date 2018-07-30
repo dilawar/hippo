@@ -54,11 +54,15 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( "admin_acad_email_and_docs" );
     }
 
-    public function enrollments( $year = null, $semester = null )
+    public function enrollments( $year = '', $semester = '' )
     {
-        $url = 'admin_acad_manages_enrollments';
-        $data = ['year' => $year, 'semester' => $semester ];
-        $this->load_adminacad_view( $url, $data );
+        $data = array();
+        if( $year )
+            $data['year'] = $year;
+        if( $semester )
+            $data['semester'] = $semester;
+
+        $this->load_adminacad_view( 'admin_acad_manages_enrollments', $data );
     }
 
     public function grades( )
@@ -411,19 +415,13 @@ class Adminacad extends CI_Controller
         $warnMsg = '';
         foreach( $enrolls as $i => $en )
         {
-            $l = splitAtCommonDelimeters( $en, ':' );
-
+            $l = splitAt( $en, ':' );
             $email = $l[0];
-            if( count( $l ) < 2 )
-            {
-                printWarning( "Partial information in <tt>$en</tt>. Missing CREDIT/AUDIT info. 
-                    Assuming <tt>CREDIT</tt>." 
-                    );
-                $etype = 'CREDIT';
-            }
-            else
-                $etype = $l[1];
 
+            // By default, its credit.
+            $etype = 'CREDIT';
+            if( count( $l ) == 2 )
+                $etype = $l[1];
 
             if( ! in_array( $etype, array( 'AUDIT', 'CREDIT' ) ) )
             {
@@ -458,6 +456,9 @@ class Adminacad extends CI_Controller
                 $warnMsg .= p( "failed to update table. Error was " . $e->getMessage( ) );
                 continue;
             }
+
+            if( $warn )
+                echo printWarning( "System generated following warning: <br /> $warn");
 
             if( $res )
                 flashMessage( "Successfully enrolled $login to $courseId with type $etype." );
