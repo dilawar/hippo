@@ -448,7 +448,7 @@ class Adminacad extends CI_Controller
             $res = null;
             try {
                 $res = insertOrUpdateTable( 'course_registration'
-                    , 'student_id,course_id,year,semester'
+                    , 'student_id,course_id,year,semester,type,registered_on'
                     , 'student_id,course_id,status,type,year,semester,registered_on,last_modified_on'
                     , $data
                 );
@@ -464,7 +464,9 @@ class Adminacad extends CI_Controller
                 flashMessage( "Successfully enrolled $login to $courseId with type $etype." );
             else
             {
-                echo printWarning( "Failed to enroll $email/$login to $courseId." );
+                $msg =  p( "Failed to enroll $email to $courseId with type $etype." );
+                $msg .= p( json_encode( $data ) );
+                printWarning( $msg );
                 if( $warnMsg )
                 {
                     $warnMsg = p( 'Following was reported by system.' );
