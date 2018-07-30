@@ -6,11 +6,13 @@ $ref = 'adminacad';
 if(isset($controller))
     $ref = $controller;
 
-$year = __get__( $_GET, 'year', getCurrentYear( ) );
-$sem = __get__( $_GET, 'semester', getCurrentSemester( ) );
+if(! isset($year))
+    $year = __get__( $_GET, 'year', getCurrentYear( ) );
+if(! isset($semester))
+    $semester = __get__( $_GET, 'semester', getCurrentSemester( ) );
 
 $springChecked = ''; $autumnChecked = '';
-if( $sem == 'SPRING' )
+if( $semester == 'SPRING' )
 {
     $springChecked = 'checked';
     $autumnChecked = '';
@@ -22,8 +24,8 @@ else
 }
 
 echo '<div class="important">';
-echo "<strong>Selected semester $sem/$year.</strong>";
-echo selectYearSemesterForm( $year, $sem );
+echo "<strong>Selected semester $semester/$year.</strong>";
+echo selectYearSemesterForm( $year, $semester );
 echo '</div>';
 
 
@@ -35,7 +37,7 @@ $taskSelected = __get__( $_POST, 'task', '' );
 
 $runningCourses = array();
 
-foreach( getSemesterCourses( $year, $sem ) as $c )
+foreach( getSemesterCourses( $year, $semester ) as $c )
     $runningCourses[ $c[ 'course_id' ] ] = $c;
 
 $runningCoursesSelect = arrayToSelectList(
@@ -67,7 +69,7 @@ $taskSelect = arrayToSelectList( 'task'
 
 // Handle request here.
 $taskSelected = __get__( $_POST, 'task', '' );
-$_POST[ 'semester' ] = $sem;
+$_POST[ 'semester' ] = $semester;
 $_POST[ 'year' ] = $year;
 
 $whereExpr = '';
@@ -77,9 +79,9 @@ if( __get__( $_POST, 'course_id', '' ) )
 $enrollments = getTableEntries( 'course_registration' ,'student_id', $whereExpr);
 
 // Show the quick action and enrollment information here.
-echo "<h1>Enrollments for $sem/$year</h1>";
+echo "<h1>Enrollments for $semester/$year</h1>";
 $enrolls = getTableEntries( 'course_registration', 'course_id, student_id'
-        , "status='VALID' AND year='$year' AND semester='$sem'"
+        , "status='VALID' AND year='$year' AND semester='$semester'"
     );
 $courseMap = array( );
 foreach( $enrolls as $e )
@@ -112,7 +114,7 @@ foreach( $courseMap as $cid => $enrolls )
     $form .= $table;
     $form .= '<input type="hidden" name="course_id" value="' . $cid . '" />';
     $form .= '<input type="hidden" name="year" value="' . $year . '" />';
-    $form .= '<input type="hidden" name="semester" value="' . $sem . '" />';
+    $form .= '<input type="hidden" name="semester" value="' . $semester . '" />';
     $form .= '</form>';
     $form .= '</div>';
     echo $form;
@@ -142,7 +144,7 @@ foreach( $courseMap as $cid => $enrolls )
 
         $dropForm .= '<input type="hidden" name="course_id" id="" value="' . $cid . '" />
                 <input type="hidden" name="year" value="' . $year . '" />
-                <input type="hidden" name="semester" value="' . $sem . '" />
+                <input type="hidden" name="semester" value="' . $semester . '" />
                 <input type="hidden" name="student_id" value="' . $student . '" />
             </form>';
 
