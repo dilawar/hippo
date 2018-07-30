@@ -13,10 +13,16 @@ $semesterGet = __get__( $_GET, 'semester', '' );
 
 // Otherwise use the controller version. This logic is bit contrived but one can
 // follow it.
-if( ! $yearGet && ! isset( $year ) )
-    $year = getCurrentYear( );
-if( ! $semesterGet && ! isset( $semester ) )
-    $semester = getCurrentSemester( );
+if( isset( $_GET['year'] ) )
+    $semester = $_GET['semester'];
+else if( ! isset($year) )
+    $year = getCurrentYear();
+
+if( isset( $_GET['semester'] ) )
+    $semester = $_GET['semester'];
+else if( ! isset($semester) )
+    $semester = getCurrentSemester();
+
 
 
 $springChecked = ''; $autumnChecked = '';
