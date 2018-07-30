@@ -407,6 +407,8 @@ class Adminacad extends CI_Controller
     public function quickenroll( )
     {
         $enrolls = explode( PHP_EOL, $_POST[ 'enrollments' ] );
+
+        $warnMsg = '';
         foreach( $enrolls as $i => $en )
         {
             $l = splitAtCommonDelimeters( $en, ':' );
@@ -445,6 +447,7 @@ class Adminacad extends CI_Controller
             $courseId = $_POST[ 'course_id' ];
             $data = array_merge( $_POST, $data );
 
+            $res = null;
             try {
                 $res = insertOrUpdateTable( 'course_registration'
                     , 'student_id,course_id,year,semester'
@@ -452,14 +455,21 @@ class Adminacad extends CI_Controller
                     , $data
                 );
             } catch (Exception $e) {
-                echo printWarning( "failed to update table. Error was " . $e->getMessage( ) );
+                $warnMsg .= p( "failed to update table. Error was " . $e->getMessage( ) );
                 continue;
             }
 
             if( $res )
                 flashMessage( "Successfully enrolled $login to $courseId with type $etype." );
             else
-                echo printWarning( "Failed to enroll $login to $courseId." );
+            {
+                echo printWarning( "Failed to enroll $email/$login to $courseId." );
+                if( $warnMsg )
+                {
+                    $warnMsg = p( 'Following was reported by system.' );
+                    echo printWarning( $warnMsg );
+                }
+            }
         }
 
         $year = $data['year'];

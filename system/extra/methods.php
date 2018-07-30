@@ -1687,3 +1687,23 @@ function findIncompleteEntries( array $arr, string $keys ) : string
     }
     return implode( ',', $missing );
 }
+
+function generateAWSAbstractUsingAI() : string
+{
+    hippo_shell_exec( "cd " . FCPATH . "/hippo-ai && TERM=xterm make -s", $out, $err );
+
+    if( $out )
+    {
+        $txtArr = explode( '.', $out);
+        $txtArr = array_slice( $txtArr, 1, count($txtArr)-2 );
+        $out = implode( '.', $txtArr);
+    }
+    else
+        $out = $err;
+
+    // Now prepare a good looking HTML.
+    $out = html_purify( $out );
+
+    return $out;
+}
+

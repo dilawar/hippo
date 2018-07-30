@@ -1502,11 +1502,16 @@ function awsToHTMLLarge( $aws, $with_picture = true )
     $tcm = array_filter( $tcm );
     $title = $aws[ 'title' ];
     if( strlen( $title ) == 0 )
+    {
         $title = "Not disclosed yet.";
+    }
 
     $abstract = $aws[ 'abstract' ];
     if( strlen( $abstract ) == 0 )
+    {
         $abstract = "Not disclosed yet!";
+        $abstract =  generateAWSAbstractUsingAI( );
+    }
 
     // Adding css inline screw up the email view. Dont do it.
     $user = $aws[ 'speaker' ];
