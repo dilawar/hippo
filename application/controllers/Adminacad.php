@@ -54,7 +54,7 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( "admin_acad_email_and_docs" );
     }
 
-    public function enrollments( $year = null, $semester = null )
+    public function enrollments( $year = '', $semester = '' )
     {
         $data = array();
         if( $year )
@@ -409,20 +409,16 @@ class Adminacad extends CI_Controller
     public function quickenroll( )
     {
         $enrolls = explode( PHP_EOL, $_POST[ 'enrollments' ] );
+
+        $warn = '';
         foreach( $enrolls as $i => $en )
         {
             $l = splitAt( $en, ':' );
             $email = $l[0];
 
-            // Forgot AUDIT/CREDIT
-            if( count( $l ) < 2 )
-            {
-                printWarning( "Partial information in <tt>$en</tt>.
-                    Missing CREDIT/AUDIT info. Assuming <tt>CREDIT</tt>." 
-                    );
-                $etype = 'CREDIT';
-            }
-            else
+            // By default, its credit.
+            $etype = 'CREDIT';
+            if( count( $l ) == 2 )
                 $etype = $l[1];
 
             if( ! in_array( $etype, array( 'AUDIT', 'CREDIT' ) ) )
@@ -454,14 +450,18 @@ class Adminacad extends CI_Controller
                     , $data
                 );
             } catch (Exception $e) {
-                echo printWarning( "failed to update table. Error was " . $e->getMessage( ) );
+                $warn .= p( "failed to update table. Error was " . $e->getMessage( ) );
                 continue;
             }
+
+            if( $warn )
+                echo printWarning( "System generated following warning: <br /> $warn");
 
             if( $res )
                 flashMessage( "Successfully enrolled $login to $courseId with type $etype." );
             else
                 echo printWarning( "Failed to enroll $login to $courseId." );
+
         }
 
         $year = $_POST['year'];

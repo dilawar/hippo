@@ -6,10 +6,18 @@ $ref = 'adminacad';
 if(isset($controller))
     $ref = $controller;
 
-if(! isset($year))
-    $year = __get__( $_GET, 'year', getCurrentYear( ) );
-if(! isset($semester))
-    $semester = __get__( $_GET, 'semester', getCurrentSemester( ) );
+// If controller has set the year and semester and _GET also
+// have year and semester then _GET gets the priority.
+$yearGet = __get__( $_GET, 'year', '' );
+$semesterGet = __get__( $_GET, 'semester', '' );
+
+// Otherwise use the controller version. This logic is bit contrived but one can
+// follow it.
+if( ! $yearGet && ! isset( $year ) )
+    $year = getCurrentYear( );
+if( ! $semesterGet && ! isset( $semester ) )
+    $semester = getCurrentSemester( );
+
 
 $springChecked = ''; $autumnChecked = '';
 if( $semester == 'SPRING' )
