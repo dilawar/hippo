@@ -16,4 +16,5 @@ function test_ldap()
     var_dump( getUserInfoFromLdap( 'enakshi' ) );
     var_dump( getUserInfoFromLdap( 'dpragati' ) );
     var_dump( getUserInfoFromLdap( 'praghu' ) );
+    var_dump( getUserInfoFromLdap( 'anirudhcs' ) );
 }
