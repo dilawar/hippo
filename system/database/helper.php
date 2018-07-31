@@ -328,6 +328,30 @@ function getRequestOfUser( $userid, $status = 'PENDING' )
     return fetchEntries( $stmt );
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Return request grouped by gid and count as well.
+    *
+    * @Param $userid
+    * @Param $status
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getRequestOfUserGroupedAndWithCount( $userid, $status = 'PENDING' )
+{
+    $hippoDB = initDB();;
+    $stmt = $hippoDB->prepare(
+        'SELECT *, COUNT(*) AS total_events FROM bookmyvenue_requests WHERE created_by=:created_by
+        AND status=:status AND date >= NOW() - INTERVAL 2 DAY
+        GROUP BY gid ORDER BY date,start_time' );
+    $stmt->bindValue( ':created_by', $userid );
+    $stmt->bindValue( ':status', $status );
+    $stmt->execute( );
+    return fetchEntries( $stmt );
+}
+
+
 function getEventsOfUser( $userid, $from = 'today', $status = 'VALID' )
 {
     $hippoDB = initDB();;
