@@ -42,6 +42,26 @@ function extract_emails_from( $text )
 
 /* --------------------------------------------------------------------------*/
 /**
+    * @Synopsis  Find difference between two days in months.
+    *
+    * @Param $dateA
+    * @Param $dateB
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function dateDiffInMonths( $dateA, $dateB ) : int
+{
+    $dateA = new DateTime( dbDate( $dateA ) );
+    $dateB = new DateTime( dbDate( $dateB ) );
+    $interval = $dateA->diff($dateB);
+    $nMonths = $interval->y * 12 + $interval->m;
+    return $nMonths;
+}
+
+
+/* --------------------------------------------------------------------------*/
+/**
     * @Synopsis  Return login id if email is given. This is  a helper function.
     *
     * @Param $text
@@ -278,10 +298,10 @@ function __get__( array $arr, $what, $default = NULL )
     *
     * @return List of dates generated from this pattern.
  */
-function repeatPatToDays( $pat, $start_day = 'today' )
+function repeatPatToDays( $pat, $start_day = 'today' ) : array
 {
     if( trim($pat) == '' )
-        return;
+        return array();
 
     $exploded = explode( ",", $pat);
     $days = $exploded[0];
@@ -291,7 +311,7 @@ function repeatPatToDays( $pat, $start_day = 'today' )
 
     $weeks = __get__( $exploded, 1, "*" );
 
-    $durationInMonths = $exploded[2];
+    $durationInMonths = intval($exploded[2]);
     if( ! $durationInMonths )
         $durationInMonths = 6;
 
@@ -301,17 +321,17 @@ function repeatPatToDays( $pat, $start_day = 'today' )
     $weeks = explode( "/", $weeks );
     $days = explode( "/", $days );
 
-    $result = Array();
-
     // Get the base day which is Sunday. If today is not sunday then previous
     // Sunday must be taken into account.
-    $baseDay = dbDate( strtotime( $start_day  ) );
+    $baseDay = dbDate( $start_day );
+    // echo( "BASEDAY $start_day $baseDay" );
 
     // Now fill the dates for given pattern.
-    $dates = Array( );
+    $dates = [];
 
     $thisMonth = date( 'F', strtotime( $baseDay ) );
-    for( $i = 0; $i < $durationInMonths;  $i ++ ) // Iterate of maximum duration.
+
+    for( $i = 0; $i <= $durationInMonths;  $i ++ ) // Iterate of maximum duration.
     {
         $month = date( "F Y", strtotime( "+" . "$i months", strtotime($baseDay) ) );
         foreach( $weeks as $w )
@@ -320,13 +340,17 @@ function repeatPatToDays( $pat, $start_day = 'today' )
             {
                 $strDate = "$w $d  $month";
                 $date = dbDate( strtotime( $strDate ) );
-                if( strtotime( $date ) > strtotime( 'now' ) )
+
+                if( (strtotime( $date ) >= strtotime( $start_day )) && 
+                    (dateDiffInMonths( $date, $start_day ) <= $durationInMonths) 
+                )
+                {
                     if( ! in_array( $date, $dates ) )
-                        array_push( $dates, $date );
+                        $dates[] = $date;
+                }
             }
         }
     }
-
     return $dates;
 }
 
