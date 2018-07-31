@@ -11,6 +11,9 @@ if( count( $requests ) < 1 )
     echo alertUser( "No pending request found.", false );
 else
 {
+    echo p("Currently you can only edit or cancel whole group. The facility to 
+        cancel some of the requests is not yet implemented." );
+
     foreach( $requests as $request )
     {
         $tobefiltered = array( 
