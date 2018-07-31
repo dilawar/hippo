@@ -3,36 +3,40 @@
 require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
-$requests = getRequestOfUser( whoAmI(), $status = 'PENDING' );
+// $requests = getRequestOfUser( whoAmI(), $status = 'PENDING' );
+$requests = getRequestOfUserGroupedAndWithCount( whoAmI(), $status = 'PENDING' );
 
 echo '<h1>Pending requests</h1>';
 if( count( $requests ) < 1 )
-{
     echo alertUser( "No pending request found.", false );
-}
 else
 {
     foreach( $requests as $request )
     {
-        $tobefiltered = Array( 
+        $tobefiltered = array( 
             'gid', 'created_by', 'rid', 'modified_by', 'timestamp'
             , 'url' , 'status', 'external_id'
         );
         $gid = $request['gid'];
 
-        echo "<table class=\"info\" >";
-        echo "<tr>";
-        echo "<td>" . arrayToTableHTML( $request, "info", NULL, $tobefiltered );
-        echo '<form method="post" action="'.site_url("user/private_request_edit") .'">';
-        echo "</td></tr><tr>";
-        echo "</td><td><button name=\"response\" title=\"Cancel this request\"
+        // $subReqs = getTableEntries( 'bookmyvenue_requests', 'rid'
+                        // , "gid='$gid' AND status='PENDING'"
+                    // );
+
+        $form =  "<table class=\"info\" >";
+        $form .=  "<tr>";
+        $form .=  "<td>" . arrayToTableHTML( $request, "info", NULL, $tobefiltered );
+        $form .=  '<form method="post" action="'.site_url("user/private_request_edit") .'">';
+        $form .=  "</td></tr><tr>";
+        $form .=  "</td><td><button name=\"response\" title=\"Cancel this request\"
                 onclick=\"AreYouSure( this )\" > <i class=\"fa fa-trash\"></i> </button>";
-        echo "<td><button name=\"response\" title=\"Edit this request\"
+        $form .=  "<td><button name=\"response\" title=\"Edit this request\"
             value=\"edit\"> <i class=\"fa fa-pencil\"></i> </button>";
-        echo "</td></tr>";
-        echo "</table>";
-        echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
-        echo '</form>';
+        $form .=  "</td></tr>";
+        $form .=  "</table>";
+        $form .=  "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
+        $form .=  '</form>';
+        echo $form;
     }
 }
 
