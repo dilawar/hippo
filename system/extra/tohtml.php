@@ -1510,7 +1510,7 @@ function awsToHTMLLarge( $aws, $with_picture = true )
     if( strlen( $abstract ) == 0 )
     {
         $abstract = "Not disclosed yet!";
-        $abstract =  generateAWSAbstractUsingAI( );
+        // $abstract =  generateAWSAbstractUsingAI( );
     }
 
     // Adding css inline screw up the email view. Dont do it.
