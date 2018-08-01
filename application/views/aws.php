@@ -6,7 +6,7 @@ if( strtotime( 'today' ) == strtotime( 'this monday' ) )
 else
     $today = dbDate( 'next monday' );
 
-$default = array( 'date' => $today );
+$default = array( 'date' => __get__($_GET, 'date', $today) );
 
 $form = '<form method="get" action="">
             <input class="datepicker" type="text" name="date" value="' .
