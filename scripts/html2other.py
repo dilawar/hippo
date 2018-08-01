@@ -55,7 +55,7 @@ def tomd( htmlfile ):
     with open( htmlfile, 'w' ) as f:
         f.write(msg)
 
-    _cmd( 'pandoc -t plain -o %s %s' % (txtfile, htmlfile) )
+    _cmd( 'pandoc -t markdown_strict -o %s %s' % (txtfile, htmlfile) )
     return msg, txtfile.strip()
 
 def fixInlineImage( msg ):
