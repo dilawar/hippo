@@ -962,6 +962,10 @@ p.wherewhen {
     text-decoration: none;
 }
 
+div.human_readable p:first-of-type::first-letter {
+    font-size: xx-large;
+}
+
 td.db_table_fieldname {
     font-size : x-small;
     text-transform : uppercase;
