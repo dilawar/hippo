@@ -432,7 +432,7 @@ div.aws_preference {
 
 div.human_readable {
     /* font-size: small; */
-    min-width: 600px;
+    /* min-width: 600px; */
     max-width: 100%;
     line-height: 1.5;
 }
