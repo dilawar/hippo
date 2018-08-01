@@ -1502,16 +1502,11 @@ function awsToHTMLLarge( $aws, $with_picture = true )
     $tcm = array_filter( $tcm );
     $title = $aws[ 'title' ];
     if( strlen( $title ) == 0 )
-    {
         $title = "Not disclosed yet.";
-    }
 
     $abstract = $aws[ 'abstract' ];
     if( strlen( $abstract ) == 0 )
-    {
         $abstract = "Not disclosed yet!";
-        $abstract =  generateAWSAbstractUsingAI( );
-    }
 
     // Adding css inline screw up the email view. Dont do it.
     $user = $aws[ 'speaker' ];
@@ -1805,12 +1800,13 @@ function talkToHTML( $talk, $with_picture = false )
     $googleCalLink = addToGoogleCalLink( $event );
     $icalLink = eventToICALLink( $event );
 
-    // side information.
-    $side = '<table class="show_info">
-            <tr><td colspan="2"><strong>' . $speakerHMTL . '</strong></td></tr>
+    // Author information 
+    $side = $speakerHMTL;
+    $side .= '<br /> <br />';
+    $side .= '<table class="show_info">
             <tr>' . $host . '</tr>
             <tr><td>When</td><td>' . $when . '</td></tr>
-            <tr> <td>Where</td><td> ' . $where . '</td></tr>
+            <tr><td>Where</td><td> ' . $where . '</td></tr>
             <tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
     $side .= '</table>';
 
