@@ -48,7 +48,6 @@ else
                 $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML( $event ) . '</p>';
                 $talkHtml .= talkToHTMLLarge( $talk, $with_picture = true );
                 $talkHtml .= '</div>';
-
                 $talkHtml .= "<br>";
                 // Link to pdf file.
                 $talkHtml.= '<a style="margin-left:100%;align:right;" target="_blank" href="'
