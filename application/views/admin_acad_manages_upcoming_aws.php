@@ -306,9 +306,10 @@ foreach( $scheduleMap as $date => $schedule )
         $table .= "</td>";
 
         // Create a form to approve the schedule.
-        $table .= '<form method="post" action="'.site_url('adminacad/action').'">';
-        $table .= '<input type="hidden" name="speaker" value="' . $speaker . '" >';
-        $table .= '<input type="hidden" name="date" value="' . $upcomingAWS['date'] . '" >';
+        $speakerDate = $upcomingAWS[ 'date'];
+        $table .= '<form method="post" action="'.site_url("adminacad/assignaws/$speaker/$speakerDate").'">';
+        // $table .= '<input type="hidden" name="speaker" value="' . $speaker . '" >';
+        // $table .= '<input type="hidden" name="date" value="' . $upcomingAWS['date'] . '" >';
         $table .= '<td style="background:white;border:0px;">
             <button name="response" title="Confirm this slot"
             value="Accept" >' . $symbAccept . '</button>
