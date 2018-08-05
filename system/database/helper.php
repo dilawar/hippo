@@ -1437,7 +1437,7 @@ function getTableEntries( $tablename, $orderby = '', $where = '' ) : array
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getTableEntry( string $tablename,  $whereKeys, array $data) : array
+function getTableEntry( string $tablename, $whereKeys, array $data) : array
 {
     $hippoDB = initDB();
 
@@ -1733,7 +1733,9 @@ function updateTable( $tablename, $wherekeys, $keys, array $data )
     {
         // If values for this key in $data is null then don't use it here.
         if( ! __get__( $data, $k, false ) )
+        {
             $data[ $k ] = null;
+        }
 
         array_push( $cols, $k );
         array_push( $values, "$k=:$k" );
@@ -1745,7 +1747,7 @@ function updateTable( $tablename, $wherekeys, $keys, array $data )
     foreach( $cols as $k )
     {
         $value = $data[$k];
-        if( gettype( $value ) == 'array' )
+        if( is_array( $value ) )
             $value = implode( ',', $value );
 
         $stmt->bindValue( ":$k", $value );

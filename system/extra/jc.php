@@ -21,6 +21,7 @@ function fixJCSchedule( string $loginOrEmail, array $data ) : array
     $msg = '';
     $msg = json_encode( $data );
 
+    echo( json_encode( $data ) . " <br />" );
     if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
     {
         $res = updateTable( 'jc_presentations', 'presenter,jc_id,date,time,venue', 'status', $data );
