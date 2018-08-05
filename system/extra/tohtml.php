@@ -1901,59 +1901,55 @@ function downloadTextFile( $filepath, $msg = 'Download file', $class = 'download
 // <td>Repeat pattern for recurrent events <br> (optional) <br>
 //     <p class="note_to_user"> Valid for maximum of 6 months </p>
 //     </td>
-function repeatPatternTable( $className = '' )
+function repeatPatternTable( )
 {
-    $html = '<table class="' . $className . '">';
-    $html .= '<p style="color:blue">Your recurrent pattern here. </p>';
-
+    $html = '<table class="info" style="width:100%">';
     // Day row.
-    $html .= ' <tr> '; 
-    $html .= '<td> Select days </td>';
+    $html .= '<tr>
+                <th> Select days </th>
+                <th> Select Weeks </th>
+                <th> Number of months </th>
+            </tr>';
+    $html .= '<tr> '; 
     $html .= '<td>';
     $html .= arrayToMultiCheckbox( 'day_pattern', 'Mon,Tue,Wed,Thu,Fri,Sat,Sun' );
-    $html .= '</td></tr>';
-    // Weeks
-    $html .= '<tr><td> Select Weeks </td><td>';
-    $html .= arrayToMultiCheckbox( 'week_pattern', 'First,Second,Third,Fourth'
-        , $default ='First,Second,Third,Fourth' );
-    $html .= '</td></tr>';
-    $html .= '<tr><td>Number of events</td>';
+    $html .= '</td><td>';
+
+    $html .= arrayToMultiCheckbox( 'week_pattern'
+                        , 'All,First,Second,Third,Fourth,Fifth'
+                        , $default ='All' 
+                    );
+    $html .= '</td>';
     $html .= '<td>
                 <nobr>
-                <strong>(<span style="white-space:nowrap" id="textInput">10</span>)</strong>
-                <input type="range" name="number_of_entries" 
+                <strong>(<span style="white-space:nowrap" id="textInput">6</span>)</strong>
+                <input type="range" name="month_pattern" 
                     id="rangeInput"
-                    min="2" max="30" value="10" 
+                    min="1" max="6" value="6" 
                     onchange="updateTextInput(this.value);" />
                 </nobr>
                 </td>
                 ';
     $html .= '</tr>';
-
     $html .= "</table>";
     return $html;
 }
-
-             // <td> <input type="text" name="day_pattern" / > </td>
-             // <td> <input type="text" name="week_pattern" /></td>
-             // <td><input type="text" name="month_pattern" placeholder="6" /></td>
 
 function arrayToMultiCheckbox( string $name, string $values, string $default='' ) : string
 {
     $values = explode( ',', $values );
     $default = explode( ',', $default );
-    // $html = "<fieldset id='$name'>";
-    $html = '';
+    $name = $name . '[]';
+    $html = "<select name='$name' size='6' multiple style='width:100px'>";
     foreach( $values as $i => $value )
     {
         $id = "$value-$i";
-        $checked = '';
+        $selected = '';
         if( in_array($value, $default) )
-            $checked = 'checked';
-        $html .= "<input type='checkbox' id='$id' name='$name' value='$value' $checked />";
-        $html .= "<label for='$id'>$value</label> ";
+            $selected = 'selected';
+        $html .= "<option value='$value' $selected>$value</option>";
     }
-
+    $html .= "</multiple>";
     return $html;
 }
 

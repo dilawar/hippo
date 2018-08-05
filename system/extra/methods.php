@@ -47,15 +47,16 @@ function extract_emails_from( $text )
     * @Param $dateA
     * @Param $dateB
     *
-    * @Returns   
+    * @Returns  Fractional value. Decimal part is computed by assuming 30 days
+    * month.
  */
 /* ----------------------------------------------------------------------------*/
-function dateDiffInMonths( $dateA, $dateB ) : int
+function dateDiffInMonths( $dateA, $dateB ) : float
 {
     $dateA = new DateTime( dbDate( $dateA ) );
     $dateB = new DateTime( dbDate( $dateB ) );
     $interval = $dateA->diff($dateB);
-    $nMonths = $interval->y * 12 + $interval->m;
+    $nMonths = $interval->y * 12 + $interval->m + $interval->d /30.0;
     return $nMonths;
 }
 
@@ -305,17 +306,14 @@ function repeatPatToDays( $pat, $start_day = 'today' ) : array
 
     $exploded = explode( ",", $pat);
     $days = $exploded[0];
-    // These are absolute indices of days.
-    if( $days == "*" )
-        $days = "Sun/Mon/Tue/Wed/Thu/Fri/Sat";
 
-    $weeks = __get__( $exploded, 1, "*" );
+    $weeks = __get__( $exploded, 1, "All" );
 
     $durationInMonths = intval($exploded[2]);
     if( ! $durationInMonths )
         $durationInMonths = 6;
 
-    if( $weeks == "*" )
+    if( $weeks == "All" )
         $weeks = "first/second/third/fourth/fifth";
 
     $weeks = explode( "/", $weeks );
