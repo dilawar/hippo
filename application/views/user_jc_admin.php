@@ -139,7 +139,7 @@ if( count( $badJCs ) > 0 )
 
 
 echo ' <br />';
-echo goBackToPageLink( 'user.php', 'Go Back' );
+echo goBackToPageLink( 'user/home', 'Go Back' );
 
 echo '<h1>List of presentation requests</h1>';
 echo printInfo( 'You can reschedule or cancel the request. Please let the
@@ -175,7 +175,7 @@ echo '</table>';
 
 
 echo ' <br />';
-echo goBackToPageLink( 'user.php', 'Go Back' );
+echo goBackToPageLink( 'user/home', 'Go Back' );
 echo "<h1>Manage subscriptions</h1>";
 
 // Show table and task here.

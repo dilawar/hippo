@@ -130,6 +130,6 @@ else
     echo "Unknown request " . $_POST[ 'response' ];
 }
 
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 
 ?>
