@@ -55,5 +55,5 @@ echo ' <form action="user_add_inventory_action.php" method="post" accept-charset
 echo $table;
 echo '</form>';
 
-echo goBackToPageLink( "user.php", "Go Back" );
+echo goBackToPageLink( "user/home", "Go Back" );
 ?>

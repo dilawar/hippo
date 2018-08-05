@@ -129,6 +129,6 @@ echo dbTableToHTMLTable( 'apartments', $default , $editable , $action);
 echo '</form>';
 echo '</div>';
 
-echo goBackToPageLink( "user.php", "Go back" );
+echo goBackToPageLink( "user/home", "Go back" );
 
 ?>
