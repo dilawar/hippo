@@ -147,7 +147,7 @@ $(document).ready(function(){
     <tr>
     <td><a class="bright" href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
     <td><a class="bright" href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
-    <td><a class="bright" href="<?= site_url('info/events') ?>" target="hippo_popup">Talks</a></td>
+    <td><a class="bright" href="<?= site_url('info/talks') ?>" target="hippo_popup">Talks</a></td>
     <td><a class="bright" href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
     <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>

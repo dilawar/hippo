@@ -98,7 +98,7 @@ function addToGoogleCalLink( array $event )
     $link .= '&text=' . rawurlencode( $event[ 'title' ] );
     $link .= "&dates=" . $date;
     $link .= "&ctz=Asia/Kolkata";
-    $link .= '&details=' . rawurlencode( mn_strimwidth($event['description'], 0, 20, '...') );
+    $link .= '&details=' . rawurlencode( mb_strimwidth($event['description'], 0, 20, '...') );
     $link .= '&location=' . rawurlencode( $location );
 
     $res = '<a href="'. $link . '" target="_blank" >';

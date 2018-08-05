@@ -32,10 +32,10 @@ class Info extends CI_Controller
         }
     }
 
-    public function events( )
+    public function talks( )
     {
         $this->template->set('header', 'header.php' );
-        $this->template->load('events' );
+        $this->template->load('talks' );
     }
 
     public function booking( )
