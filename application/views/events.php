@@ -30,8 +30,9 @@ $eventTalks = getTableEntries( 'events', 'date,start_time' , "date>='$whichDay'
 // Only if a event has an external_id then push it into 'talks'
 if( count( $eventTalks ) < 1 )
 {
-    echo printInfo( "This is embarrasing but I could not find any talk/seminar/lecture etc. Is there 
-            nothing going in the Institute? Or the World has finally ended?" );
+    echo printInfo( "I could not find any talk/seminar/lecture etc. Is there 
+            nothing going on the campus? Or the World has finally ended?"
+        );
 }
 else
 {
