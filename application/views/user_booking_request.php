@@ -17,7 +17,7 @@ echo '<div class="important">
         on NCBS\' google-calendar. <br />
         </li>
         <li>
-            Pick proper <tt>CLASS</tt> for your booking. Your request will be rejected if it is 
+            Pick proper <tt>CLASS</tt> for your booking. Your request may be rejected if it is 
                filed under wrong <tt>CLASS</tt>.
         </li>
     </ul>
@@ -110,7 +110,8 @@ echo '<input type="hidden" name="REFERER" value="' . $ref . '" >';
 
 // I need to add repeat pattern here.
 echo "<br />";
-echo repeatPatternTable( 'repeat_pat' );
+echo '<h3>Recurrent Event? (optional)</h3>';
+echo repeatPatternTable( );
 echo '<br />';
 echo '<button name="response" value="submit" style="float:right">Submit</button>';
 echo '</form>';
@@ -122,3 +123,10 @@ echo goBackToPageLink( $goback, "Go back" );
 <script type="text/javascript" charset="utf-8">
     $("input#bookmyvenue_requests_title").attr( "placeholder", "Minimum 8 characters");
 </script>
+
+<script>
+function updateTextInput(val) {
+    document.getElementById('textInput').innerHTML = val; 
+}
+</script>
+

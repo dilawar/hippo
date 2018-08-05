@@ -98,7 +98,7 @@ function addToGoogleCalLink( array $event )
     $link .= '&text=' . rawurlencode( $event[ 'title' ] );
     $link .= "&dates=" . $date;
     $link .= "&ctz=Asia/Kolkata";
-    $link .= '&details=' . rawurlencode( $event[ 'description' ] );
+    $link .= '&details=' . rawurlencode( mn_strimwidth($event['description'], 0, 20, '...') );
     $link .= '&location=' . rawurlencode( $location );
 
     $res = '<a href="'. $link . '" target="_blank" >';
@@ -1901,63 +1901,59 @@ function downloadTextFile( $filepath, $msg = 'Download file', $class = 'download
 // <td>Repeat pattern for recurrent events <br> (optional) <br>
 //     <p class="note_to_user"> Valid for maximum of 6 months </p>
 //     </td>
-function repeatPatternTable( $className )
+function repeatPatternTable( $className = '' )
 {
-    $html = '<h3>Recurrent Event? (optional)</h3>';
+    $html = '<table class="' . $className . '">';
+    $html .= '<p style="color:blue">Your recurrent pattern here. </p>';
 
-    $html .= "<p style=\"color:blue\">Some examples of recurrent events.</p>";
-
-    $html .= "<div style=\"font-size:small\">";
-    $html .= '<table class="' . $className . '">';
-    $html .= '<tr><td> Every saturday, every week
-             , for 3 months  </td>';
+    // Day row.
+    $html .= ' <tr> '; 
+    $html .= '<td> Select days </td>';
+    $html .= '<td>';
+    $html .= arrayToMultiCheckbox( 'day_pattern', 'Mon,Tue,Wed,Thu,Fri,Sat,Sun' );
+    $html .= '</td></tr>';
+    // Weeks
+    $html .= '<tr><td> Select Weeks </td><td>';
+    $html .= arrayToMultiCheckbox( 'week_pattern', 'First,Second,Third,Fourth'
+        , $default ='First,Second,Third,Fourth' );
+    $html .= '</td></tr>';
+    $html .= '<tr><td>Number of events</td>';
     $html .= '<td>
-             <input disabled value="Sat">
-             </td>
-             <td>
-             <input disabled value="">
-             </td>
-             <td>
-             <input disabled value="3">
-             </td>
-             </tr>';
-    $html .= '<tr><td> Every monday and thursday, every week
-             , for 5 months  </td>';
-    $html .= '<td>
-             <input disabled value="Mon,Thu">
-             </td>
-             <td>
-             <input disabled value="">
-             </td>
-             <td>
-             <input disabled value="5">
-             </td>
-             </tr>';
-    $html .= '<tr><td> Every Tuesday, first and third week
-             , for 4 months </td>';
-    $html .= '<td>
-             <input disabled value="Tue">
-             </td>
-             <td>
-             <input disabled value="first,third">
-             </td>
-             <td>
-             <input disabled value="4">
-             </td>
-             </tr>';
+                <nobr>
+                <strong>(<span style="white-space:nowrap" id="textInput">10</span>)</strong>
+                <input type="range" name="number_of_entries" 
+                    id="rangeInput"
+                    min="2" max="30" value="10" 
+                    onchange="updateTextInput(this.value);" />
+                </nobr>
+                </td>
+                ';
+    $html .= '</tr>';
 
-    $html .= '</table>';
-    $html .= "</div>";
-
-    $html .= "<br>";
-    $html .= '<table class="' . $className . '">';
-    $html .= ' <tr>
-             <td> <p style="color:blue">Your recurrent pattern here </p></td>
-             <td> <input type="text" name="day_pattern" / > </td>
-             <td> <input type="text" name="week_pattern" /></td>
-             <td><input type="text" name="month_pattern" placeholder="6" /></td>
-             </tr>';
     $html .= "</table>";
+    return $html;
+}
+
+             // <td> <input type="text" name="day_pattern" / > </td>
+             // <td> <input type="text" name="week_pattern" /></td>
+             // <td><input type="text" name="month_pattern" placeholder="6" /></td>
+
+function arrayToMultiCheckbox( string $name, string $values, string $default='' ) : string
+{
+    $values = explode( ',', $values );
+    $default = explode( ',', $default );
+    // $html = "<fieldset id='$name'>";
+    $html = '';
+    foreach( $values as $i => $value )
+    {
+        $id = "$value-$i";
+        $checked = '';
+        if( in_array($value, $default) )
+            $checked = 'checked';
+        $html .= "<input type='checkbox' id='$id' name='$name' value='$value' $checked />";
+        $html .= "<label for='$id'>$value</label> ";
+    }
+
     return $html;
 }
 

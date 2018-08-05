@@ -956,10 +956,10 @@ p.note {
 }
 
 p.wherewhen {
-    font-size: small;
-    text-color: red;
+    font-size: large;
+    color: blue;
     border-bottom: 1px dotted gray;
-    text-decoration: none;
+    font-variant: small-caps;
 }
 
 div.human_readable p:first-of-type::first-letter {
