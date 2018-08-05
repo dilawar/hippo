@@ -299,7 +299,7 @@ function __get__( array $arr, $what, $default = NULL )
     *
     * @return List of dates generated from this pattern.
  */
-function repeatPatToDays( $pat, $start_day = 'today' ) : array
+function repeatPatToDays( string $pat, string $start_day = 'today' ) : array
 {
     if( trim($pat) == '' )
         return array();
@@ -467,7 +467,7 @@ function dateTimeToGOOGLE( $date, $time )
     *
     * @return
  */
-function constructRepeatPattern( $daypat, $weekpat, $durationInMonths )
+function constructRepeatPattern( string $daypat, string $weekpat, string $durationInMonths):string
 {
 
    $daypat = trim( $daypat );

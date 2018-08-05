@@ -156,8 +156,9 @@ trait Booking
             if( __get__( $_POST, 'day_pattern', array() ))
             {
                 $repeatPat = constructRepeatPattern( 
-                    $_POST['day_pattern'], $_POST['week_pattern']
-                    , intval( $_POST['number_of_requests'] )
+                    implode( ',', $_POST['day_pattern']), 
+                    implode( ',', $_POST['week_pattern']),
+                    $_POST['month_pattern']
                 );
 
                 $_POST['repeat_pat']  = $repeatPat;

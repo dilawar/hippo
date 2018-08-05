@@ -69,6 +69,18 @@ echo $table;
 
 echo '<h1>Booking</h1>';
 $html = '<table class="admin">';
+
+// Count pending requests.
+$user = whoAmI();
+$reqs = getTableEntries( 'bookmyvenue_requests', 'date'
+                    , "status='PENDING' AND created_by='$user' GROUP BY gid" 
+                );
+
+$flag = '';
+if( count( $reqs ) > 0)
+    $flag = count( $reqs ) . " requests.";
+
+
 $html .= '
     <tr>
     <td>
@@ -77,7 +89,7 @@ $html .= '
          <br />
          E.g. Labmeets,meeting,interview etc.. No email will be sent to Academic community.
         <br /> <br /> <i class="fa fa-pencil-square-o fa-1x"></i>
-        <a href="'. site_url("/user/show_private") . '"> Manage my private events.</a> 
+        <a href="'. site_url("/user/show_private") . '"> Manage My Private Events ('. $flag .')</a> 
     </td>
     <td>
         <i class="fa fa-comments fa-2x"></i>
