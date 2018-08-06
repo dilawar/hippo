@@ -167,6 +167,6 @@ echo '</form>';
 
 
 echo "<br/><br/>";
-echo goBackToPageLink( 'admin_acad.php', 'Go back' );
+echo goBackToPageLink( "$ref/home", 'Go back' );
 
 ?>
