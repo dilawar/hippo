@@ -18,6 +18,11 @@ $coursesId = array_map( function( $x ) { return $x['id']; }, $courses );
 foreach( $courses as $course )
     $coursesMap[ $course[ 'id' ] ] = $course;
 
+echo p( "Go to " . goBackToPageLinkInline( "adminacad/courses", "This Semester Courses" ) 
+    . " to manage currently running courses." );
+
+echo ' <br /> ';
+
 ?>
 
 <script type="text/javascript" charset="utf-8">
@@ -69,7 +74,7 @@ if( __get__( $_POST, 'reponse', 'Edit' ) && __get__( $_POST, 'id', false ) )
         $buttonVal = 'Update';
 }
 
-echo '<h3>Add/Edit course details</h3>';
+echo '<h1>Add/Edit course details</h1>';
 
 echo '<form method="post" action="'.site_url('adminacad/all_courses_action').'">';
 echo dbTableToHTMLTable( 'courses_metadata', $course
