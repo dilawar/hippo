@@ -30,7 +30,7 @@ if( ! $default )
 {
     echo printWarning( "Invalid username. I did not find anyone named " 
         .  $_POST[ 'login' ] . " on LDAP server" );
-    echo goBackToPageLink( 'admin_acad.php', 'Go back' );
+    echo goBackToPageLink( 'user/home', 'Go back' );
     exit;
 }
 
