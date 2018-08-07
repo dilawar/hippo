@@ -1,5 +1,27 @@
 <?php
 require_once BASEPATH.'autoload.php';
+
+function showAlertTable( )
+{
+    $html = '<div class="">
+        <table> <tr>
+            <td><i class="fa fa-flag-o fa-2x"></i>
+                To enroll, visit <a class="clickable" href="user_manages_courses.php">My Courses</a>
+                link in your home page after login.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="fa fa-flag-checkered fa-2x"></i>
+                Registration on <tt>Hippo</tt> is mandatory;
+                <a href="https://moodle.ncbs.res.in" target="_blank">MOODLE</a> registration
+                is independent of it!
+            </td>
+        </tr>
+        </table></div>';
+    return $html;
+}
+
 ?>
 
 <!-- Sweet alert -->
@@ -122,53 +144,25 @@ echo "<h3>Courses running in " . __ucwords__( $sem) . ", $year</h3>";
 $form = selectYearSemesterForm( $year, $sem );
 echo $form;
 
-
 $showEnrollText = 'Show Enrollement';
-echo '<div class="">
-    <table> <tr>
-        <td><i class="fa fa-flag-o fa-2x"></i>
-            To enroll, visit <a class="clickable" href="user_manages_courses.php">My Courses</a>
-            link in your home page after login.
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <i class="fa fa-flag-checkered fa-2x"></i>
-            Registration on <tt>Hippo</tt> is mandatory;
-            <a href="https://moodle.ncbs.res.in" target="_blank">MOODLE</a> registration
-            is independent of it!
-        </td>
-    </tr>
-    </table></div>';
-echo '<br />';
 
-/**
-    * @name Show the courses.
-    * @{ */
-/**  @} */
-
-
-$header = '<tr><th>Course/Instructors</th><th>Schedule</th><th>Slot/Venue</th><th>URL</th></tr>';
-
+echo showAlertTable( );
+echo ' <br />';
 
 // Go over courses and populate the entrollment array.
+$header = '<tr><th>Course/Instructors</th><th>Schedule</th><th>Slot/Venue</th><th>URL</th></tr>';
 $enrollments = array( );
-// ksort( $slotCourses );
-
 $html = '';
+
 foreach( $slotCourses as $slot => $courses )
 {
-    foreach( $courses as $i => $c )
+    $div = '<div class="">';
+    foreach( $courses as $c )
     {
-        // $div = '<div class="important">';
-        $div = '<div class="">';
         $cid = $c[ 'course_id' ];
-        $courseTable = '<table class="show_course">';
-
         // Add header only to the first entry.
-        if( $i == 0 )
-            $courseTable .= $header;
-
+        $courseTable = '<table class="show_course">';
+        // $courseTable .= "<caption> $cid </caption>";
         $courseTable .= "<tr>";
         $courseTable .= courseToHTMLRow( $c, $slot, $sem, $year, $enrollments );
         $courseTable .= '</tr>';
@@ -209,7 +203,7 @@ echo $html;
 
 
 /*******************************************************************************
- * Upcoming courses.
+ * Upcoming courses in next semester.
  *******************************************************************************/
 // Collect both metadata and other information in slotCourse array.
 
