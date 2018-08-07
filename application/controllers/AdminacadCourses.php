@@ -117,6 +117,10 @@ trait AdminacadCourses
     {
         $response = strtolower($_POST['response']);
 
+        // If no venue is found, the leave it empty.
+        if( __get__( $_POST, 'venue', '' ) )
+            $_POST[ 'venue' ] = '';
+
         if( $response == 'do_nothing' )
         {
             flashMessage( "User said do nothing.");
