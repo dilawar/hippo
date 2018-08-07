@@ -1504,7 +1504,7 @@ function cancelEventAndNotifyBookingParty( $ev )
         $msg .= arrayToTableHTML( $ev, 'event' );
 
         $msg .= "<p>Kindly find another venue for your event. </p>";
-        sendHTMLEmail( $subject, $msg, $to, $cc );
+        sendHTMLEmail($msg, $subject, $to, $cc );
     }
 }
 
@@ -1531,7 +1531,7 @@ function cancelRequesttAndNotifyBookingParty( $request )
         $msg .= arrayToTableHTML( $request, 'event' );
 
         $msg .= "<p>Kindly find another venue for your event. </p>";
-        sendHTMLEmail( $subject, $body, $to, $cc );
+        sendHTMLEmail($msg, $subject, $to, $cc );
     }
 }
 
