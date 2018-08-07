@@ -1182,17 +1182,15 @@ a {
 footer {
     position: fixed;
     top: 90%;
-    /* margin-top: 500px; */
 }
 
 footer *  {
-    text-color: lightgreen;
-    color: lightgreen;
+    text-color: blue;
 }
 
 div.bottom * {
-    color: lightgreen;
-    text-color: lightgreen;
+    /* color: lightblue; */
+    text-color: blue;
 }
 
 th {
