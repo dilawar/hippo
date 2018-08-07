@@ -14,7 +14,7 @@ function showAlertTable( )
             <td>
                 <i class="fa fa-flag-checkered fa-2x"></i>
                 Registration on <tt>Hippo</tt> is mandatory;
-                <a href="https://moodle.ncbs.res.in" target="_blank">MOODLE</a> registration
+                <a href="http://moodle.ncbs.res.in" target="_blank">MOODLE</a> registration
                 is independent of it!
             </td>
         </tr>
