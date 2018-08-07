@@ -120,7 +120,7 @@ trait AdminacadCourses
         if( $response == 'do_nothing' )
         {
             flashMessage( "User said do nothing.");
-            goBack( "adminacad/courses" );
+            redirect( "adminacad/courses" );
         }
         else if( $response == 'delete' )
         {
@@ -161,7 +161,7 @@ trait AdminacadCourses
             {
                 if( ! __get__($_POST, $k, '' ) )
                 {
-                    echo printErrorSevere( "Incomplete entry. $k is not found." );
+                    printErrorSevere( "Incomplete entry. $k is not found." );
                     redirect( 'adminacad/courses' );
                     return;
                 }
@@ -202,7 +202,7 @@ trait AdminacadCourses
                     $msg .= '<br>';
                 }
 
-                echo printErrorSevere( $msg );
+                printErrorSevere( $msg );
                 redirect( "adminacad/courses" );
                 return;
             }
@@ -238,10 +238,11 @@ trait AdminacadCourses
                 }
             }
             else
-                echo printWarning( "Unknown task '$response'. " );
+                printWarning( "Unknown task '$response'. " );
 
-            redirect( "adminacad/courses" );
         }
+        redirect( "adminacad/courses" );
+        return;
     }
 
     public function slots_action( $arg = '' )
