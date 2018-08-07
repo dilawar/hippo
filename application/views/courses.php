@@ -136,7 +136,7 @@ echo '<div class="">
             <i class="fa fa-flag-checkered fa-2x"></i>
             Registration on <tt>Hippo</tt> is mandatory;
             <a href="https://moodle.ncbs.res.in" target="_blank">MOODLE</a> registration
-            is independent!
+            is independent of it!
         </td>
     </tr>
     </table></div>';
@@ -153,7 +153,7 @@ $header = '<tr><th>Course/Instructors</th><th>Schedule</th><th>Slot/Venue</th><t
 
 // Go over courses and populate the entrollment array.
 $enrollments = array( );
-ksort( $slotCourses );
+// ksort( $slotCourses );
 
 $html = '';
 foreach( $slotCourses as $slot => $courses )
@@ -164,8 +164,11 @@ foreach( $slotCourses as $slot => $courses )
         $div = '<div class="">';
         $cid = $c[ 'course_id' ];
         $courseTable = '<table class="show_course">';
+
+        // Add header only to the first entry.
         if( $i == 0 )
             $courseTable .= $header;
+
         $courseTable .= "<tr>";
         $courseTable .= courseToHTMLRow( $c, $slot, $sem, $year, $enrollments );
         $courseTable .= '</tr>';
