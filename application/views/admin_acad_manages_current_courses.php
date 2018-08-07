@@ -65,6 +65,9 @@ if( $_POST && array_key_exists( 'running_course', $_POST ) )
     $action = 'Edit';
 }
 
+echo p( goBackToPageLinkInline( "adminacad/allcourses" , "Click here" ) . 
+        " to add courses to all coursses lists." );
+
 $runningCoursesHTML  = "<h2>Following courses are running in $sem $year.</h2>";
 $runningCoursesHTML .= '<table class="info sortable">';
 
@@ -105,10 +108,13 @@ else
  */
 /* ----------------------------------------------------------------------------*/
 echo "</br>";
-
 if( $action == 'Add' )
 {
     echo "<h1>Add a course to running courses list</h1>";
+    echo p( "Course is not found drop-down menu, " 
+            . goBackToPageLinkInline( "adminacad/allcourses" , "Click here" ) . " to
+            add courses to list." 
+        );
 }
 else
     echo "<h1>Edit following course </h1>";

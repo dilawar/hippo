@@ -2388,7 +2388,6 @@ function goBackToPageLink( $url, $title = "Go back" ) : string
 function goBackToPageLinkInline( $url, $title = "Go back" ) : string
 {
     $html = '<a href="' . site_url( $url ) . '">
-                <i class="fa fa-step-backward fa-2x"></i>
                 <font color="blue" size="5">' . $title . '</font>
             </a>';
     return $html;
