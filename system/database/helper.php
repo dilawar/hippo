@@ -2401,7 +2401,13 @@ function addCourseBookings( $runningCourseId )
 
     $bookedby = $runningCourseId;
 
-    $venue = $course[ 'venue' ];
+    $venue = __get__( $course, 'venue', '' );
+    if( ! $venue )
+    {
+        echo printWarning( "No venue selected for this course, so no booking is made." );
+        return false;
+    }
+
     $title = "Course $cname";
 
     $tiles = getSlotTiles( $course[ 'slot' ] );
