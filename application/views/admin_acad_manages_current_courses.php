@@ -15,7 +15,7 @@ $action = 'Add';
 // database.
 $allCourses = getTableEntries( 'courses_metadata', 'name' );
 $coursesId = array_map( function( $x ) { return $x['id']; }, $allCourses );
-asort( $coursesId );
+// asort( $coursesId );
 
 $slotMap = getSlotMap( );
 
@@ -28,13 +28,22 @@ $venues = getTableEntries( 'venues', '', "type='LECTURE HALL'" );
 $venueSelect = venuesToHTMLSelect( $venues );
 $slotSelect = arrayToSelectList( 'slot', array_keys($slotMap), $slotMap );
 
-
 // Running course for this semester.
 $nextSem = getNextSemester( );
 $runningCourses = getSemesterCourses( $year, $sem );
 $nextSemCourses = getSemesterCourses( $nextSem[ 'year' ], $nextSem[ 'semester' ] );
 
-$runningCourses = array_merge( $runningCourses, $nextSemCourses );
+$runningCoursesWithoutInsts = array_merge( $runningCourses, $nextSemCourses );
+
+$runningCourses = array( );
+// Attach instructors to the running courses as well.
+foreach( $runningCoursesWithoutInsts as $course )
+{
+   $cid = $course[ 'course_id'];
+   $instHTML = getCourseInstructors( $cid );
+   $course['instructors'] = $instHTML;
+   $runningCourses[] = $course;
+}
 
 // Auto-complete for JS.
 $runningCourseMapForAutoCompl = [ ];
@@ -56,17 +65,19 @@ $default = array(
 if( $_POST && array_key_exists( 'running_course', $_POST ) )
 {
     $_POST[ 'running_course_id' ] = $runningCourseMapForAutoCompl[ $_POST[ 'running_course' ] ];
-    $runningCourse = getTableEntry(
-        'courses', 'id'
+
+    $runningCourse = getTableEntry( 'courses', 'id'
         , array( 'id' =>  $_POST[ 'running_course_id' ] )
     );
+
+
     if( $runningCourse )
         $default = array_merge( $default, $runningCourse );
     $action = 'Edit';
 }
 
 echo p( goBackToPageLinkInline( "adminacad/allcourses" , "Click here" ) . 
-        " to add courses to all coursses lists." );
+        " to edit description of courses ." );
 
 $runningCoursesHTML  = "<h2>Following courses are running in $sem $year.</h2>";
 $runningCoursesHTML .= '<table class="info sortable">';
@@ -77,6 +88,8 @@ if( count($runningCourses) > 0 )
     $runningCoursesHTML .= arrayHeaderRow( $runningCourses[0], 'info', $tobefilterd );
     foreach( $runningCourses as $course )
     {
+        $courseID = $course[ 'course_id'];
+
         $cname = getCourseName( $course[ 'course_id'] );
         $course['course_id'] = '<strong>'. $course['course_id'] . '</strong><br> ' . $cname;
 
@@ -84,6 +97,7 @@ if( count($runningCourses) > 0 )
             $course['course_id'] .= "<blink>$symbBell</blink>";
 
         $runningCoursesHTML .= '<tr>';
+
         $runningCoursesHTML .= arrayToRowHTML($course, 'aws', $tobefilterd, true, false);
         $runningCoursesHTML .=  '<td>
             <form action="" method="post">
