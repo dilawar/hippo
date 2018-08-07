@@ -2282,9 +2282,16 @@ function smallCaps( $text )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function courseToHTMLRow( $c, $slot, $sem, $year, &$enrollments )
+function courseToHTMLRow( array $c, string $slot, string $sem, string $year
+    , array &$enrollments ) : string
 {
-    $cid = $c[ 'id' ];
+    if( ! __get__( $c, 'id', '' ) )
+    {
+        flashMessage( 'Empty of invalid course.' );
+        return 'Empty of invalid course: ' . json_encode( $c );
+    }
+
+    $cid = $c['course_id'];
 
     $whereExpr = "year='$year' AND semester='$sem' AND course_id='$cid'
                 AND type!='DROPPED'";
@@ -2313,8 +2320,7 @@ function courseToHTMLRow( $c, $slot, $sem, $year, &$enrollments )
     $venue = $c[ 'venue' ];
     $nReg = count( $registrations );
 
-    $row = '<tr>
-        <td><font style="font-variant:small-caps">' . $cname . '</font>
+    $row = '<td><font style="font-variant:small-caps">' . $cname . '</font>
             <button id="$cid" onclick="showCourseInfo(this)"
                 class="show_as_link" value="' . $cinfo . '"
                 title="' . $cname . '" > <i class="fa fa-info-circle"></i>
@@ -2334,7 +2340,6 @@ function courseToHTMLRow( $c, $slot, $sem, $year, &$enrollments )
     }
     else
         $row .= '<td><i class="fa fa-external-link fa-2x"></i></td>';
-
 
     return $row;
 }
