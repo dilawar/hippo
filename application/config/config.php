@@ -25,8 +25,8 @@ date_default_timezone_set('Asia/Kolkata');
 | a PHP script and you can easily do that on your own.
 |
 */
-// $config['base_url'] = 'https://ncbs.res.in/hippo';
-$config['base_url'] = '';
+// $config['base_url'] = '';
+$config['base_url'] = 'https://ncbs.res.in/hippo';
 
 /*
 |--------------------------------------------------------------------------
