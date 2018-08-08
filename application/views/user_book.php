@@ -350,15 +350,15 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
         {
             foreach( $jclabmeets as $jclabmeet )
             {
-                $block .= '<div class="">';
+                $block .= '<div style="font-size:x-small">';
                 $block .= '<tr><td colspan="1">';
-                $block .= '<font color=\"red\">ALERT: Though ' . $venue[ 'id' ]
+                $block .= '<font color=\"cyan\"> <i class="fa fa-exclamation-circle fa-2x"></i>
+                     Although ' . $venue[ 'id' ]
                     . ' is available, it is usually booked for following JC/Labmeet. Make sure 
-                    to check with booking party before you book this slot. They may book it
-                    later. </font>';
+                    to check with booking party. They may book it later. </font>';
 
                 $block .= '<div style="font-size:x-small">';
-                $block .= arrayToTableHTML( $jclabmeet, 'info', 'lightcyan', $ignore . ",date,eid");
+                $block .= arrayToTableHTML( $jclabmeet, '', 'lightcyan', $ignore . ",date,eid");
                 $block .= '</div>';
                 $block .= '</td></tr>';
             }

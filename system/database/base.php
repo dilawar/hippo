@@ -176,6 +176,19 @@ class BMVPDO extends PDO
                 , UNIQUE KEY (gid,rid,external_id)
                 )
                " );
+
+        // Create a table to store user given recurrent pattern. We must keep
+        // all entries.
+        $res = $this->query( "
+                    CREATE TABLE IF NOT EXISTS recurrent_pattern (
+                        id INT NOT NULL PRIMARY KEY
+                        , request_gid INT UNSIGNED CHECK (request_gid > 0)
+                        , pattern VARCHAR(100) NOT NULL
+                        , timestamp DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                        , UNIQUE KEY(request_gid, pattern)
+                    )
+                    ");
+
         $res = $this->query( "
             -- venues must created before events because events refer to venues key as
             -- foreign key.
@@ -606,7 +619,8 @@ class BMVPDO extends PDO
                 , quantity_with_unit VARCHAR(40) NOT NULL default '1 nos'
                 , description TEXT
                 , status ENUM( 'VALID', 'INVALID', 'DELETED' ) DEFAULT 'VALID'
-                , item_condition ENUM('FUNCTIONAL', 'DSYFUNCTIONAL', 'LOST', 'EXPIRED', 'UNKNOWN') default 'FUNCTIONAL'
+                , item_condition ENUM('FUNCTIONAL', 'DSYFUNCTIONAL'
+                        , 'LOST', 'EXPIRED', 'UNKNOWN') default 'FUNCTIONAL'
                 , expiry_date DATETIME   -- send reminder 1 month in advance.
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'

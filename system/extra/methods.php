@@ -349,6 +349,8 @@ function repeatPatToDays( string $pat, string $start_day = 'today' ) : array
             }
         }
     }
+
+    sort( $dates );
     return $dates;
 }
 
