@@ -1,7 +1,5 @@
 <?php 
-
 require_once BASEPATH .'autoload.php';
-
 echo userHTML( );
 
 $ref = 'user';
@@ -98,7 +96,7 @@ else
 echo '<form method="post" action="' . site_url("user/bookingrequest_submit/$goback") . '">';
 echo dbTableToHTMLTable( 'bookmyvenue_requests'
         , $default
-        , 'class,title,description,url,is_public_event,end_time' 
+        , 'class:required,title:required,description,url,is_public_event,end_time:required' 
         , ''
         , $hide = 'gid,rid,modified_by,timestamp,status'
         );
@@ -111,6 +109,7 @@ echo '<input type="hidden" name="REFERER" value="' . $ref . '" >';
 // I need to add repeat pattern here.
 echo "<br />";
 echo '<h3>Recurrent Event? (optional)</h3>';
+echo printNote( "Leave me alone if your booking is for a single event.");
 echo repeatPatternTable( );
 echo '<br />';
 echo '<button name="response" value="submit" style="float:right">Submit</button>';

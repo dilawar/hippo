@@ -977,7 +977,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
                 $required = true;
 
         if( $required )
-            $columnText .= '<strong>*</strong>';
+            $columnText .=  '<blink><i class="fa fa-star"></i></blink>';
 
         $inputId = $tablename . "_" . $keyName;
         $html .= "<tr><td class=\"db_table_fieldname\" > $columnText </td>";
