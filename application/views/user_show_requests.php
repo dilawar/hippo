@@ -22,9 +22,19 @@ else
         );
         $gid = $request['gid'];
 
-        // $subReqs = getTableEntries( 'bookmyvenue_requests', 'rid'
-                        // , "gid='$gid' AND status='PENDING'"
-                    // );
+        // Get the recurrent pattern.
+        // $pat = $request['pattern'] . '/' . $request['month_pattern'];
+        // echo " X $pat ";
+
+        $subReqs = getTableEntries( 'bookmyvenue_requests', 'rid'
+                        , "gid='$gid' AND status='PENDING'"
+                    );
+
+        $subReqTab = arraysToCombinedTableHTML( $subReqs, 'info'
+            , 'rid,created_by,class,title,external_id,description,status' 
+            . ',is_public_event,url,modified_by,last_modified_on,timestamp'
+            . ',gid'
+        );
 
         $form =  "<table class=\"info\" >";
         $form .=  "<tr>";
@@ -36,10 +46,14 @@ else
         $form .=  "<td><button name=\"response\" title=\"Edit this request\"
             value=\"edit\"> <i class=\"fa fa-pencil\"></i> </button>";
         $form .=  "</td></tr>";
-        $form .=  "</table>";
         $form .=  "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
         $form .=  '</form>';
+        $form .=  "</table>";
+        // Add the table of group list.
         echo $form;
+        echo '<div style="text-font:x-small">';
+        echo $subReqTab;
+        echo '<div>';
     }
 }
 
