@@ -1,9 +1,8 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+require_once BASEPATH.'extra/booking_methods.php';
 
-// $requests = getRequestOfUser( whoAmI(), $status = 'PENDING' );
+echo userHTML( );
 $requests = getRequestOfUserGroupedAndWithCount( whoAmI(), $status = 'PENDING' );
 
 echo '<h1>Pending requests</h1>';
@@ -11,32 +10,19 @@ if( count( $requests ) < 1 )
     echo alertUser( "No pending request found.", false );
 else
 {
-    echo p("Currently you can only edit or cancel whole group. The facility to 
-        cancel some of the requests is not yet implemented." );
+    echo p("Currently you can edit/cancel whole group. The facility to 
+        cancel some among the group is not available (yet)." );
 
+    // We are doing lot of things here.
     foreach( $requests as $request )
     {
-        $tobefiltered = array( 
-            'gid', 'created_by', 'rid', 'modified_by', 'timestamp'
-            , 'url' , 'status', 'external_id'
-        );
+        $tobefiltered = 'gid,created_by,rid,modified_by,timestamp,url,status,external_id';
         $gid = $request['gid'];
 
         // If this request has any recurrent pattern associated with it in the
         // table 'recurrent_pattern', we process them here.
-        $recurrentPat = getTableEntry( 'recurrent_pattern'
-                            , 'request_gid', [ 'request_gid' => $gid ]
-                        );
-        $request['recurrent_pattern'] = __get__($recurrentPat,'pattern', '');
-
-        $subReqs = getTableEntries( 'bookmyvenue_requests', 'rid'
-                        , "gid='$gid' AND status='PENDING'"
-                    );
-        $subReqTab = arraysToCombinedTableHTML( $subReqs, 'info'
-            , 'rid,created_by,class,title,external_id,description,status' 
-            . ',is_public_event,url,modified_by,last_modified_on,timestamp'
-            . ',gid'
-        );
+        $repeatPat = getRecurrentPatternOfThisRequest( $gid );
+        $subReqRes = generateSubRequestsTable( $gid, $repeatPat );
 
         $form =  "<table class=\"info\" >";
         $form .=  "<tr>";
@@ -54,11 +40,21 @@ else
         // Add the table of group list.
         echo $form;
         echo '<div style="text-font:x-small">';
-        echo $subReqTab;
+        if( $subReqRes['html'] )
+        {
+            if( $subReqRes['are_some_missing'] )
+                echo printNote( '<i class="fa fa-exclamation-circle fa-2x"></i>
+                    One or more dates are missing marked by red
+                    <i class="fa fa-times"></i>. This usually happens because
+                    someone already has a booking. Or I made a boo-boo!'
+                );
+            echo $subReqRes['html'];
+        }
         echo '<div>';
     }
 }
 
+echo ' <br />';
 echo goBackToPageLink( "user/home", "Go back" );
 
 echo '<h1>Approved booking</h1>';
