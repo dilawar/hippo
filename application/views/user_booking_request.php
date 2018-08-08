@@ -66,8 +66,8 @@ if( count( $labmeetOrJCs ) > 0 )
             . 'external_id,modified_by,timestamp'
             . ',calendar_id,calendar_event_id,last_modified_on';
 
-        echo printWarning( "<font color=\"red\">
-            ATTN: Following Journal Club or Labmeet usually happens at this 
+        echo p( "<font color=\"darkblue\">
+            <i class=\"fa fa-flag fa-2x\"></i> Following Journal Club or Labmeet usually happens at this 
             slot.  DO NOT book here unless you are sure that following event WILL not
             happen. 
             </font>" );
