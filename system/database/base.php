@@ -182,7 +182,7 @@ class BMVPDO extends PDO
         $res = $this->query( "
                     CREATE TABLE IF NOT EXISTS recurrent_pattern (
                         id INT NOT NULL PRIMARY KEY
-                        , request_gid INT NOT NULL 
+                        , request_gid INT UNSIGNED CHECK (request_gid > 0)
                         , pattern VARCHAR(100) NOT NULL
                         , timestamp DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                         , UNIQUE KEY(request_gid, pattern)

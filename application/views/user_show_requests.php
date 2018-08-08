@@ -22,14 +22,16 @@ else
         );
         $gid = $request['gid'];
 
-        // Get the recurrent pattern.
-        // $pat = $request['pattern'] . '/' . $request['month_pattern'];
-        // echo " X $pat ";
+        // If this request has any recurrent pattern associated with it in the
+        // table 'recurrent_pattern', we process them here.
+        $recurrentPat = getTableEntry( 'recurrent_pattern'
+                            , 'request_gid', [ 'request_gid' => $gid ]
+                        );
+        $request['recurrent_pattern'] = __get__($recurrentPat,'pattern', '');
 
         $subReqs = getTableEntries( 'bookmyvenue_requests', 'rid'
                         , "gid='$gid' AND status='PENDING'"
                     );
-
         $subReqTab = arraysToCombinedTableHTML( $subReqs, 'info'
             , 'rid,created_by,class,title,external_id,description,status' 
             . ',is_public_event,url,modified_by,last_modified_on,timestamp'

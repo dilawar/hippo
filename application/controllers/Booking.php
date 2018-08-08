@@ -163,12 +163,6 @@ trait Booking
 
                 $_POST['repeat_pat']  = $repeatPat;
 
-                // add this pattern to table recurrent_pattern .
-                $data = [ 'id' => getUniqueID( 'recurrent_pattern')
-                            , 'request_gid' => $_POST[ 'gid' ]
-                            , 'pattern' => $repeatPat
-                        ];
-                $res = insertIntoTable( 'recurrent_pattern', 'id,request_gid,pattern', $data );
             }
 
             $_POST['timestamp']  = dbDateTime( 'now' );
@@ -181,6 +175,13 @@ trait Booking
                 $data = [ 'USER' => loginToText( whoAmI() ) ];
                 $rgroup = getRequestByGroupId( $gid );
                 $data[ 'BOOKING_REQUEST']= arrayToVerticalTableHTML($rgroup[0], 'request');
+
+                // add the recurrent pattern to table recurrent_pattern.
+                $patData = [ 'id' => getUniqueID( 'recurrent_pattern')
+                            , 'request_gid' => $gid
+                            , 'pattern' => $repeatPat
+                        ];
+                $res = insertIntoTable( 'recurrent_pattern', 'id,request_gid,pattern', $patData );
 
                 if( count( $rgroup ) > 0 )
                 {
