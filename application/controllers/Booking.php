@@ -1,6 +1,7 @@
 <?php
 
 require_once BASEPATH. 'autoload.php';
+require_once BASEPATH. 'extra/booking_methods.php';
 
 trait Booking 
 {
@@ -189,7 +190,18 @@ trait Booking
                     $subject = "Your booking request (id-$gid) has been recieved";
                     $template = emailFromTemplate( 'BOOKING_NOTIFICATION', $data );
 
-                    sendHTMLEmail( $template['email_body'], $subject, $userEmail, $template['cc'] );
+                    $body = $template[ 'email_body'];
+
+                    // Now check if some bookings are not made.
+                    $res = areThereAMissingRequestsAssociatedWithThisGID( $gid );
+                    if( $res[ 'are_some_missing'] )
+                    {
+                        $body = printWarning( "I failed to book on some dates." );
+                        $body .= $res[ 'html'];
+                        $body .= $warn;
+                    }
+
+                    sendHTMLEmail( $body, $subject, $userEmail, $template['cc'] );
                     echo flashMessage( "Your booking request has been submitted." );
                 }
                 else
