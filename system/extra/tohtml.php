@@ -1729,7 +1729,7 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
             <tr> <td>Where</td><td> ' . $where . '</td></tr>
             <tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
     $left .=  "<tr><td>$googleCalLink </td>";
-    $left .= '<td><a target="_blank" href="'.site_url('info/events') . '?date='. $event[ 'date' ]
+    $left .= '<td><a target="_blank" href="'.site_url('info/talks') . '?date='. $event[ 'date' ]
                 . '">Permanent link</a></td></tr>';
     $left .= "</table>";
 
@@ -1817,7 +1817,7 @@ function talkToHTML( $talk, $with_picture = false )
 
     // Add the calendar links
     $html .=  $googleCalLink;
-    $html .= '<a target="_blank" href="'.site_url('info/events') . '?date=' . $event[ 'date' ]
+    $html .= '<a target="_blank" href="'.site_url('info/talks') . '?date=' . $event[ 'date' ]
                 . '">Permanent link</a>';
 
     return $html;
