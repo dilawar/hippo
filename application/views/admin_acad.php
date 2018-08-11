@@ -137,7 +137,9 @@ echo '
     </tr>
     <tr>
         <td>
-            <a class="clickable" href="'.site_url('adminacad/courses').'">Manage Courses</a>
+            <a class="clickable" href="'.site_url('adminacad/courses').'"> Manage Courses</a>
+            <br />
+            <a class="" href="'.site_url('adminacad/allcourses').'">(Edit Description)</a>
         </td>
         <td> <a class="clickable"
              href="'.site_url('adminacad/slots').'">Manage Slots</a> <br />
