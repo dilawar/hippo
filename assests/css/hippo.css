@@ -422,6 +422,7 @@ div.header {
     background-color: darkblue;
 }
 
+
 h1.title a {
     color : white;
 }
@@ -739,6 +740,11 @@ table.editable_faculty tr td
 {
     /*border : 0.5px dotted; */
     /*min-width : 20%;*/
+}
+
+table.small_font 
+{
+    font-size: x-small;
 }
 
 

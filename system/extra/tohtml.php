@@ -2123,10 +2123,21 @@ function slotTable( $width = "15px" )
 
 }
 
-function coursesTable( $editable = false, $with_form = true )
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Make a course table.
+    *
+    * @Param $editable
+    * @Param $with_form
+    * @Param $class
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function coursesTable( $editable = false, $with_form = true, $class="" )
 {
     $courses = getTableEntries( 'courses_metadata', 'name,id' );
-    $html = '<table class="info sortable">';
+    $html = "<table id='all_courses' class='info sortable exportable $class'>";
     $html .= '<th>ID</th> <th>Credit</th> <th>Name</th> <th> Description </th>
         <th> Instructors </th> <th></th> ';
     foreach( $courses as $c )
@@ -2147,7 +2158,7 @@ function coursesTable( $editable = false, $with_form = true )
         if( $editable )
         {
             if( $with_form )
-                $html .= '<form action="#" method="post" accept-charset="utf-8">';
+                $html .= '<form action="#editcourse" method="post" accept-charset="utf-8">';
 
             $html .= '<td> <button name="response" value="Edit">Edit</button>';
             $html .= '<input type="hidden" name="id" value="' . $c['id'] . '">';
@@ -2264,7 +2275,6 @@ function getCourseInfo( $cid )
     $instructors = getCourseInstructors( $c );
     return $html . '<br>' . $instructors;
 }
-
 
 
 function smallCaps( $text )
@@ -2822,4 +2832,27 @@ function uploadToDbTableLink( string $tablename, string $unique_key, string $arg
     $html .= '</form>';
     return $html;
 }
+
+function editHTML( $buttonVal )
+{
+    $html = "<h2>$buttonVal course</h3>";
+
+    $html .= '<form method="post" action="'.site_url('adminacad/all_courses_action').'">';
+    $html .= dbTableToHTMLTable( 'courses_metadata', $course
+            , 'id,credits:required,name:required,description,'
+                . 'instructor_1:required,instructor_2,instructor_3'
+                . ',instructor_4,instructor_5,instructor_6,instructor_extras'
+                . ',comment'
+            , $buttonVal
+            );
+
+
+    $html .= '<button title="Delete this entry" type="submit" onclick="AreYouSure(this)"
+        name="response" value="Delete">' . $symbDelete .
+        '</button>';
+    $html .= '<button id="addMoreInstructors">Add more instructors</button>';
+    $html .= '</form>';
+    return $html;
+}
+
 ?>

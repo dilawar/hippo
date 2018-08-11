@@ -224,6 +224,7 @@ echo goBackToPageLink( "adminbmv/home", "Go home" );
 TableExport(document.getElementsByClassName("exportable"));
 </script>
 
+<!-- Filter request -->
 <script type="text/javascript" charset="utf-8">
 var $rowsRequest = $('#pending_requests tr');
 $('#filter_requests').keyup(function() {

@@ -76,8 +76,8 @@ if( $_POST && array_key_exists( 'running_course', $_POST ) )
     $action = 'Edit';
 }
 
-echo p( goBackToPageLinkInline( "adminacad/allcourses" , "Click here" ) . 
-        " to edit description of courses ." );
+echo p( "To edit details of a course " . 
+    goBackToPageLinkInline( "adminacad/allcourses" , "click here." ));
 
 $runningCoursesHTML  = "<h2>Following courses are running in $sem $year.</h2>";
 $runningCoursesHTML .= '<table class="info sortable">';
@@ -101,7 +101,7 @@ if( count($runningCourses) > 0 )
         $runningCoursesHTML .= arrayToRowHTML($course, 'aws', $tobefilterd, true, false);
         $runningCoursesHTML .=  '<td>
             <form action="" method="post">
-                <button type="submit" value="Edit">Edit</button>
+                <button type="submit" value="Edit">Edit Schedule</button>
                 <input type="hidden" name="running_course" value="' 
                     .  $course[ 'id' ] . ': ' . $cname .  '" />
             </form></td>';
@@ -125,9 +125,10 @@ echo "</br>";
 if( $action == 'Add' )
 {
     echo "<h1>Add a course to running courses list</h1>";
-    echo p( "Course is not found drop-down menu, " 
-            . goBackToPageLinkInline( "adminacad/allcourses" , "Click here" ) . " to
-            add courses to list." 
+    echo p( "<i class='fa fa-info-circle fa-2x'></i>
+        If a course is not found drop-down menu, " 
+            . goBackToPageLinkInline( "adminacad/allcourses" , "click here" ) . " to
+            add a new course. You will have to come back here again." 
         );
 }
 else
