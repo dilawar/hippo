@@ -1,5 +1,4 @@
 <?php
-
 require_once BASEPATH.'extra/methods.php';
 
 function lablist_every_two_months_cron()
@@ -12,14 +11,14 @@ function lablist_every_two_months_cron()
      */
     /* ----------------------------------------------------------------------------*/
     $intMonth = intval( date( 'm', strtotime( 'today' ) ) );
-    echo $intMonth;
 
     // Nothing to do on odd months.
     if( $intMonth % 2 == 0 )
     {
         $year = getCurrentYear( );
         $month = date( 'M', strtotime( 'today' ));
-        if( trueOnGivenDayAndTime( 'first Saturday', '10:00 am' ) )
+
+        if( trueOnGivenDayAndTime( 'Second Saturday of $month', '15:00' ) )
         {
             error_log( "First saturday of even month. Update PIs about AWS list" );
             $speakers = getAWSSpeakers( );
@@ -63,6 +62,6 @@ function lablist_every_two_months_cron()
             }
         }
     }
-
 }
+
 ?>
