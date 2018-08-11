@@ -18,9 +18,9 @@ function lablist_every_two_months_cron()
         $year = getCurrentYear( );
         $month = date( 'M', strtotime( 'today' ));
 
-        if( trueOnGivenDayAndTime( 'Second Saturday of $month', '15:00' ) )
+        if( trueOnGivenDayAndTime( "Second Saturday of $month", '15:00' ) )
         {
-            error_log( "First saturday of even month. Update PIs about AWS list" );
+            error_log( "Second saturday of even month. Update PIs about AWS list" );
             $speakers = getAWSSpeakers( );
             $facultyMap = array( );
             foreach( $speakers as $speaker )
