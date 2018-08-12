@@ -71,7 +71,7 @@ class Cron extends CI_Controller {
     {
         aws_monday_morning_cron();
 
-        if( trueOnGivenDayAndTime( 'this monday', '13:00' ) )
+        if( trueOnGivenDayAndTime( 'this monday', '11:00' ) )
             notifyAcadOfficeUnassignedSlot();
     }
 

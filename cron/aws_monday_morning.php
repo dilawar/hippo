@@ -68,8 +68,13 @@ function notifyAcadOfficeUnassignedSlot( )
         return;
 
     $email = emailFromTemplate( 'NOTIFY_ACADOFFICE_UNASSIGNED_SLOTS', [ 'TABLE' => $table ] );
+    if( ! $email )
+    {
+        echo p("Could not find email template" );
+        return;
+    }
 
-    sendHTMLEmail( $email['body']
+    sendHTMLEmail( $email['email_body']
         , "Some AWS slots are still not assgined"
         , $email['recipients'], $email['cc']
     );
