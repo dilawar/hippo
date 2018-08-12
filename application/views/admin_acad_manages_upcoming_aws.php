@@ -87,14 +87,29 @@ foreach( $upcomingAWSs as $aws )
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Show upcoming schedule. Show a table.
+    * @Synopsis  Show upcoming schedule. Show a table. If a week is missing,
+    * make sure to insert a new row with date.
  */
 /* ----------------------------------------------------------------------------*/
 $table = '<table class="infolarge exportable">';
+
+// This is odd way of getting first key of an associative array in PHP.
+$prevDate = key($awsGroupedByDate);
 foreach( $awsGroupedByDate as $groupDate => $awses )
 {
-    $awsThisWeek = count( $awses );
+    // Check if the gap is more than 7 days.
+    $nWeeks = diffDates( $prevDate, $groupDate, 'week' );
+    if( $nWeeks > 1 )
+    {
+        for ($i = 1; $i <= $nWeeks; $i++) 
+        {
+            $weekDate = humanReadableDate( strtotime( "+$i weeks", strtotime($prevDate)) );
+            $table .= "<tr><td colspan='3'> <strong>$weekDate </strong> is missing!</td></tr>";
+        }
+    }
 
+    $prevDate = $groupDate;
+    $awsThisWeek = count( $awses );
     $table .= '<tr>';
     // Show AWSes
     foreach( $awses as $countAWS => $aws )
@@ -186,7 +201,6 @@ $methodTable .= "</td></tr>";
 $methodTable .= '</table>';
 $methodTable .= "</form>";
 echo $methodTable;
-
 
 $schedule = getTentativeAWSSchedule( );
 $scheduleMap = array( );

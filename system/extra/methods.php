@@ -1587,18 +1587,18 @@ function getValuesByKey( $arr, $key )
 
 function diffDates( $date1, $date2, $unit = 'second' )
 {
-    $d = strtotime( $date1 ) - strtotime( $date2 );
+    $d = abs(strtotime( $date1 ) - strtotime( $date2 ));
     if( $unit == 'second' )
         return $d;
-    else if( $unit == 'minute' )
+    if( $unit == 'minute' )
         return $d / 60;
-    else if( $unit == 'hour' )
+    if( $unit == 'hour' )
         return $d / 3600;
-    else if( $unit == 'day' )
+    if( $unit == 'day' )
         return $d / (24*3600);
-    else if( $unit == 'week' )
+    if( $unit == 'week' )
         return $d / (7*24*3600);
-    else if( $unit == 'month' )
+    if( $unit == 'month' )
         return intval( $d / (30.41*24*3600));
     return -1;
 }
