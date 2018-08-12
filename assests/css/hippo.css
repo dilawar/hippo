@@ -742,12 +742,6 @@ table.editable_faculty tr td
     /*min-width : 20%;*/
 }
 
-table.small_font 
-{
-    font-size: x-small;
-}
-
-
 caption {
     /* color: blue; */
     /* font-variant: small-caps; */

@@ -1,5 +1,4 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
 
 // Some symbols.
@@ -35,32 +34,38 @@ foreach( $upcomingAWSs as $aws )
     if( strtotime( $aws['date'] ) - strtotime( 'today' )  < 7 * 24 * 3600 )
         array_push( $upcomingAwsNextWeek, $aws );
 
-echo '<h1>Annual Work Seminar for upcoming week</h1>';
+echo '<h1>Upcoming AWSs</h1>';
 
 if( count( $upcomingAwsNextWeek ) < 1 )
     echo alertUser( "No AWS found for upcoming week.", false );
 else
 {
-    $table = '<div style="font-size:small">';
+    $table = '<div>';
     foreach( $upcomingAwsNextWeek as $upcomingAWS )
     {
         $table .= '<form action="'.site_url('adminacad/next_week_aws_action').'" method="post" >';
-        $table .= '<table>';
+        $table .= '<table style="border:2px solid lightblue;" class="show_info">';
         $table .= '<tr><td>';
-        $table .= arrayToVerticalTableHTML($upcomingAWS, 'aws', '', array( 'id', 'status', 'comment' ));
+
+        $awsToShow = [];
+        $awsToShow['speaker'] = loginToText( $upcomingAWS['speaker'] );
+        $awsToShow['title'] = $upcomingAWS['title'];
+        $awsToShow['abstract'] = $upcomingAWS['abstract'];
+        $awsToShow['supervisors'] = getAWSSupervisorsHTML( $upcomingAWS );
+        $awsToShow['tcm members'] = getAWSTcmHTML( $upcomingAWS );
+        $awsToShow['is_presynopsis_seminar'] = $upcomingAWS['is_presynopsis_seminar'];
+        // $awsToShow['acknowledged'] = $upcomingAWS['acknowledged'];
+
+        $table .= arrayToVerticalTableHTML($awsToShow, 'aws', '', 'id,status,comment');
         $table .= '<input type="hidden", name="date" , value="' .  $upcomingAWS[ 'date' ] . '"/>';
         $table .= '<input type="hidden", name="speaker" , value="' . $upcomingAWS[ 'speaker' ] . '"/>';
         $table .= '<input type="hidden", name="id" , value="' . $upcomingAWS[ 'id' ] . '"/>';
         $table .= '</td><td>';
         $table .= '<button name="response" title="Edit/format the abstract" value="format_abstract">' . $symbEdit . '</button>';
-        // $table .= '<br>';
-        //$table .= '<button onclick="AreYouSure(this)" name="response"
-        //       . title="Remove this entry from schedule" value="delete">' . $symbCancel . '</button>';
         $table .= '</td></tr>';
         $table .= '</table>';
         $table .= '</form>';
     }
-
     $table .= '</div>';
     echo $table;
 }

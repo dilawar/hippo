@@ -2855,4 +2855,29 @@ function editHTML( $buttonVal )
     return $html;
 }
 
+function getAWSSupervisorsHTML( array $aws ) : string 
+{
+    $supervisors = [];
+    for( $i = 1; $i <= 2; $i++ )
+    {
+        $su = __get__( $aws, "supervisor_$i", "" );
+        if($su)
+            $supervisors[] = loginToHTML($su);
+    }
+    return implode( ", ", $supervisors);
+}
+
+function getAWSTcmHTML( array $aws ) : string 
+{
+    $tcms = [];
+    for( $i = 1; $i <= 4; $i++ )
+    {
+        $su = __get__( $aws, "tcm_member_$i", "" );
+        if($su)
+            $tcms[] = loginToHTML($su);
+    }
+    return implode( ", ", $tcms);
+}
+
+
 ?>
