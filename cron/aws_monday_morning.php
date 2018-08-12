@@ -54,7 +54,7 @@ function notifyAcadOfficeUnassignedSlot( )
             continue;
 
         echo " | This week is $weekDate <br /> ";
-        $awses = getTentativeAWSSchedule( $weekDate );
+        $awses = getUpcomingAWSOnThisMonday( $weekDate );
         $nMissing = 3 - count($awses);
         if( $nMissing > 0 )
         {
