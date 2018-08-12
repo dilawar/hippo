@@ -184,7 +184,7 @@ echo goBackToPageLink( "adminacad/home", "Go back" );
     * @Synopsis  Temporary schedule.
  */
 /* ----------------------------------------------------------------------------*/
-echo "<h1>Temporary assignments</h1>";
+echo "<h1 id='temporary_assginments'>Temporary assignments</h1>";
 
 echo printInfo("Three methods are available for scheduling AWS. First one is default.");
 

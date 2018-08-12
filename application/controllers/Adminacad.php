@@ -196,7 +196,7 @@ class Adminacad extends CI_Controller
             flashMessage("Failed to compute schedule. Request method $method.");
         else
             flashMessage('Sucessfully computed schedule.');
-        redirect( 'adminacad/upcoming_aws');
+        redirect( 'adminacad/upcoming_aws#temporary_assginments');
     }
 
     public function update_user( )
