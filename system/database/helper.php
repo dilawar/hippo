@@ -2179,7 +2179,7 @@ function deleteAWSEntry( $speaker, $date )
 
 function getHolidays( $from = NULL )
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
     if( ! $from )
         $from = date( 'Y-m-d', strtotime( 'today' ) );
     $stmt = $hippoDB->query( "SELECT * FROM holidays WHERE date >= '$from' ORDER BY date" );
@@ -3514,5 +3514,16 @@ function getSchedulingRequests( string $user ) : array
     return [];
 }
 
+function isAWSHoliday( $date ) : bool
+{
+    $h = getTableEntry( 'holidays', 'date,schedule_talk_or_aws'
+        , [ 'date' => $date, 'schedule_talk_or_aws' => 'YES' ]);
+
+    if( $h )
+        return true;
+
+    return false;
+
+}
 
 ?>

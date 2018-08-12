@@ -70,6 +70,9 @@ class Cron extends CI_Controller {
     public function aws_monday_morning( )
     {
         aws_monday_morning_cron();
+
+        if( trueOnGivenDayAndTime( 'this monday', '13:00' ) )
+            notifyAcadOfficeUnassignedSlot();
     }
 
     public function aws_schedule_fac_student()
