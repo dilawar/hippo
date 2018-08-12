@@ -38,4 +38,42 @@ function aws_monday_morning_cron()
     }
 }
 
+function notifyAcadOfficeUnassignedSlot( )
+{
+    $thisMonday = dbDate( 'this monday');
+    // Check for next 6 weeks.
+    $table = '<table>';
+    $table .= "<caption>Unassigned slots</caption>";
+    $table .= '<tr><th>Date</th><th>Number of unassigned slots</th></tr>';
+
+    $totalMissing = 0;
+    for ($i = 0; $i <= 6; $i++) 
+    {
+        $weekDate = dbDate( strtotime( "+$i weeks", strtotime($thisMonday)) );
+        if( isAWSHoliday( $weekDate ) )
+            continue;
+
+        echo " | This week is $weekDate <br /> ";
+        $awses = getTentativeAWSSchedule( $weekDate );
+        $nMissing = 3 - count($awses);
+        if( $nMissing > 0 )
+        {
+            $table .= "<tr><td> $weekDate </td><td> $nMissing </td></tr>";
+            $totalMissing += $nMissing;
+        }
+    }
+    $table .= '</table>';
+
+    if( $totalMissing == 0 )
+        return;
+
+    $email = emailFromTemplate( 'NOTIFY_ACADOFFICE_UNASSIGNED_SLOTS', [ 'TABLE' => $table ] );
+
+    sendHTMLEmail( $email['body']
+        , "Some AWS slots are still not assgined"
+        , $email['recipients'], $email['cc']
+    );
+
+}
+
 ?>
