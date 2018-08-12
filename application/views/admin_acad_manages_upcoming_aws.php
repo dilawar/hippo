@@ -6,6 +6,7 @@ global $symbEdit;
 global $symbCancel;
 global $symbDelete;
 global $symbAccept;
+$symbAWSRemove = '<i class="fa fa-trash fa-2x"></i>';
 
 echo userHTML( );
 
@@ -35,7 +36,6 @@ foreach( $upcomingAWSs as $aws )
         array_push( $upcomingAwsNextWeek, $aws );
 
 echo '<h1>Upcoming AWSs</h1>';
-
 if( count( $upcomingAwsNextWeek ) < 1 )
     echo alertUser( "No AWS found for upcoming week.", false );
 else
@@ -71,13 +71,7 @@ else
 }
 
 echo "<h1>Upcoming approved AWSs</h1>";
-
-echo '<div style="font-size:small">';
 echo awsAssignmentForm( );
-echo "</div>";
-
-echo '<br /><br />';
-
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -96,16 +90,12 @@ foreach( $upcomingAWSs as $aws )
     * @Synopsis  Show upcoming schedule. Show a table.
  */
 /* ----------------------------------------------------------------------------*/
-$table = '<table class="infolarge">';
+$table = '<table class="infolarge exportable">';
 foreach( $awsGroupedByDate as $groupDate => $awses )
 {
     $awsThisWeek = count( $awses );
 
     $table .= '<tr>';
-
-    // $table .= '<td style="font-size:large" colspan=3>' . humanReadableDate( $groupDate, $with_day = false ) . '</td>';
-    // $table .= ' </tr><tr>';
-
     // Show AWSes
     foreach( $awses as $countAWS => $aws )
     {
@@ -114,8 +104,8 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         // Each speaker can be a table as well.
         $speakerTable = '<table class="sticker" border=0> <tr> ';
 
-        $speakerHTML = smallCaps( loginToText( $aws['speaker'], $withEmail = false ) .
-            ' (' .  $aws['speaker'] . ')' );
+        $speakerHTML = "<strong>" .  smallCaps( loginToText( $aws['speaker'], $withEmail = false ) 
+            . "</strong>" .  ' (' .  $aws['speaker'] . ')' );
 
         // Check if user has requested AWS schedule and has it been approved.
         $request = getSchedulingRequests( $aws['speaker'] );
@@ -130,11 +120,9 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         $awsID = $aws['id'];
 
         // Speaker PI if any.
-        $speakerTable .=  '<td>' . piSpecializationHTML( $pi, $specialization ) . '</td>';
+        $speakerTable .=  '<td>' . piSpecializationHTML( $pi, $specialization, $prefix='' ) . '</td>';
+        $speakerTable .= '</tr>';
 
-        $form = '<form action="'.site_url("adminacad/upcoming_aws_action"). '" method="post">';
-        $form .= '<input type="hidden", name="date", value="' . $aws[ 'date' ] . '"/>';
-        $form .= '<input type="hidden", name="speaker", value="' . $aws[ 'speaker' ] . '"/>';
         // Create a hidden form which gets active when someone clicks on delete
         // this entry.
         $divId = 'delete_aws_form_' . $awsID;
@@ -145,11 +133,16 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         $delete .= '<button name="response" onclick="AreYouSure(this)"
                     title="Delete this entry" >' . $symbDelete . '</button>';
         $delete .= '</div>';
-        $form .= "<a onclick=\"toggleShowHide( this, '$divId', 'Delete This Entry')\">Remove this entry</a> $delete";
+        
+        // Remove this entry form.
+        $form = '<form action="'.site_url("adminacad/upcoming_aws_action"). '" method="post">';
+        $form .= '<input type="hidden", name="date", value="' . $aws[ 'date' ] . '"/>';
+        $form .= '<input type="hidden", name="speaker", value="' . $aws[ 'speaker' ] . '"/>';
+        $form .= "<a onclick=\"toggleShowHide( this, '$divId', '')\"
+            title=\"Remove this entry\" > $symbAWSRemove </a> $delete";
         $form .= '</form>';
 
-        $speakerTable .= '<td>' . $form . '</td>';
-        $speakerTable .= '</td>';
+        $speakerTable .= "<tr><td colspan='2'>$form</td>";
         $speakerTable .=  '</tr></table>';
 
         $table .= $speakerTable;
@@ -347,4 +340,10 @@ echo goBackToPageLink( "adminacad/home", "Go back" );
 
 ?>
 
-
+/* <!-- This should be copy pasted --> */
+<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+TableExport(document.getElementsByClassName("exportable"));
+</script>

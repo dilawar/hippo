@@ -2371,20 +2371,10 @@ function getRefShort( $ifsamegoto = 'user/home' )
     return $shortUrl;
 }
 
-/*
-function mailto( $email, $text = '' )
+function piSpecializationHTML( $pi, $specialization, $prefix = 'PI/HOST:' )
 {
-    if( ! $text )
-        $text = $email;
-
-    $html = "<a href=\"mailto:" . $email . "\"> $text </a>";
-    return $html;
-}
- */
-
-function piSpecializationHTML( $pi, $specialization )
-{
-    return "$specialization <br /> PI OR HOST: $pi";
+    $pi = "<tt>$pi</tt>";
+    return "$specialization <br />$prefix $pi";
 }
 
 function goBackToPageLink( $url, $title = "Go back" ) : string
