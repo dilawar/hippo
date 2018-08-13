@@ -753,6 +753,11 @@ function getLoginPicturePath( $login, $default = 'hippo' )
     return $picPath;
 }
 
+function calendarUrl( )
+{
+    return getConf()['data']['CALENDAR_URL'];
+}
+
 /**
     * @brief Picture path of speakers (not user login).
     *

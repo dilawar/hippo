@@ -143,7 +143,7 @@ $(document).ready(function(){
     <td><a class="bright" href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
     <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
-    <td><a class="bright" href="http://intranet.ncbs.res.in/HippoIgnited/index.php" target="_blank" >Old Hippo</a></td>
+    <td><a class="bright" href="<?= getConfigValue( 'CALENDAR_URL' ) ?>" target="hippo_popup">Calendar</a> </td>
     </tr>
 </table>
 </div>
