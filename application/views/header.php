@@ -1,7 +1,3 @@
-<!-- MAIN STYPE -->
-<link href="<?= base_url() ?>/assests/css/hippo.css" rel="stylesheet" type="text/css" />
-
-
 <!--  REQUIRED -->
 <script src="<?= base_url() ?>/node_modules/jquery/dist/jquery.js"></script>
 <script src="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
@@ -15,9 +11,11 @@
  
 <!-- Font awesome -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
+<!-- font awesome animation -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome-animation/dist/font-awesome-animation.min.css"/>
 
-<!-- font awesome animation -->
+<!-- hippo css -->
+<link href="<?= base_url() ?>/assests/css/hippo.css" rel="stylesheet" type="text/css" />
 
 <!-- sort table. -->
 <script src="<?= base_url() ?>/node_modules/sorttable/sorttable.js"></script>
