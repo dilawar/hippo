@@ -2330,7 +2330,10 @@ function courseToHTMLRow( array $c, string $slot, string $sem, string $year
     $venue = $c[ 'venue' ];
     $nReg = count( $registrations );
 
-    $row = '<td><font style="font-variant:small-caps">' . $cname . '</font>
+    if( $note )
+        $note = "<blink><i class='fa fa-bell fa-2x'></i></blink> $note";
+
+    $row = '<td><font style="font-variant:small-caps; font-size:large">' . $cname . '</font>
             <button id="$cid" onclick="showCourseInfo(this)"
                 class="show_as_link" value="' . $cinfo . '"
                 title="' . $cname . '" > <i class="fa fa-info-circle"></i>

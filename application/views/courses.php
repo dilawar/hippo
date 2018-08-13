@@ -13,8 +13,8 @@ function showAlertTable( )
         <tr>
             <td>
                 <i class="fa fa-flag-checkered fa-2x"></i>
-                Registration on <tt>Hippo</tt> is mandatory;
-                <a href="http://moodle.ncbs.res.in" target="_blank">MOODLE</a> registration
+                Registration on Hippo is mandatory; 
+                <a href="http://moodle.ncbs.res.in" target="_blank">MOODLE</a> enrollment
                 is independent of it!
             </td>
         </tr>
@@ -120,8 +120,8 @@ function showRunningCourse( x )
 
 
 $table = slotTable();
-echo p("Click on tile <button class=\"tiles\" disabled>1A</button> etc to see the
-    list of courses running at this time.");
+echo p("Click on tiles such as <button class=\"tiles\" disabled>1A</button> to see the
+    courses running on this slot.");
 echo $table;
 
 /* Select year and semester */
@@ -136,12 +136,10 @@ else
     $springSelected = 'selected';
 
 /* Enrollment table. */
-echo "<h3>Courses running in " . __ucwords__( $sem) . ", $year</h3>";
 
 // Show select semester/year.
 $form = selectYearSemesterForm( $year, $sem );
 echo $form;
-
 $showEnrollText = 'Show Enrollement';
 
 echo showAlertTable( );
