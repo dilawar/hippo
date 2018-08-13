@@ -1,12 +1,3 @@
- <!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-
-<!-- jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-
-<!-- Latest compiled JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
-
 <!-- MAIN STYPE -->
 <link href="<?= base_url() ?>/assests/css/hippo.css" rel="stylesheet" type="text/css" />
 
@@ -24,6 +15,9 @@
  
 <!-- Font awesome -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
+<link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome-animation/dist/font-awesome-animation.min.css"/>
+
+<!-- font awesome animation -->
 
 <!-- sort table. -->
 <script src="<?= base_url() ?>/node_modules/sorttable/sorttable.js"></script>
