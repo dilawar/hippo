@@ -120,11 +120,9 @@ function showRunningCourse( x )
 
 
 $table = slotTable();
+echo p("Click on tile <button class=\"tiles\" disabled>1A</button> etc to see the
+    list of courses running at this time.");
 echo $table;
-echo "<br />
-    Click on tile <button class=\"tiles\" disabled>1A</button> etc to see the
-    list of courses running at this time.
-    ";
 
 /* Select year and semester */
 
