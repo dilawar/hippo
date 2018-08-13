@@ -47,7 +47,7 @@ function notifyAcadOfficeUnassignedSlot( )
     $table .= '<tr><th>Date</th><th>Number of unassigned slots</th></tr>';
 
     $totalMissing = 0;
-    for ($i = 0; $i <= 8; $i++) 
+    for ($i = 1; $i <= 8; $i++) 
     {
         $weekDate = dbDate( strtotime( "+$i weeks", strtotime($thisMonday)) );
         if( isAWSHoliday( $weekDate ) )
