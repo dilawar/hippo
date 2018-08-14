@@ -212,14 +212,19 @@ class User extends CI_Controller
         {
             $_POST[ 'last_modified_on' ] = dbDateTime( 'now' );
             $_POST[ 'registered_on' ] = dbDateTime( 'now' );
+            $_POST[ 'status' ] = 'VALID';
 
-            $res = insertIntoTable( 'course_registration'
+            // If already registered then update the type else register new.
+            $res = insertOrUpdateTable( 'course_registration'
                 , 'student_id,semester,year,type,course_id,registered_on,last_modified_on'
+                , 'type,last_modified_on,status'
                 , $_POST 
             );
 
             if( ! $res )
-                $this->session->set_flashdata( 'error', "Could not register" );
+                $this->session->set_flashdata( 'error', "Could not enroll." );
+            else
+                echo flashMessage( "Successfully registered" );
 
             redirect( 'user/courses' );
         }

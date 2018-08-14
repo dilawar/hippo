@@ -103,7 +103,7 @@ echo alertUser(
 echo '<form method="post" action="manage_course/register">';
 echo dbTableToHTMLTable( 'course_registration'
     , $default
-    , 'course_id:required,type'
+    , 'course_id:required,type:required'
     , 'Submit'
     , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
     );
