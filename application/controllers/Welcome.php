@@ -14,6 +14,11 @@ class Welcome extends CI_Controller
 
     public function index()
     {
+        // Empty URI e.g. https://ncbs.res.in/hippo will redirect to
+        // https://ncbs.res.in/hippo/welcome .
+        if( ! uri_string() )
+            redirect( "welcome" );
+
         $this->loadview('index.php');
     }
 
