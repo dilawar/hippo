@@ -94,6 +94,7 @@ h1 a:hover {
 h1 {
     font-family: 'EB Garamond';
     margin-bottom: 10px;
+    line-height: 120%;
 }
 
 h2 {
@@ -406,10 +407,10 @@ div.important {
 }
 
 div.notice {
-    background-color: rgba(200,200,200,0.2);
+    /* background-color: rgba(200,200,200,0.2); */
     padding: 10px;
     margin-bottom: 5px;
-    font-family: 'Roboto';
+    /* font-family: 'Roboto'; */
     /* font-family: 'Open Sans'; */
     /* font-size: small; */
 }
@@ -435,8 +436,8 @@ div.aws_preference {
 div.human_readable {
     /* font-size: small; */
     /* min-width: 600px; */
-    max-width: 100%;
-    line-height: 1.5;
+    /* max-width: 100%; */
+    line-height: 1.2;
 }
 
 div.bottom {
