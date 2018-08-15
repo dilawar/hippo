@@ -50,7 +50,10 @@ $symbDelete = ' <i class="fa fa-trash "></i> ';
 
 ?>
     <div id="contents"><?= $contents ?></div>
+    <br />
     <div id="div_background_image"></div>
+    <br />
     <div id="footer"><?php if(isset($footer)){echo $footer;}else{echo "";} ?></div>
+
 </body>
 </html>

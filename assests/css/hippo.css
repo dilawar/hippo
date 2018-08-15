@@ -33,10 +33,11 @@ body {
 
 #div_background_image {
     background-repeat:no-repeat;
-    background-size: cover;
-    background-attachment:fixed;
+    /* background-size: cover; */
+    /* background-attachment:fixed; */
     background-attachment: scroll;
-    float: bottom;
+    /* float: bottom; */
+    /* height: 90%; */
 }
 
 
