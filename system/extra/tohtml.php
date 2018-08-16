@@ -2337,7 +2337,7 @@ function courseToHTMLRow( array $c, string $slot, string $sem, string $year
     $row = '<td><font style="font-variant:small-caps; font-size:large">' . $cname . '</font>
             <button id="$cid" onclick="showCourseInfo(this)"
                 class="show_as_link" value="' . $cinfo . '"
-                title="' . $cname . '" > <i class="fa fa-info-circle"></i>
+                title="' . $cname . '" > <i class="fa fa-2x fa-info-circle"></i>
             </button>
         <br />' . $instructors . " <br /> $note " . '</td>
         <td>' .  $schedule . '</td>
