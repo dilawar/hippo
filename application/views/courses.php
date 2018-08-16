@@ -195,6 +195,8 @@ foreach( $slotCourses as $slot => $courses )
     $html .= $div;
 }
 
+echo p('Click on <i class="fa fa-info-circle fa-2x"></i> in front of course name
+    to see the course content.');
 echo $html;
 
 
