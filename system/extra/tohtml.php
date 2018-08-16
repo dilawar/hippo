@@ -2321,6 +2321,7 @@ function courseToHTMLRow( array $c, string $slot, string $sem, string $year
         $note = colored( '* ' . $c[ 'note' ], 'brown' );
 
     $cinfo = "<p><strong>Credits: $cr </strong></p>" . $cinfo;
+    $cinfo = base64_encode( $cinfo );
 
     $schedule = humanReadableDate( $c[ 'start_date' ] ) . '<br /> to <br />'
         . humanReadableDate( $c[ 'end_date' ] );

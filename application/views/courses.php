@@ -81,7 +81,7 @@ function showCourseInfo( x )
 {
     swal({
         title : x.title
-        , html : "<div align=\"left\">" + x.value + "</div>"
+        , html : "<div align=\"left\">" + atob(x.value) + "</div>"
     });
 }
 
