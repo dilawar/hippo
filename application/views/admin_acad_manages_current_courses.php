@@ -91,7 +91,11 @@ if( count($runningCourses) > 0 )
         $courseID = $course[ 'course_id'];
 
         $cname = getCourseName( $course[ 'course_id'] );
-        $course['course_id'] = '<strong>'. $course['course_id'] . '</strong><br> ' . $cname;
+        $course['course_id'] = '<strong>'
+            . '<a target="_blank" href="' . site_url('adminacad/allcourses?id='.$courseID.'#editcourse') . '">' 
+            . '<i class="fa fa-pencil"></i> </a>' 
+            . $course['course_id'] 
+            . '</strong><br> ' . $cname;
 
         if(isCourseActive($course))
             $course['course_id'] .= "<blink>$symbBell</blink>";
