@@ -100,7 +100,7 @@ if( count($runningCourses) > 0 )
 
         $runningCoursesHTML .= arrayToRowHTML($course, 'aws', $tobefilterd, true, false);
         $runningCoursesHTML .=  '<td>
-            <form action="" method="post">
+            <form action="#edit_current_course" method="post">
                 <button type="submit" value="Edit">Edit Schedule</button>
                 <input type="hidden" name="running_course" value="' 
                     .  $course[ 'id' ] . ': ' . $cname .  '" />
@@ -132,7 +132,7 @@ if( $action == 'Add' )
         );
 }
 else
-    echo "<h1>Edit following course </h1>";
+    echo "<h1 id='edit_current_course'>Edit following course</h1>";
 
 echo '<form method="post" action="'.site_url('adminacad/courses_action') .'">';
 $default[ 'slot' ] = $slotSelect;
