@@ -23,7 +23,9 @@ $phpFileUploadErrors = array(
 
 function whoAmI( )
 {
-    return __get__( $_SESSION, 'WHOAMI', 'UNKNOWN' );
+    if( isset( $_SESSION) )
+        return __get__( $_SESSION, 'WHOAMI', 'UNKNOWN' );
+    return 'Hippo';
 }
 
 /**
