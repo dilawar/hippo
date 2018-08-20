@@ -95,12 +95,21 @@ echo '<input id="course" name="id" type="text" value="" >';
 echo '<button type="submit" name="response" value="show">Edit Course</button>';
 echo '</form>';
 
+// We can edit course using both _GET or _POST.
 if( __get__( $_POST, 'response', 'Edit' ) && __get__( $_POST, 'id', false ) )
 {
     $course = __get__( $coursesMap, $_POST['id'], null );
     if( $course )
         $buttonVal = 'Update';
 }
+elseif( __get__( $_GET, 'id', false ) )
+{
+    $course = __get__( $coursesMap, $_GET['id'], null );
+    if( $course )
+        $buttonVal = 'Update';
+}
+
+
 echo showEditCourse( $buttonVal, $course);
 
 echo "<br/><br/>";
