@@ -100,7 +100,7 @@ trait AdminacadCourses
         {
             $res = updateTable( 'courses_metadata'
                     , 'id'
-                    , 'name,credits,description' 
+                    , 'name,venue,credits,description' 
                         .  ',instructor_1,instructor_2,instructor_3'
                         . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
                     , $_POST 
@@ -118,7 +118,7 @@ trait AdminacadCourses
         $response = strtolower($_POST['response']);
 
         // If no venue is found, the leave it empty.
-        if( __get__( $_POST, 'venue', '' ) )
+        if( ! __get__( $_POST, 'venue', '' ) )
             $_POST[ 'venue' ] = '';
 
         if( $response == 'do_nothing' )
@@ -195,7 +195,6 @@ trait AdminacadCourses
             );
 
             $msg = '';
-
             $updatable = 'semester,year,start_date,end_date,slot,venue,note,url,ignore_tiles';
             if( count( $collisionCourses ) > 0 )
             {
@@ -237,7 +236,7 @@ trait AdminacadCourses
                 if( $res )
                 {
                     $res = updateBookings( $_POST[ 'id' ] );
-                    $msg .= printInfo( 'Updated course ' . $_POST['course_id'] . '.' );
+                    $msg .= printInfo( 'Updated running course ' . $_POST['course_id'] . '.' );
                     flashMessage( $msg );
                 }
             }
