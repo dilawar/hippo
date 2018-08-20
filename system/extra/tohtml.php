@@ -2348,12 +2348,12 @@ function courseToHTMLRow( array $c, string $slot, string $sem, string $year
     {
         $text = '';
         $url = $c['url'];
-        $row .= '<td>
-        <a target="_blank" href="' . $c['url'] . '">
-            <i class="fa fa-external-link fa-2x"></i>' . $text . '</a></td>';
+        $row .= '<td><a target="_blank" href="' . $c['url'] . '">' 
+            . inlineImage( FCPATH .'./data/Moodle-Icon-1024-corners.png','inline-image', 30) 
+            .'</i></a></td>';
     }
     else
-        $row .= '<td><i class="fa fa-external-link fa-2x"></i></td>';
+        $row .= '<td></td>';
 
     return $row;
 }
