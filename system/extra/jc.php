@@ -18,7 +18,6 @@ function fixJCSchedule( string $loginOrEmail, array $data ) : array
     $data[ 'status' ] = 'VALID';
     $data[ 'presenter' ] = $loginOrEmail;
 
-    $msg = '';
     $msg = json_encode( $data );
 
     echo( json_encode( $data ) . " <br />" );
