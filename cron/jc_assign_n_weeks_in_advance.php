@@ -18,7 +18,7 @@ function jc_assign_n_weeks_in_advance_cron( )
         $nWeeksFromjcDay = strtotime($jcDay) + 3 * 7 * 24 * 3600; 
 
         // At JC time.
-        if( isNowEqualsGivenDayAndTime( $jcDay, '9:30am' ))
+        if( isNowEqualsGivenDayAndTime( $jcDay, '10:0am' ))
         {
             echo printInfo( "JcID is $jcID with $jcDay." );
             error_log( "Scheduling for $jcID" );
