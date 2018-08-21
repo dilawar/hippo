@@ -100,7 +100,7 @@ trait AdminacadCourses
         {
             $res = updateTable( 'courses_metadata'
                     , 'id'
-                    , 'name,venue,credits,description' 
+                    , 'name,credits,description' 
                         .  ',instructor_1,instructor_2,instructor_3'
                         . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
                     , $_POST 
