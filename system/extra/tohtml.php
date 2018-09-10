@@ -2612,7 +2612,7 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
         if( ! $studentId )
             continue;
 
-        $info = getUserInfo( $studentId );
+        $info = getUserInfo( explode('@', $studentId)[0] );
         if( $info )
         {
             $row = '';
