@@ -2,7 +2,7 @@
 
 function aws_monday_morning_cron()
 {
-    if( trueOnGivenDayAndTime( 'this monday', '10:00 am' ) )
+    if( trueOnGivenDayAndTime( 'this monday', '9:30 am' ) )
     {
         error_log( "Monday 10amm. Notify about AWS" );
         echo printInfo( "Today is Monday. Send out emails for AWS" );
@@ -25,7 +25,6 @@ function aws_monday_morning_cron()
             error_log( "Sending to $to, $cclist with subject $subject" );
             echo( "Sending to $to, $cclist with subject $subject" );
             $ret = sendHTMLEmail( $mail, $subject, $to, $cclist, $pdffile );
-            ob_flush( );
         }
         else
         {
