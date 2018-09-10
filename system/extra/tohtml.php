@@ -2623,6 +2623,19 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
             $rows[ $info[ 'first_name'] ] = $row;
             $allEmails[ ] = $info[ 'email'];
         }
+        else
+        {
+            $row = '';
+            $row .= "<td> $studentId 
+                <br />
+                <small>Error fetching details from LDAP. Please contact IT.</small>
+                </td>";
+            $row.= "<td><tt>$studentId</tt></td>";
+            $row .= '<td>' . $r[ 'type' ] . "</td>";
+            $row .= '<td>' . $r[ 'registered_on' ] . "</td>";
+            $rows[ $studentId ] = $row;
+            // $allEmails[ ] = $info[ 'email'];
+        }
     }
 
     ksort( $rows );
