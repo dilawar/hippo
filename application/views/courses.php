@@ -53,6 +53,10 @@ foreach( $runningCourses as $c )
             if( strpos( $c['ignore_tiles'], $tile[ 'id' ]) !== 0 )
                 $tileCourses[ $tile['id']][ ] = array_merge( $c, $course );
     }
+    else
+    {
+        flashMessage( "No metadata is found for $cid " );
+    }
 }
 
 $slotUpcomingCourses = array( );

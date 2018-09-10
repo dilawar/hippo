@@ -47,7 +47,7 @@ function generateAWSEmail( $monday )
         $html .= "<br>";
         $html .= "<p>-- NCBS Hippo</p>";
 
-        return array( "email" => $html, "speakers" => null );
+        return array( "email" => $html, "speakers" => null, 'pdffile' => null );
 
     }
 
@@ -75,7 +75,7 @@ function generateAWSEmail( $monday )
 
     try {
         echo "Generating pdf";
-        $script = __DIR__ . '/generate_pdf_aws.php';
+        $script = FCPATH . '/scripts/generate_pdf_aws.php';
         $cmd = "php -q -f $script date=$monday";
         echo "Executing <pre> $cmd </pre>";
         ob_flush( );
