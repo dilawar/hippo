@@ -1241,19 +1241,13 @@ function getLoginEmail( $login )
     return $res['email'];
 }
 
-function getRoles( $user ) : array
+function getRoles( string $user ) : array
 {
-    if( ! $user )
-        return array();
-
+    // Turn email to username.
     $hippoDB = initDB();;
-
-    if( ! trim( $user ) )
-        return array( );
-
-
-    $stmt = $hippoDB->prepare( 'SELECT roles FROM logins WHERE login=:login' );
+    $stmt = $hippoDB->prepare( 'SELECT roles FROM logins WHERE login=:login OR email=:email' );
     $stmt->bindValue( ':login', $user );
+    $stmt->bindValue( ':email', $user );
     $stmt->execute( );
     $res = $stmt->fetch( PDO::FETCH_ASSOC );
     return explode( ",", $res['roles'] );
