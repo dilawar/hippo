@@ -9,10 +9,11 @@ $default = getUserInfo( $user, true );
 $buttonVal = 'Update';
 if( ! $default )
 {
-    $default = getUserInfoFromLdap( $_POST[ 'login' ] );
+    $userName = __get__( $_POST, 'login', '' );
+    $default = getUserInfoFromLdap( $userName );
     if( ! $default )
     {
-        echo printWarning( "Invalid username. I did not find anyone named " .
+        echo printWarning( "Invalid username $userName. I did not find anyone named " .
             $_POST[ 'login' ] . " on LDAP server" 
         );
         redirect( 'admin' );
