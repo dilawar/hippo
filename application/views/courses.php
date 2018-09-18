@@ -214,6 +214,7 @@ $newTab = '<table id="upcoming_courses" class="info">';
 $header = '<tr><th>Course <br> Instructors</th><th>Schedule</th><th>Slot Tiles</th><th>Venue</th>
     <th>Enrollments</th><th>URL</th> </tr>';
 
+
 foreach( $slotUpcomingCourses as $slot => $ucs )
 {
     foreach( $ucs as $i => $uc )
