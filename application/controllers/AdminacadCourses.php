@@ -232,7 +232,7 @@ trait AdminacadCourses
             }
             else if ( $response == 'update' )
             {
-                $res = updateTable( 'courses', 'course_id', $updatable , $_POST );
+                $res = updateTable( 'courses', 'id', $updatable , $_POST );
                 if( $res )
                 {
                     $res = updateBookings( $_POST[ 'id' ] );

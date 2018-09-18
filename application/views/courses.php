@@ -150,6 +150,7 @@ $header = '<tr><th>Course/Instructors</th><th>Schedule</th><th>Slot/Venue</th><t
 $enrollments = array( );
 $html = '';
 
+// This semester courses.
 foreach( $slotCourses as $slot => $courses )
 {
     $div = '<div class="">';
