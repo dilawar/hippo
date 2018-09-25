@@ -62,7 +62,7 @@ foreach( $runningCourses as $c )
     $cstart = strtotime( $c[ 'start_date' ] );
 
     // Registration is allowed within 3 weeks.
-    if( $today <= strtotime( '+21 day', $cstart ) )
+    if( $today <= (strtotime($cstart) + 3*7*24*3600) )
     {
         // Ignore any course which is colliding with any registered course.
         $cid = $c[ 'course_id' ];
@@ -96,7 +96,7 @@ $default = array( 'student_id' => whoAmI()
     // registration form."
     // );
 echo alertUser(
-    "Courses will be visible in registration form upto 14 days from <tt>start date</tt>."
+    "Courses will be visible in registration form upto 21 days from <tt>start date</tt>."
     , false
     );
 
@@ -162,7 +162,7 @@ foreach($myCourses as &$c)
 
     // If more than 30 days have passed, do not allow dropping courses.
     $cstartDate = $runningCourses[$cid]['start_date'];
-    if(strtotime('today') > strtotime('+30 day', strtotime($cstartDate)))
+    if(strtotime('today') > (strtotime($cstartDate)+30*24*86400))
         $action = '';
 
     // TODO: Don't show grades unless student has given feedback.
