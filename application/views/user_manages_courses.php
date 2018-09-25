@@ -61,8 +61,8 @@ foreach( $runningCourses as $c )
 {
     $cstart = strtotime( $c[ 'start_date' ] );
 
-    // Registration is allowed within 4 weeks.
-    if( $today <= strtotime( '+14 day', $cstart ) )
+    // Registration is allowed within 3 weeks.
+    if( $today <= strtotime( '+21 day', $cstart ) )
     {
         // Ignore any course which is colliding with any registered course.
         $cid = $c[ 'course_id' ];
