@@ -2303,8 +2303,7 @@ function courseToHTMLRow( array $c, string $slot, string $sem, string $year
 
     $cid = $c['course_id'];
 
-    $whereExpr = "year='$year' AND semester='$sem' AND course_id='$cid'
-                AND type!='DROPPED'";
+    $whereExpr = "status='VALID' AND year='$year' AND semester='$sem' AND course_id='$cid' AND type!='DROPPED'";
 
     $registrations = getTableEntries(
         'course_registration', 'student_id', $whereExpr

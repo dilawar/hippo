@@ -90,25 +90,27 @@ if( __get__( $_POST, 'course_id', '' ) )
 
 $enrollments = getTableEntries( 'course_registration' ,'student_id', $whereExpr);
 
-// Show the quick action and enrollment information here.
-echo "<h1>Enrollments for $semester/$year</h1>";
+
 $enrolls = getTableEntries( 'course_registration', 'course_id, student_id'
-        , "status='VALID' AND year='$year' AND semester='$semester'"
-    );
+                            , "status='VALID' AND year='$year' AND semester='$semester'"
+                        );
 $courseMap = array( );
+
 foreach( $enrolls as $e )
     $courseMap[$e['course_id']][] = $e;
 
+// Show the quick action and enrollment information here.
+echo "<h1>Enrollments for $semester/$year</h1>";
 foreach( $courseMap as $cid => $enrolls )
 {
 
     if( ! $cid )
         continue;
 
-    echo '<div style="border:4px solid lightblue">';
+    echo '<div style="border:1px dotted lightblue">';
 
     $cname = getCourseName( $cid );
-    echo "<h4>($cid) $cname </h4>";
+    echo "<h2>($cid) $cname </h2>";
     // Create a form to add new registration.
     $table = ' <table border="0">';
     $table .= '<tr>
@@ -135,7 +137,8 @@ foreach( $courseMap as $cid => $enrolls )
 
     echo '<table class="enrollments">';
     echo '<tr>';
-    echo ' <strong>Current enrollements</strong> ';
+    $numEnrollments = count( $enrolls );
+    echo " <strong>Current enrollements: $numEnrollments</strong> ";
     foreach( $enrolls as $i => $e )
     {
         $index = $i + 1;

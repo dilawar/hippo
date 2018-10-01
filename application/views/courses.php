@@ -165,7 +165,10 @@ foreach( $slotCourses as $slot => $courses )
         $courseTable = '<table class="show_course">';
         // $courseTable .= "<caption> $cid </caption>";
         $courseTable .= "<tr>";
+
+        // This function fills in $enrollments.
         $courseTable .= courseToHTMLRow( $c, $slot, $sem, $year, $enrollments );
+
         $courseTable .= '</tr>';
         $courseTable .= '</table>';
 
