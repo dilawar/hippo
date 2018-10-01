@@ -91,7 +91,7 @@ function awsToTex( $aws )
     // $head .= '\node[yshift=-25mm] (img) { ' . $speakerImg . '};';
     $head .= '\begin{tikzpicture}[ ]';
     $head .= '\node[ ] (img) { ' . $speakerImg . '};';
-    $head .= '\node[right=of img,text width=0.65\linewidth] (title) {{\LARGE ' . $title . '}};';
+    $head .= '\node[right=of img,text width=0.65\linewidth] (title) {{\Large ' . $title . '}};';
     $head .= '\node[below=of title.south west, anchor=west] (author) {\textbf{' . $speaker . '}};';
     $head .= '\end{tikzpicture}';
 
