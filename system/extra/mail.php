@@ -310,6 +310,9 @@ function notifyUserAboutUpcomingAWS( $speaker, $date, $aws_id = -1 )
             $msg = addClickabelURLToMail( $msg, queryToClickableURL( $qID, 'Click here to acknowledge' ) );
     }
 
+    // Append the current user who assigned it.
+    $msg .= "<p>This AWS was assigned by " . whoAmI() . ".</p>";
+
     return sendHTMLEmail( $msg
         , 'ATTN! Your AWS date has been fixed'
         , $to , $templ[ 'cc' ]
