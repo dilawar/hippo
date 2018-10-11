@@ -34,7 +34,7 @@ ksort($questionsById);
 echo '<h1> Data </h1>';
 $table = '<table class="info">';
 
-$table .= '<tr>';
+$table .= '<tr><th></th>';
 foreach( $questionsById as $qid => $qtitle )
     $table .= "<th>$qtitle </th>";
 $table .= '</tr>';
