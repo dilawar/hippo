@@ -3472,7 +3472,7 @@ function getOldResponses( $externalID ) : array
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function getOldCourseFeedback( $year, $semester, $cid )
+function getOldCourseFeedback( $year, $semester, $cid ) : array
 {
     $res = getOldResponses( "$year.$semester.$cid" );
     return $res;

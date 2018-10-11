@@ -2771,23 +2771,27 @@ function csvToRadio(string $csv, string $name, string $default='', string $disab
 function questionsToPoll($questions, $responses = array(), $nochangeafater = 1)
 {
     $html = '';
+
     foreach( $questions as $subcat => $qs )
     {
-        $table = '<table class="poll">';
-        $table .= "<caption>$subcat</caption>";
+        $html .= '<div>';
+        $html .= "<h2> $subcat </h2>";
+
+        $table = '<table class="poll info">';
 
         foreach( $qs as $q )
         {
             $qid = $q['id'];
-
-
-            $oldres = $responses[$qid];
-
-            $defaultVal = $oldres['response'];
-
+            $oldres = '';
+            $defaultVal = '';
             $extra = '';
-            if( (strtotime('now') - strtotime($oldres['timestamp'])) > $nochangeafater * 24 *3600 )
-                $extra = 'disabled';
+            if( __get__($responses, $qid, '' ) )
+            {
+                $oldres = $responses[$qid];
+                $defaultVal = $oldres['response'];
+                if( (strtotime('now') - strtotime($oldres['timestamp'])) > $nochangeafater * 24 *3600 )
+                    $extra = 'disabled';
+            }
 
             $choices = trim($q['choices']);
             if( ! $choices )
@@ -2803,8 +2807,8 @@ function questionsToPoll($questions, $responses = array(), $nochangeafater = 1)
         }
         $table .= '</table>';
         $html .= $table;
+        $html .= '</div>';
     }
-
     return $html;
 }
 

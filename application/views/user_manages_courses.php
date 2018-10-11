@@ -6,6 +6,12 @@ echo userHTML( );
 $sem = getCurrentSemester( );
 $year = getCurrentYear( );
 
+function showFeedbackForm()
+{
+
+}
+
+
 $runningCourses = array( );
 $semCourses = getSemesterCourses( $year, $sem );
 foreach( $semCourses as $rc )
@@ -118,9 +124,6 @@ echo '</form>';
 /**  @} */
 
 $tofilter = 'student_id';
-echo '<div style="font-size:small">';
-echo '<table class="1">';
-echo '<tr>';
 $action = 'drop';
 
 
@@ -146,6 +149,9 @@ if(count($myCourses) > 0)
 // given.
 $noFeedback = array();
 
+echo '<div style="font-size:small">';
+echo '<table border="1pt dotted blue">';
+echo '<tr>';
 foreach($myCourses as &$c)
 {
     $action = 'drop';
@@ -168,26 +174,30 @@ foreach($myCourses as &$c)
     // TODO: Don't show grades unless student has given feedback.
     $tofilter = 'student_id,registered_on,last_modified_on';
 
-    // Show grade if it is available and user has given feedback.
-    if( __get__($c, 'grade', 'X' ) != 'X' )
+    $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
+    if($numUnanswered > 0 )
     {
-        $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
-        if($numUnanswered > 0 )
+        $noFeedback[] = $cid;
+        // Show grade if it is available and user has given feedback.
+        if( __get__($c, 'grade', 'X' ) != 'X' )
         {
-            $noFeedback[] = $cid;
-            $c['grade'] = colored( "Grade is available. 
-                    <br />Feedback is due. $numUnanswered unanswered."
-                    , 'darkred'
-                    );
+            $c['grade'] = colored( 
+                "Grade is available.<br />Feedback is due. $numUnanswered unanswered."
+                , 'darkred' 
+            );
         }
     }
 
-    // Show form.
     echo '<td>';
+
+    // Show form.
+    echo '<table><tr><td>';
     echo '<form method="post" action="'.site_url("user/manage_course/$action").'">';
     echo dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
     echo '</form>';
+    echo '</td>';
 
+    // If feedback is not given for this course, display a button.
     if( in_array($cid, $noFeedback) )
     {
         // Feeback form
@@ -198,18 +208,20 @@ foreach($myCourses as &$c)
         $form .= ' <button style="float:right" name="response" 
             value="submit">Feeback</button>';
         $form .= '</form>';
-        echo $form;
+        echo "<tr><td>$form </td></tr>";
     }
+    else if( $numUnanswered == 0 )
+    {
+        // All questions have been answered
+        echo "<tr><td colspan=2>Feedback has been given.</td></tr>";
+    }
+    echo '</table>';
 
-
-    // If feedback is not given for this course, display a button.
-
+    // Next col of all courses.
     echo '</td>';
-
     $count += 1;
 }
-
-echo '</tr></table>';
+echo '</table>';
 echo '</div>';
 
 echo ' <br /> ';
