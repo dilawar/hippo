@@ -147,8 +147,12 @@ echo '
         </td>
     </tr>
     <tr>
+        <td><a class="clickable" href="'.site_url('adminacad/show_course_feedback').'">
+            Show Feedback on Courses</a> 
+            <br /> Course Feedback data.
+        </td>
         <td><a class="clickable" href="'.site_url('adminacad/feedbackquestionnaire').'">
-            Course feedback questionnaire</a> 
+            Update Course-Feedback Questionnaire</a> 
             <br /> Prepare course feedback questionnaire.
         </td>
     </tr>

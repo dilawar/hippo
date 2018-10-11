@@ -34,6 +34,11 @@ trait AdminacadCourses
         $this->load_adminacad_view( 'admin_acad_manages_course_questionnaire' );
     }
 
+    public function show_course_feedback()
+    {
+        $this->load_adminacad_view( 'admin_acad_show_course_feedback' );
+    }
+
     function goBackToReferrer( $fallback )
     {
         // Send to referrer.
