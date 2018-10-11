@@ -324,7 +324,7 @@ class User extends CI_Controller
 
         // flashMessage( $msg );
 
-        redirect("user/givefeedback/$course_id/$semester/$year");
+        redirect("user/courses" );
     }
 
 

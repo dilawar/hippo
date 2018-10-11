@@ -175,7 +175,7 @@ foreach($myCourses as &$c)
     $tofilter = 'student_id,registered_on,last_modified_on';
 
     $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
-    if($numUnanswered > 0 )
+    if($numUnanswered > -1 )
     {
         $noFeedback[] = $cid;
         // Show grade if it is available and user has given feedback.
