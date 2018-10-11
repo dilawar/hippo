@@ -8,7 +8,10 @@ echo userHTML();
 
 echo"<h1>Feedback $course_id for $semester/$year </h1>";
 
-echo printInfo("You won't able to modify your answer after 24 hours of first submission.", false );
+echo printInfo("You can make a partial submission and come back and edit 
+    your answers upto 24 hours. However, once fully completed, you won't 
+    able to modify your answers." 
+);
 
 $questionSubcat = getQuestionsWithCategory( 'course feedback' );
 if( ! $questionSubcat )
