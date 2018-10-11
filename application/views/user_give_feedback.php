@@ -8,10 +8,16 @@ echo userHTML();
 
 echo"<h1>Feedback $course_id for $semester/$year </h1>";
 
-
 echo printInfo("You won't able to modify your answer after 24 hours of first submission.", false );
 
 $questionSubcat = getQuestionsWithCategory( 'course feedback' );
+if( ! $questionSubcat )
+{
+    echo flashMessage( "No questions found in question back. Ask Academic Admin to 
+        prepare a questionairre." );
+    echo goBackToPageLink( "$controller/home", "Go Home" );
+}
+
 $responses = getOldCourseFeedback($year, $semester, $course_id);
 
 echo ' <form action="'. site_url('user/submitpoll') .'" method="post">';

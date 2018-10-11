@@ -6,6 +6,12 @@ echo userHTML( );
 $sem = getCurrentSemester( );
 $year = getCurrentYear( );
 
+function showFeedbackForm()
+{
+
+}
+
+
 $runningCourses = array( );
 $semCourses = getSemesterCourses( $year, $sem );
 foreach( $semCourses as $rc )
@@ -168,19 +174,20 @@ foreach($myCourses as &$c)
     // TODO: Don't show grades unless student has given feedback.
     $tofilter = 'student_id,registered_on,last_modified_on';
 
-    // Show grade if it is available and user has given feedback.
-    if( __get__($c, 'grade', 'X' ) != 'X' )
+    $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
+    if($numUnanswered > 0 )
     {
-        $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
-        if($numUnanswered > 0 )
+        $noFeedback[] = $cid;
+        // Show grade if it is available and user has given feedback.
+        if( __get__($c, 'grade', 'X' ) != 'X' )
         {
-            $noFeedback[] = $cid;
-            $c['grade'] = colored( "Grade is available. 
-                    <br />Feedback is due. $numUnanswered unanswered."
-                    , 'darkred'
-                    );
+            $c['grade'] = colored( 
+                "Grade is available.<br />Feedback is due. $numUnanswered unanswered."
+                , 'darkred' 
+            );
         }
     }
+
 
     // Show form.
     echo '<td>';
@@ -201,9 +208,7 @@ foreach($myCourses as &$c)
         echo $form;
     }
 
-
     // If feedback is not given for this course, display a button.
-
     echo '</td>';
 
     $count += 1;
