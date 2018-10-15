@@ -58,7 +58,6 @@ function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" ) : array
     {
         $i = $info[$s];
 
-        //var_dump( $i );
         $laboffice = __get__( $i, 'profilelaboffice', array( 'NA') );
         $joinedOn = __get__( $i, 'profiledateofjoin', array( 'NA' ) );
 
