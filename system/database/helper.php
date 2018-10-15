@@ -1186,9 +1186,16 @@ function getUserInfo( string $user, bool $query_ldap = false, bool $search_every
     if( $query_ldap )
         $ldap = getUserInfoFromLdap( $user );
 
+
     if( is_array($ldap) && is_array( $res ) && $ldap  )
+    {
         foreach( $ldap as $key => $val )
+        {
+            if( $key == 'joined_on' && isDate($res['joined_on']) )
+                continue;
             $res[ $key ] = $val;
+        }
+    }
 
     // Still not foud, then search speakers.
     if( ! $res && $search_everywhere )

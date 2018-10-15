@@ -23,6 +23,8 @@ def spec_short( spec ):
 def getSpecialization( cur, piOrHost ):
     cur.execute( "SELECT specialization FROM faculty WHERE email='%s'" % piOrHost )
     a = cur.fetchone( )
+    if a is None:
+        return None
     return a.get('specialization', None)
 
 def init( cur ):
