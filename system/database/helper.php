@@ -1191,7 +1191,7 @@ function getUserInfo( string $user, bool $query_ldap = false, bool $search_every
     {
         foreach( $ldap as $key => $val )
         {
-            if( $key == 'joined_on' && isDate($res['joined_on']) )
+            if( $key == 'joined_on' && isDate( __get__($res,'joined_on','')) )
                 continue;
             $res[ $key ] = $val;
         }
