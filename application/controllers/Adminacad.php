@@ -206,8 +206,14 @@ class Adminacad extends CI_Controller
         if( $res )
         {
             $login = $_POST[ 'login' ];
-            flashMessage( "Successfully updated profile. " );
+            if( ! $login )
+            {
+                echo printWarning( "Empty login. " );
+                redirect( 'adminacad/home' );
+                return;
+            }
 
+            flashMessage( "Successfully updated profile. " );
             // Get previous status of student.
             $msg = initUserMsg( $login );
             $msg .= "<p>Your Hippo profile has been updated by Academic Admin.</p>";

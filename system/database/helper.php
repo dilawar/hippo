@@ -1205,6 +1205,8 @@ function getUserInfo( string $user, bool $query_ldap = false, bool $search_every
     if( $title )
         $res[ 'title' ] = $title;
 
+    $res['login'] = $user;
+
     return $res;
 }
 
@@ -1226,8 +1228,9 @@ function getLoginByEmail( $email )
 }
 
 
-function getLoginEmail( $login )
+function getLoginEmail( string $login )
 {
+    $login = explode( '@', $login )[0];
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare( "SELECT email FROM logins WHERE login=:login" );
     $stmt->bindValue( ":login", $login );
