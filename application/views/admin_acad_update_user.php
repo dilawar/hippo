@@ -25,7 +25,8 @@ if(! __get__($_POST, 'login'))
     redirect( 'adminacad/home' );
 }
 
-$default = getUserInfo( $_POST['login'] );
+$default = getUserInfo( $_POST['login'], true );
+
 if( ! $default )
 {
     echo printWarning( "Invalid username. I did not find anyone named " 

@@ -1186,9 +1186,16 @@ function getUserInfo( string $user, bool $query_ldap = false, bool $search_every
     if( $query_ldap )
         $ldap = getUserInfoFromLdap( $user );
 
+
     if( is_array($ldap) && is_array( $res ) && $ldap  )
+    {
         foreach( $ldap as $key => $val )
+        {
+            if( $key == 'joined_on' && isDate( __get__($res,'joined_on','')) )
+                continue;
             $res[ $key ] = $val;
+        }
+    }
 
     // Still not foud, then search speakers.
     if( ! $res && $search_everywhere )
@@ -1197,6 +1204,8 @@ function getUserInfo( string $user, bool $query_ldap = false, bool $search_every
     // If title was found in database, overwrite ldap info.
     if( $title )
         $res[ 'title' ] = $title;
+
+    $res['login'] = $user;
 
     return $res;
 }
@@ -1219,8 +1228,9 @@ function getLoginByEmail( $email )
 }
 
 
-function getLoginEmail( $login )
+function getLoginEmail( string $login )
 {
+    $login = explode( '@', $login )[0];
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare( "SELECT email FROM logins WHERE login=:login" );
     $stmt->bindValue( ":login", $login );
