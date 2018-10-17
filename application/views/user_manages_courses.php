@@ -6,12 +6,6 @@ echo userHTML( );
 $sem = getCurrentSemester( );
 $year = getCurrentYear( );
 
-function showFeedbackForm()
-{
-
-}
-
-
 $runningCourses = array( );
 $semCourses = getSemesterCourses( $year, $sem );
 foreach( $semCourses as $rc )
@@ -145,10 +139,6 @@ if(count($myCourses) > 0)
     echo "<h1>You are registered for following " . count($myCourses) . " courses for $sem $year</h1>";
 }
 
-// Keep cid of course for which feedback is not available but grade has been
-// given.
-$noFeedback = array();
-
 echo '<div style="font-size:small">';
 echo '<table border="1pt dotted blue">';
 echo '<tr>';
@@ -175,11 +165,11 @@ foreach($myCourses as &$c)
     $tofilter = 'student_id,registered_on,last_modified_on';
 
     $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
-    if($numUnanswered > 0 )
+
+    // Show grade if it is available and user has given feedback.
+    if( __get__($c, 'grade', 'X' ) != 'X' )
     {
-        $noFeedback[] = $cid;
-        // Show grade if it is available and user has given feedback.
-        if( __get__($c, 'grade', 'X' ) != 'X' )
+        if($numUnanswered > 0 )
         {
             $c['grade'] = colored( 
                 "Grade is available.<br />Feedback is due. $numUnanswered unanswered."
@@ -187,7 +177,6 @@ foreach($myCourses as &$c)
             );
         }
     }
-
     echo '<td>';
 
     // Show form.
@@ -198,7 +187,7 @@ foreach($myCourses as &$c)
     echo '</td>';
 
     // If feedback is not given for this course, display a button.
-    if( in_array($cid, $noFeedback) )
+    if( $numUnanswered > 0 )
     {
         // Feeback form
         $sem = $c['semester'];
@@ -206,7 +195,7 @@ foreach($myCourses as &$c)
         $form =  '<form action="'.site_url("user/givefeedback/$cid/$sem/$year").'" 
             method="post">';
         $form .= ' <button style="float:right" name="response" 
-            value="submit">Feeback</button>';
+            value="submit">Feeback (' . $numUnanswered . ' unanswered.)</button>';
         $form .= '</form>';
         echo "<tr><td>$form </td></tr>";
     }

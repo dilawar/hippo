@@ -2024,8 +2024,14 @@ function acceptScheduleOfAWS( $speaker, $date )
         return $res[ 'id' ];
     }
 
-    // Else add to table.
+    // Make sure that person is eligible for AWS. Usually she is some sometimes
+    // she is not.
+    $login = explode( '@', $speaker )[0];
+    updateTable( 'logins', 'login', 'eligible_for_aws'
+        , array( 'login' => $login, 'eligible_for_aws' => 'YES')
+        );
 
+    // Else add to table.
     $hippoDB->beginTransaction( );
 
     $stmt = $hippoDB->prepare(
