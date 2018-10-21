@@ -4,7 +4,7 @@ function events_weekly_summary_cron()
 {
     if( trueOnGivenDayAndTime( 'this sunday', '19:00' ) )
     {
-        echo printInfo( "Today is Sunday 7pm. Send out emails for week events." );
+        error_log( "Today is Sunday 7pm. Send out emails for week events." );
         $thisMonday = dbDate( strtotime( 'this monday' ) );
         $subject = 'This week ( ' . humanReadableDate( $thisMonday) . ' ) events ';
 
@@ -55,7 +55,6 @@ function events_weekly_summary_cron()
         else
         {
             $html .= "<p> I could not find any event in my database! </p>";
-            $html .=  "<p> -- Hippo </p>";
             sendHTMLEmail( $html, $subject, $to, $cclist );
         }
     }
