@@ -1298,7 +1298,7 @@ function loginToHTML( string $login, bool $withEmail = true ) : string
 
     // Check if professor
     $prefix = '';
-    if( __substr__('professor', $user['designation'], true) )
+    if( __substr__('professor', __get__($user,'designation',''), true) )
         $prefix = 'Prof';
 
     // Return first name + middle name + last name.
