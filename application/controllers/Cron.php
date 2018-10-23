@@ -41,9 +41,20 @@ class Cron extends CI_Controller {
         foreach( $tasks as $i => $t )
         {
             echo printInfo( "Running cron job for task $t" );
-            hippo_shell_exec( "php index.php cron $t", $stdout, $stderr );
-            echo printInfo($stderr);
-            echo printInfo( $stdout );
+            try 
+            {
+                hippo_shell_exec( "php index.php cron $t", $stdout, $stderr );
+                echo printInfo($stderr);
+                echo printInfo( $stdout );
+            }
+            catch( Exception $e )
+            {
+                $body = p(" Hippo could not finish a scheduled task '$t' successfully." );
+                $body .= p( "Error was " . $e->getMessage() );
+                sendHTMLEmail( $body, "WARN! Hippo failed to do a routine task (cron)"
+                    , "hippo@lists.ncbs.res.in"
+                );
+            }
         }
     }
 
