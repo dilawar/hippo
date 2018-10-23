@@ -5,6 +5,7 @@ include_once BASEPATH. 'extra/methods.php';
 
 // Directory to store the mdsum of sent emails.
 $maildir = getDataDir(). '/_mails';
+
 if( ! file_exists( $maildir ) )
 {
     echo "Creating directory $maildir ";
@@ -108,7 +109,7 @@ function mailFooter( ) {
     ";
 }
 
-function sendHTMLEmail( string $msg, string $sub, string $to, string $cclist = '', $attachment = null )
+function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $cclist = '', $attachment = null )
 {
     global $maildir;
     $conf = getConf( );
@@ -182,6 +183,23 @@ function sendHTMLEmail( string $msg, string $sub, string $to, string $cclist = '
     return true;
 }
 
+function sendHTMLEmail( string $msg, string $sub, string $to
+    , string $cclist = '', $attachment = null )
+{
+    try 
+    {
+        sendHTMLEmailUnsafe( $msg, $sub, $to, $cclist, $attachment );
+    } 
+    catch (Exception $e)
+    {
+        $body = p( "Hippo failed to send an email. Fix it soon. Error was <br/>" );
+        $body .= $e->getMessage();
+        error_log( $body );
+        sendHTMLEmailUnsafe( $body, "WARN | Hippo could not send an email"
+            , "hippo@lists.ncbs.res.in" 
+            );
+    }
+}
 
 /* --------------------------------------------------------------------------*/
 /**
