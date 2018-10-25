@@ -39,7 +39,7 @@ foreach( $qbankMap as $category => $qbank )
 {
     echo '<div class="">';
     echo "<h3> $category </h3>";
-    echo "<table id=\"question_back\" class=\"exportable\">";
+    echo "<table id=\"course_feedback_question_bank\" class=\"exportable\">";
     echo questionBankByCategoryToTable( $qbank, $controller );
     echo "</table>";
     echo '<div>';
