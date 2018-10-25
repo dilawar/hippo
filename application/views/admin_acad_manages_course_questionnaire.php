@@ -39,7 +39,9 @@ foreach( $qbankMap as $category => $qbank )
 {
     echo '<div class="">';
     echo "<h3> $category </h3>";
+    echo "<table id=\"question_back\" class=\"exportable\">";
     echo questionBankByCategoryToTable( $qbank, $controller );
+    echo "</table>";
     echo '<div>';
     echo '<hr />';
 }
@@ -48,3 +50,10 @@ echo ' <br />';
 echo goBackToPageLink( "adminacad/home", "Go Back" );
 
 ?>
+
+<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+TableExport(document.getElementsByClassName("exportable"));
+</script>

@@ -2690,14 +2690,16 @@ function showEnrollmenTable( $enrolls, $tdintr=4)
 function questionBankBySubcategoryToTable( $subcategory, $questions, $controller )
 {
     global $symbDelete;
-    $table = '<table class="info">';
-    $table .= "<caption> $subcategory </caption>";
+    // $table = '<table class="info">';
+    // $table = '<tr>';
+    $table = '';
+    $table .= "<tr><td colspan=3><strong> $subcategory </strong></td></tr>";
     foreach( $questions as $j => $q )
     {
         $qid = $q['id'];
 
         $table .= '<tr>';
-        $table .= '<td>' . (1+$j) .'</td>';
+        // $table .= '<td>' . (1+$j) .'</td>';
         $table .= arrayToRowHTML( $q, 'info', 'id,category,subcategory,status,last_modified_on', true, false );
 
         // Add forms to delete or modify the question.
@@ -2709,7 +2711,7 @@ function questionBankBySubcategoryToTable( $subcategory, $questions, $controller
 
         $table .= '</tr>';
     }
-    $table .= '</table>';
+    // $table .= '</table>';
     return $table;
 
 }
