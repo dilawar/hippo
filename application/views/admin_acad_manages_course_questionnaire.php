@@ -2,12 +2,11 @@
 require_once BASEPATH.'autoload.php';
 echo userHTML();
 
-$editable = 'category,subcategory,question,choices';
+$editable = 'category,question,choices,type';
 
 $defaults = array( 'last_modified_on' => dbDateTime( 'now' )
     , 'choices' => 'Strongly Disagree,Disagree,Neutral,Agree,Strongly Agree'
-    , 'id' => getUniqueID( 'question_bank' )
-    , 'category' => 'Course Feedback'
+    , 'id' => getUniqueID( 'course_feedback_questions' )
     );
 
 echo ' <h1>Add new question</h1> ';
@@ -20,7 +19,7 @@ echo printInfo(
 
 // Form to add a question.
 echo '<form action="'.site_url("adminacad/addquestion").'" method="post">';
-echo dbTableToHTMLTable( 'question_bank', $defaults, $editable, 'Add' );
+echo dbTableToHTMLTable( 'course_feedback_questions', $defaults, $editable, 'Add' );
 echo '</form>';
 
 echo goBackToPageLink( "adminacad/home", "Go Back" );
@@ -28,23 +27,19 @@ echo goBackToPageLink( "adminacad/home", "Go Back" );
 
 // QUESTION BANK.
 
-$qbank = getTableEntries( 'question_bank', 'id', "status='VALID'" );
-
+$qbank = getTableEntries( 'course_feedback_questions', 'id', "status='VALID'" );
 $qbankMap = array();
 foreach( $qbank as $ques )
-    $qbankMap[$ques['category']][$ques['subcategory']][] = $ques;
+    $qbankMap[$ques['category']][] = $ques;
 
+// Show question bank.
 echo '<h1>Question bank</h1>';
-foreach( $qbankMap as $category => $qbank )
-{
-    echo '<div class="">';
-    echo "<h3> $category </h3>";
-    echo "<table id=\"question_back\" class=\"exportable\">";
-    echo questionBankByCategoryToTable( $qbank, $controller );
-    echo "</table>";
-    echo '<div>';
-    echo '<hr />';
-}
+
+echo "<table id=\"question_bank\" class=\"exportable\">";
+foreach( $qbankMap as $category => $questions )
+    echo courseFeedbackQuestions( $category, $questions, $controller );
+echo "</table>";
+echo '<hr />';
 
 echo ' <br />';
 echo goBackToPageLink( "adminacad/home", "Go Back" );

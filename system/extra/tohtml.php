@@ -2736,6 +2736,13 @@ function questionBankByCategoryToTable( $qmap, $controller )
 
 }
 
+function courseFeedbackQuestions($category, $questions, $controller)
+{
+    $html = questionBankBySubcategoryToTable( $category, $questions, $controller );
+    return $html;
+
+}
+
 function csvToRadio(string $csv, string $name, string $default='', string $disabled='') : string
 {
     $csvarray = explode( ',', $csv );

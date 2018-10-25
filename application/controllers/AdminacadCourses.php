@@ -292,8 +292,8 @@ trait AdminacadCourses
 
     public function addquestion( )
     {
-        $res = insertIntoTable( 'question_bank'
-            , 'id,category,subcategory,question,choices,status,last_modified_on'
+        $res = insertIntoTable( 'course_feedback_questions'
+            , 'id,category,subcategory,question,choices,type,status,last_modified_on'
            ,  $_POST );
         if( ! $res )
             printWarning( "Failed to add question to database." );
@@ -306,7 +306,7 @@ trait AdminacadCourses
 
     public function deletequestion( $qid )
     {
-        $res = deleteFromTable( 'question_bank', 'id', array( 'id' => $qid ) );
+        $res = deleteFromTable( 'course_feedback_questsions', 'id', array( 'id' => $qid ) );
         if(! $res)
             printWarning( "Failed to deleted question from database." );
         else
