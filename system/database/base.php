@@ -400,10 +400,10 @@ class BMVPDO extends PDO
                 , instructor_email VARCHAR(40) NOT NULL DEFAULT '' -- for instructor specfic questions.
                 , response VARCHAR(1000) NOT NULL -- it could be large text but no longer than 1000 char.
                 , status ENUM('VALID', 'INVALID', 'WITHDRAWN' ) default 'VALID'
-                , weight UNSIGNED NOT NULL DEFAULT 1 -- weight of this question.
+                , weight INT(3) UNSIGNED NOT NULL DEFAULT '1' -- weight of this question.
                 , timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , last_modified_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                , UNIQUE KEY(login,question_id,course_id,)
+                , UNIQUE KEY(login,question_id,course_id,instructor_email)
                 )"
             );
 
