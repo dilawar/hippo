@@ -171,9 +171,8 @@ foreach($myCourses as &$c)
     {
         if($numUnanswered > 0 )
         {
-            $c['grade'] = colored( 
-                "Grade is available.<br />Feedback is due. $numUnanswered unanswered."
-                , 'darkred' 
+            $c['grade'] = colored( "Grade is available.<br />
+                Feedback is due. $numUnanswered unanswered.", 'darkred' 
             );
         }
     }

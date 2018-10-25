@@ -327,6 +327,67 @@ class User extends CI_Controller
         redirect("user/courses" );
     }
 
+    // Submit feedback.
+    public function submitfeedback( )
+    {
+        $course_id = $_POST['course_id'];
+        $semester = $_POST['semester'];
+        $year = $_POST['year'];
+        $instructorEmail = __get__($_POST, 'instructor_email', '');
+
+        if(!($year && $semester && $year))
+        {
+            $msg = "Either semester, year or course_id was invalid.";
+            $msg .= json_encode( $_POST );
+            printWarning( $msg );
+            redirect( 'user/courses' );
+            return;
+        }
+
+        // Keep data in array for table updating.
+        $entries = array();
+        foreach( $_POST as $key => $val )
+        {
+            preg_match( '/qid\=(?P<qid>\d+)/', $key, $m );
+            if($m)
+            {
+                $entry = array('year' => $year
+                    , 'semester' => $semester
+                    , 'question_id' => $m['qid']
+                    , 'login' => whoAmI()
+                    , 'response' => $val
+                    , 'instructor_email' => $instructorEmail
+                );
+                $entries[] = $entry;
+            }
+        }
+
+        // Update poll_response table now.
+        $msg = '';
+        $error = false;
+        foreach( $entries as $entry )
+        {
+            // $msg .= json_encode($entry);
+            var_dump( $entry );
+            $res = insertOrUpdateTable('course_feedback_responses'
+                , 'login,question_id,year,semester,course_id,instructor_email,response'
+                , 'response', $entry
+            );
+
+            if(!$res)
+            {
+                $msg .= 'Faieled to record response for question id ' . json_encode($entry);
+                $error = true;
+            }
+        }
+
+        if($error)
+            flashMessage( $error );
+        else
+            flashMessage( "Successfully recorded your response." );
+        redirect("user/courses" );
+    }
+
 
     public function downloadaws( $date, $speaker = '')
     {

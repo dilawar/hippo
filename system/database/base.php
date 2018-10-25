@@ -391,7 +391,7 @@ class BMVPDO extends PDO
 
         // table to record course feedback.
         $res = $this->query( "
-            CREATE TABLE IF NOT EXISTS course_feedback_response (
+            CREATE TABLE IF NOT EXISTS course_feedback_responses (
                 login VARCHAR(40) NOT NULL
                 , question_id INT NOT NULL
                 , course_id VARCHAR(30) NOT NULL
