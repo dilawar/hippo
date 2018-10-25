@@ -6,9 +6,9 @@ $editable = 'category,subcategory,question,choices';
 
 $defaults = array( 'last_modified_on' => dbDateTime( 'now' )
     , 'choices' => 'Strongly Disagree,Disagree,Neutral,Agree,Strongly Agree'
+    , 'id' => getUniqueID( 'question_bank' )
+    , 'category' => 'Course Feedback'
     );
-
-$defaults['id'] = getUniqueID( 'question_bank' );
 
 echo ' <h1>Add new question</h1> ';
 
