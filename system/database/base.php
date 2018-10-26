@@ -79,7 +79,7 @@ class BMVPDO extends PDO
                 , login VARCHAR(100)
                 , email VARCHAR(200)
                 , alternative_email VARCHAR(200)
-                , honorific ENUM( 'Mr', 'Ms', 'Dr', 'Prof', 'Mx', 'Misc' ) 
+                , honorific ENUM( 'Mr', 'Ms', 'Dr', 'Prof', 'Mx', 'Misc', '' ) DEFAULT '' 
                 , first_name VARCHAR(200)
                 , last_name VARCHAR(100)
                 , roles SET(
