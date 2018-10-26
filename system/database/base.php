@@ -82,7 +82,7 @@ class BMVPDO extends PDO
                 , honorific ENUM( 'Mr', 'Ms', 'Dr', 'Prof', 'Mx', 'Misc', '' ) DEFAULT '' 
                 , first_name VARCHAR(200)
                 , last_name VARCHAR(100)
-                 roles SET(
+                , roles SET(
                     'USER', 'ADMIN', 'MEETINGS', 'ACAD_ADMIN', 'BOOKMYVENUE_ADMIN', 'JC_ADMIN'
                     ) DEFAULT 'USER'
                 , designation VARCHAR(40) DEFAULT 'UNKNOWN'
