@@ -23,10 +23,8 @@ if( ! $questions )
     echo goBackToPageLink( "$controller/home", "Go Home" );
 }
 
-$responses = getOldCourseFeedback($year, $semester, $course_id);
-
 echo ' <form action="'. site_url('user/submitfeedback') .'" method="post">';
-echo courseFeedbackForm( $questions, $responses, $instructors);
+echo courseFeedbackForm( $year, $semester, $course_id, $questions, $instructors);
 echo '<input type="hidden" name="year" value="' . $year .'" />';
 echo '<input type="hidden" name="semester" value="' . $semester .'" />';
 echo '<input type="hidden" name="course_id" value="' . $course_id .'" />';

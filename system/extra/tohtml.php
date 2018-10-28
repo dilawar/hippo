@@ -2786,8 +2786,7 @@ function csvToRadio(string $csv, string $name, string $default='', string $disab
         if( $default == $opt )
             $extra .= ' checked';
 
-        $row = "<input type='radio' value='$opt' name='$name' 
-                '$disabled' id='$name$i' $extra /> ";
+        $row = "<input type='radio' value='$opt' name='$name' '$disabled' id='$name-id$i' $extra /> ";
 
         $row .= "<label for='$name$i' class='poll'>$opt</label>";
         $options[] = $row;
@@ -2797,23 +2796,27 @@ function csvToRadio(string $csv, string $name, string $default='', string $disab
     return $html;
 }
 
-function instructorSpecificQuestion( array $q, array $responses, array $instructors, int $nochangeafater=1) : string
+function instructorSpecificQuestion( string $year, string $semester
+    , string $cid, array $q, array $instructors, int $nochangeafater=1
+) : string
 {
     $row = '<tr>';
     $row .= '<td>' . $q['question'] . '</td>';
     $qid = $q['id'];
     $row .= '<td style="width:100%">';
 
-    $instKeys = array_keys($instructors);
     foreach( $instructors as $email => $instructor )
     {
+        $responses = getInstructorSpecificFeedback( $year, $semester, $cid, $email );
+
         // Show instrcutor name at the top of question only if the
         // question was instructor specific. This is a bit wiered way
         // for designing this interface.
         $oldres = '';
         $defaultVal = '';
         $extra = '';
-        if( __get__($responses, $qid, '' ) )
+
+        if( __get__($responses, $qid, null) )
         {
             $oldres = $responses[$qid];
             $defaultVal = $oldres['response'];
@@ -2822,17 +2825,21 @@ function instructorSpecificQuestion( array $q, array $responses, array $instruct
         }
 
         $choices = trim($q['choices']);
+        $name = "qid=".$q['id']."&instructor=$email";
         if( ! $choices )
-            $options = '<textarea cols=50 rows=5 name="qid='.$qid .'"' . " $extra " .'>'.$defaultVal.'</textarea>';
+            $options = '<textarea cols=50 rows=5 name="$name" ' . " $extra " . 
+                '>'.$defaultVal.'</textarea>';
         else
-            $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal, $extra );
+            $options = csvToRadio( $choices, $name, $defaultVal, $extra );
 
-        $row .= '<div style="border-top:1px dotted blue">'. $instructor . '<br/>'. $options .'</div>';
+        $row .= '<div style="border-top:1px dotted blue">'. $instructor . '<br/>'. 
+            $options .'</div>';
     }
     return $row;
 }
 
-function courseSpecificQuestion( array $q, array $responses, int $nochangeafater )
+function courseSpecificQuestion( string $year, string $semester, string $course_id
+    , array $q, int $nochangeafater )
 {
     $row = '<tr>';
     $row .= '<td>' . $q['question'] . '</td>';
@@ -2841,6 +2848,7 @@ function courseSpecificQuestion( array $q, array $responses, int $nochangeafater
     $oldres = '';
     $defaultVal = '';
     $extra = '';
+    $responses = getCourseSpecificFeedback( $year, $semester, $course_id );
     if( __get__($responses, $qid, '' ) )
     {
         $oldres = $responses[$qid];
@@ -2853,7 +2861,7 @@ function courseSpecificQuestion( array $q, array $responses, int $nochangeafater
     if( ! $choices )
         $options = '<textarea cols=50 rows=5 name="qid='.$qid .'"' . " $extra " .'>'.$defaultVal.'</textarea>';
     else
-        $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal, $extra );
+        $options = csvToRadio($choices, "qid=" . $q['id'], $defaultVal, $extra);
 
     $row .= '<div style="border-top:1px dotted blue">' . $options .'</div>';
     return $row;
@@ -2871,8 +2879,8 @@ function courseSpecificQuestion( array $q, array $responses, int $nochangeafater
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function courseFeedbackForm(array $questions, array $responses = array()
-    , array $instructors, $nochangeafater = 1
+function courseFeedbackForm( string $year, string $semester, string $course_id
+    , array $questions, array $instructors, $nochangeafater=1
 )
 {
     $html = '';
@@ -2882,16 +2890,15 @@ function courseFeedbackForm(array $questions, array $responses = array()
         $html .= "<h2>$cat</h2>";
 
         $table = '<table class="poll info">';
-
         foreach( $qs as $q )
         {
             // question is instructor specific or course specific.
             $type = $q['type'];
             $foreachInstructor = false;
             if( $type == 'INSTRUCTOR SPECIFIC')
-                $table .= instructorSpecificQuestion( $q, $responses, $instructors, $nochangeafater );
+                $table .= instructorSpecificQuestion($year, $semester, $course_id, $q, $instructors, $nochangeafater);
             else
-                $table .= courseSpecificQuestion( $q, $responses, $nochangeafater );
+                $table .= courseSpecificQuestion($year, $semester, $course_id, $q, $nochangeafater);
         }
         $table .= '</table>';
         $html .= $table;

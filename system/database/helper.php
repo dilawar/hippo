@@ -3485,7 +3485,7 @@ function getCourseFeedbackQuestions( ) : array
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function getOldCourseFeedback( string $year, string $semester, string $cid ) : array
+function getCourseSpecificFeedback( string $year, string $semester, string $cid ) : array
 {
     $responses = array();
     $entries = getTableEntries('course_feedback_responses', 'question_id'
@@ -3493,8 +3493,21 @@ function getOldCourseFeedback( string $year, string $semester, string $cid ) : a
     );
 
     foreach($entries as $entry )
-        $responses[$entry['question_id']] = $entry;
+        $responses[$entry['question_id']] = $entry['response'];
 
+    return $responses;
+}
+
+function getInstructorSpecificFeedback( string $year, string $semester, string $cid, string $email )
+{
+    $responses = array();
+    $entries = getTableEntries('course_feedback_responses', 'question_id'
+        , "course_id='$cid' AND year='$year' AND semester='$semester' AND 
+            instructor_email='$email' AND status='VALID'"
+    );
+
+    foreach($entries as $entry )
+        $responses[$entry['question_id']] = $entry['response'];
     return $responses;
 }
 

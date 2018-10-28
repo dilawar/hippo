@@ -79,7 +79,7 @@ class User extends CI_Controller
     {
         if( $course_id &&  $semester && $year )
         {
-            $this->load_user_view( 'user_give_feedback.php'
+            $this->load_user_view( 'user_give_feedback'
                 , array('course_id'=>$course_id, 'semester'=>$semester, 'year'=>$year) 
             );
         }
@@ -333,9 +333,8 @@ class User extends CI_Controller
         $course_id = $_POST['course_id'];
         $semester = $_POST['semester'];
         $year = $_POST['year'];
-        $instructorEmail = __get__($_POST, 'instructor_email', '');
 
-        if(!($year && $semester && $year))
+        if(!($year && $semester  && $course_id))
         {
             $msg = "Either semester, year or course_id was invalid.";
             $msg .= json_encode( $_POST );
@@ -348,15 +347,17 @@ class User extends CI_Controller
         $entries = array();
         foreach( $_POST as $key => $val )
         {
-            preg_match( '/qid\=(?P<qid>\d+)/', $key, $m );
+            // Check if we get instructor id as well. If not its empty.
+            preg_match( '/qid\=(?P<qid>\d+)\&instructor=(?P<instructor>\S+?@\S+)/', $key, $m );
             if($m)
             {
                 $entry = array('year' => $year
                     , 'semester' => $semester
+                    , 'course_id' => $course_id
                     , 'question_id' => $m['qid']
                     , 'login' => whoAmI()
                     , 'response' => $val
-                    , 'instructor_email' => $instructorEmail
+                    , 'instructor_email' => __get__($m, 'instructor', '')
                 );
                 $entries[] = $entry;
             }
@@ -368,7 +369,7 @@ class User extends CI_Controller
         foreach( $entries as $entry )
         {
             // $msg .= json_encode($entry);
-            var_dump( $entry );
+            // var_dump( $entry );
             $res = insertOrUpdateTable('course_feedback_responses'
                 , 'login,question_id,year,semester,course_id,instructor_email,response'
                 , 'response', $entry
