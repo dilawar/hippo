@@ -2777,6 +2777,9 @@ function courseFeedbackQuestions($category, $questions, $controller)
 
 function csvToRadio(string $csv, string $name, string $default='', string $disabled='') : string
 {
+    // NOTE: Don't use . in name; they are replaced by _.
+    // replace . with [DOT].
+    $name = str_replace( '.', '+dot+', $name );
     $csvarray = explode( ',', $csv );
     $html = '';
     $options = array();

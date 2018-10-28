@@ -357,7 +357,7 @@ class User extends CI_Controller
                     , 'question_id' => $m['qid']
                     , 'login' => whoAmI()
                     , 'response' => $val
-                    , 'instructor_email' => __get__($m, 'instructor', '')
+                    , 'instructor_email' => str_replace('+dot+', '.', __get__($m, 'instructor',''))
                 );
                 $entries[] = $entry;
             }
