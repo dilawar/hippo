@@ -2245,7 +2245,7 @@ function getCourseShortInfoText( $course )
     return $text;
 }
 
-function getCourseInstructors( $c )
+function getCourseInstructors( string $c, string $year = '', string $sem='' )
 {
     if( is_string( $c ) )
         $c =  getCourseById( $c );
@@ -2266,7 +2266,39 @@ function getCourseInstructors( $c )
     }
     $instructors = implode( '<br>', $instructors );
     return $instructors;
+}
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  For a give course id, get the email and name of instructors in
+    * an map.
+    *
+    * @Param $cid course id 
+    * @Param $year year (not used)
+    * @Param $semester semester (not use)
+    *
+    * @Returns  A map containing instructor email (as key) and html info (as
+    * value).
+ */
+/* ----------------------------------------------------------------------------*/
+function getCourseInstructorsEmails( string $cid, string $year = '', string $semester = '' ) : array 
+{
+    $c =  getCourseById( $cid );
+    $instructors = array( );
+    foreach( $c as $k => $v )
+    {
+        if( contains( 'instructor_', $k ) )
+            foreach( explode( ",", $v) as $i )
+            {
+                if( $i )
+                {
+                    $name = arrayToName( findAnyoneWithEmail( $i ) );
+                    $instructors[$i] = "<a id=\"emaillink\" href=\"mailto:$v\" target=\"_top\">
+                        $name </a>";
+                }
+            }
+    }
+    return $instructors;
 }
 
 function getCourseInfo( $cid )
@@ -2747,7 +2779,6 @@ function csvToRadio(string $csv, string $name, string $default='', string $disab
 {
     $csvarray = explode( ',', $csv );
     $html = '';
-
     $options = array();
     foreach( $csvarray as $i => $opt )
     {
@@ -2766,6 +2797,69 @@ function csvToRadio(string $csv, string $name, string $default='', string $disab
     return $html;
 }
 
+function instructorSpecificQuestion( array $q, array $responses, array $instructors, int $nochangeafater=1) : string
+{
+    $row = '<tr>';
+    $row .= '<td>' . $q['question'] . '</td>';
+    $qid = $q['id'];
+    $row .= '<td style="width:100%">';
+
+    $instKeys = array_keys($instructors);
+    foreach( $instructors as $email => $instructor )
+    {
+        // Show instrcutor name at the top of question only if the
+        // question was instructor specific. This is a bit wiered way
+        // for designing this interface.
+        $oldres = '';
+        $defaultVal = '';
+        $extra = '';
+        if( __get__($responses, $qid, '' ) )
+        {
+            $oldres = $responses[$qid];
+            $defaultVal = $oldres['response'];
+            if( (strtotime('now') - strtotime($oldres['timestamp'])) > $nochangeafater * 24 *3600 )
+                $extra = 'disabled';
+        }
+
+        $choices = trim($q['choices']);
+        if( ! $choices )
+            $options = '<textarea cols=50 rows=5 name="qid='.$qid .'"' . " $extra " .'>'.$defaultVal.'</textarea>';
+        else
+            $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal, $extra );
+
+        $row .= '<div style="border-top:1px dotted blue">'. $instructor . '<br/>'. $options .'</div>';
+    }
+    return $row;
+}
+
+function courseSpecificQuestion( array $q, array $responses, int $nochangeafater )
+{
+    $row = '<tr>';
+    $row .= '<td>' . $q['question'] . '</td>';
+    $qid = $q['id'];
+    $row .= '<td style="width:100%">';
+    $oldres = '';
+    $defaultVal = '';
+    $extra = '';
+    if( __get__($responses, $qid, '' ) )
+    {
+        $oldres = $responses[$qid];
+        $defaultVal = $oldres['response'];
+        if( (strtotime('now') - strtotime($oldres['timestamp'])) > $nochangeafater * 24 *3600 )
+            $extra = 'disabled';
+    }
+
+    $choices = trim($q['choices']);
+    if( ! $choices )
+        $options = '<textarea cols=50 rows=5 name="qid='.$qid .'"' . " $extra " .'>'.$defaultVal.'</textarea>';
+    else
+        $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal, $extra );
+
+    $row .= '<div style="border-top:1px dotted blue">' . $options .'</div>';
+    return $row;
+}
+
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Convert questions to a poll form. 
@@ -2777,42 +2871,27 @@ function csvToRadio(string $csv, string $name, string $default='', string $disab
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function questionsToPoll($questions, $responses = array(), $nochangeafater = 1)
+function courseFeedbackForm(array $questions, array $responses = array()
+    , array $instructors, $nochangeafater = 1
+)
 {
     $html = '';
-
-    foreach( $questions as $subcat => $qs )
+    foreach( $questions as $cat => $qs )
     {
         $html .= '<div>';
-        $html .= "<h2> $subcat </h2>";
+        $html .= "<h2>$cat</h2>";
 
         $table = '<table class="poll info">';
 
         foreach( $qs as $q )
         {
-            $qid = $q['id'];
-            $oldres = '';
-            $defaultVal = '';
-            $extra = '';
-            if( __get__($responses, $qid, '' ) )
-            {
-                $oldres = $responses[$qid];
-                $defaultVal = $oldres['response'];
-                if( (strtotime('now') - strtotime($oldres['timestamp'])) > $nochangeafater * 24 *3600 )
-                    $extra = 'disabled';
-            }
-
-            $choices = trim($q['choices']);
-            if( ! $choices )
-                $options = '<textarea cols=50 rows=5 name="qid='.$qid .'"' . " $extra " .'>'.$defaultVal.'</textarea>';
+            // question is instructor specific or course specific.
+            $type = $q['type'];
+            $foreachInstructor = false;
+            if( $type == 'INSTRUCTOR SPECIFIC')
+                $table .= instructorSpecificQuestion( $q, $responses, $instructors, $nochangeafater );
             else
-                $options = csvToRadio( $choices, "qid=" . $q['id'], $defaultVal, $extra );
-
-            $row = '<tr>';
-            $row .= '<td>' . $q['question'] . '</td>';
-            $row .= '<td>' . $options . '</td>';
-            $row .= '</tr>';
-            $table .= $row;
+                $table .= courseSpecificQuestion( $q, $responses, $nochangeafater );
         }
         $table .= '</table>';
         $html .= $table;
