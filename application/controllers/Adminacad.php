@@ -695,7 +695,7 @@ class Adminacad extends CI_Controller
     {
         $res = admin_send_email( $_POST );
         if($res['error'])
-            printWarning( p("Failed to send email.") . $res['error'] );
+            printWarning( p("Failed to send email: Error was ") . $res['error'] );
         else
             flashMessage( $res['message'] );
 

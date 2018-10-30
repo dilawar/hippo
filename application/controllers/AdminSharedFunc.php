@@ -69,10 +69,7 @@ function admin_send_email( array $data ) : array
     if( $md )
     {
         $res['message'] .= printInfo( "Sending email to $to ($cclist ) with subject $subject" );
-
-        $ret = sendHTMLEmail( $msg, $subject, $to, $cclist );
-        if(!$ret)
-            $res['error'] = p("Failed to send email.");
+        sendHTMLEmail( $msg, $subject, $to, $cclist );
     }
     else
         $res['error'] = p("Could not find email text.");
