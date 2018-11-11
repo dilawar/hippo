@@ -348,7 +348,7 @@ class User extends CI_Controller
         foreach( $_POST as $key => $val )
         {
             // Check if we get instructor id as well. If not its empty.
-            preg_match( '/qid\=(?P<qid>\d+)\&instructor=(?P<instructor>\S+?@\S+)/', $key, $m );
+            preg_match( '/qid\=(?P<qid>\d+)(\&instructor=(?P<instructor>\S+?@\S+))?/', $key, $m );
             if($m)
             {
                 $entry = array('year' => $year
@@ -357,6 +357,9 @@ class User extends CI_Controller
                     , 'question_id' => $m['qid']
                     , 'login' => whoAmI()
                     , 'response' => $val
+                    // Instructor is optional. Not all questions are instructor
+                    // specific. We are allowed to entry empty value in
+                    // 'instructor' field.
                     , 'instructor_email' => str_replace('+dot+', '.', __get__($m, 'instructor',''))
                 );
                 $entries[] = $entry;

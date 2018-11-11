@@ -2777,8 +2777,8 @@ function courseFeedbackQuestions($category, $questions, $controller)
 
 function csvToRadio(string $csv, string $name, string $default='', string $disabled='') : string
 {
-    // NOTE: Don't use . in name; they are replaced by _.
-    // replace . with [DOT].
+    // NOTE: Don't use character '.' in the field name becase '.' are replaced by '_'
+    // Therefore we replace '.' with +dot+.
     $name = str_replace( '.', '+dot+', $name );
     $csvarray = explode( ',', $csv );
     $html = '';
@@ -2789,9 +2789,10 @@ function csvToRadio(string $csv, string $name, string $default='', string $disab
         if( $default == $opt )
             $extra .= ' checked';
 
-        $row = "<input type='radio' value='$opt' name='$name' '$disabled' id='$name-id$i' $extra /> ";
-
-        $row .= "<label for='$name$i' class='poll'>$opt</label>";
+        $idKey = "$name-id$i";
+        // NOTE: Field 'for' of label should match the field 'id' of input.
+        $row = "<input type='radio' value='$opt' name='$name' '$disabled' id='$idKey' $extra /> ";
+        $row .= "<label for='$idKey' class='poll'>$opt</label>";
         $options[] = $row;
     }
 
@@ -2864,7 +2865,7 @@ function courseSpecificQuestion( string $year, string $semester, string $course_
     if( ! $choices )
         $options = '<textarea cols=50 rows=5 name="qid='.$qid .'"' . " $extra " .'>'.$defaultVal.'</textarea>';
     else
-        $options = csvToRadio($choices, "qid=" . $q['id'], $defaultVal, $extra);
+        $options = csvToRadio($choices, "qid=$qid", $defaultVal, $extra);
 
     $row .= '<div style="border-top:1px dotted blue">' . $options .'</div>';
     return $row;
@@ -2899,7 +2900,9 @@ function courseFeedbackForm( string $year, string $semester, string $course_id
             $type = $q['type'];
             $foreachInstructor = false;
             if( $type == 'INSTRUCTOR SPECIFIC')
-                $table .= instructorSpecificQuestion($year, $semester, $course_id, $q, $instructors, $nochangeafater);
+                $table .= instructorSpecificQuestion($year, $semester, $course_id, $q
+                                , $instructors, $nochangeafater
+                            );
             else
                 $table .= courseSpecificQuestion($year, $semester, $course_id, $q, $nochangeafater);
         }
