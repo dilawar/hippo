@@ -3496,7 +3496,7 @@ function getCourseSpecificFeedback( string $year, string $semester, string $cid,
     );
 
     foreach($entries as $entry )
-        $responses[$entry['question_id']] = $entry['response'];
+        $responses[$entry['question_id']] = $entry;
 
     return $responses;
 }
