@@ -4,6 +4,10 @@ require_once BASEPATH.'autoload.php';
 if(! isset($controller))
     $controller = 'user';
 
+// Fix the options passed to this page. This could have space in it; they get
+// replaced by %20. Time to put them back.
+$course_id = urldecode( $course_id );
+
 echo userHTML();
 
 $cname = getCourseName( $course_id );
