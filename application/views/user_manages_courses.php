@@ -80,7 +80,7 @@ foreach( $runningCourses as $c )
     $cstart = strtotime( $c[ 'start_date' ] );
 
     // Registration is allowed within 3 weeks.
-    if( $today <= (strtotime($cstart) + 3*7*24*3600) )
+    if( ($cstart + 21*24*3600) > $today )
     {
         // Ignore any course which is colliding with any registered course.
         $cid = $c[ 'course_id' ];
@@ -103,6 +103,7 @@ foreach( $runningCourses as $c )
 
 
 echo "<h2>Registration form</h2>";
+
 $courseSelect = arrayToSelectList( 'course_id', $options, $courseMap );
 $default = array( 'student_id' => whoAmI()
                 , 'semester' => $sem
@@ -113,19 +114,25 @@ $default = array( 'student_id' => whoAmI()
 // echo alertUser( "Any course running on already registered slot will not appear in your
     // registration form."
     // );
-echo alertUser(
-    "Courses will be visible in registration form upto 21 days from <tt>start date</tt>."
-    , false
-    );
+echo alertUser( "A course will be visible in registration form upto 21 days from its
+   starting date." , false);
 
-echo '<form method="post" action="manage_course/register">';
-echo dbTableToHTMLTable( 'course_registration'
-    , $default
-    , 'course_id:required,type:required'
-    , 'Submit'
-    , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
+if( count( $courseMap ) > 0 )
+{
+    echo '<form method="post" action="manage_course/register">';
+    echo dbTableToHTMLTable( 'course_registration'
+        , $default
+        , 'course_id:required,type:required'
+        , 'Submit'
+        , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
     );
-echo '</form>';
+    echo '</form>';
+}
+else
+{
+    echo printNote( "Time limit for registration have passed for all courses. Please 
+        write to academic office." );
+}
 
 // Show user which slots have been blocked.
 
@@ -174,24 +181,27 @@ foreach($myCourses as &$c)
     if(!$course)
         continue;
 
+    // If feedback is not given for this course, display a button.
+    $feedRes = feedbackForm($year, $sem, $cid, $numUnanswered );
+
     // If more than 30 days have passed, do not allow dropping courses.
     $cstartDate = $runningCourses[$cid]['start_date'];
-    if(strtotime('today') > (strtotime($cstartDate)+30*24*86400))
+    if(strtotime('today') > (strtotime($cstartDate)+21*24*3600))
         $action = '';
 
     // TODO: Don't show grades unless student has given feedback.
     $tofilter = 'student_id,registered_on,last_modified_on';
 
-    //// Show grade if it is available and user has given feedback.
-    //if( __get__($c, 'grade', 'X' ) != 'X' )
-    //{
-    //    if($numUnanswered > 0 )
-    //    {
-    //        $c['grade'] = colored( "Grade is available.<br />
-    //            Feedback is due. $numUnanswered unanswered.", 'darkred' 
-    //        );
-    //    }
-    //}
+    // Show grade if it is available and user has given feedback.
+    if( __get__($c, 'grade', 'X' ) != 'X' )
+    {
+        if($feedRes['num_unanswered'] > 0 )
+        {
+            $c['grade'] = colored( "Grade is available.<br />
+                Feedback is due. $numUnanswered unanswered.", 'darkred' 
+            );
+        }
+    }
     echo '<td>';
 
     // Show form.
@@ -201,17 +211,14 @@ foreach($myCourses as &$c)
     echo '</form>';
     echo '</td>';
 
-    // If feedback is not given for this course, display a button.
-    $numUnanswered = 0;
-    $res = feedbackForm($year, $sem, $cid, $numUnanswered );
-    if( $res['num_unanswered']> 0 )
+    if( $feedRes['num_unanswered']> 0 )
     {
         // Feeback form
         $sem = $c['semester'];
         $year = $c['year'];
-        echo "<tr><td> " . $res['html'] . "</td></tr>";
+        echo "<tr><td> " . $feedRes['html'] . "</td></tr>";
     }
-    else if( $numUnanswered == 0 )
+    else
     {
         echo "<tr><td colspan=2><strong>Feedback has been given. </strong> <br />"
             .  showFeedbackLink( $year, $sem, $cid ) . "</td></tr>";
