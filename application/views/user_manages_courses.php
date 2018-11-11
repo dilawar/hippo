@@ -13,6 +13,12 @@ function feedbackForm(string $year, string $sem, string $cid ) : array
     return ['html'=>$form, 'num_unanswered'=>$numUnanswered];
 }
 
+function showFeedbackLink(string $year, string $sem, string $cid )
+{
+    return "<a target='Feedback' href='".site_url( "user/seefeedback/$cid/$sem/$year" )
+        . "'>Show Feedback</a>";
+}
+
 echo userHTML( );
 
 $sem = getCurrentSemester( );
@@ -207,11 +213,8 @@ foreach($myCourses as &$c)
     }
     else if( $numUnanswered == 0 )
     {
-        // All questions have been answered
-        $showFeedbackLink = "<a target='Feedback'  
-            href='".site_url( "user/seefeedback/$cid/$sem/$year" ) . "'>Show Feedback</a>";
-        echo "<tr><td colspan=2><strong>Feedback has been given. </strong> <br /> $showFeedbackLink
-            </td></tr>";
+        echo "<tr><td colspan=2><strong>Feedback has been given. </strong> <br />"
+            .  showFeedbackLink( $year, $sem, $cid ) . "</td></tr>";
     }
     echo '</table>';
 
@@ -239,9 +242,12 @@ $hide = 'student_id,status,last_modified_on';
 foreach( $myAllCourses as &$course )
 {
     $cid = $course['course_id'];
-    $res = feedbackForm( $year, $sem, $cid, $numUnanswered );
-    $numUnanswered = $res['num_unanswered'];
-    $course['Feedback'] = $res['html'];
+    $res = feedbackForm( $year, $sem, $cid );
+
+    if( $res['num_unanswered']  > 0 )
+        $course['Feedback'] = $res['html'];
+    else
+        $course['Feedback'] = showFeedbackLink($year, $sem, $cid);
 }
 
 if( count( $myAllCourses ) > 0 )
