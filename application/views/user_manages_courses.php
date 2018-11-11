@@ -1,8 +1,20 @@
 <?php
-
 require_once BASEPATH . 'autoload.php';
 
+// Local function.
+function feedbackForm(string $year, string $sem, string $cid ) : array
+{
+    // DO NOT use ' to delimit the string; it wont work very well inside table.
+    $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
+    $form =  "<form action='".site_url("user/givefeedback/$cid/$sem/$year")."' method='post'>";
+    $form .= "<button style='float:right' name='response' value='submit'>Feeback ("
+                . $numUnanswered . " unanswered.)</button>";
+    $form .= "</form>";
+    return ['html'=>$form, 'num_unanswered'=>$numUnanswered];
+}
+
 echo userHTML( );
+
 $sem = getCurrentSemester( );
 $year = getCurrentYear( );
 
@@ -164,18 +176,16 @@ foreach($myCourses as &$c)
     // TODO: Don't show grades unless student has given feedback.
     $tofilter = 'student_id,registered_on,last_modified_on';
 
-    $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
-
-    // Show grade if it is available and user has given feedback.
-    if( __get__($c, 'grade', 'X' ) != 'X' )
-    {
-        if($numUnanswered > 0 )
-        {
-            $c['grade'] = colored( "Grade is available.<br />
-                Feedback is due. $numUnanswered unanswered.", 'darkred' 
-            );
-        }
-    }
+    //// Show grade if it is available and user has given feedback.
+    //if( __get__($c, 'grade', 'X' ) != 'X' )
+    //{
+    //    if($numUnanswered > 0 )
+    //    {
+    //        $c['grade'] = colored( "Grade is available.<br />
+    //            Feedback is due. $numUnanswered unanswered.", 'darkred' 
+    //        );
+    //    }
+    //}
     echo '<td>';
 
     // Show form.
@@ -186,17 +196,14 @@ foreach($myCourses as &$c)
     echo '</td>';
 
     // If feedback is not given for this course, display a button.
-    if( $numUnanswered > 0 )
+    $numUnanswered = 0;
+    $res = feedbackForm($year, $sem, $cid, $numUnanswered );
+    if( $res['num_unanswered']> 0 )
     {
         // Feeback form
         $sem = $c['semester'];
         $year = $c['year'];
-        $form =  '<form action="'.site_url("user/givefeedback/$cid/$sem/$year").'" 
-            method="post">';
-        $form .= ' <button style="float:right" name="response" 
-            value="submit">Feeback (' . $numUnanswered . ' unanswered.)</button>';
-        $form .= '</form>';
-        echo "<tr><td>$form </td></tr>";
+        echo "<tr><td> " . $res['html'] . "</td></tr>";
     }
     else if( $numUnanswered == 0 )
     {
@@ -228,10 +235,19 @@ $myAllCourses = getTableEntries( 'course_registration'
 
 $hide = 'student_id,status,last_modified_on';
 
+// Add feedback URL as well.
+foreach( $myAllCourses as &$course )
+{
+    $cid = $course['course_id'];
+    $res = feedbackForm( $year, $sem, $cid, $numUnanswered );
+    $numUnanswered = $res['num_unanswered'];
+    $course['Feedback'] = $res['html'];
+}
+
 if( count( $myAllCourses ) > 0 )
 {
-    echo '<table class="info sorttable">';
-    echo arrayToTHRow( $myAllCourses[0], 'info', $hide );
+    $table = '<table class="info sorttable">';
+    $table .= arrayToTHRow( $myAllCourses[0], 'info', $hide );
     foreach( $myAllCourses as $course )
     {
         $cid = $course[ 'course_id' ];
@@ -242,9 +258,10 @@ if( count( $myAllCourses ) > 0 )
 
         $cname = getCourseName( $cid );
         $course[ 'course_id' ] .= " <br /> $cname";
-        echo arrayToRowHTML( $course, 'info', $hide );
+        $table .= arrayToRowHTML( $course, 'info', $hide );
     }
-    echo "</table>";
+    $table .= "</table>";
+    echo $table;
 }
 else
     echo printInfo( "I could not find any course belonging to '$user' in my database." );
