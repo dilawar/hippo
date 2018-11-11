@@ -51,7 +51,7 @@ foreach( $questions as $cat => $qs )
             }
         }
         else
-            $response = "<tt>" . $feedbackCourse[$qid] . "</tt>";
+            $response = "<tt>" . $feedbackCourse[$qid]['response'] . "</tt>";
 
         $table .= "<tr> <td> $qname </td> <td style='min-width:45%'> $response </td> </tr> ";
     }
