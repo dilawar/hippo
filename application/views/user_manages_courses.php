@@ -1,8 +1,26 @@
 <?php
-
 require_once BASEPATH . 'autoload.php';
 
+// Local function.
+function feedbackForm(string $year, string $sem, string $cid ) : array
+{
+    // DO NOT use ' to delimit the string; it wont work very well inside table.
+    $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
+    $form =  "<form action='".site_url("user/givefeedback/$cid/$sem/$year")."' method='post'>";
+    $form .= "<button style='float:right' name='response' value='submit'>Feeback ("
+                . $numUnanswered . " unanswered.)</button>";
+    $form .= "</form>";
+    return ['html'=>$form, 'num_unanswered'=>$numUnanswered];
+}
+
+function showFeedbackLink(string $year, string $sem, string $cid )
+{
+    return "<a target='Feedback' href='".site_url( "user/seefeedback/$cid/$sem/$year" )
+        . "'>Show Feedback</a>";
+}
+
 echo userHTML( );
+
 $sem = getCurrentSemester( );
 $year = getCurrentYear( );
 
@@ -62,7 +80,7 @@ foreach( $runningCourses as $c )
     $cstart = strtotime( $c[ 'start_date' ] );
 
     // Registration is allowed within 3 weeks.
-    if( $today <= (strtotime($cstart) + 3*7*24*3600) )
+    if( ($cstart + 21*24*3600) > $today )
     {
         // Ignore any course which is colliding with any registered course.
         $cid = $c[ 'course_id' ];
@@ -85,6 +103,7 @@ foreach( $runningCourses as $c )
 
 
 echo "<h2>Registration form</h2>";
+
 $courseSelect = arrayToSelectList( 'course_id', $options, $courseMap );
 $default = array( 'student_id' => whoAmI()
                 , 'semester' => $sem
@@ -95,19 +114,25 @@ $default = array( 'student_id' => whoAmI()
 // echo alertUser( "Any course running on already registered slot will not appear in your
     // registration form."
     // );
-echo alertUser(
-    "Courses will be visible in registration form upto 21 days from <tt>start date</tt>."
-    , false
-    );
+echo alertUser( "A course will be visible in registration form upto 21 days from its
+   starting date." , false);
 
-echo '<form method="post" action="manage_course/register">';
-echo dbTableToHTMLTable( 'course_registration'
-    , $default
-    , 'course_id:required,type:required'
-    , 'Submit'
-    , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
+if( count( $courseMap ) > 0 )
+{
+    echo '<form method="post" action="manage_course/register">';
+    echo dbTableToHTMLTable( 'course_registration'
+        , $default
+        , 'course_id:required,type:required'
+        , 'Submit'
+        , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
     );
-echo '</form>';
+    echo '</form>';
+}
+else
+{
+    echo printNote( "Time limit for registration have passed for all courses. Please 
+        write to academic office." );
+}
 
 // Show user which slots have been blocked.
 
@@ -156,20 +181,21 @@ foreach($myCourses as &$c)
     if(!$course)
         continue;
 
+    // If feedback is not given for this course, display a button.
+    $feedRes = feedbackForm($year, $sem, $cid, $numUnanswered );
+
     // If more than 30 days have passed, do not allow dropping courses.
     $cstartDate = $runningCourses[$cid]['start_date'];
-    if(strtotime('today') > (strtotime($cstartDate)+30*24*86400))
+    if(strtotime('today') > (strtotime($cstartDate)+21*24*3600))
         $action = '';
 
     // TODO: Don't show grades unless student has given feedback.
     $tofilter = 'student_id,registered_on,last_modified_on';
 
-    $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
-
     // Show grade if it is available and user has given feedback.
     if( __get__($c, 'grade', 'X' ) != 'X' )
     {
-        if($numUnanswered > 0 )
+        if($feedRes['num_unanswered'] > 0 )
         {
             $c['grade'] = colored( "Grade is available.<br />
                 Feedback is due. $numUnanswered unanswered.", 'darkred' 
@@ -185,26 +211,17 @@ foreach($myCourses as &$c)
     echo '</form>';
     echo '</td>';
 
-    // If feedback is not given for this course, display a button.
-    if( $numUnanswered > 0 )
+    if( $feedRes['num_unanswered']> 0 )
     {
         // Feeback form
         $sem = $c['semester'];
         $year = $c['year'];
-        $form =  '<form action="'.site_url("user/givefeedback/$cid/$sem/$year").'" 
-            method="post">';
-        $form .= ' <button style="float:right" name="response" 
-            value="submit">Feeback (' . $numUnanswered . ' unanswered.)</button>';
-        $form .= '</form>';
-        echo "<tr><td>$form </td></tr>";
+        echo "<tr><td> " . $feedRes['html'] . "</td></tr>";
     }
-    else if( $numUnanswered == 0 )
+    else
     {
-        // All questions have been answered
-        $showFeedbackLink = "<a target='Feedback'  
-            href='".site_url( "user/seefeedback/$cid/$sem/$year" ) . "'>Show Feedback</a>";
-        echo "<tr><td colspan=2><strong>Feedback has been given. </strong> <br /> $showFeedbackLink
-            </td></tr>";
+        echo "<tr><td colspan=2><strong>Feedback has been given. </strong> <br />"
+            .  showFeedbackLink( $year, $sem, $cid ) . "</td></tr>";
     }
     echo '</table>';
 
@@ -228,10 +245,22 @@ $myAllCourses = getTableEntries( 'course_registration'
 
 $hide = 'student_id,status,last_modified_on';
 
+// Add feedback URL as well.
+foreach( $myAllCourses as &$course )
+{
+    $cid = $course['course_id'];
+    $res = feedbackForm( $year, $sem, $cid );
+
+    if( $res['num_unanswered']  > 0 )
+        $course['Feedback'] = $res['html'];
+    else
+        $course['Feedback'] = showFeedbackLink($year, $sem, $cid);
+}
+
 if( count( $myAllCourses ) > 0 )
 {
-    echo '<table class="info sorttable">';
-    echo arrayToTHRow( $myAllCourses[0], 'info', $hide );
+    $table = '<table class="info sorttable">';
+    $table .= arrayToTHRow( $myAllCourses[0], 'info', $hide );
     foreach( $myAllCourses as $course )
     {
         $cid = $course[ 'course_id' ];
@@ -242,9 +271,10 @@ if( count( $myAllCourses ) > 0 )
 
         $cname = getCourseName( $cid );
         $course[ 'course_id' ] .= " <br /> $cname";
-        echo arrayToRowHTML( $course, 'info', $hide );
+        $table .= arrayToRowHTML( $course, 'info', $hide );
     }
-    echo "</table>";
+    $table .= "</table>";
+    echo $table;
 }
 else
     echo printInfo( "I could not find any course belonging to '$user' in my database." );
