@@ -2340,14 +2340,14 @@ function addOrUpdateSpeaker( $data )
 function getCourseName( string $cexpr ) : string
 {
     $cid = explode( '-', $cexpr )[0];
+    $cid = urldecode( $cid );
+
     $c =  getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
     if( ! $c )
     {
-        echo printWarning( "No course information found for '$cexpr':
-            CID='$cid'" );
+        flashMessage( "No course information found for '$cexpr': CID='$cid'" );
         return '';
     }
-
     return $c['name'];
 }
 
@@ -3420,14 +3420,12 @@ function getNumberOfRequetsInGroup( string $gid ) : int
 /* ----------------------------------------------------------------------------*/
 function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
 {
-    $extID = "$year.$sem.$cid";
+    $questions = getTableEntries('course_feedback_questions', 'id', "status='VALID'");
 
-    $questions = getTableEntries( 'question_bank', 'id'
-        , "status='VALID' AND LOWER(category)='course feedback'"
-        );
-
-    $oldres = getTableEntries( 'poll_response', 'login', 
-        "login='$student' AND external_id='$extID'"
+    // Get all the response for this year, semester and course id.
+    $oldres = getTableEntries( 'course_feedback_responses'
+        , 'question_id'
+        , "login='$student' AND year='$year' AND semester='$sem'"
         );
 
     $nQuesNotAnswered = count($questions); 
@@ -3435,14 +3433,15 @@ function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
     $res = array();
     foreach( $questions as $q )
     {
-        $res = getTableEntry( 'poll_response', 'external_id,question_id,login'
-            , array( 'login'=>$student, 'external_id'=>$extID, 'question_id'=>$q['id']));
+        $res = getTableEntry( 'course_feedback_responses'
+            , 'question_id,login,course_id,year,semester'
+            , array('login'=>$student, 'year'=>$year, 'semester'=>$sem
+                , 'course_id'=>$cid, 'question_id'=>$q['id'])
+        );
         if( $res )
             $nQuesNotAnswered -= 1;
     }
-
     return $nQuesNotAnswered;
-
 }
 
 /* --------------------------------------------------------------------------*/
@@ -3466,15 +3465,13 @@ function getQuestionsWithCategory($category) : array
     return $res;
 }
 
-function getOldResponses( $externalID ) : array
+function getCourseFeedbackQuestions( ) : array
 {
-    $responses = array();
-    $entries = getTableEntries('poll_response', 'question_id', "external_id='$externalID' AND status='VALID'");
-
-    foreach($entries as $entry )
-        $responses[$entry['question_id']] = $entry;
-
-    return $responses;
+    $qsMap = array();
+    $entries = getTableEntries( 'course_feedback_questions', 'id', "status='VALID'");
+    foreach( $entries as $e )
+        $qsMap[$e['category']][] = $e;
+    return $qsMap;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -3488,10 +3485,37 @@ function getOldResponses( $externalID ) : array
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function getOldCourseFeedback( $year, $semester, $cid ) : array
+function getCourseSpecificFeedback( string $year, string $semester, string $cid, string $login='') : array
 {
-    $res = getOldResponses( "$year.$semester.$cid" );
-    return $res;
+    $responses = array();
+    if( ! $login )
+        $login = whoAmI();
+
+    $entries = getTableEntries('course_feedback_responses', 'question_id'
+        , "login='$login' AND course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID'"
+    );
+
+    foreach($entries as $entry )
+        $responses[$entry['question_id']] = $entry['response'];
+
+    return $responses;
+}
+
+function getInstructorSpecificFeedback( string $year, string $semester, string $cid, string $email, $login='' )
+{
+    $responses = array();
+    if( ! $login )
+        $login = whoAmI();
+
+    $entries = getTableEntries('course_feedback_responses', 'question_id'
+        , "login='$login' AND course_id='$cid' AND year='$year' AND semester='$semester' AND 
+            instructor_email='$email' AND status='VALID'"
+    );
+
+    foreach($entries as $entry )
+        $responses[$entry['question_id']] = $entry;
+
+    return $responses;
 }
 
 

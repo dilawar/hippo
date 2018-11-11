@@ -12,7 +12,6 @@ class HippoHooks
         $this->CI =& get_instance();
     }
 
-    // Somehow I have to make sur that this is not triggered on Info pages.
     public function PreController( )
     {
         $class = $this->CI->router->fetch_class();
@@ -46,9 +45,12 @@ class HippoHooks
             $page = basename( $_SERVER[ 'PHP_SELF'] );
             $page = str_replace( '.php', '', $page );
 
-            if( ! ( $page == 'index' || $page == 'rss' ||  $page == 'welcome' || $page == 'login') )
+            if( ! ( $page == 'index' || $page == 'rss' ||  $page == 'welcome' || $page == 'login' 
+                || $page == 'aws') )
             {
-                $this->CI->session->set_flashdata('error', "You are not authenticated yet." . $page );
+                $this->CI->session->set_flashdata('error'
+                    , "You are not authenticated yet. Please login and try again" 
+                );
                 redirect( 'welcome' );
                 return;
             }

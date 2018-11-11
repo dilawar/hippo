@@ -171,9 +171,8 @@ foreach($myCourses as &$c)
     {
         if($numUnanswered > 0 )
         {
-            $c['grade'] = colored( 
-                "Grade is available.<br />Feedback is due. $numUnanswered unanswered."
-                , 'darkred' 
+            $c['grade'] = colored( "Grade is available.<br />
+                Feedback is due. $numUnanswered unanswered.", 'darkred' 
             );
         }
     }
@@ -202,7 +201,10 @@ foreach($myCourses as &$c)
     else if( $numUnanswered == 0 )
     {
         // All questions have been answered
-        echo "<tr><td colspan=2>Feedback has been given.</td></tr>";
+        $showFeedbackLink = "<a target='Feedback'  
+            href='".site_url( "user/seefeedback/$cid/$sem/$year" ) . "'>Show Feedback</a>";
+        echo "<tr><td colspan=2><strong>Feedback has been given. </strong> <br /> $showFeedbackLink
+            </td></tr>";
     }
     echo '</table>';
 

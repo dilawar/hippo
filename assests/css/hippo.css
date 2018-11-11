@@ -909,6 +909,22 @@ table.admin tr td {
     width: 100%;
 }
 
+table.first_column_important {
+    background-color: var(--tabletdcolor);
+    vertical-align: top;
+    max-width: 100%;
+    min-width: 500px;
+    font-size: small;
+}
+
+table.first_column_important tr td {
+    min-width: 50px;
+}
+
+table.first_column_important tr td:first-child {
+    min-width: 300px;
+}
+
 
 .goback {
 }

@@ -376,6 +376,38 @@ class BMVPDO extends PDO
                 )"
             );
 
+        // Table for question bank related to courses.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS course_feedback_questions (
+                id INT PRIMARY KEY
+                , category VARCHAR(40)
+                , question MEDIUMTEXT NOT NULL 
+                , choices VARCHAR(200) -- csv for choices. 
+                , type ENUM('COURSE SPECIFIC', 'INSTRUCTOR SPECIFIC' ) DEFAULT 'COURSE SPECIFIC'
+                , status ENUM('VALID', 'INVALID' ) default 'VALID'
+                , last_modified_on DATETIME
+                )"
+            );
+
+        // table to record course feedback.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS course_feedback_responses (
+                login VARCHAR(40) NOT NULL
+                , question_id INT NOT NULL
+                , course_id VARCHAR(30) NOT NULL
+                , semester VARCHAR(20) NOT NULL
+                , year VARCHAR(5) NOT NULL -- will last till year 99999
+                , instructor_email VARCHAR(40) NOT NULL DEFAULT '' -- for instructor specfic questions.
+                , response VARCHAR(1000) NOT NULL -- it could be large text but no longer than 1000 char.
+                , status ENUM('VALID', 'INVALID', 'WITHDRAWN' ) default 'VALID'
+                , weight INT(3) UNSIGNED NOT NULL DEFAULT '1' -- weight of this question.
+                , timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                , last_modified_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                , UNIQUE KEY(login,question_id,course_id,instructor_email)
+                )"
+            );
+
+
         // table to record poll.
         $res = $this->query( "
             CREATE TABLE IF NOT EXISTS poll_response (

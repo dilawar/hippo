@@ -75,11 +75,18 @@ class User extends CI_Controller
         $this->template->load('user_book');
     }
 
+    public function seefeedback( $course_id, $semester, $year )
+    {
+        $this->load_user_view('user_see_feedback'
+            , [ 'course_id'=>$course_id, 'semester' => $semester, 'year' => $year ]
+        );
+    }
+
     public function givefeedback($course_id, $semester, $year)
     {
         if( $course_id &&  $semester && $year )
         {
-            $this->load_user_view( 'user_give_feedback.php'
+            $this->load_user_view( 'user_give_feedback'
                 , array('course_id'=>$course_id, 'semester'=>$semester, 'year'=>$year) 
             );
         }
@@ -324,6 +331,71 @@ class User extends CI_Controller
 
         // flashMessage( $msg );
 
+        redirect("user/courses" );
+    }
+
+    // Submit feedback.
+    public function submitfeedback( )
+    {
+        $course_id = $_POST['course_id'];
+        $semester = $_POST['semester'];
+        $year = $_POST['year'];
+
+        if(!($year && $semester  && $course_id))
+        {
+            $msg = "Either semester, year or course_id was invalid.";
+            $msg .= json_encode( $_POST );
+            printWarning( $msg );
+            redirect( 'user/courses' );
+            return;
+        }
+
+        // Keep data in array for table updating.
+        $entries = array();
+        foreach( $_POST as $key => $val )
+        {
+            // Check if we get instructor id as well. If not its empty.
+            preg_match( '/qid\=(?P<qid>\d+)(\&instructor=(?P<instructor>\S+?@\S+))?/', $key, $m );
+            if($m)
+            {
+                $entry = array('year' => $year
+                    , 'semester' => $semester
+                    , 'course_id' => $course_id
+                    , 'question_id' => $m['qid']
+                    , 'login' => whoAmI()
+                    , 'response' => $val
+                    // Instructor is optional. Not all questions are instructor
+                    // specific. We are allowed to entry empty value in
+                    // 'instructor' field.
+                    , 'instructor_email' => str_replace('+dot+', '.', __get__($m, 'instructor',''))
+                );
+                $entries[] = $entry;
+            }
+        }
+
+        // Update poll_response table now.
+        $msg = '';
+        $error = false;
+        foreach( $entries as $entry )
+        {
+            // $msg .= json_encode($entry);
+            // var_dump( $entry );
+            $res = insertOrUpdateTable('course_feedback_responses'
+                , 'login,question_id,year,semester,course_id,instructor_email,response'
+                , 'response', $entry
+            );
+
+            if(!$res)
+            {
+                $msg .= 'Faieled to record response for question id ' . json_encode($entry);
+                $error = true;
+            }
+        }
+
+        if($error)
+            flashMessage( $error );
+        else
+            flashMessage( "Successfully recorded your response." );
         redirect("user/courses" );
     }
 
