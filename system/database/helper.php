@@ -2340,14 +2340,14 @@ function addOrUpdateSpeaker( $data )
 function getCourseName( string $cexpr ) : string
 {
     $cid = explode( '-', $cexpr )[0];
+    $cid = urldecode( $cid );
+
     $c =  getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
     if( ! $c )
     {
-        echo printWarning( "No course information found for '$cexpr':
-            CID='$cid'" );
+        flashMessage( "No course information found for '$cexpr': CID='$cid'" );
         return '';
     }
-
     return $c['name'];
 }
 
@@ -3485,10 +3485,12 @@ function getCourseFeedbackQuestions( ) : array
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function getCourseSpecificFeedback( string $year, string $semester, string $cid ) : array
+function getCourseSpecificFeedback( string $year, string $semester, string $cid, string $login='') : array
 {
     $responses = array();
-    $login = whoAmI();
+    if( ! $login )
+        $login = whoAmI();
+
     $entries = getTableEntries('course_feedback_responses', 'question_id'
         , "login='$login' AND course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID'"
     );
@@ -3499,10 +3501,12 @@ function getCourseSpecificFeedback( string $year, string $semester, string $cid 
     return $responses;
 }
 
-function getInstructorSpecificFeedback( string $year, string $semester, string $cid, string $email )
+function getInstructorSpecificFeedback( string $year, string $semester, string $cid, string $email, $login='' )
 {
     $responses = array();
-    $login = whoAmI();
+    if( ! $login )
+        $login = whoAmI();
+
     $entries = getTableEntries('course_feedback_responses', 'question_id'
         , "login='$login' AND course_id='$cid' AND year='$year' AND semester='$semester' AND 
             instructor_email='$email' AND status='VALID'"

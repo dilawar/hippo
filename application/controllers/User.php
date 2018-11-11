@@ -75,6 +75,13 @@ class User extends CI_Controller
         $this->template->load('user_book');
     }
 
+    public function seefeedback( $course_id, $semester, $year )
+    {
+        $this->load_user_view('user_see_feedback'
+            , [ 'course_id'=>$course_id, 'semester' => $semester, 'year' => $year ]
+        );
+    }
+
     public function givefeedback($course_id, $semester, $year)
     {
         if( $course_id &&  $semester && $year )
