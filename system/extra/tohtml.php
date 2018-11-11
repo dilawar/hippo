@@ -2853,10 +2853,11 @@ function courseSpecificQuestion( string $year, string $semester, string $course_
     $defaultVal = '';
     $extra = '';
     $responses = getCourseSpecificFeedback( $year, $semester, $course_id );
-    if( __get__($responses, $qid, '' ) )
+    if( __get__($responses, $qid, [] ) )
     {
         $oldres = $responses[$qid];
-        $defaultVal = $oldres['response'];
+        if( $oldres )
+            $defaultVal = $oldres['response'];
         if( (strtotime('now') - strtotime($oldres['timestamp'])) > $nochangeafater * 24 *3600 )
             $extra = 'disabled';
     }
