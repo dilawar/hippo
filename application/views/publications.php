@@ -1,4 +1,4 @@
-<?php
+:?php
 include_once FCPATH.'./system/autoload.php';
 
 // This RSS url is generated from PubMed.
