@@ -54,7 +54,12 @@ class Info extends CI_Controller
     {
         $this->template->set('header', 'header.php' );
         $this->template->load('courses' );
+    }
 
+    public function publications()
+    {
+        $this->template->set('header', 'header.php' );
+        $this->template->load('publications' );
     }
 
     public function rss( )
