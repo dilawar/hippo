@@ -4,3 +4,4 @@ networkx
 pillow
 requests
 six
+bibtexparser
