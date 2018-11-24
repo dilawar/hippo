@@ -536,41 +536,32 @@ $(function () {
 
 <h1>Academic statistics since March 01, 2017</h1>
 
-<h3>Annual Work Seminars Distributions</h3>
 <table class=chart>
 <tr> <td> <div id="aws_per_year"></div> </td>
+</tr><tr>
 <td> <div id="aws_gap_chart"></div> </td>
 </tr>
 </table>
 
-<h3>AWS Speakers distributions</h3>
 <table class=chart>
 <tr> <td> <div id="aws_chart1"></div> </td>
+</tr><tr>
 <td> <div id="aws_speakers_pie"></div> </td>
 </tr> </table>
 
-<h3>Thesis seminar distributions</h3>
 <table class=chart>
 <tr> <td> <div id="thesis_seminar_per_month"></div> </td>
+</tr><tr>
 <td> <div id="thesis_seminar_per_year"></div> </td>
 </tr> </table>
 
-<h1>Booking requests between <?php
-    echo humanReadableDate( 'march 01, 2017') ?>
-    and <?php echo humanReadableDate( $upto ); ?></h1>
+<h1> Venues statistics since March 01, 2017</h1>
+<?=$bookingTable?>
 
-<?php
-echo $bookingTable;
-?>
-
-<h1>Venue usage between <?php
-    echo humanReadableDate( 'march 01, 2017') ?>
-    and <?php echo humanReadableDate( $upto ); ?></h1>
-
-<h3></h3>
 <table class="chart">
 <tr>
     <td> <div id="venue_usage1"></div> </td>
+</tr><tr>
     <td> <div id="venue_usage2" ></div> </td>
 </tr>
 </table>
@@ -579,6 +570,7 @@ echo $bookingTable;
 <table class="chart">
 <tr>
     <td> <div id="events_class1"></div> </td>
+</tr><tr>
     <td> <div id="events_class2" ></div> </td>
 </tr>
 </table>
@@ -939,7 +931,6 @@ $networkJSON = json_encode( $network, JSON_PRETTY_PRINT );
             edgelabels.attr( 'fill', "#acc" );
         }
     }
-
 
 </script>
 </div>
