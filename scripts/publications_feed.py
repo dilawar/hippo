@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """publications_feed.py: 
-
+Run this script from a cron jon to update the json file.
 """
     
 __author__           = "Dilawar Singh"
@@ -12,55 +12,25 @@ __status__           = "Development"
 
 import sys
 import os
-import matplotlib.pyplot as plt
-import numpy as np
 from collections import defaultdict
 import bibtexparser
 import requests
 import json
 
-url_ = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?rss_guid=1NSu_CQNBizum_oQNyvEnfQmlhOTxJQa5H5sRESYexRAOfuYAI"
-
-
-def ris_to_dict( ris ):
-    d = defaultdict(list)
-    for l in ris.split('\n'):
-        l = [x.strip() for x in l.split('-')]
-        if len(l) == 2:
-            d[l[0]].append(l[1])
-    return d
-
-
-def process_ris( ris ):
-    r2 = ris.split('\n')
-    lines = '\n'.join([ x.strip() for x in r2])
-    papers = lines.split('\n\n')
-    ps = []
-    for p in papers:
-        ps.append(ris_to_dict(p))
-    return ps
-
-def download_ris( ):
-    url = "https://ncbs.res.in/publications/export/ris/"
-    r2 = requests.get(url)
-    if r2.status_code == 200:
-        with open( 'pub.ris', 'w' ) as f:
-            f.write( r2.text )
-    return r2.text
+sdir_ = os.path.dirname( __file__ )
 
 def download_bibtex():
     url = "https://ncbs.res.in/publications/export/bibtex"
     r2 = requests.get(url)
-    if r2.status_code == 200:
-        with open( 'pub.bib', 'w' ) as f:
-            f.write( r2.text )
     return r2.text
 
 def main():
     global url_
     bib = download_bibtex()
     data = bibtexparser.loads(bib)
-    print( json.dumps(data.entries) )
+    jsonFile = os.path.join( sdir_, '..', 'temp', 'publications.json' )
+    with open( jsonFile, 'w' ) as f:
+        f.write(json.dumps(data.entries))
 
 if __name__ == '__main__':
     main()
