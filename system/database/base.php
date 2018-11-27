@@ -141,7 +141,7 @@ class BMVPDO extends PDO
         // Save the emails here. A bot should send these emails.
         $res = $this->query(
             'CREATE TABLE IF NOT EXISTS emails
-            ( id INT NOT NULL AUTO_INCREMENT
+            (   id INT NOT NULL AUTO_INCREMENT
                 , recipients VARCHAR(1000) NOT NULL
                 , cc VARCHAR(200)
                 , subject VARCHAR(1000) NOT NULL
@@ -151,6 +151,30 @@ class BMVPDO extends PDO
                 , created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , last_tried_on DATETIME
                 , PRIMARY KEY (id) )'
+            );
+
+        // Save the list of publications here.
+        $res = $this->query(
+            'CREATE TABLE IF NOT EXISTS publications
+            (   sha512 VARCHAR(129) PRIMARY KEY
+                , title VARCHAR(1000) 
+                , abstract VARCHAR(4000)  
+                , publisher VARCHAR(1000) NOT NULL
+                , type VARCHAR(100) 
+                , date DATE NOT NULL
+                , doi VARCHAR(300)
+                , urls VARCHAR(800)
+            )'
+            );
+
+        $res = $this->query(
+            'CREATE TABLE IF NOT EXISTS publication_authors
+            (
+                author VARCHAR(100) NOT NULL  -- multiple author
+                , affiliation VARCHAR(100) NOT NULL  -- multiple author
+                , publication_title_sha256 VARCHAR(129) 
+                , publication_title VARCHAR(1000)
+                , UNIQUE KEY (author, publication_title_sha256) )'
             );
 
         $res = $this->query( "
@@ -599,6 +623,7 @@ class BMVPDO extends PDO
                 )"
             );
 
+        // JC presentations.
         $res = $this->query( "
             CREATE TABLE IF NOT EXISTS jc_presentations (
                 id INT NOT NULL PRIMARY KEY
@@ -616,7 +641,7 @@ class BMVPDO extends PDO
                 )"
             );
 
-        // Not put many contraints.
+        // JC requests.
         $res = $this->query( "
             CREATE TABLE IF NOT EXISTS jc_requests (
                 id INT NOT NULL PRIMARY KEY
