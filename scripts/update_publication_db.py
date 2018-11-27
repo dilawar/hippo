@@ -36,10 +36,16 @@ def _merge(month, year):
     b = [x.strip() for x in year.strip().split()]
     c = sorted(set(a + b))
     date = ' '.join(c)
-    date1 = dateparser.parse(date)
-    assert date1, (date, a, b, c)
-    return date1 if date1 else date
+    res = dateparser.parse(date)
+    return res if res else dateparser.parse(year)
 
+def _get_publisher( d ):
+    if 'journal' in d:
+        return d['journal']
+    elif 'publisher' in d:
+        return d['publisher']
+    else:
+        return 'NA'
 
 def main():
     global url_
@@ -56,11 +62,33 @@ def main():
         titleHash = hashlib.sha256(title.encode('utf8')).hexdigest()
         month, year = pub.get('month',''), pub['year']
         date = _merge(month, year)
-        print( '-', date, titleHash, title )
+        publisher = _get_publisher( pub )
+        query =  """REPLACE INTO publications 
+                (sha512, title, abstract, publisher, type, date, doi,
+                metadata_json)
+                VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')
+            """ % (titleHash, title, ''
+                , publisher, pub['ENTRYTYPE'], date
+                , pub.get('doi', ''), '' )
+        try:
+            cur_.execute( query )
+        except Exception as e:
+            db_.close()
+            print( e )
+            print( query )
+            return
         for auth in authors:
             author = ' '.join(reversed(auth.strip().split(',')))
+            cur_.execute( """
+                REPLACE INTO publication_author (author, affiliation,
+                publication_title_sha, publication_title ) VALUES
+                ( '%s', '%s', '%s', '%s' )
+                """ % (author, '', titleHash, title )
+                )
             print( author, end = ', ' )
         print()
+    cur_.close()
+    db_.close()
 
 if __name__ == '__main__':
     main()
