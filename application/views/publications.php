@@ -35,6 +35,9 @@ $bibs = [];
 foreach( $entries as $entry )
     $bibs[date('Y', strtotime($entry['date']))][] = $entry;
 
+// Higher year first.
+krsort($bibs);
+
 foreach( $bibs as $year => $bibs )
 {
     $table = '<table class="show_info">';
