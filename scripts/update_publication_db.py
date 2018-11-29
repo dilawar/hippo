@@ -47,7 +47,7 @@ def _get_publisher( d ):
     else:
         return 'NA'
 
-def main():
+def after_2015():
     global url_
     bib = download_bibtex()
     data = bibtexparser.loads(bib)
@@ -88,6 +88,36 @@ def main():
     db_.commit()
     cur_.close()
     db_.close()
+
+def _process_data( data_file ):
+    with open( data_file, 'r' ) as f:
+        txt = f.read()
+
+    blocks = txt.split( '\n\n' )
+    print( "[INFO ] Total blocks %d" % len(blocks) )
+    pat = re.compile( r'(?P<author>.+?)\(\d+\)(?P<title>.+?\.)(?P<journal>.+)', re.DOTALL )
+    pubs = []
+    for i, bl in enumerate(reversed(blocks)):
+        bl = bl.replace( '\n', ' ' )
+        bl = re.sub( r'^\d+\.?\s+', '', bl )
+        m = pat.search( bl )
+        if m:
+            print( 'AUTHORS: ', m.group( 'author' ))
+            #  print( 'TITLE  : ', m.group( 'title' ) )
+            #  print( 'JOURNAL: ', m.group( 'journal' ) )
+            pubs.append( m.groupdict() )
+        else:
+            print( '[WARN] Could not parse' )
+            print( bl )
+            break
+
+
+def before_2015():
+    dataF = '../data/publications_before_2015_mixed.txt'
+    data = _process_data( dataF )
+
+def main():
+    before_2015()
 
 if __name__ == '__main__':
     main()
