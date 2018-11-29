@@ -164,6 +164,8 @@ class BMVPDO extends PDO
                 , date DATE NOT NULL
                 , doi VARCHAR(300)
                 , urls VARCHAR(800)
+                , metadata_json MEDIUMTEXT
+                , modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )'
             );
 
@@ -174,6 +176,7 @@ class BMVPDO extends PDO
                 , affiliation VARCHAR(100) NOT NULL  -- multiple author
                 , publication_title_sha256 VARCHAR(129) 
                 , publication_title VARCHAR(1000)
+                , modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 , UNIQUE KEY (author, publication_title_sha256) )'
             );
 
