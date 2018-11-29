@@ -28,23 +28,25 @@ function pubmedToTable( ) : string
         return '';
 }
 
-$bibs = getTableEntries( 'publications', 'date' );
-echo "Total publications found " . count( $bibs );
+$entries = getTableEntries( 'publications', 'date' );
+echo "Total publications found " . count( $entries );
 
-$bibYear = [];
-foreach( $bibs as $i => $bib )
-    $bibYear[ $bib['year'] ][] = $bib;
+$bibs = [];
+foreach( $entries as $entry )
+    $bibs[date('Y', strtotime($entry['date']))][] = $entry;
 
-foreach( $bibYear as $year => $bibs )
+foreach( $bibs as $year => $bibs )
 {
     $table = '<table class="show_info">';
     foreach( $bibs as $i => $bib )
     {
         $row = "<td>".($i+1)."</td>";
         $row .= "<td>". $bib['title'] ;
-        $authors = [];
-        foreach( explode('and', $bib['author']) as $auth )
-            $authors[] = implode( ' ', array_reverse(explode( ',', $auth )));
+        $title = $bib['title'];
+        $titleSha = hash( 'sha512', $title);
+        $authors = array_map( function($e) { return $e['author']; }
+            , getTableEntries( 'publication_authors', 'author', "publication_title_sha='$titleSha'")
+        );
 
         $publisher = __get__( $bib, 'journal', __get__($bib, 'publisher', 'Unknown'));
         $row .= "<br /> <small>" . $publisher . "</small>" ;

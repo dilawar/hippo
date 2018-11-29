@@ -59,7 +59,7 @@ def main():
     for pub in data.entries:
         authors = pub['author'].split('and')
         title = pub['title'].strip()
-        titleHash = hashlib.sha256(title.encode('utf8')).hexdigest()
+        titleHash = hashlib.sha512(title.encode('utf8')).hexdigest()
         month, year = pub.get('month',''), pub['year']
         date = _merge(month, year)
         publisher = _get_publisher( pub )
@@ -74,8 +74,6 @@ def main():
             cur_.execute( query )
         except Exception as e:
             db_.close()
-            print( e )
-            print( query )
             return
         for auth in authors:
             author = ' '.join(reversed(auth.strip().split(',')))
