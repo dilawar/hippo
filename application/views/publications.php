@@ -32,16 +32,25 @@ function pubmedToTable( ) : string
 $ncbsList = FCPATH . '/temp/publications.json';
 $bibs = json_decode( file_get_contents($ncbsList), true);
 
-$table = '<table class="info">';
+$bibYear = [];
 foreach( $bibs as $i => $bib )
+    $bibYear[ $bib['year'] ][] = $bib;
+
+foreach( $bibYear as $year => $bibs )
 {
-    $row = "<td>".($i+1)."</td>";
-    $row .= "<td>". $bib['author'] ."</td>";
-    $row .= "<td>". $bib['title'] ."</td>";
-    $table .= "<tr>$row</tr>";
+    $table = '<table class="info">';
+    $table .= "<caption> $year </caption>";
+    foreach( $bibs as $i => $bib )
+    {
+        $row = "<td>".($i+1)."</td>";
+        $row .= "<td>". $bib['author'] ."</td>";
+        $row .= "<td>". $bib['title'] ."</td>";
+        $table .= "<tr>$row</tr>";
+    }
+    $table .= "</table>";
+    echo $table;
+    echo "<hr />";
 }
-$table .= "</table>";
-echo $table;
 
 ?>
 
