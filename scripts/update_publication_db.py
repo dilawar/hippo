@@ -87,6 +87,7 @@ def main():
                 )
             print( author, end = ', ' )
         print()
+    db_.commit()
     cur_.close()
     db_.close()
 

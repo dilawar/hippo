@@ -28,9 +28,8 @@ function pubmedToTable( ) : string
         return '';
 }
 
-// Populate ncbs feed.
-$ncbsList = FCPATH . '/temp/publications.json';
-$bibs = json_decode( file_get_contents($ncbsList), true);
+$bibs = getTableEntries( 'publications', 'date' );
+echo "Total publications found " . count( $bibs );
 
 $bibYear = [];
 foreach( $bibs as $i => $bib )
@@ -38,16 +37,23 @@ foreach( $bibs as $i => $bib )
 
 foreach( $bibYear as $year => $bibs )
 {
-    $table = '<table class="info">';
-    $table .= "<caption> $year </caption>";
+    $table = '<table class="show_info">';
     foreach( $bibs as $i => $bib )
     {
         $row = "<td>".($i+1)."</td>";
-        $row .= "<td>". $bib['author'] ."</td>";
-        $row .= "<td>". $bib['title'] ."</td>";
+        $row .= "<td>". $bib['title'] ;
+        $authors = [];
+        foreach( explode('and', $bib['author']) as $auth )
+            $authors[] = implode( ' ', array_reverse(explode( ',', $auth )));
+
+        $publisher = __get__( $bib, 'journal', __get__($bib, 'publisher', 'Unknown'));
+        $row .= "<br /> <small>" . $publisher . "</small>" ;
+        $row .= "<br/> <strong> <small>". implode(',', $authors) . "</small> </strong>";
+        $row .= "</td>";
         $table .= "<tr>$row</tr>";
     }
     $table .= "</table>";
+    echo "<h3>Publications in $year</h3>";
     echo $table;
     echo "<hr />";
 }
