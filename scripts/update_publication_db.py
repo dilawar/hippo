@@ -80,7 +80,7 @@ def main():
         for auth in authors:
             author = ' '.join(reversed(auth.strip().split(',')))
             cur_.execute( """
-                REPLACE INTO publication_author (author, affiliation,
+                REPLACE INTO publication_authors (author, affiliation,
                 publication_title_sha, publication_title ) VALUES
                 ( '%s', '%s', '%s', '%s' )
                 """ % (author, '', titleHash, title )

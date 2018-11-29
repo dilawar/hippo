@@ -174,7 +174,7 @@ class BMVPDO extends PDO
             (
                 author VARCHAR(100) NOT NULL  -- multiple author
                 , affiliation VARCHAR(100) NOT NULL  -- multiple author
-                , publication_title_sha256 VARCHAR(129) 
+                , publication_title_sha VARCHAR(129) 
                 , publication_title VARCHAR(1000)
                 , modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 , UNIQUE KEY (author, publication_title_sha256) )'
