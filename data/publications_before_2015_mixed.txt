@@ -676,9 +676,8 @@ Mallika, V., Bhaduri, A. and Swodhamini, R. (2001)
 PASS2: protein structural superfamilies.
 Nucleic Acid Research (in Press)
 
-Mukherji, P., Dani, A., Bhatia, S., Singh, N., Rudensky, A., George, A., Bal, V., Mayor, S. and Rath, S.
-Efficient presentation of both cytosolic and endogenous transmembrane protein antigens on MHC 
-class II is dependent on cytoplasmic ptroteolysis.
+Mukherji, P., Dani, A., Bhatia, S., Singh, N., Rudensky, A., George, A., Bal, V., Mayor, S. and Rath, S. (2001)
+Efficient presentation of both cytosolic and endogenous transmembrane protein antigens on MHC class II is dependent on cytoplasmic ptroteolysis.
 Journal of Immunology, 167, 2632-2641
 
 Nandi, D. and Sarin, A. (2001).
@@ -691,8 +690,8 @@ In Stem Cell Biology. eds., Marshak, D.R., Gardner, D.K. and Gottlieb, D. Cold S
 Harbor Laboratory Press, 399-438.
 
 Ramaswamy, S. and Rao, M. (2001).
-The physics of active membranes
-In Comptes Rendus l'Academie des Sciences, Paris Series IV, 2, 817-839.
+The physics of active membranes in Comptes Rendus l'Academie des Sciences.
+Paris Series IV, 2, 817-839.
 
 Rami, B.R. and Udgaonkar, J.B. (2001).
 pH jump-induced folding and unfolding studies of barstar: evidence for multiple folding and 
@@ -744,9 +743,9 @@ Varghese, J., Radhika, G. and Sarin, A. (2001).
 The role of calpain in caspase activation during etoposide induced apoptosis in T cells.
 European Journal of Immunology, 31, 2035-2041.
 
-K. Venkatesh, G. Siddhartha, Rohit Joshi, Sonal Patel and Gaiti Hasan (May 2001)
+K. Venkatesh, G. Siddhartha, Rohit Joshi, Sonal Patel and Gaiti Hasan (2001)
 Interactions Between the Inositol 1,4,5-Trisphosphate and Cyclic AMP Signaling Pathways Regulate 
-Larval Molting in Drosophila
+Larval Molting in Drosophila.
 Genetics 158: 309-318.
 
 Vinayagam, A. and Sowdhamini, R. (2001).
@@ -763,10 +762,10 @@ Genetic analysis of olfC demonstrates a role for the position-specific integrins
 system of Drosophila antennae.
 Mol Gen Genet., 263, 492-497.
 
-Bhalla, U.S.
-Modeling Networks of Siganaling Pathways.
-In : Computational Neuroscience : Realistic Modeling for Experimentalists (ed : E.De Schutter) pp 25-48 (CRC Press, 
-Boca Raton 2000).
+Bhalla, U S (2000)
+Modeling Networks of Siganaling Pathways in 'Computational Neuroscience :
+Realistic Modeling for Experimentalists (ed: E De Schutter) pp 25-48'.
+CRC Press, Boca Raton 2000
 
 Bhutani, N. And Udgaonkar, J.B. (2000)
 A thermodynamic coupling mechanism can explain the GroEL assisted acceleration of the folding 
@@ -852,7 +851,7 @@ Normal phototransduction in Drosophila photoreceptors lacking an InsP3 receptor 
 Mol Cell Neurosci, 15, 429-445.
 
 RajGanesh P. S., Chanda B., Gupta S. K., Mathew M. K. and Chandrasekhan J. (2000).
-Modeling of ion permeation in calcium and sodium channel selectivity filters
+Modeling of ion permeation in calcium and sodium channel selectivity filters.
 Proteins: Structure, Function and Genetics 38: 384-392.
 
 Ramachandran, S., Rami, B. and Udgaonkar, J.B. (2000).
@@ -865,7 +864,7 @@ Thermodynamic and structural studies of cavity formation in proteins suggest tha
 interactions rather than the hydrophobic effect dominates the observed energetics.
 Biochemistry, 39, 12365-74.
 
-Sahu, S.C., Bhuyan, A.K., Majumdar, A. and Udgaonkar, J.B. (2000a).
+Sahu, S.C., Bhuyan, A.K., Majumdar, A. and Udgaonkar, J.B. (2000).
 Backbone dynamics of barstar: an 15N NMR relaxation study.
 Proteins: Struct., Func. Genet. 41, 460-474.
 
@@ -952,7 +951,7 @@ Mallika, V., Bhaduri, A. and Swodhamini, R. (2001)
 PASS2: protein structural superfamilies.
 Nucleic Acid Research (in Press)
 
-Mukherji, P., Dani, A., Bhatia, S., Singh, N., Rudensky, A., George, A., Bal, V., Mayor, S. and Rath, S.
+Mukherji, P., Dani, A., Bhatia, S., Singh, N., Rudensky, A., George, A., Bal, V., Mayor, S. and Rath, S. (2001)
 Efficient presentation of both cytosolic and endogenous transmembrane protein antigens on MHC 
 class II is dependent on cytoplasmic ptroteolysis.
 Journal of Immunology, 167, 2632-2641
@@ -967,8 +966,8 @@ In Stem Cell Biology. eds., Marshak, D.R., Gardner, D.K. and Gottlieb, D. Cold S
 Harbor Laboratory Press, 399-438.
 
 Ramaswamy, S. and Rao, M. (2001).
-The physics of active membranes
-In Comptes Rendus l'Academie des Sciences, Paris Series IV, 2, 817-839.
+The physics of active membranes.
+Comptes Rendus l'Academie des Sciences, Paris Series IV, 2, 817-839.
 
 Rami, B.R. and Udgaonkar, J.B. (2001).
 pH jump-induced folding and unfolding studies of barstar: evidence for multiple folding and 
@@ -1020,9 +1019,9 @@ Varghese, J., Radhika, G. and Sarin, A. (2001).
 The role of calpain in caspase activation during etoposide induced apoptosis in T cells.
 European Journal of Immunology, 31, 2035-2041.
 
-K. Venkatesh, G. Siddhartha, Rohit Joshi, Sonal Patel and Gaiti Hasan (May 2001)
+K. Venkatesh, G. Siddhartha, Rohit Joshi, Sonal Patel and Gaiti Hasan (2001)
 Interactions Between the Inositol 1,4,5-Trisphosphate and Cyclic AMP Signaling Pathways Regulate 
-Larval Molting in Drosophila
+Larval Molting in Drosophila.
 Genetics 158: 309-318.
 
 Vinayagam, A. and Sowdhamini, R. (2001).
@@ -1106,11 +1105,11 @@ PASS 2: a semi-automated database of protein alignments organised as structural 
 Nucleic Acid Research, 30, 284-288
 
 Mazumdar, Aveek and Mazumdar, Manjari (2002)
-How one becomes many: blastoderm cellularization in Drosophila melangaster
+How one becomes many: blastoderm cellularization in Drosophila melangaster.
 Bioessays, 1-11
 
 Mishra, Jyoti and Bhalla, U.S.(2002)
-Simulations of inositol phosphate metabolism and its interaction with InsP3 mediated calcium release
+Simulations of inositol phosphate metabolism and its interaction with InsP3 mediated calcium release.
 Biophysical Journal, 83, 1298-1316
 
 Pandit, S.B., Gosar, D., Abhiman, S., Sujatha, S., Dixit, S.B., Mhatre, N.S., Swodhamini, R. 
@@ -1134,12 +1133,12 @@ Mechanisms of formation of a productive molten globule of brastar.
 Biochemistry, 41, 1710-1716
 
 Ratnaparkhi, A., Banerjee, S. and Hasan, G. (2002)
-Altered levels of Gq activity modulate axonal pathfinding in Drosophila
+Altered levels of Gq activity modulate axonal pathfinding in Drosophila.
 The Journal of Neuroscience, 22, 4499-4508
 
 Sabharanjak, S., Sharma, P., Parton, R.G. and Mayor, S. (2002)
 GPI-Anchored Proteins Are Delivered to Recycling Endosomes via a Distinct cdc42-Regulated, 
-Clathrin-Independent Pinocytic Pathway
+Clathrin-Independent Pinocytic Pathway.
 Developmental Cell, 2: 411-423.
 
 Sridevi, K. and Udgaonkar, J.B. (2002)
@@ -1154,12 +1153,12 @@ kinase 1/2 (Erk) in mammalian cells.
 Journal of Biological Chemistry (in press)
 
 Varshney, A., Kavitha, S. and Mathew, M.K. (2002)
-Modulation of voltage sesitivity by N-terminal cytoplasmic residues in human kv 1.2 channel
+Modulation of voltage sesitivity by N-terminal cytoplasmic residues in human kv 1<dot>2 channel.
 European Journal of Biophysics, 31, 365-372
 
-Vyas, Ajai., Mitra, Rupshi., Shankaranarayana Rao, B.S., and Chattarji, S.(2002)
+Vyas, Ajai., Mitra, Rupshi., Shankaranarayana Rao, B.S., and Chattarji, S. (2002)
 Chronic stress induces contrasting patterns of dendritic remodelling in hippocampal 
-and amygdaloid neurons
+and amygdaloid neurons.
 Journal of Neuroscience, 22, 6810-6818
 
 Bhaduri, A., Krishnaswamy, L., Ullal, G.R., Panicker, M. and Sowdhamini, R. (2003)
@@ -1224,7 +1223,7 @@ Biochimica et Biophysica Acta, 1642, 87-96.
 
 Guha, A., Sriram, V., Krishnan K.S. and Mayor, S. (2003).
 shibire mutations reveal distinct dyanmin-independent and - dependent 
-endocytic pathways in primary cultures of Drosophila hemocytes,
+endocytic pathways in primary cultures of Drosophila hemocytes.
 Journal of Cell Science 2003, 116, 3373-3386.
 
 Ghazi, A., Paul, L. and VijayRaghavan, K. (2003).
@@ -1283,7 +1282,8 @@ Biochemistry, 42, 7986-8000.
 
 Richa Rikhy, Mani Ramaswami and K. S. Krishnan (2003).
 A temperature sensitive allele of Drosophila Ses B reveals acute functions for 
-the mitochondrial adenine nucleotide translocase in synaptic transmission and Dynamin regulation
+the mitochondrial adenine nucleotide translocase in synaptic transmission and
+Dynamin regulation.
 Genetics, 165, 1243-53.
 
 Richa Rikhy and K. S. Krishnan (2003).
@@ -1324,17 +1324,15 @@ Single particle tracking of correlated bacterial dynamics.
 Biophysical Journal, 84, 2634-2637.
 
 Sridevi, K. and Udgaonkar, J.B. (2003).
-Surface expansion occurs faster than and independent of core solvation during 
-the unfolding of barstar.
+Surface expansion occurs faster than and independent of core solvation during the unfolding of barstar.
 Biochemistry, 42, 1551-1563.
 
 Sriram, V., Krishnan, K. S. and Mayor, S. (2003).
-Deep-orange and carnation define distinct stages in late endosomal biogenesis in 
-Drosophila melanogaster.
+Deep-orange and carnation define distinct stages in late endosomal biogenesis in Drosophila melanogaster.
 Journal of Cell Biology, 161, 593-607.
 
-Sudarslal, S., Majumdar S, Ramasamy P, Dhawan R, Pal PP, Lala AK, Sikdar SK, 
-Sarma SP, Krishnan KS and Balaram P.
+Sudarslal, S., Majumdar S, Ramasamy P, Dhawan R, Pal PP, Lala AK, Sikdar SK,
+Sarma SP, Krishnan KS and Balaram P. (2003).
 Sodium channel modulating activity in a d-conotoxin from an Indian marine snail.
 FEBS Lett. 553(1-2): 209-12, 2003.
 
@@ -1362,7 +1360,7 @@ Brain Research, 965, 290-294.
 
 Vyas, A., Mitra, R. and Chattarji, S. (2003).
 Enhanced anxiety and hypertrophy in basolateral amygdala neurons following 
-chronic stress in rats. "The Amygdala in Brain Function: Basic and Clinical Approaches"
+chronic stress in rats. "The Amygdala in Brain Function: Basic and Clinical Approaches".
 Annals of New York Academy of Sciences, 985, 554-555.
 
 Anand, B., Namboori, S., Sandhya, S. and Srinivasan, N. (2004).
@@ -1370,7 +1368,6 @@ Influence of protein structural similarities in adding value to genome data.
 Indian Journal of Biotechnology (In press).
 
 Banerjee, B., Balasubramanian, S., Ananthakrishna, G., Ramakrishnan, T.V. And Shivashankar, G.V. (2004).
-
 Tracking operator state fluctuations in gene expression in single cells. 
 Biophysical Journal, 86, 1-8.
 
@@ -1382,10 +1379,6 @@ Journal of Neuroscience (In press).
 Bhaduri, A., Pugalenthi, G and Sowdhamini, R. (2004).
 PASS2: an automated database of protein alignments organised as structural superfamilies.
 BMC Bioinformatics, 5, 35.
-
-Bhaduri, A., Pugalenthi, G. and Sowdhamini, R. (2004)
-PASS2 Nucleic Acids Research, 
-(web publication).
 
 Bhaduri, A., Pugalenthi, G., Gupta, N. and Sowdhamini, R. (2004).
 iMOT: an interactive package for the selection of spatially interacting motifs.
@@ -1415,7 +1408,7 @@ Native and non-nativeconformational preferences in the urea-unfolded state of ba
 Protein Science (In press).
 
 Beena, K., Udgaonkar, J. B. and Varadarajan, R. (2004).
-Effect of signal peptide on the stability and folding kinetics of maltose binding protein
+Effect of signal peptide on the stability and folding kinetics of maltose binding protein.
 Biochemistry, 43, 3608-3619.
 
 Blaise, M., Sowdhamini, R., Raghu Prasad Rao, M. and Pradhan, N. (2004).
@@ -1444,8 +1437,8 @@ peptide transport to the endo-lysosomal compartment.
 J Cell Sci 117, 4219-30.
 
 Dutta, D., Anant, S., Ruiz-Gomez, M., Bate, M and VijayRaghavan, K. (2004).
-Founder myoblasts and fibre number during adult myogenesis in Drosophila
-Development, 131, 3761-3772.
+Founder myoblasts and fibre number during adult myogenesis. 
+Drosophila Development, 131, 3761-3772.
 
 Dhawan, S. and Syal S. (2004)
 Mechanisms of Memory-In Dialogue with Susumu Tonegawa.
@@ -1505,8 +1498,6 @@ thymocytes comprises sequential activation of adenine nucleotide transporter
 (ANT)-independent and ANT-dependent events.
 European Journal of Immunology, 34, 119-125.
 
- 
-
 Sade, H., Krishna, S. and Sarin, A. (2004).
 The anti-apoptotic effect of Notch-1 requires p56lck-dependent, Akt/PKB-mediated 
 signaling in T cells.
@@ -1533,9 +1524,8 @@ Nanoscale organisation of multiple GPI-anchored proteins in living cell membrane
 Cell, 116, 577-589.
 
 Sinha, D., Banerjee, B., Bhattacharya, D., Meeran, F. and Shivashankar, G.V. (2004).
-Development of single molecule tracking confocal fluorescence 
-microscope for gene expression analysis
-Current Science (In press).
+Development of single molecule tracking confocal fluorescence microscope for gene expression analysis.
+Current Science
 
 Srikanth, S and Hasan, G. (2004).
 Structure and function of Inositol 1,4,5 -trisphosphate Receptors.
@@ -1598,7 +1588,7 @@ Serial SIMCOAL: A population genetic model for data from multiple populations an
 Bioinformatics. 21:1733-1733-1734.
 
 Anil, V.S., Krishnamurthy, P., Kuruvilla, S., Sucharitha, K., Thomas, G. and Mathew, M.K. (2005). 
-Regulation of the uptake and distribution of Na+ in shoots of rice (Oryza sativa) variety Pokkali: Role of Ca2+ in salt tolerance response, 
+Regulation of the uptake and distribution of Na+ in shoots of rice (Oryza sativa) variety Pokkali: Role of Ca2+ in salt tolerance response.
 Physiologia Plantarum, 124, 451-464.
 
 Ayyub, C., Sen, A., Gonsalves, F., Kishan, B., Bhandari, P., Shashidhara, L. S., Krishna, S. and Rodrigues, V. (2005). 
@@ -1642,8 +1632,8 @@ Drosophila heartless acts with heartbroken/Dof in muscle founder differentiation
 PLOS Biology 3, e337.
 
 Gaurav, K., Gupta, N. and Sowdhamini, R. (2005).
-FASSM: Enhanced function association in whole genome analysis using sequence and structural Motifs 
-in Silico Biology, 5, 40.
+FASSM: Enhanced function association in whole genome analysis using sequence and structural Motifs. 
+Silico Biology, 5, 40.
 
 Guruharsha, K.G. And VijayRaghavan, K. (2005). 
 Discrimination in partnership: Compartment-specific interactions of Hox proteins. 
@@ -1782,7 +1772,7 @@ Protein dynamics and protein folding dynamics revealed by time-resolved fluoresc
 In 'Fluorescence Spectroscopy in Biology (eds. Hof, M., Hutterer, R. and Fidler, V.) Springer.
 
 Saxena, A.M., Udgaonkar, J.B. and Krishnamoorthy, G. (2005). 
-Protein dynamics control proton transfer from bulk solvent to protein interior: a case study with green fluorescent protein
+Protein dynamics control proton transfer from bulk solvent to protein interior: a case study with green fluorescent protein.
 Protein Science 14, 1767-1799.
 
 Sen, A., Shetty, C., Jhaveri, D. and Rodrigues, V. (2005). 
@@ -1794,7 +1784,7 @@ Isogenic autosomes to be applied in optimal screening for novel mutants with via
 Journal of Neurogenetics, 19, 57-85.
 
 Siddhartha, Sarma, P., Senthil Kumar, G., Sudarslal, S., Iengar, P., Ramasamy, P., Sikdar, S.K., Krishnan, K.S. And Balaram, P. (2005). 
-Solution structure of Am2766, a highly hydrophobic delta conotoxin from conus amadis that inhibits inactivation of brain voltage gated sodium channels
+Solution structure of Am2766, a highly hydrophobic delta conotoxin from conus amadis that inhibits inactivation of brain voltage gated sodium channels.
 Chemistry and Biodiversity, 2, 535-556.
 
 Sinha, K.K. and Udgaonkar, J.B. (2005) 
@@ -1874,7 +1864,7 @@ arf6-independent GEECs Fuse with sorting endosomes via a Rab5/PI-3' Kinase-depen
 Molecular Biology Cell. epub: June 7.
 
 McEwen, B.S., S. Chattarji. (2006) 
-Neuroendocrinology of stress© 
+Neuroendocrinology of stress.
 Springer-Verlag Berlin Heidelberg, 1-22.
 
 Malhotra, V. and Mayor, S. (2006). 
@@ -1941,9 +1931,7 @@ Saxena, A.M., Udgaonkar, J.B. & Krishnamoorthy, G. (2006).
 Characterization of intra-molecular distances and site-specific dynamics in chemically unfolded barstar: evidence for denaturant-dependent non-random structure. 
 J. Mol. Biol, 359, 174-189.
 
-Sinha, D., Sastry, S. and Shivashankar, G.V. (2006). 
-Probing mRNA conformational heterogeneity using single-moleculefluorescence anisotropy, 
-Applied Physics Letters, 88, 3901-3903.
+Sinha, D., Sastry, S. and Shivashankar, G.V. (2006). Probing mRNA conformational heterogeneity using single-moleculefluorescence anisotropy. Applied Physics Letters, 88, 3901-3903.
 
 Srikanth, S., Banerjee, S. and Hasan, G. (2006). 
 Ectopic expression of a Drosophila InsP3R Channel mutant has dominant-negative effects in vivo. 
@@ -2031,7 +2019,7 @@ Biochemistry 45 (In press).
 
 29. Mayor, S. and R.E. Pagano, R.E. (2007). Pathways of clathrin-independent endocytosis. Nature Reviews in Molecular and Cellular Biology, 8, 603-612. 
 
-30. +McEwen, B.S. and Chattarji, S. (2007). Neuroendocrinology of stress. In: Handbook of Neurochemistry and Molecular Neurobiology (3rd Ed.), A. Lajtha and J.D. Blaustein (eds.), 571-594, Springer Verlag. 
+30. McEwen, B.S. and Chattarji, S. (2007). Neuroendocrinology of stress. Handbook of Neurochemistry and Molecular Neurobiology (3rd Ed), A. Lajtha and J.D. Blaustein (eds), 571-594, Springer Verlag. 
 
 31. Metpally, R.R., Vigneshwar, R., Sowdhamini, R. (2007). Genome inventory and analysis of nuclear hormone receptors in Tetraodon nigriviridis. Journal of Biological Sciences, 32, 43-50. 
 
@@ -2077,7 +2065,7 @@ Biochemistry 45 (In press).
 
 52.Nair, S., Agrawal, N. and Hasan, G. (2007). Homeostasis of glutamate neurotransmission is altered in Drosophila Inositol 1,4,5-trisphosphate receptor mutants. Invert Neuroscience, 7, 137-147. 
 
-53. @Reddy, C.C.S., Shameer, K., Bernard, O. and Sowdhamini, S. (2007). PURE: A web server for querying the relationship between Pre-existing domains and Unassigned Regions in proteins Nature Protocols, DOI: 10.1038/nprot. 486. 
+53. Reddy, C.C.S., Shameer, K., Bernard, O. and Sowdhamini, S. (2007). PURE: A web server for querying the relationship between Pre-existing domains and Unassigned Regions in proteins Nature Protocols, DOI: 10.1038/nprot. 486. 
 
 54. Sabareesh.V, Gowd, K.H., Ramasamy, P., Sudarslal, S., Krishnan, K.S., Sikdar, S.K. and Balaram, P. (2007). Characterization of contryphans from conus loroisii and conus amadis that target calcium channels. Peptides, 27, 2647-2654. 
 
@@ -2099,13 +2087,13 @@ Biochemistry 45 (In press).
 
 2.Alva, V., Divya Syamala Devi, P. and Sowdhamini, R. (2008). COILCHECK: an interactive server for the analysis of interface regions in coiled coils. Protein and Peptide Letters, 15, 33-3 
 
-3.Anil A, Premraj R, Kumar P & Mathew MK (2008) A Plant Ca-Pump, Aca2, Relieves Salt Hypersensitivity In Yeast: Modulation Of Cytosolic Calcium Signature And Activation Of Adaptive Na+ Homeostasis /J Biol Chem/ 283, 3497-3506 
+3.Anil A, Premraj R, Kumar P & Mathew MK (2008). A Plant Ca-Pump, Aca2, Relieves Salt Hypersensitivity In Yeast: Modulation Of Cytosolic Calcium Signature And Activation Of Adaptive Na+ Homeostasis. J Biol Chem 283, 3497-3506 
 
 4.Anbazhagan, P., Purushotam1, M., Kumar, H. B. K., Kubendran, S., Mukherjee, O., Brahmachari, S. K., Jain,S. and Sowdhamini, R. (2008). Evolutionary analysis of PHJLPPI gene in humans and non-human primates. Bioinformation, 2, 471-474. 
 
 5.Basu, B., Desai, R., Balaji, J., Chaerkady, R., Sriram, V., Maiti, S. and Panicker, M.M. (2008). Serotonin in pre-implantation mouse embryos is localized to the mitochondria and can modulate mitochondrial potential. Reproduction, 135, 1470-1626. 
 
-6. Bhalla, U.S. How to Record a Million Synaptic Weights in a Hippocampal Slice. PLoS Comput. Biol. 2008, 4(6) 
+6. Bhalla, U.S (2008). How to Record a Million Synaptic Weights in a Hippocampal Slice. PLoS Comput. Biol. 2008, 4(6) 
 
 7.Borroni V, Kumari S, Chanda B, Massol R, Chaudhry A, Mayor S, Barrantes FJ. (2008). α-Bungarotoxin Induces Nicotinic Acetylcholine Receptor Internalization via a novel Endocytic Pathway. J. Cell Biol. 181(7): 1179–1193. 
 
@@ -2123,11 +2111,11 @@ Biochemistry 45 (In press).
 
 14. Dixit R, Vijayraghavan K, Bate M. (2008) Hox genes and the regulation of movement in Drosophila. Dev Neurobiol. Feb 15; 68(3):309-16. 
 
-15.Gowd, K.H., Dewan KK, Iengar P, Krishnan KS, Balaram P. 2008. Probing peptide libraries from Conus achatinus using mass spectrometry and cDNA sequencing: identification of delta and omega-conotoxins. J Mass Spectrom. 43:791-805. 
+15.Gowd, K.H., Dewan KK, Iengar P, Krishnan KS, Balaram P. (2008). Probing peptide libraries from Conus achatinus using mass spectrometry and cDNA sequencing: identification of delta and omega-conotoxins. J Mass Spectrom. 43:791-805. 
 
-16.Gowd KH, Twedea V, Watkinsc M, Krishnan KS, Teichert RW, Bulaje G, Olivera BM 2008. Conantokin-P, an Unusual Conantokin with a Long Disulfide Loop. Toxicon 52: 203-13. 
+16.Gowd KH, Twedea V, Watkinsc M, Krishnan KS, Teichert RW, Bulaje G, Olivera BM (2008). Conantokin-P, an Unusual Conantokin with a Long Disulfide Loop. Toxicon 52: 203-13. 
 
-17. P. Hari, M. Deshpande, N. Sharma, N. Rajadhyaksha, N. Ramkumar, Ken-ichi Kimura, V. Rodrigues, S. Tole. Chip is required for post eclosion behavior in Drosophila. J. Neuroscience. 28(37): 9145-9150. 
+17. P. Hari, M. Deshpande, N. Sharma, N. Rajadhyaksha, N. Ramkumar, Ken-ichi Kimura, V. Rodrigues, S. Tole (2008). Chip is required for post eclosion behavior in Drosophila. J. Neuroscience. 28(37): 9145-9150. 
 
 18.Kanagarajadurai, K, and Sowdhamini, R. (2008). Sequence and structural analysis of interleukin-8-like chemokine super family. In Silico Biology, 8, 0025. 
 
@@ -2179,7 +2167,7 @@ Biochemistry 45 (In press).
 
 3. Bhaduri, A., Kalaimathy, S. and Sowdhamini, R. (2009). Conservation and Divergence among Salmonella enterica subspecies . Infectious Disorders-Drug Targets special in silico. 9, 248–256.    
 
-4. +Bhalla, U.S. (2009). Molecules, networks and memory. In: Systems Biology: The Challenge of Complexity. Ed. S. Nakanishi, R. Kageyama and D. Watanabe. Springer, Tokyo, 2009.  
+4. Bhalla, U.S. (2009). Molecules, networks and memory. In: Systems Biology: The Challenge of Complexity. Ed. S. Nakanishi, R. Kageyama and D. Watanabe. Springer, Tokyo, 2009.  
 
 5. Bhatia, D., Mehtab, S., Krishnan, R., Indi, S.S., Basu, A. and Krishnan, Y. (2009).  Icosahedral DNA nanocapsules via modular assembly. Angewandte Chemie International Edition, 48, 4134 – 4137.   
 
@@ -2210,7 +2198,7 @@ A. and Andrés, A. (2009). Central leptin regulates total ceramide content and S
 
 18. +Duffy, J. E., Srivastava, D. S., McLaren, J., Sankaran, M., Solan, M., Griffin, J., Emmerson, M. and Jones, K. E. (2009). Forecasting decline in ecosystem services under realistic scenarios of extinction. In Biodiversity, Ecosystem Functioning, and Human Wellbeing: An Ecological and Economic Perspective. Shahid Naeem, Daniel E. Bunker, Andy Hector, Michel Loreau and Charles Perrings (eds). Oxford University Press, 60-77.
 
-19. Franklin, B.J., Subramanian, K.A.,  Fernando, A.S. and Krishnan, K. S. ( 2009). Diversity and distribution of conidae from TamilNadu Coast of India (Mollusca: Caenogastropoda: conidae) Zootaxa, 2250, 1– 63.  
+19. Franklin, B.J., Subramanian, K.A.,  Fernando, A.S. and Krishnan, K. S.  (2009). Diversity and distribution of conidae from TamilNadu Coast of India (Mollusca: Caenogastropoda: conidae). Zootaxa, 2250, 1– 63.  
 
 20. Gogia, S.,  Jain, A. and  Puranik, M. (2009). Structures, ionization equilibria and tautomerism of 6-oxopurines in solution.  Journal of Physical Chemistry B, 113, 15101–15118.
 
@@ -2270,11 +2258,11 @@ A. and Andrés, A. (2009). Central leptin regulates total ceramide content and S
 
 48. Modi, S., Swetha, M. G., Goswami, D., Gupta, G. D., Mayor, S. and Krishnan, Y. (2009). A DNA nanomachine that maps spatial and temporal pH changes in living cells.  Nature Nanotechnology,    4, 325–330.   
 
-49. Mondol, S., Karanth, K.U., Kumar, S., Gopalswamy, A., Andheria, A. and Ramakrishnan, U. Evaluation of non-invasive genetic sampling methods for estimating tiger population size. Biological Conservation, 142, 2350–2360.
+49. Mondol, S., Karanth, K.U., Kumar, S., Gopalswamy, A., Andheria, A. and Ramakrishnan, U (2009). Evaluation of non-invasive genetic sampling methods for estimating tiger population size. Biological Conservation, 142, 2350–2360.
 
-50. Mondol, S., Karanth, K.U. and Ramakrishnan, U. (2009b). Why the Indian subcontinent holds the key to global tiger recovery. PLoS Genetics, 5, e1000603. 
+50. Mondol, S., Karanth, K.U. and Ramakrishnan, U. (2009). Why the Indian subcontinent holds the key to global tiger recovery. PLoS Genetics, 5, e1000603. 
 
-51. Mondol, S., Navya, R., Athreya, V., Velu Mani, S., Sunagar, K. and Ramakrishnan, U. (2009). A panel of microsatellites to identify leopards (Panthera pardus) individually from non-invasive samples, BMC Genetics. 10:79. 
+51. Mondol, S., Navya, R., Athreya, V., Velu Mani, S., Sunagar, K. and Ramakrishnan, U. (2009). A panel of microsatellites to identify leopards (Panthera pardus) individually from non-invasive samples. BMC Genetics. 10:79. 
 
 52. Muhuri, S. and  Rao, M. (2009). `Sequence dependent elasticity and local stiness of a DNA heteropolymer.  Journal of Statistical Mechanics,  6. 
 
@@ -2288,7 +2276,7 @@ A. and Andrés, A. (2009). Central leptin regulates total ceramide content and S
 
 57. Perumalsamy, L.R., Nagala, M., Bannerjee, P. and Sarin, A. (2009). A hierarchical cascade activated by non-canonical Notch signaling and the mTOR - Rictor complex regulates neglect-induced death in mammalian cells. Cell Death and Differentiation, 16, 879–889.
 
-58. Purushothanam, D. and Sarin, A. (2009). Cytokine-dependent regulation of NADPH oxidase activity and the consequences for activated T cell homeostasis Journal of Experimental Medicine 206, 1515–1523.
+58. Purushothanam, D. and Sarin, A. (2009). Cytokine-dependent regulation of NADPH oxidase activity and the consequences for activated T cell homeostasis. Journal of Experimental Medicine 206, 1515–1523.
 
 59. Raa, H., Grimmer, S., Schwudke, D., Bergan, J., Wälchli, S., Skotland, T., Shevchenko, A. and Sandvig, K. (2009).  Glycosphingolipid Requirements for Endosome-to-Golgi Transport of Shiga Toxin. Traffic, 10, 868–82.
 
@@ -2346,7 +2334,7 @@ Sane, S.P. and McHenry, M.J. (2009). The biomechanics of sensory organs, Integra
 
 85. P. Kain, Chandrashekaran, S., V. Rodrigues and G. Hasan (2009). Drosophila mutants in phospholipid signaling have reduced olfactory responses as adults and larvae. J. Neurogenetics. 23(3):303-12
 
-86. Holford M, Zhang MM, Gowd KH, Azam L, Green BR, Watkins M, Ownby JP, Yoshikami D, Bulaj G, Olivera BM. 2009. Pruning Nature: Biodiversity-Derived Discovery of Novel Sodium Channel Blocking Conotoxins from Conus bullatus. Toxicon; 53(1):90-8
+86. Holford M, Zhang MM, Gowd KH, Azam L, Green BR, Watkins M, Ownby JP, Yoshikami D, Bulaj G, Olivera BM. (2009). Pruning Nature: Biodiversity-Derived Discovery of Novel Sodium Channel Blocking Conotoxins from Conus bullatus. Toxicon; 53(1):90-8
 
 1. Aguilar, P. S., Heiman, M. G. Walther, T. C., Engel, A., Schwudke, D., Gushwa, N. Kurzchalia, T., Walter, P. (2010) Structure of sterol aliphatic chains affects yeast cell shape and cell fusion during mating. Proceedings of the National Academy of Scienecs of  USA,  Vol 107(9) PP. 4170-4175.  
 
@@ -2395,7 +2383,7 @@ Sowdhamini, R. (2010) Phylogenetic analysis and selection pressures of 5-HT rece
 
 23. Kain, P., Badsha, F., Hussain S. M., Nair, A., Hasan, G.,Rodrigues, V. (2010) Mutants in phospholipid signaling attenuate the behavioural response of adult Drosophila to trehalose. Chemical Senses, Vol 35(8) PP. 663-673.
 
-24. Khan, Adil Ghani Parthasarathy, K. Bhalla, S. U. (2010) Odor representations in the mammalian olfactory bulb. Systems Biology and Medicine,  Vol 2(5) PP. 1-9
+24. Khan, Adil Ghani Parthasarathy, K. Bhalla, S. U. (2010) Odor representations in the mammalian olfactory bulb. Systems Biology and Medicine.  Vol 2(5) PP. 1-9
 
 25.  Khurana, S., Abu Baker, M. B. Siddiqi, O. (2010) Odour avoidance learning in the larva of Drosophila melanogaster. Journal of Bioscience, Vol 34(4) PP. 621-631
 
@@ -2507,7 +2495,7 @@ Sowdhamini, R. (2010) Phylogenetic analysis and selection pressures of 5-HT rece
 
 79. Georgiev, P., Okkenhaug, H, Drews, A, Wright, D., Flick, M, Lambert, S, Oberwinkler, J and Raghu, P (2010). TRPM channels mediate zinc homeostasis and cellular growth during Drosophila larval development. Cell Metabolism. 12, 386–397
 
-1. Aghera, N., Earanna, N., Udgaonkar, J.B.(2011). Equilibrium unfolding studies of monellin: the double-chain variant appears to be more stable than the single-chain variant, Biochemistry, 50,13, 2434-2444 | PMID
+1. Aghera, N., Earanna, N., Udgaonkar, J.B.(2011). Equilibrium unfolding studies of monellin: the double-chain variant appears to be more stable than the single-chain variant. Biochemistry, 50,13, 2434-2444 | PMID
 
 2. Aghera, N. and Udgaonkar, J.B. (2011) Heterologous expression, purification and characterization of heterodimeric monellin. Protein Expression and Purification, 76, 2, 248-253 | PMID
 
@@ -2541,11 +2529,11 @@ Sowdhamini, R. (2010) Phylogenetic analysis and selection pressures of 5-HT rece
 
 17. Ramachandran, Gayathri and Udgaonkar, Jayant B. (2011). Understanding the Kinetic Roles of the Inducer Heparin and of Rod-like Protofibrils during Amyloid Fibril Formation byTau Protein. Journal of Biological Chemistry, 286, 45, 38948–38959 |PMID
 
-18. Godbole, A., Mitra, R., Dubey, A.K. Reddy, P.S., Mathew, M.K. Bacterial expression, purification and characterization of a rice voltage-dependent, anion-selective channel isoform, OsVDAC4. Journal of Membrane Biology, 184, 10, 67-80 | PMID
+18. Godbole, A., Mitra, R., Dubey, A.K. Reddy, P.S., Mathew, M.K. (2011). Bacterial expression, purification and characterization of a rice voltage-dependent, anion-selective channel isoform, OsVDAC4. Journal of Membrane Biology, 184, 10, 67-80 | PMID
 
-19. Gogia, S., Balaram, H., Puranik, M. (2011). HGPRT distorts the purine ring of nucleotide substrates and perturbs pka of bound xanthosine monophosphate, Biochemistry, 50, 18, 4184-4193 | PMID
+19. Gogia, S., Balaram, H., Puranik, M. (2011). HGPRT distorts the purine ring of nucleotide substrates and perturbs pka of bound xanthosine monophosphate. Biochemistry, 50, 18, 4184-4193 | PMID
 
-20. Gupta, K., Kumar, M., Chandrashekara, K, Krishnan, K.S., Balaram, P. (2011) Combined Electron Transfer Dissociation-Collision-Induced Dissociation Fragmentation in the Mass Spectrometric Distinction of Leucine, Isoleucine, and Hydroxyproline Residues in Peptide Natural Products, Journal of Proteome Research, 3;11(2):515-22 | PMID
+20. Gupta, K., Kumar, M., Chandrashekara, K, Krishnan, K.S., Balaram, P. (2011) Combined Electron Transfer Dissociation-Collision-Induced Dissociation Fragmentation in the Mass Spectrometric Distinction of Leucine, Isoleucine, and Hydroxyproline Residues in Peptide Natural Products. Journal of Proteome Research, 3;11(2):515-22 | PMID
 
 21. Gupta, K., Kumar, M. Balaram, P (2011). Disulfide bond assignments by mass spectrometry of native natural peptides: cysteine pairing in disulfide bonde. Analytical Chemistry , 82, 19, 8313-8319 | PMID
 
@@ -2585,11 +2573,11 @@ Sowdhamini, R. (2010) Phylogenetic analysis and selection pressures of 5-HT rece
 
 39. Nair, D.T., Johnson, R. E., Prakash, S., Prakash, L. and Aggarwal, A. K. (2011). DNA synthesis across an abasic lesion by yeast Rev1 DNA polymerase. Journal of Molecular Biology, 406, 18-28 | PMID
 
-40. Ratnam, R.,  Bond, W.J.,  Fensham, R.J.,  Hoffmann, W.A.,  Archibald, S.,  Lehmann, C.E.R., Anderson, M.T., S Higgins, S.I. and  Sankaran. M. (2011). When is a forest a savanna and why does it matter?  Global Ecology and Biogeography, 20, 5, 653-660
+40. Ratnam, R.,  Bond, W.J.,  Fensham, R.J.,  Hoffmann, W.A.,  Archibald, S.,  Lehmann, C.E.R., Anderson, M.T., S Higgins, S.I. and  Sankaran. M. (2011). When is a forest a savanna and why does it matter? Global Ecology and Biogeography, 20, 5, 653-660
 
 41. Ravinder, S., Pillai, a.G. Chatterji, S. (2011). Cellular correlates of enhanced anxiety caused by acute treatment with the selective serotonin reuptake inhibitor fluoxetine in rats. Frontiers in Behavioral neuroscience.  5, 88 | PMID
 
-42. Reddy, C.S.R.,  Joshi, A.,  Sudha, S.,  Offmann, B. and  Sowdhamini, R. (2011). Cross-genome comparisons of newly identified domains in Mycoplasma gallisepticum and domain architectures with other Mycoplasmas, Comparative and Functional Genomics, 878973 | PMID
+42. Reddy, C.S.R.,  Joshi, A.,  Sudha, S.,  Offmann, B. and  Sowdhamini, R. (2011). Cross-genome comparisons of newly identified domains in Mycoplasma gallisepticum and domain architectures with other Mycoplasmas. Comparative and Functional Genomics, 878973 | PMID
 
 43. Roy, Sudipto and VijayRaghavan,  K. (2011). Developmental Biology: Taking Flight. Current Biology,  22 , 2, R63 | PMID
 
@@ -2633,7 +2621,7 @@ Sowdhamini, R. (2010) Phylogenetic analysis and selection pressures of 5-HT rece
 
 63. G. Senthil Kumar, Sanjeev Upadhyay, M. K. Mathew  & Siddhartha P. Sarma (2011) Solution structure of a novel  hKv1.1 inhibiting scorpion toxin (BTK-2) determined by isotope edited multidimensional NMR spectroscopic methods   Biochim Biophys Acta 1814, 459–469
 
-64. Rahul Shrivastava, Bhakti Basu, Ashwini Godbole, M. K. Mathew, Shree K. Apte & Prashant S. Phale (2011)  Repression of Glucose Inducible Outer Membrane Protein, OprB during Preferential Utilization of Aromatic Compounds in Pseudomonas putida CSV86   Microbiology 157, 1531–1540 | PMID
+64. Rahul Shrivastava, Bhakti Basu, Ashwini Godbole, M. K. Mathew, Shree K. Apte & Prashant S. Phale (2011)  Repression of Glucose Inducible Outer Membrane Protein, OprB during Preferential Utilization of Aromatic Compounds in Pseudomonas putida CSV86. Microbiology 157, 1531–1540 | PMID
 
 65. Jain, Shweta and Udgaonkar, Jayant B. (2011). Prion protein aggregation. Current Science, 101, 10, 1311
 
@@ -2667,9 +2655,9 @@ Sowdhamini, R. (2010) Phylogenetic analysis and selection pressures of 5-HT rece
 
 80. Divya P Syamala Devi and R. Sowdhamini (2011) Evolutionary traces decode molecular mechanism behind fast pace of myosin XI.  BMC Structural Biology 2011, 11:35 | PMID
 
-81. K. Kanagarajadurai, S. Kalaimathy, P. Nagarajan and R. Sowdhamini.(2011) PASS2: A Database of Structure-based sequence alignments of Proteins Structural Domain Superfamilies.  International Journal of Knowledge Discovery in Bioinformatics Journal, 2(4), 53-66
+81. K. Kanagarajadurai, S. Kalaimathy, P. Nagarajan and R. Sowdhamini (2011) PASS2: A Database of Structure-based sequence alignments of Proteins Structural Domain Superfamilies.  International Journal of Knowledge Discovery in Bioinformatics Journal, 2(4), 53-66
 
-1. Khan, Adil Ghani Sarangi, Manaswini, & Bhalla, Upinder Singh (2012). Rats track odour trails accurately using a multi-layered strategy with near-optimal sampling,  Nature Communications, 3:703 | DOI
+1. Khan, Adil Ghani Sarangi, Manaswini, Bhalla, Upinder Singh (2012). Rats track odour trails accurately using a multi-layered strategy with near-optimal sampling.  Nature Communications, 3:703 | DOI
 
 2. Chakraborty, Sumita and Hasan, Gaiti (2012) IP3R, store-operated Ca2+ entry and neuronal Ca2+ homoeostasis in Drosophila. Biochemical Society  Transaction, 40, 279–281 | PMID
 
@@ -3217,7 +3205,7 @@ Sowdhamini, R. (2010) Phylogenetic analysis and selection pressures of 5-HT rece
 
 80. Srinivasan, Umesh (2013) A slippery slope: logging alters mass-abundance scaling in ecological communities. JOURNAL OF APPLIED ECOLOGY, 50, 4, 920-928    
 
-81. Godbole, Ashwini; Dubey, Ashvini Kumar; Reddy, Palakolanu S.; et al. (2013) . Mitochondrial VDAC and hexokinase together modulate plant programmed cell death. PROTOPLASMA, 250, 4, 875-884  
+81. Godbole, Ashwini; Dubey, Ashvini Kumar; Reddy, Palakolanu S.; et al. (2013) Mitochondrial VDAC and hexokinase together modulate plant programmed cell death. PROTOPLASMA, 250, 4, 875-884  
 
 82. Craveur, Pierrick; Joseph, Agnel Praveen; Poulain, Pierre; et al. (2013) Cis-trans isomerization of omega dihedrals in proteins. AMINO ACIDS, 45, 2, 279-289 
 
