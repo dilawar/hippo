@@ -95,9 +95,9 @@ def _process_data( data_file ):
 
     blocks = txt.split( '\n\n' )
     print( "[INFO ] Total blocks %d" % len(blocks) )
-    pat = re.compile( r'(?P<author>.+?)\(\d+\)(?P<title>.+?\.)(?P<journal>.+)', re.DOTALL )
+    pat = re.compile( r'(?P<author>.+?)\(\d+\)(?P<title>.+?[.?])(?P<journal>(.+))', re.DOTALL )
     pubs = []
-    for i, bl in enumerate(reversed(blocks)):
+    for i, bl in enumerate(blocks):
         bl = bl.replace( '\n', ' ' )
         bl = re.sub( r'^\d+\.?\s+', '', bl )
         m = pat.search( bl )
