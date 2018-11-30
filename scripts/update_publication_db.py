@@ -18,6 +18,7 @@ import requests
 import json
 import dateparser
 import hashlib 
+import itertools
 import re
 from db_connect import db_
 
@@ -57,7 +58,7 @@ def after_2015():
 
     # Update database.
     for pub in data.entries:
-        authors = pub['author'].split('and')
+        authors = pub['author'].split(' and ')
         title = pub['title'].strip()
         titleHash = hashlib.sha512(title.encode('utf8')).hexdigest()
         month, year = pub.get('month',''), pub['year']
@@ -65,8 +66,8 @@ def after_2015():
         publisher = _get_publisher( pub )
         query =  """REPLACE INTO publications 
                 (sha512, title, abstract, publisher, type, date, doi,
-                metadata_json)
-                VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')
+                metadata_json, source)
+                VALUES ('%s','%s','%s','%s','%s','%s','%s','%s', 'NCBS')
             """ % (titleHash, title, ''
                 , publisher, pub['ENTRYTYPE'], date
                 , pub.get('doi', ''), '' )
@@ -89,32 +90,51 @@ def after_2015():
     cur_.close()
     db_.close()
 
+def _split_author_bad_csv( csvl ):
+    # This is a bad csv format. 
+    # fname1, lname1, fname2, lname2 and so so. So stupid.
+    if ',' not in csvl:
+        return [ csvl ]
+    csvls = csvl.split( ',' )
+    return [ " ".join(csvls[i:i+2]).strip() for i in range(0, len(csvls), 2) ]
+
+def _split_authors( authors ):
+    authors = authors.replace( 'et al.', '' ).strip()
+    authors = authors.replace( ' and ', '; ' )
+    authors = [ _split_author_bad_csv(x.strip()) for x in authors.split( ';' ) ]
+    return authors
+
 def _process_data( data_file ):
     with open( data_file, 'r' ) as f:
         txt = f.read()
 
     blocks = txt.split( '\n\n' )
     print( "[INFO ] Total blocks %d" % len(blocks) )
-    pat = re.compile( r'(?P<author>.+?)\(\d+\)(?P<title>.+?[.?])(?P<journal>(.+))', re.DOTALL )
+    pat = re.compile( r'(?P<authors>.+?)\(\d+\)(\s*\.?)?(?P<title>.+?[.?])(?P<journal>(.+))', re.DOTALL )
     pubs = []
     for i, bl in enumerate(blocks):
         bl = bl.replace( '\n', ' ' )
         bl = re.sub( r'^\d+\.?\s+', '', bl )
         m = pat.search( bl )
         if m:
-            print( 'AUTHORS: ', m.group( 'author' ))
+            d = m.groupdict()
+            d['authors'] = list(itertools.chain(_split_authors( d['authors'] )))
+            print( 'AUTHORS: ', d['authors'] )
             #  print( 'TITLE  : ', m.group( 'title' ) )
             #  print( 'JOURNAL: ', m.group( 'journal' ) )
-            pubs.append( m.groupdict() )
+            pubs.append({k.strip() : v for k,v in d.items()})
         else:
             print( '[WARN] Could not parse' )
             print( bl )
-            break
+    return pubs
 
 
 def before_2015():
-    dataF = '../data/publications_before_2015_mixed.txt'
+    dataF = os.path.join( sdir_, '../data/publications_before_2015_mixed.txt' )
     data = _process_data( dataF )
+    return
+    for k in data:
+        print( k )
 
 def main():
     before_2015()
