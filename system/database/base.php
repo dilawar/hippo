@@ -164,7 +164,9 @@ class BMVPDO extends PDO
                 , date DATE NOT NULL
                 , doi VARCHAR(300)
                 , urls VARCHAR(800)
-                , metadata_json MEDIUMTEXT
+                , source VARCHAR(20) DEFAULT "UNSPECIFIED"
+                , external_id VARCHAR(50) -- such as PUBMED
+                , metadata_json TEXT
                 , modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )'
             );
