@@ -147,10 +147,9 @@ foreach( $thesisSeminars as $ts )
  * --------------------------------------------------------------------------
  */
 $ncbsPub = getTableEntries( 'publications', 'date', "source='ncbs'");
-$pubMed = getTableEntries( 'publications', 'date', "source='pubmed'");
+$pubMed = getTableEntries( 'publications', 'date', "source='PUBMED'");
 echo "Total pubmed count " . count($pubMed);
 echo "Total ncbs count " . count($ncbsPub);
-
 
 ?>
 
