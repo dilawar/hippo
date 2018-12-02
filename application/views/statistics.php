@@ -146,24 +146,39 @@ foreach( $thesisSeminars as $ts )
  *  This section count the publications from NCBS and PUBMED.  
  * --------------------------------------------------------------------------
  */
-$ncbsPub = getTableEntries( 'publications', 'date', "source='ncbs' AND date < NOW() ");
 $pubMed = getTableEntries( 'publications', 'date', "source='PUBMED' AND date < NOW()");
 
 // Year wise cound.
 $pubYearWisePUBMED = [];
-$pubYearWiseNCBS = [];
+$authorYears = [];
+$publicationsPerCapita = [];
+
 foreach( $pubMed as $e )
 {
     $year = intval(date('Y', strtotime( $e['date'] )));
+    $sha = $e['sha512'];
+    $authors = getTableEntries( 'publication_authors', 'author', "publication_title_sha='$sha'");
     if( $year > 1990 )
+    {
         $pubYearWisePUBMED[$year] = __get__( $pubYearWisePUBMED, $year, 0) + 1;
+        $publicationsPerCapita[$year] = __get__( $publicationsPerCapita, $year, 0) + 1.0/count($authors);
+        foreach( $authors as $auth )
+            $authorYears[$year][] = $auth['author'];
+    }
 }
-foreach( $ncbsPub as $e )
+
+// Cummulative count of per capita output.
+$perCapitaProductivity = [];
+$numPaper = 0;
+$uniqueAuth = 0;
+foreach( $authorYears as $year => $authors )
 {
-    $year = intval(date('Y', strtotime( $e['date'] )));
-    if( $year > 1990 )
-        $pubYearWiseNCBS[$year] = __get__( $pubYearWiseNCBS, $year, 0) + 1;
+    $authors = array_unique( $authors );
+    $numPaper += count( $pubYearWisePUBMED[$year] ); 
+    $uniqueAuth += count($authors);
+    $perCapitaProductivity[$year] = $numPaper / $uniqueAuth;
 }
+
 
 ?>
 
@@ -401,31 +416,40 @@ $(function () {
 
     // Analyze data of publications per year.
     var pubYearWisePUBMED = <?php echo json_encode($pubYearWisePUBMED); ?>;
-    var pubYearWiseNCBS = <?php echo json_encode($pubYearWiseNCBS); ?>;
+    var publicationsPerCapita = <?php echo json_encode($publicationsPerCapita); ?>;
+    var perCapitaProductivity = <?php echo json_encode( $perCapitaProductivity); ?>;
+
     var pubYears = Object.keys(pubYearWisePUBMED);
     var pubNos = Object.values(pubYearWisePUBMED);
-    var pubYearsNCBS = Object.keys(pubYearWiseNCBS);
-    var pubNosNCBS = Object.values(pubYearWiseNCBS);
+    var pcpYear = Object.keys( perCapitaProductivity );
+    var pcpVal = Object.values( perCapitaProductivity );
+
+    // var ppcYear = Object.keys( publicationsPerCapita );
+    // var ppcVal = Object.values( publicationsPerCapita );
 
     // Arrays for publications.
-    var ncbsData = pubYearsNCBS.map(function(e,i) { return [(new Date(e)).getFullYear(), pubNosNCBS[i]]; });
     var pubmedData = pubYears.map(function(e,i) { return [(new Date(e)).getFullYear(), pubNos[i]]; });
+    // var ppcData = ppcYear.map(function(e,i) { return [(new Date(e)).getFullYear(), ppcVal[i]]; });
+    var pcpData = pcpYear.map(function(e,i) { return [(new Date(e)).getFullYear(), pcpVal[i]]; });
 
     var totalPubMed = pubNos.reduceRight(function(a,b){ return a + b;});
-    var totalNCBS = pubNosNCBS.reduceRight(function(a,b){ return a + b;});
 
     Highcharts.chart('publications_per_year', {
+        chart: { type: 'line' },
         title: { text: 'Number of publications' },
         xAxis: {  },
         yAxis : { },
         legend : { floating : false, algin: 'right', verticalAlign: 'top' },
-        series: [{
-            name: 'Source: PubMed. Total=' + totalPubMed,
-            data: pubmedData,
-        }, {
-        name: 'Source: NCBS. Total=' + totalNCBS + ' (*) ',
-            data: ncbsData,
-        }]
+        series: [
+            {
+                name: 'Publication count per year',
+                data: pubmedData,
+            },
+            {
+                name: 'Per capita productivity (cummulative)',
+                data: pcpData,
+            }
+        ]
     });
 
     Highcharts.chart('aws_per_year', {
@@ -543,16 +567,13 @@ $(function () {
 
 <table class="chart">
 <tr> <td> 
-<!--
-Total articles at PubMed: <?= count( $pubMed ) ?> <br />
-Total articles at <a href="https://ncbs.res.in/publications">NCBS</a>: <?= count( $ncbsPub ) ?>
--->
-At least one author is affiliated with NCBS Bangalore.
 <div id="publications_per_year"></div> 
-(*) <small>Data fetched from this link could not be analysed with complete success due to  
-inconsitencies in the format. Many articles may have not been counted. Please visit this
-link to check the number by yourself.
-</small>
+<br />
+(*) <small> At least one author is affiliated with NCBS Bangalore.
+A more comprehensive list can be found at 
+<a target="_blank" href="https://ncbs.res.in/publications">NCBS Website</a>.
+This list could not be analysed with good results due to inconsitencies in the format.</small>
+<br />
 </td> </tr>
 <tr> <td> <div id="aws_per_year"></div> </td> </tr>
 <tr> <td> <div id="aws_gap_chart"></div> </td> </tr>
