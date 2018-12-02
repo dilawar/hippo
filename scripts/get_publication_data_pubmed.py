@@ -15,7 +15,7 @@ def _sha512( msg ):
     return hashlib.sha512(msg.encode('utf8')).hexdigest()
 
 def form_url( args ):
-    extra = 'retmax=200'
+    extra = 'retmax=1000'
     if args.update:
         extra = 'datetype=pdat&reldate=14'
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" + \
