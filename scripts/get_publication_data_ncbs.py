@@ -48,6 +48,41 @@ def _get_publisher( d ):
     else:
         return 'NA'
 
+def insert_into_db( pub ):
+    authors = pub['author'].split(' and ')
+    title = pub['title'].strip().replace( '"', "'" )
+    titleHash = hashlib.sha512(title.encode('utf8')).hexdigest()
+    month, year = pub.get('month',''), pub['year']
+    date = _merge(month, year)
+    publisher = _get_publisher( pub )
+    query =  '''INSERT IGNORE INTO publications 
+            (sha512, title, abstract, publisher, type, date, doi,
+            metadata_json, source)
+            VALUES ("%s","%s","%s","%s","%s","%s","%s","%s", "NCBS")
+        ''' % (titleHash, title, ''
+            , publisher, pub.get('ENTRYTYPE', 'Journal Article'), date
+            , pub.get('doi', ''), '' )
+    try:
+        cur_.execute( query )
+    except Exception as e:
+        print( 'Error executing \n %s' % query )
+        print( '\n\tError was %s' % e )
+        return
+
+    for auth in authors:
+        author = ' '.join(reversed(auth.strip().split(',')))
+        try:
+            q = '''
+                INSERT IGNORE INTO publication_authors (author, affiliation,
+                publication_title_sha, publication_title ) VALUES
+                ( "%s", "%s", "%s", "%s" )
+                ''' % (author, '', titleHash, title )
+            cur_.execute( q )
+        except Exception as e:
+            print( 'Error executing \n %s' % q )
+            print( '\n\tError was %s' % e )
+            pass
+
 def after_2015():
     global url_
     bib = download_bibtex()
@@ -58,34 +93,7 @@ def after_2015():
 
     # Update database.
     for pub in data.entries:
-        authors = pub['author'].split(' and ')
-        title = pub['title'].strip()
-        titleHash = hashlib.sha512(title.encode('utf8')).hexdigest()
-        month, year = pub.get('month',''), pub['year']
-        date = _merge(month, year)
-        publisher = _get_publisher( pub )
-        query =  """REPLACE INTO publications 
-                (sha512, title, abstract, publisher, type, date, doi,
-                metadata_json, source)
-                VALUES ('%s','%s','%s','%s','%s','%s','%s','%s', 'NCBS')
-            """ % (titleHash, title, ''
-                , publisher, pub['ENTRYTYPE'], date
-                , pub.get('doi', ''), '' )
-        try:
-            cur_.execute( query )
-        except Exception as e:
-            db_.close()
-            return
-        for auth in authors:
-            author = ' '.join(reversed(auth.strip().split(',')))
-            cur_.execute( """
-                REPLACE INTO publication_authors (author, affiliation,
-                publication_title_sha, publication_title ) VALUES
-                ( '%s', '%s', '%s', '%s' )
-                """ % (author, '', titleHash, title )
-                )
-            print( author, end = ', ' )
-        print()
+        insert_into_db(pub)
     db_.commit()
     cur_.close()
     db_.close()
@@ -110,7 +118,7 @@ def _process_data( data_file ):
 
     blocks = txt.split( '\n\n' )
     print( "[INFO ] Total blocks %d" % len(blocks) )
-    pat = re.compile( r'(?P<authors>.+?)\(\d+\)(\s*\.?)?(?P<title>.+?[.?])(?P<journal>(.+))', re.DOTALL )
+    pat = re.compile( r'(?P<authors>.+?)\((?P<year>\d+)\)(\s*\.?)?(?P<title>.+?[.?])(?P<journal>(.+))', re.DOTALL )
     pubs = []
     for i, bl in enumerate(blocks):
         bl = bl.replace( '\n', ' ' )
@@ -118,7 +126,8 @@ def _process_data( data_file ):
         m = pat.search( bl )
         if m:
             d = m.groupdict()
-            d['authors'] = list(itertools.chain(_split_authors( d['authors'] )))
+            d['author_list'] = list(itertools.chain(_split_authors( d['authors'] )))
+            d['author'] = d['authors']
             print( 'AUTHORS: ', d['authors'] )
             #  print( 'TITLE  : ', m.group( 'title' ) )
             #  print( 'JOURNAL: ', m.group( 'journal' ) )
@@ -132,12 +141,13 @@ def _process_data( data_file ):
 def before_2015():
     dataF = os.path.join( sdir_, '../data/publications_before_2015_mixed.txt' )
     data = _process_data( dataF )
-    return
-    for k in data:
-        print( k )
+    for pub in data:
+        print( pub['author'] )
+        insert_into_db(pub)
 
 def main():
     before_2015()
+    after_2015()
 
 if __name__ == '__main__':
     main()
