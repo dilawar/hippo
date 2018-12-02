@@ -374,10 +374,13 @@ table.venue_slot tr td {
 
 table.chart {
     max-width: 100%;
+    margin-bottom: 50px;
 }
 
-table.chart tr dt  {
-    max-width: 50%;
+table.chart tr td  {
+    max-width: 100%;
+    border-top: 1pt solid lightblue;
+    margin-bottom: 50px;
 }
 
 table.enrollments {

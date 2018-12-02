@@ -146,10 +146,24 @@ foreach( $thesisSeminars as $ts )
  *  This section count the publications from NCBS and PUBMED.  
  * --------------------------------------------------------------------------
  */
-$ncbsPub = getTableEntries( 'publications', 'date', "source='ncbs'");
-$pubMed = getTableEntries( 'publications', 'date', "source='PUBMED'");
-echo "Total pubmed count " . count($pubMed);
-echo "Total ncbs count " . count($ncbsPub);
+$ncbsPub = getTableEntries( 'publications', 'date', "source='ncbs' AND date < NOW() ");
+$pubMed = getTableEntries( 'publications', 'date', "source='PUBMED' AND date < NOW()");
+
+// Year wise cound.
+$pubYearWisePUBMED = [];
+$pubYearWiseNCBS = [];
+foreach( $pubMed as $e )
+{
+    $year = intval(date('Y', strtotime( $e['date'] )));
+    if( $year > 1990 )
+        $pubYearWisePUBMED[$year] = __get__( $pubYearWisePUBMED, $year, 0) + 1;
+}
+foreach( $ncbsPub as $e )
+{
+    $year = intval(date('Y', strtotime( $e['date'] )));
+    if( $year > 1990 )
+        $pubYearWiseNCBS[$year] = __get__( $pubYearWiseNCBS, $year, 0) + 1;
+}
 
 ?>
 
@@ -217,19 +231,6 @@ $(function( ) {
 
 });
 </script>
-
-<script type="text/javascript" charset="utf-8">
-$(function( ) {
-    var data = <?php echo json_encode( $venueUsageAtTime ); ?>;
-    var xlabels = <?php echo json_encode( $timevec ); ?>;
-    Highcharts.chart('venues_busy_time', {
-        title: { text: 'Number of events V/s Time' },
-        xAxis : { categories : xlabels },
-        series: data,
-        });
-});
-</script>
-
 
 <script type="text/javascript" charset="utf-8">
 $(function( ) {
@@ -398,6 +399,35 @@ $(function () {
         return arr;
     }
 
+    // Analyze data of publications per year.
+    var pubYearWisePUBMED = <?php echo json_encode($pubYearWisePUBMED); ?>;
+    var pubYearWiseNCBS = <?php echo json_encode($pubYearWiseNCBS); ?>;
+    var pubYears = Object.keys(pubYearWisePUBMED);
+    var pubNos = Object.values(pubYearWisePUBMED);
+    var pubYearsNCBS = Object.keys(pubYearWiseNCBS);
+    var pubNosNCBS = Object.values(pubYearWiseNCBS);
+
+    // Arrays for publications.
+    var ncbsData = pubYearsNCBS.map(function(e,i) { return [(new Date(e)).getFullYear(), pubNosNCBS[i]]; });
+    var pubmedData = pubYears.map(function(e,i) { return [(new Date(e)).getFullYear(), pubNos[i]]; });
+
+    var totalPubMed = pubNos.reduceRight(function(a,b){ return a + b;});
+    var totalNCBS = pubNosNCBS.reduceRight(function(a,b){ return a + b;});
+
+    Highcharts.chart('publications_per_year', {
+        title: { text: 'Number of publications' },
+        xAxis: {  },
+        yAxis : { },
+        legend : { floating : false, algin: 'right', verticalAlign: 'top' },
+        series: [{
+            name: 'Source: PubMed. Total=' + totalPubMed,
+            data: pubmedData,
+        }, {
+        name: 'Source: NCBS. Total=' + totalNCBS + ' (*) ',
+            data: ncbsData,
+        }]
+    });
+
     Highcharts.chart('aws_per_year', {
         chart: { type: 'column' },
         title: { text: 'Number of Annual Work Seminars per year' },
@@ -511,18 +541,27 @@ $(function () {
 
 <h1>Academic statistics since March 01, 2017</h1>
 
-<table class=chart>
-<tr> <td> <div id="aws_per_year"></div> </td>
-</tr><tr>
-<td> <div id="aws_gap_chart"></div> </td>
-</tr>
+<table class="chart">
+<tr> <td> 
+<!--
+Total articles at PubMed: <?= count( $pubMed ) ?> <br />
+Total articles at <a href="https://ncbs.res.in/publications">NCBS</a>: <?= count( $ncbsPub ) ?>
+-->
+At least one author is affiliated with NCBS Bangalore.
+<div id="publications_per_year"></div> 
+(*) <small>Data fetched from this link could not be analysed with complete success due to  
+inconsitencies in the format. Many articles may have not been counted. Please visit this
+link to check the number by yourself.
+</small>
+</td> </tr>
+<tr> <td> <div id="aws_per_year"></div> </td> </tr>
+<tr> <td> <div id="aws_gap_chart"></div> </td> </tr>
 </table>
 
 <table class=chart>
-<tr> <td> <div id="aws_chart1"></div> </td>
-</tr><tr>
-<td> <div id="aws_speakers_pie"></div> </td>
-</tr> </table>
+<tr> <td> <div id="aws_chart1"></div> </td> </tr>
+<tr> <td> <div id="aws_speakers_pie"></div> </td> </tr>
+ </table>
 
 <table class=chart>
 <tr> <td> <div id="thesis_seminar_per_month"></div> </td>
