@@ -76,7 +76,8 @@ def main( args ):
             ptype = v['pubtype'][0] if v['pubtype'] else 'NA'
             abstract = 'NA'
             eid = entry
-            q = '''INSERT IGNORE INTO publications
+            # update the entry from local database if found in pubmed. 
+            q = '''REPLACE INTO publications
                     (sha512,title,abstract,publisher,type
                     ,date,doi,urls,source,external_id
                     ,metadata_json) 
@@ -100,14 +101,14 @@ def main( args ):
             for auth in authors:
                 authName = auth['name']
                 affil = 'NA'
-                q = '''INSERT IGNORE INTO publication_authors 
+                q = '''REPLACE INTO publication_authors 
                     (author, affiliation, publication_title_sha, publication_title)
                     VALUES ("%s","%s","%s","%s")''' % (authName, affil, sha, title)
                 _exeucte( cur_, q )
-
-        db_.commit()
-
-
+    db_.commit()
+    cur_.close()
+    db_.close()
+    print( '[INFO] All done' )
 
 if __name__ == '__main__':
     import argparse
