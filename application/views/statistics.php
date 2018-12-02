@@ -167,17 +167,19 @@ foreach( $pubMed as $e )
     }
 }
 
-// Cummulative count of per capita output.
-$perCapitaProductivity = [];
-$numPaper = 0;
-$uniqueAuth = 0;
-foreach( $authorYears as $year => $authors )
-{
-    $authors = array_unique( $authors );
-    $numPaper += count( $pubYearWisePUBMED[$year] ); 
-    $uniqueAuth += count($authors);
-    $perCapitaProductivity[$year] = $numPaper / $uniqueAuth;
-}
+//// Cummulative count of per capita output.
+//$perCapitaProductivity = [];
+//$numPaper = 0;
+//$uniqueAuth = 0;
+//$poolAuthors = [];
+//foreach( $authorYears as $year => $authors )
+//{
+//    $authors = array_unique( $authors );
+//    $poolAuthors = array_merge($poolAuthors, $authors);
+//    $numPaper += count( $pubYearWisePUBMED[$year] ); 
+//    $uniqueAuth += count(array_unique($poolAuthors));
+//    $perCapitaProductivity[$year] = $numPaper / $uniqueAuth;
+//}
 
 
 ?>
@@ -416,23 +418,23 @@ $(function () {
 
     // Analyze data of publications per year.
     var pubYearWisePUBMED = <?php echo json_encode($pubYearWisePUBMED); ?>;
-    var publicationsPerCapita = <?php echo json_encode($publicationsPerCapita); ?>;
-    var perCapitaProductivity = <?php echo json_encode( $perCapitaProductivity); ?>;
+    // var publicationsPerCapita = <?php echo json_encode($publicationsPerCapita); ?>;
+    // var perCapitaProductivity = <?php echo json_encode( $perCapitaProductivity); ?>;
 
     var pubYears = Object.keys(pubYearWisePUBMED);
     var pubNos = Object.values(pubYearWisePUBMED);
-    var pcpYear = Object.keys( perCapitaProductivity );
-    var pcpVal = Object.values( perCapitaProductivity );
+    // var pcpYear = Object.keys( perCapitaProductivity );
+    // var pcpVal = Object.values( perCapitaProductivity );
 
     // var ppcYear = Object.keys( publicationsPerCapita );
     // var ppcVal = Object.values( publicationsPerCapita );
 
     // Arrays for publications.
     var pubmedData = pubYears.map(function(e,i) { return [(new Date(e)).getFullYear(), pubNos[i]]; });
-    // var ppcData = ppcYear.map(function(e,i) { return [(new Date(e)).getFullYear(), ppcVal[i]]; });
-    var pcpData = pcpYear.map(function(e,i) { return [(new Date(e)).getFullYear(), pcpVal[i]]; });
-
     var totalPubMed = pubNos.reduceRight(function(a,b){ return a + b;});
+    // var ppcData = ppcYear.map(function(e,i) { return [(new Date(e)).getFullYear(), ppcVal[i]]; });
+    // var pcpData = pcpYear.map(function(e,i) { return [(new Date(e)).getFullYear(), pcpVal[i]]; });
+
 
     Highcharts.chart('publications_per_year', {
         chart: { type: 'line' },
@@ -445,10 +447,10 @@ $(function () {
                 name: 'Publication count per year',
                 data: pubmedData,
             },
-            {
-                name: 'Per capita productivity (cummulative)',
-                data: pcpData,
-            }
+            //{
+            //    name: 'Per capita productivity (cummulative)',
+            //    data: pcpData,
+            //}
         ]
     });
 
