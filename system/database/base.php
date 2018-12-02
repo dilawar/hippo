@@ -1,5 +1,4 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
 
 class BMVPDO extends PDO
