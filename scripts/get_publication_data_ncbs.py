@@ -146,7 +146,7 @@ def before_2015():
         insert_into_db(pub)
 
 def main():
-    before_2015()
+    #  before_2015()
     after_2015()
 
 if __name__ == '__main__':
