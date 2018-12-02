@@ -14,9 +14,14 @@ cur_ = db_.cursor()
 def _sha512( msg ):
     return hashlib.sha512(msg.encode('utf8')).hexdigest()
 
-url_ = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" + \
-        "db=pubmed&retmode=json&retmax=4000&usehistory=yes&" + \
-        "term=national+centre+for+biological+sciences[Affiliation]"
+def form_url( args ):
+    extra = 'retmax=200'
+    if args.update:
+        extra = 'datetype=pdat&reldate=14'
+    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" + \
+            "db=pubmed&retmode=json&%s" % extra + \
+            "&term=national+centre+for+biological+sciences[Affiliation]"
+    return url
 
 def fetch_info( idlist ):
     # assemble the epost URL
@@ -39,8 +44,9 @@ def _exeucte( cur, q ):
         raise e
 
 def main( args ):
-    global url_
-    r = requests.get( url_ )
+    url = form_url( args )
+    print( "[INFO ] Fetching from %s"  % url)
+    r = requests.get( url )
     js = json.loads( r.text )
     res = js['esearchresult']
     idlist = res['idlist']
@@ -48,11 +54,10 @@ def main( args ):
     # second.
     idSlices = [ idlist[i:i+200] for i in range(0, len(idlist), 200)]
     if not os.path.exists( args.output ) or args.force: 
-        with multiprocessing.Pool(2)  as p:
-            results = p.map(fetch_info, idSlices)
-            with open( args.output, 'w' ) as f:
-                #  f.write('\n'.join(results))
-                json.dump(results,f)
+        results = [fetch_info(slices) for slices in idSlices]
+        with open( args.output, 'w' ) as f:
+            #  f.write('\n'.join(results))
+            json.dump(results,f)
 
     # open the reuslt file.
     with open(args.output, 'r') as f:
@@ -123,6 +128,10 @@ if __name__ == '__main__':
         , required = False, type = str
         , default = 'pubmed.json'
         , help = 'Output file'
+        )
+    parser.add_argument('--update', '-u'
+        , required = False, action='store_true'
+        , help = 'Update most recent articles (2 weeks).'
         )
     class Args: pass 
     args = Args()
