@@ -89,9 +89,11 @@ def main( args ):
                     , '' #json.dumps(data)
                     )
 
+            print( "%d: %s\n\t%s; %s; %s" % (i, title, auths, date, publisher) )
             try:
                 _exeucte(cur_, q)
             except Exception as e:
+                print( 'FAILED' )
                 quit()
 
             # Update authors.
@@ -103,7 +105,6 @@ def main( args ):
                     VALUES ("%s","%s","%s","%s")''' % (authName, affil, sha, title)
                 _exeucte( cur_, q )
 
-            print( "%s\n\t%s; %s; %s" % (title, auths, date, publisher) )
         db_.commit()
 
 
