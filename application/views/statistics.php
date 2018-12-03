@@ -84,13 +84,12 @@ foreach( $venueUsageTime as $v => $t )
     $venueUsagePie[ ] = array( "name" => $v, "y" => $t );
 
 $bookingTable = "<table class='info'>
-    <tr> <td>Total booking requests</td> <td>" . count( $requests ) . "</td> </tr>
-    <tr> <td>Rate of booking (# per day)</td> <td>"
-            .   number_format( $rateOfRequests, 2 ) . "</td> </tr>
-    <tr> <td>Approved requests</td> <td> $nApproved </td> </tr>
-    <tr> <td>Rejected requests</td> <td> $nRejected </td> </tr>
-    <tr> <td>Pending requests</td> <td> $nPending </td> </tr>
-    <tr> <td>Cancelled by user</td> <td> $nCancelled </td> </tr>
+        <tr> <td>Total booking requests</td> <td>" . count( $requests ) . "</td> </tr>
+        <tr> <td>Rate of booking (# per day)</td> <td>" . number_format($rateOfRequests, 2) . "</td></tr>
+        <tr> <td>Approved requests</td> <td> $nApproved </td> </tr>
+        <tr> <td>Rejected requests</td> <td> $nRejected </td> </tr>
+        <tr> <td>Pending requests</td> <td> $nPending </td> </tr>
+        <tr> <td>Cancelled by user</td> <td> $nCancelled </td> </tr>
     </table>";
 
 $thesisSeminars = getTableEntries( 'talks', 'class', "class='THESIS SEMINAR'" );
@@ -141,7 +140,6 @@ foreach( $thesisSeminars as $ts )
 
 }
 
-
 /* --------------------------------------------------------------------------
  *  This section count the publications from NCBS and PUBMED.  
  * --------------------------------------------------------------------------
@@ -161,9 +159,9 @@ foreach( $pubMed as $e )
     if( $year > 1990 )
     {
         $pubYearWisePUBMED[$year] = __get__( $pubYearWisePUBMED, $year, 0) + 1;
-        $publicationsPerCapita[$year] = __get__( $publicationsPerCapita, $year, 0) + 1.0/count($authors);
-        foreach( $authors as $auth )
-            $authorYears[$year][] = $auth['author'];
+        // $publicationsPerCapita[$year] = __get__( $publicationsPerCapita, $year, 0) + 1.0/count($authors);
+        // foreach( $authors as $auth )
+            // $authorYears[$year][] = $auth['author'];
     }
 }
 
@@ -418,41 +416,24 @@ $(function () {
 
     // Analyze data of publications per year.
     var pubYearWisePUBMED = <?php echo json_encode($pubYearWisePUBMED); ?>;
-    // var publicationsPerCapita = <?php echo json_encode($publicationsPerCapita); ?>;
-    // var perCapitaProductivity = <?php echo json_encode( $perCapitaProductivity); ?>;
-
     var pubYears = Object.keys(pubYearWisePUBMED);
     var pubNos = Object.values(pubYearWisePUBMED);
-    // var pcpYear = Object.keys( perCapitaProductivity );
-    // var pcpVal = Object.values( perCapitaProductivity );
-
-    // var ppcYear = Object.keys( publicationsPerCapita );
-    // var ppcVal = Object.values( publicationsPerCapita );
 
     // Arrays for publications.
     var pubmedData = pubYears.map(function(e,i) { return [(new Date(e)).getFullYear(), pubNos[i]]; });
-    var totalPubMed = pubNos.reduceRight(function(a,b){ return a + b;});
-    // var ppcData = ppcYear.map(function(e,i) { return [(new Date(e)).getFullYear(), ppcVal[i]]; });
-    // var pcpData = pcpYear.map(function(e,i) { return [(new Date(e)).getFullYear(), pcpVal[i]]; });
-
+    var totalPubMed = pubNos.reduceRight(function(a,b){ return a+b; });
 
     Highcharts.chart('publications_per_year', {
         chart: { type: 'line' },
         title: { text: 'Number of publications' },
-        xAxis: {  },
+        xAxis:  { },
         yAxis : { },
-        legend : { floating : false, algin: 'right', verticalAlign: 'top' },
-        series: [
-            {
+        legend : { floating : false, align: 'right', verticalAlign: 'top' },
+        series: [{
                 name: 'Publication count per year',
                 data: pubmedData,
-            },
-            //{
-            //    name: 'Per capita productivity (cummulative)',
-            //    data: pcpData,
-            //}
-        ]
-    });
+            },]
+        });
 
     Highcharts.chart('aws_per_year', {
         chart: { type: 'column' },
@@ -468,13 +449,13 @@ $(function () {
             pointPlacement: 'middle',
             showInLegend:false,
         },
-    ] });
+        ]});
 
     Highcharts.chart('aws_speakers_pie', {
         chart: { type: 'pie' },
         title: { text: 'Size of each Subject Group' },
-        series: [{ name: 'Number of AWS speakers'
-            , data: speakers, },] }
+        series: [{ name: 'Number of AWS speakers', data: speakers, },]
+        }
     );
 
 });
@@ -565,7 +546,7 @@ $(function () {
 });
 </script>
 
-<h1>Academic statistics since March 01, 2017</h1>
+<h1>Academic statistics</h1>
 
 <table class="chart">
 <tr> <td> 
@@ -581,42 +562,33 @@ This list could not be analysed with good results due to inconsitencies in the f
 <tr> <td> <div id="aws_gap_chart"></div> </td> </tr>
 </table>
 
-<table class=chart>
-<tr> <td> <div id="aws_chart1"></div> </td> </tr>
-<tr> <td> <div id="aws_speakers_pie"></div> </td> </tr>
- </table>
+<table class="chart">
+    <tr> <td> <div id="aws_chart1"></div> </td> </tr>
+    <tr> <td> <div id="aws_speakers_pie"></div> </td> </tr>
+</table>
 
-<table class=chart>
-<tr> <td> <div id="thesis_seminar_per_month"></div> </td>
-</tr><tr>
-<td> <div id="thesis_seminar_per_year"></div> </td>
-</tr> </table>
+<table class="chart">
+    <tr><td> <div id="thesis_seminar_per_month"></div> </td></tr>
+    <tr><td> <div id="thesis_seminar_per_year"></div> </td></tr>
+</table>
 
 <h1> Venues statistics since March 01, 2017</h1>
 <?=$bookingTable?>
 
 <table class="chart">
-<tr>
-    <td> <div id="venue_usage1"></div> </td>
-</tr><tr>
-    <td> <div id="venue_usage2" ></div> </td>
-</tr>
+    <tr> <td> <div id="venue_usage1"></div> </td></tr>
+    <tr> <td> <div id="venue_usage2" ></div> </td></tr>
 </table>
 
 <h3></h3>
 <table class="chart">
-<tr>
-    <td> <div id="events_class1"></div> </td>
-</tr><tr>
-    <td> <div id="events_class2" ></div> </td>
-</tr>
+    <tr><td> <div id="events_class1"></div> </td></tr>
+    <tr><td> <div id="events_class2" ></div> </td></tr>
 </table>
 
 <h3></h3>
 <table class="chart">
-<tr>
-    <td> <div id="venues_busy_time"></div> </td>
-</tr>
+<tr><td> <div id="venues_busy_time"></div> </td></tr>
 </table>
 
 <?php
@@ -627,38 +599,32 @@ if( isset( $_POST['months'] ) )
 else
     $howManyMonths = 36;
 
-echo '
-    <form method="post" action="">
-    Show AWS interaction in last <input type="text" name="months"
-        value="' . $howManyMonths . '" />
-    months.
-    <button name="response" value="Submit">Submit</button>
+echo '<form method="post" action="">
+        Show AWS interaction in last <input type="text" name="months" 
+        value="' . $howManyMonths . '" /> 
+        months. <button name="response" value="Submit">Submit</button>
     </form>
     ';
 
 
 $from = date( 'Y-m-d', strtotime( 'today' . " -$howManyMonths months"));
-
 $fromD = date( 'M d, Y', strtotime( $from ) );
-echo "<p>
-    Following graph shows the interaction among faculty since $fromD.
+
+echo "<p>Following graph shows the interaction among faculty since $fromD.
     Number on edges are number of AWSs between two faculty, either of them is involved
-    in an AWS as co-supervisor or as a thesis committee member.
-    </p>";
+    in an AWS as co-supervisor or as a thesis committee member.</p>";
 
 $awses = getAWSFromPast( $from  );
-$network = array( 'nodes' => array(), 'edges' => array( ) );
+$network = ['nodes' => array(), 'edges' => array()];
 
 echo printInfo( "Total " . count( $awses) . " AWSs found in database since $fromD" );
 
-echo '
-    <p> <strong>
+echo '<p> <strong>
     Hover over a node to see the interaction of particular faculty.
-    </strong> </p>
+    </strong></p>
     ';
 
 $community = array();
-
 
 /**
  * Here we collect all the unique PIs. This is to make sure that we don't draw
@@ -666,6 +632,7 @@ $community = array();
  * can't get all relevant PIs if we only search in AWSs given in specific time.
  * Therefore we query the faculty table to get the list of all PIs.
  */
+
 $faculty = getFaculty( );
 $pis = array( );                                // Just the email
 foreach( $faculty as $fac )
