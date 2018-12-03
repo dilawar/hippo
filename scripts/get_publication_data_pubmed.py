@@ -41,7 +41,7 @@ def _exeucte( cur, q ):
     except Exception as e:
         print('[WARN] Failed to execute: \n%s' % q )
         print( '\tError was: %s' % e )
-        raise e
+        #  raise e
 
 def main( args ):
     url = form_url( args )
