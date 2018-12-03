@@ -74,6 +74,7 @@ def main( args ):
             auths = ','.join([x['name'] for x in authors])
             v = data[entry]
             title = v['title'].replace('"', "'")
+            title = title.encode('utf8', errors='replace').decode('utf8')
             sha = _sha512(title)
             date = _make_date(v['pubdate'])
             publisher = v['fulljournalname']
@@ -95,7 +96,7 @@ def main( args ):
                     , '' #json.dumps(data)
                     )
 
-            print( "%d: %s\n\t%s; %s; %s" % (i, title, auths, date, publisher) )
+            print( "%d: %s; %s; %s; %s" % (i, title, auths, date, publisher) )
             try:
                 _exeucte(cur_, q)
             except Exception as e:

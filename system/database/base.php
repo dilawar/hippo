@@ -156,7 +156,7 @@ class BMVPDO extends PDO
         $res = $this->query(
             'CREATE TABLE IF NOT EXISTS publications
             (   sha512 VARCHAR(129) PRIMARY KEY
-                , title VARCHAR(1000) CHARACTER SET utf8 COLLATE utf8_unicode_ci 
+                , title VARCHAR(1000) 
                 , abstract VARCHAR(4000)  
                 , publisher VARCHAR(1000) NOT NULL
                 , type VARCHAR(100) 
