@@ -47,9 +47,7 @@ foreach( $requests as $r )
 // rate per day.
 $rateOfRequests = 24 * 3600.0 * count( $requests ) / (1.0 * $timeInterval);
 
-/*
- * Venue usage timne.
- */
+/* Venue usage timne.  */
 $events = getTableEntries( 'events', 'date'
                 , "status='VALID' AND date < '$upto'" );
 
@@ -67,40 +65,6 @@ foreach( $events as $e )
 }
 $allVenues = array_keys( $venueUsageTime );
 
-//// NOTE: This statistics takes too much time.
-//// Venue usage at particular time from 8am to 8pm. AND concurrent events as
-//// well.
-//// For each 15 min gap, for 12 hours.
-//$venueUsageAtTime = array( );
-//$begin = strtotime( '8:00 am' );
-//$timevec = array( );
-//for ($i = 0; $i < 48; $i++)
-//    $timevec[ ] = dbTime( $begin + 15 * 60 * $i );
-//
-//foreach( $allVenues as $venue )
-//{
-//    $data = array( );
-//    foreach( $timevec as $t )
-//    {
-//        $res = array_filter( $events
-//            , function( $v ) {
-//                global $venue;
-//                global $t;
-//                return ($v['venue'] == $venue)
-//                    && (strtotime($v['start_time']) <= strtotime($t))
-//                    && (strtotime( $v['end_time']) > strtotime($t));
-//            });
-//        $data[] = count( $res );
-//    }
-//
-//    // Make few of series visible by default ~ 10% (randomly).
-//    $visible = false;
-//    if( rand(1, 10 ) < 2 )
-//        $visible = true;
-//    $venueUsageAtTime[ ] = array( 'name' => $venue , 'visible' => $visible
-//        , 'data' => $data);
-//}
-//
 // AWS to this list.
 $eventsByClass[ 'ANNUAL WORK SEMINAR' ] = count(
     getTableEntries( 'annual_work_seminars', 'date', "date>'2017-03-21'" ) );
@@ -120,13 +84,12 @@ foreach( $venueUsageTime as $v => $t )
     $venueUsagePie[ ] = array( "name" => $v, "y" => $t );
 
 $bookingTable = "<table class='info'>
-    <tr> <td>Total booking requests</td> <td>" . count( $requests ) . "</td> </tr>
-    <tr> <td>Rate of booking (# per day)</td> <td>"
-            .   number_format( $rateOfRequests, 2 ) . "</td> </tr>
-    <tr> <td>Approved requests</td> <td> $nApproved </td> </tr>
-    <tr> <td>Rejected requests</td> <td> $nRejected </td> </tr>
-    <tr> <td>Pending requests</td> <td> $nPending </td> </tr>
-    <tr> <td>Cancelled by user</td> <td> $nCancelled </td> </tr>
+        <tr> <td>Total booking requests</td> <td>" . count( $requests ) . "</td> </tr>
+        <tr> <td>Rate of booking (# per day)</td> <td>" . number_format($rateOfRequests, 2) . "</td></tr>
+        <tr> <td>Approved requests</td> <td> $nApproved </td> </tr>
+        <tr> <td>Rejected requests</td> <td> $nRejected </td> </tr>
+        <tr> <td>Pending requests</td> <td> $nPending </td> </tr>
+        <tr> <td>Cancelled by user</td> <td> $nCancelled </td> </tr>
     </table>";
 
 $thesisSeminars = getTableEntries( 'talks', 'class', "class='THESIS SEMINAR'" );
@@ -176,6 +139,47 @@ foreach( $thesisSeminars as $ts )
     $thesisSemPerMonth[ $month ] += 1;
 
 }
+
+/* --------------------------------------------------------------------------
+ *  This section count the publications from NCBS and PUBMED.  
+ * --------------------------------------------------------------------------
+ */
+$pubMed = getTableEntries( 'publications', 'date', "source='PUBMED' AND date < NOW()");
+
+// Year wise cound.
+$pubYearWisePUBMED = [];
+$authorYears = [];
+$publicationsPerCapita = [];
+
+foreach( $pubMed as $e )
+{
+    $year = intval(date('Y', strtotime( $e['date'] )));
+    $sha = $e['sha512'];
+    $authors = getTableEntries( 'publication_authors', 'author', "publication_title_sha='$sha'");
+    if( $year > 1990 )
+    {
+        $pubYearWisePUBMED[$year] = __get__( $pubYearWisePUBMED, $year, 0) + 1;
+        // $publicationsPerCapita[$year] = __get__( $publicationsPerCapita, $year, 0) + 1.0/count($authors);
+        // foreach( $authors as $auth )
+            // $authorYears[$year][] = $auth['author'];
+    }
+}
+
+//// Cummulative count of per capita output.
+//$perCapitaProductivity = [];
+//$numPaper = 0;
+//$uniqueAuth = 0;
+//$poolAuthors = [];
+//foreach( $authorYears as $year => $authors )
+//{
+//    $authors = array_unique( $authors );
+//    $poolAuthors = array_merge($poolAuthors, $authors);
+//    $numPaper += count( $pubYearWisePUBMED[$year] ); 
+//    $uniqueAuth += count(array_unique($poolAuthors));
+//    $perCapitaProductivity[$year] = $numPaper / $uniqueAuth;
+//}
+
+
 ?>
 
 <script type="text/javascript" charset="utf-8">
@@ -242,19 +246,6 @@ $(function( ) {
 
 });
 </script>
-
-<script type="text/javascript" charset="utf-8">
-$(function( ) {
-    var data = <?php echo json_encode( $venueUsageAtTime ); ?>;
-    var xlabels = <?php echo json_encode( $timevec ); ?>;
-    Highcharts.chart('venues_busy_time', {
-        title: { text: 'Number of events V/s Time' },
-        xAxis : { categories : xlabels },
-        series: data,
-        });
-});
-</script>
-
 
 <script type="text/javascript" charset="utf-8">
 $(function( ) {
@@ -423,6 +414,27 @@ $(function () {
         return arr;
     }
 
+    // Analyze data of publications per year.
+    var pubYearWisePUBMED = <?php echo json_encode($pubYearWisePUBMED); ?>;
+    var pubYears = Object.keys(pubYearWisePUBMED);
+    var pubNos = Object.values(pubYearWisePUBMED);
+
+    // Arrays for publications.
+    var pubmedData = pubYears.map(function(e,i) { return [(new Date(e)).getFullYear(), pubNos[i]]; });
+    var totalPubMed = pubNos.reduceRight(function(a,b){ return a+b; });
+
+    Highcharts.chart('publications_per_year', {
+        chart: { type: 'line' },
+        title: { text: 'Number of publications' },
+        xAxis:  { },
+        yAxis : { },
+        legend : { floating : false, align: 'right', verticalAlign: 'top' },
+        series: [{
+                name: 'Data from PubMed',
+                data: pubmedData,
+            },]
+        });
+
     Highcharts.chart('aws_per_year', {
         chart: { type: 'column' },
         title: { text: 'Number of Annual Work Seminars per year' },
@@ -437,13 +449,13 @@ $(function () {
             pointPlacement: 'middle',
             showInLegend:false,
         },
-    ] });
+        ]});
 
     Highcharts.chart('aws_speakers_pie', {
         chart: { type: 'pie' },
         title: { text: 'Size of each Subject Group' },
-        series: [{ name: 'Number of AWS speakers'
-            , data: speakers, },] }
+        series: [{ name: 'Number of AWS speakers', data: speakers, },]
+        }
     );
 
 });
@@ -534,60 +546,49 @@ $(function () {
 });
 </script>
 
-<h1>Academic statistics since March 01, 2017</h1>
+<h1>Academic statistics</h1>
 
-<h3>Annual Work Seminars Distributions</h3>
-<table class=chart>
-<tr> <td> <div id="aws_per_year"></div> </td>
-<td> <div id="aws_gap_chart"></div> </td>
-</tr>
+<table class="chart">
+<tr> <td> 
+<div id="publications_per_year"></div> 
+<br />
+(*) <small> At least one author is affiliated with NCBS Bangalore.
+A more comprehensive list can be found at 
+<a target="_blank" href="https://ncbs.res.in/publications">NCBS Website</a>.
+This list could not be analysed with good results due to inconsitencies in the format.</small>
+<br />
+</td> </tr>
+<tr> <td> <div id="aws_per_year"></div> </td> </tr>
+<tr> <td> <div id="aws_gap_chart"></div> </td> </tr>
 </table>
 
-<h3>AWS Speakers distributions</h3>
-<table class=chart>
-<tr> <td> <div id="aws_chart1"></div> </td>
-<td> <div id="aws_speakers_pie"></div> </td>
-</tr> </table>
-
-<h3>Thesis seminar distributions</h3>
-<table class=chart>
-<tr> <td> <div id="thesis_seminar_per_month"></div> </td>
-<td> <div id="thesis_seminar_per_year"></div> </td>
-</tr> </table>
-
-<h1>Booking requests between <?php
-    echo humanReadableDate( 'march 01, 2017') ?>
-    and <?php echo humanReadableDate( $upto ); ?></h1>
-
-<?php
-echo $bookingTable;
-?>
-
-<h1>Venue usage between <?php
-    echo humanReadableDate( 'march 01, 2017') ?>
-    and <?php echo humanReadableDate( $upto ); ?></h1>
-
-<h3></h3>
 <table class="chart">
-<tr>
-    <td> <div id="venue_usage1"></div> </td>
-    <td> <div id="venue_usage2" ></div> </td>
-</tr>
+    <tr> <td> <div id="aws_chart1"></div> </td> </tr>
+    <tr> <td> <div id="aws_speakers_pie"></div> </td> </tr>
+</table>
+
+<table class="chart">
+    <tr><td> <div id="thesis_seminar_per_month"></div> </td></tr>
+    <tr><td> <div id="thesis_seminar_per_year"></div> </td></tr>
+</table>
+
+<h1> Venues statistics since March 01, 2017</h1>
+<?=$bookingTable?>
+
+<table class="chart">
+    <tr> <td> <div id="venue_usage1"></div> </td></tr>
+    <tr> <td> <div id="venue_usage2" ></div> </td></tr>
 </table>
 
 <h3></h3>
 <table class="chart">
-<tr>
-    <td> <div id="events_class1"></div> </td>
-    <td> <div id="events_class2" ></div> </td>
-</tr>
+    <tr><td> <div id="events_class1"></div> </td></tr>
+    <tr><td> <div id="events_class2" ></div> </td></tr>
 </table>
 
 <h3></h3>
 <table class="chart">
-<tr>
-    <td> <div id="venues_busy_time"></div> </td>
-</tr>
+<tr><td> <div id="venues_busy_time"></div> </td></tr>
 </table>
 
 <?php
@@ -598,38 +599,32 @@ if( isset( $_POST['months'] ) )
 else
     $howManyMonths = 36;
 
-echo '
-    <form method="post" action="">
-    Show AWS interaction in last <input type="text" name="months"
-        value="' . $howManyMonths . '" />
-    months.
-    <button name="response" value="Submit">Submit</button>
+echo '<form method="post" action="">
+        Show AWS interaction in last <input type="text" name="months" 
+        value="' . $howManyMonths . '" /> 
+        months. <button name="response" value="Submit">Submit</button>
     </form>
     ';
 
 
 $from = date( 'Y-m-d', strtotime( 'today' . " -$howManyMonths months"));
-
 $fromD = date( 'M d, Y', strtotime( $from ) );
-echo "<p>
-    Following graph shows the interaction among faculty since $fromD.
+
+echo "<p>Following graph shows the interaction among faculty since $fromD.
     Number on edges are number of AWSs between two faculty, either of them is involved
-    in an AWS as co-supervisor or as a thesis committee member.
-    </p>";
+    in an AWS as co-supervisor or as a thesis committee member.</p>";
 
 $awses = getAWSFromPast( $from  );
-$network = array( 'nodes' => array(), 'edges' => array( ) );
+$network = ['nodes' => array(), 'edges' => array()];
 
 echo printInfo( "Total " . count( $awses) . " AWSs found in database since $fromD" );
 
-echo '
-    <p> <strong>
+echo '<p> <strong>
     Hover over a node to see the interaction of particular faculty.
-    </strong> </p>
+    </strong></p>
     ';
 
 $community = array();
-
 
 /**
  * Here we collect all the unique PIs. This is to make sure that we don't draw
@@ -637,6 +632,7 @@ $community = array();
  * can't get all relevant PIs if we only search in AWSs given in specific time.
  * Therefore we query the faculty table to get the list of all PIs.
  */
+
 $faculty = getFaculty( );
 $pis = array( );                                // Just the email
 foreach( $faculty as $fac )
@@ -939,7 +935,6 @@ $networkJSON = json_encode( $network, JSON_PRETTY_PRINT );
             edgelabels.attr( 'fill', "#acc" );
         }
     }
-
 
 </script>
 </div>
