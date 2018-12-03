@@ -6,3 +6,4 @@ requests
 six
 bibtexparser
 feedparser
+dateparser
