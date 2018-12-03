@@ -430,7 +430,7 @@ $(function () {
         yAxis : { },
         legend : { floating : false, align: 'right', verticalAlign: 'top' },
         series: [{
-                name: 'Publication count per year',
+                name: 'Data from PubMed',
                 data: pubmedData,
             },]
         });
