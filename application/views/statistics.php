@@ -555,7 +555,8 @@ $(function () {
 (*) <small> At least one author is affiliated with NCBS Bangalore.
 A more comprehensive list can be found at 
 <a target="_blank" href="https://ncbs.res.in/publications">NCBS Website</a>.
-This list could not be analysed with good results due to inconsitencies in the format.</small>
+This list could not be analysed with good accuracy because it is not very 
+machine friendly.</small>
 <br />
 </td> </tr>
 <tr> <td> <div id="aws_per_year"></div> </td> </tr>
