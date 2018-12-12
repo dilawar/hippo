@@ -286,12 +286,8 @@ class Adminacad extends CI_Controller
 
     public function execute_aws_action($response, $ref = 'upcoming_aws' )
     {
-        if( ! $response)
-        {
-            redirect("adminacad/$ref");
-            return;
-        }
-        else if( $response == 'format_abstract' )
+        $response = strtolower( $response );
+        if( $response == 'format_abstract' )
         {
             $this->load_adminacad_view( 'admin_acad_manages_upcoming_aws_reformat.php');
         }
