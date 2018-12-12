@@ -36,6 +36,12 @@ class Admin extends CI_Controller
         $this->template->load( 'admin_updateuser' );
     }
 
+    public function holidays()
+    {
+        $this->template->set( 'header', 'header.php' );
+        $this->template->load( 'admin_manages_holidays' );
+    }
+
     public function updateuser( $user = '' )
     {
         $toUpdate = 'roles,honorific,title,joined_on,eligible_for_aws,laboffice' .
@@ -186,6 +192,37 @@ class Admin extends CI_Controller
                 flashMessage( 'Successfully added new config' );
         }
         redirect( 'admin');
+    }
+
+    public function add_holiday( )
+    {
+        if( $_POST['date'] && $_POST['description'] )
+        {
+            $res = insertIntoTable( "holidays"
+                , "date,description,schedule_talk_or_aws"
+                , $_POST );
+            if( $res )
+                flashMessage( "Added holiday successfully" );
+            else
+                flashMessage( "Could not add holiday to database" );
+        }
+        else
+            flashMessage("Either 'date' or 'description' of holiday was incomplete", "ERROR");
+        redirect( 'admin/holidays' );
+    }
+
+    public function delete_holiday( )
+    {
+        $res = deleteFromTable( 'holidays', 'date,description', $_POST );
+        if( $res )
+        {
+            echo flashMessage( "Successfully deleted entry from holiday list" );
+        }
+        else
+        {
+            flashMessage("Could not delete holiday from the list", "Warn" );
+        }
+        redirect( "admin/holidays" );
     }
 }
 
