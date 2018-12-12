@@ -275,7 +275,7 @@ foreach( $scheduleMap as $date => $schedule )
         $intranetLink = getIntranetLink( $speaker );
 
         $table .= "<br /> $intranetLink ";
-        $table .= '<form action="'.site_url('adminacad/action').'" method="post">
+        $table .= '<form action="'.site_url('adminacad/execute_aws_action').'" method="post">
             <input type="hidden" name="speaker" value="' . $speaker . '" />
             <button name="response" class="show_as_link" value="RemoveSpeaker" 
                 title="Remove this speaker from AWS speaker list" >
