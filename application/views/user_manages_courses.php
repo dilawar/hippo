@@ -185,7 +185,7 @@ foreach($myCourses as &$c)
         continue;
 
     // If feedback is not given for this course, display a button.
-    $feedRes = feedbackForm($year, $sem, $cid, $numUnanswered );
+    $feedRes = feedbackForm($year, $sem, $cid );
 
     // If more than 30 days have passed, do not allow dropping courses.
     $cstartDate = $runningCourses[$cid]['start_date'];
@@ -198,7 +198,8 @@ foreach($myCourses as &$c)
     // Show grade if it is available and user has given feedback.
     if( __get__($c, 'grade', 'X' ) != 'X' )
     {
-        if($feedRes['num_unanswered'] > 0 )
+        $numUnanswered = $feedRes['num_unanswered'];
+        if($numUnanswered > 0 )
         {
             $c['grade'] = colored( "Grade is available.<br />
                 Feedback is due. $numUnanswered unanswered.", 'darkred' 

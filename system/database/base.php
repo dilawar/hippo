@@ -59,7 +59,7 @@ class BMVPDO extends PDO
         $res = $this->query(
             'CREATE TABLE IF NOT EXISTS speakers
             (   id INT NOT NULL PRIMARY KEY
-                , honorific ENUM( "Dr", "Prof", "Mr", "Ms" ) DEFAULT "Dr"
+                , honorific ENUM( "Dr", "Prof", "Mr", "Ms", "" ) DEFAULT "Dr"
                 , email VARCHAR(100)
                 , first_name VARCHAR(100) NOT NULL CHECK( first_name <> "" )
                 , middle_name VARCHAR(100)
@@ -78,7 +78,7 @@ class BMVPDO extends PDO
                 , login VARCHAR(100)
                 , email VARCHAR(200)
                 , alternative_email VARCHAR(200)
-                , honorific ENUM( 'Mr', 'Ms', 'Dr', 'Prof', 'Mx', 'Misc' ) 
+                , honorific ENUM( 'Mr', 'Ms', 'Dr', 'Prof', 'Mx', 'Misc', '' ) DEFAULT '' 
                 , first_name VARCHAR(200)
                 , last_name VARCHAR(100)
                 , roles SET(
