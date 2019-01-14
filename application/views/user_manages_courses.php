@@ -1,11 +1,14 @@
 <?php
 require_once BASEPATH . 'autoload.php';
 
+$me = 'muktanm'; // whoAmI();
+
 // Local function.
 function feedbackForm(string $year, string $sem, string $cid ) : array
 {
+    global $me;
     // DO NOT use ' to delimit the string; it wont work very well inside table.
-    $numUnanswered = numQuestionsNotAnswered(whoAmI(), $year, $sem, $cid);
+    $numUnanswered = numQuestionsNotAnswered( $me, $year, $sem, $cid);
     $form =  "<form action='".site_url("user/givefeedback/$cid/$sem/$year")."' method='post'>";
     $form .= "<button style='float:right' name='response' value='submit'>Feeback ("
                 . $numUnanswered . " unanswered.)</button>";
@@ -35,7 +38,7 @@ foreach( $semCourses as $rc )
 }
 
 // User courses and slots.
-$myCourses = getMyCourses( $sem, $year, $user = whoAmI() );
+$myCourses = getMyCourses( $sem, $year, $user = $me );
 
 $mySlots = array( );
 foreach( $myCourses as $c )
@@ -52,7 +55,7 @@ foreach( $myCourses as $c )
             'course_registration'
             , 'student_id,year,semester,course_id'
             , 'status'
-            , array( 'student_id' => whoAmI(), 'year' => $year
+            , array( 'student_id' => $me, 'year' => $year
                 , 'semester' => $sem, 'course_id' => $c[ 'course_id' ]
                 , 'status' => 'INVALID'
             )
@@ -105,7 +108,7 @@ foreach( $runningCourses as $c )
 echo "<h2>Registration form</h2>";
 
 $courseSelect = arrayToSelectList( 'course_id', $options, $courseMap );
-$default = array( 'student_id' => whoAmI()
+$default = array( 'student_id' => $me 
                 , 'semester' => $sem
                 , 'year' => $year
                 , 'course_id' => $courseSelect
@@ -237,10 +240,9 @@ echo goBackToPageLink( "user/home", "Go back" );
 
 echo '<h1>My courses</h1>';
 
-$user = whoAmI( );
 $myAllCourses = getTableEntries( 'course_registration'
     , 'year, semester'
-    , "student_id='$user' AND status='VALID'"
+    , "student_id='$me' AND status='VALID'"
     );
 
 $hide = 'student_id,status,last_modified_on';
