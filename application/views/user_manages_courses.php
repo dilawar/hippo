@@ -164,7 +164,7 @@ $count = 0;
 
 if(count($myCourses) > 0)
 {
-    echo "<h1>You are registered for following " . count($myCourses) . " courses for $sem $year</h1>";
+    echo "<h1>You are registered for following " . count($myCourses) . " courses in $sem-$year.</h1>";
 }
 
 echo '<div style="font-size:small">';
@@ -239,32 +239,36 @@ echo '</div>';
 echo ' <br /> ';
 echo goBackToPageLink( "user/home", "Go back" );
 
-echo '<h1>My courses</h1>';
+echo '<h1>My Courses</h1>';
 
 $myAllCourses = getTableEntries( 'course_registration'
     , 'year, semester'
     , "student_id='$me' AND status='VALID'"
     );
 
-$hide = 'student_id,status,last_modified_on';
 
 // Add feedback URL as well.
-foreach( $myAllCourses as &$course )
+$myCoursesWithFeedback = array();
+foreach( $myAllCourses as $course )
 {
     $cid = $course['course_id'];
-    $res = feedbackForm( $year, $sem, $cid );
+    $cname = getCourseName( $cid );
+    $course = array_insert_after('course_id', $course, 'course_name', $cname);
 
+    $res = feedbackForm( $year, $sem, $cid );
     if( $res['num_unanswered']  > 0 )
         $course['Feedback'] = $res['html'];
     else
         $course['Feedback'] = showFeedbackLink($year, $sem, $cid);
+    $myCoursesWithFeedback[] = $course;
 }
 
-if( count( $myAllCourses ) > 0 )
+if( count( $myCoursesWithFeedback ) > 0 )
 {
+    $hide = 'student_id,status,last_modified_on';
     $table = '<table class="info sorttable">';
-    $table .= arrayToTHRow( $myAllCourses[0], 'info', $hide );
-    foreach( $myAllCourses as $course )
+    $table .= arrayToTHRow( $myCoursesWithFeedback[0], 'info', $hide );
+    foreach( $myCoursesWithFeedback as $course )
     {
         $cid = $course[ 'course_id' ];
 
@@ -272,8 +276,6 @@ if( count( $myAllCourses ) > 0 )
             if( in_array($cid, $noFeedback))
                 $course['grade'] = colored('Feedback is due.', 'darkred');
 
-        $cname = getCourseName( $cid );
-        $course[ 'course_id' ] .= " <br /> $cname";
         $table .= arrayToRowHTML( $course, 'info', $hide );
     }
     $table .= "</table>";
