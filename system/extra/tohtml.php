@@ -685,9 +685,9 @@ function arrayToTableHTML( $array, $tablename, $background = ''
     return $table;
 }
 
-function arraysToCombinedTableHTML( $tables, $class, $hide = '' )
+function arraysToCombinedTableHTML( $tables, $class, $hide = '', $id = 'downloadable' )
 {
-    $html = " <table class='$class'>";
+    $html = "<table id='$id' class='$class'>";
     $html .= arrayToTHRow( $tables[0], $class, $hide );
     foreach( $tables as $table )
         $html .= arrayToRowHTML( $table, $class, $hide );
