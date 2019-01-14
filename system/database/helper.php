@@ -3422,7 +3422,6 @@ function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
 {
     $questions = getTableEntries('course_feedback_questions', 'id', "status='VALID'");
 
-    echo "$student, $year, $sem, $cid ";
     // Get all the response for this year, semester and course id.
     $nQuesNotAnswered = count($questions); 
 

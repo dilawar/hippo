@@ -277,11 +277,6 @@ if( count( $myCoursesWithFeedback ) > 0 )
     foreach( $myCoursesWithFeedback as $course )
     {
         $cid = $course[ 'course_id' ];
-
-        if(__get__($course, 'grade', 'X') != 'X')
-            if( in_array($cid, $noFeedback))
-                $course['grade'] = colored('Feedback is due.', 'darkred');
-
         $table .= arrayToRowHTML( $course, 'info', $hide );
     }
     $table .= "</table>";
