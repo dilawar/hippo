@@ -30,7 +30,7 @@ if( __get__( $_POST, 'user', '' ) != '' )
     else
     {
         echo p("Found " . count( $enrolls ) . " record(s).");
-        echo arraysToCombinedTableHTML( $enrolls, 'info exportable' );
+        echo arraysToCombinedTableHTML( $enrolls, 'info exportable', $hide='', $id=$user);
     }
 }
 else
