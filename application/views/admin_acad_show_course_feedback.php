@@ -9,16 +9,16 @@ if( ! isset($semester) )
 echo selectYearSemesterForm( $year, $semester );
 
 // Now get all the feedback available for this year and semester.
-$feedback = executeQuery( "SELECT * FROM poll_response WHERE status='VALID' 
-    AND external_id LIKE '$year.$semester.%'" 
-    );
+$feedback = getTableEntries( 'course_feedback_responses'
+    , 'question_id',  "status='VALID' AND year='$year' AND semester='$semester'" 
+);
 
 // Create a map out of feedback keys will be student id and course id.
 $feedbackMap = array();
 foreach( $feedback as $f)
 {
-    $key = $f['login'].'@@'.$f['external_id'];
-    $feedbackMap[$key][] = $f['response'];
+    $key = $f['course_id'].'@@'.$f['year'] .'@@'.$f['semester'];
+    $feedbackMap[$key][] = $f;
 }
 
 echo p("Total " . count( $feedbackMap ) . " feedback entries are found." );
@@ -31,28 +31,32 @@ foreach( $questionBank as $cat => $qs )
         $questionsById[$q['id']] = $q['question'];
 ksort($questionsById);
 
-echo '<h1> Data </h1>';
-$table = '<table class="info">';
-
-$table .= '<tr><th></th>';
-foreach( $questionsById as $qid => $qtitle )
-    $table .= "<th>$qtitle </th>";
-$table .= '</tr>';
+echo '<h1> Feedback Data </h1>';
 
 ksort( $feedbackMap );
-foreach( $feedbackMap as $key => $answers )
+foreach( $feedbackMap as $key => $feedbacks )
 {
-    $table .= "<tr>";
     $dataInKey = explode( '@@', $key );
-    $student = $dataInKey[0];
-    $table .= "<td> $student </td>";
-    foreach( $answers as $res )
-        $table .= "<td> $res </td>";
-    $table .= "</tr>";
+
+    $caption = str_replace( "@@", " ", $key);
+    $table = '<table class="info">';
+    $table .= "<caption> $caption </caption>";
+
+    $table .= '<tr>';
+    foreach( $questionsById as $qid => $qtitle )
+        $table .= "<th>$qtitle </th>";
+    $table .= '</tr>';
+
+    foreach( $feedbacks as $fs )
+    {
+        $table .= "<tr>";
+        // $table .= arrayToRowHTML( $fs, 'info' );
+        $table .= "</tr>";
+    }
+    $table .= '</table>';
+    echo $table;
 }
 
-$table .= '</table>';
-echo $table;
-
+echo goBackToPageLink( "$controller/home", "Go Home" );
 
 ?>

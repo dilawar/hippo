@@ -381,7 +381,7 @@ class User extends CI_Controller
             $msg .= json_encode($entry);
             $res = insertOrUpdateTable('course_feedback_responses'
                 , 'login,question_id,year,semester,course_id,instructor_email,response'
-                , 'response', $entry
+                , 'year,semester,response', $entry
             );
 
             if(!$res)
