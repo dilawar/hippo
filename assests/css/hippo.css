@@ -58,6 +58,10 @@ div.user_float {
     margin:auto;
 }
 
+div.radio {
+    background-color: lightblue;
+}
+
 table.user_float {
     border-radius: 10px;
     padding: 3px;
@@ -833,10 +837,6 @@ table.infolarge tr:nth-of-type( odd )
 }
 
 /* table for poll */
-table.poll tr:nth-of-type( odd )
-{
-    background-color: #eee;
-}
 
 table.poll {
     border: 1px;
@@ -844,18 +844,13 @@ table.poll {
     min-width: 100%;
 }
 
-table.poll tr {
-    padding-top: 10px;
-}
-
-
 /* Second column must be larger */
-table.poll tr td:nth-child(2) {
-    font-size:x-small;
+table.poll tr td {
+    font-size:small;
     min-width: 400px;
-    max-width: 60%;
     /* text-decoration: underline; */
     vertical-align: top;
+    border: 1px lightblue solid; 
 }
 
 table.tiles {

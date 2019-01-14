@@ -2804,11 +2804,10 @@ function instructorSpecificQuestion( string $year, string $semester
     , string $cid, array $q, array $instructors, int $nochangeafater=1
 ) : string
 {
-    $row = '<tr>';
-    $row .= '<td>' . $q['question'] . '</td>';
     $qid = $q['id'];
-    $row .= '<td style="width:100%">';
 
+    $row = '<tr>';
+    $row .= "<td><i class='fa fa-2x fa-question-circle-o'></i> " . html2text($q['question']);
     foreach( $instructors as $email => $instructor )
     {
         $responses = getInstructorSpecificFeedback( $year, $semester, $cid, $email );
@@ -2836,9 +2835,9 @@ function instructorSpecificQuestion( string $year, string $semester
         else
             $options = csvToRadio( $choices, $name, $defaultVal, $extra );
 
-        $row .= '<div style="border-top:1px dotted blue">'. $instructor . '<br/>'. 
-            $options .'</div>';
+        $row .= '<div class="radio">'. $instructor . '<br/>'. $options .'</div>';
     }
+    $row .= '<br/></td></tr>';
     return $row;
 }
 
@@ -2846,9 +2845,9 @@ function courseSpecificQuestion( string $year, string $semester, string $course_
     , array $q, int $nochangeafater )
 {
     $row = '<tr>';
-    $row .= '<td>' . $q['question'] . '</td>';
+    $row .= '<td> <i class="fa fa-question-circle-o fa-2x"></i> ' . html2text($q['question']);
     $qid = $q['id'];
-    $row .= '<td style="width:100%">';
+    // $row .= '<td style="width:100%">';
     $oldres = '';
     $defaultVal = '';
     $extra = '';
@@ -2868,7 +2867,7 @@ function courseSpecificQuestion( string $year, string $semester, string $course_
     else
         $options = csvToRadio($choices, "qid=$qid", $defaultVal, $extra);
 
-    $row .= '<div style="border-top:1px dotted blue">' . $options .'</div>';
+    $row .= '<div class="radio">' . $options .'</div>';
     return $row;
 }
 
@@ -2894,7 +2893,7 @@ function courseFeedbackForm( string $year, string $semester, string $course_id
         $html .= '<div>';
         $html .= "<h2>$cat</h2>";
 
-        $table = '<table class="poll info">';
+        $table = '<table class="poll">';
         foreach( $qs as $q )
         {
             // question is instructor specific or course specific.
@@ -2905,7 +2904,9 @@ function courseFeedbackForm( string $year, string $semester, string $course_id
                                 , $instructors, $nochangeafater
                             );
             else
-                $table .= courseSpecificQuestion($year, $semester, $course_id, $q, $nochangeafater);
+                $table .= courseSpecificQuestion($year, $semester, $course_id
+                                , $q, $nochangeafater
+                            );
         }
         $table .= '</table>';
         $html .= $table;
