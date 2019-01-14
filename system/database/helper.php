@@ -3422,12 +3422,8 @@ function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
 {
     $questions = getTableEntries('course_feedback_questions', 'id', "status='VALID'");
 
+    echo "$student, $year, $sem, $cid ";
     // Get all the response for this year, semester and course id.
-    $oldres = getTableEntries( 'course_feedback_responses'
-        , 'question_id'
-        , "login='$student' AND year='$year' AND semester='$sem'"
-        );
-
     $nQuesNotAnswered = count($questions); 
 
     $res = array();
@@ -3435,8 +3431,7 @@ function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
     {
         $res = getTableEntry( 'course_feedback_responses'
             , 'question_id,login,course_id,year,semester'
-            , array('login'=>$student, 'year'=>$year, 'semester'=>$sem
-                , 'course_id'=>$cid, 'question_id'=>$q['id'])
+            , ['login'=>$student, 'year'=>$year, 'semester'=>$sem, 'course_id'=>$cid, 'question_id'=>$q['id']]
         );
         if( $res )
             $nQuesNotAnswered -= 1;
@@ -3504,6 +3499,7 @@ function getCourseSpecificFeedback( string $year, string $semester, string $cid,
 function getInstructorSpecificFeedback( string $year, string $semester, string $cid, string $email, $login='' )
 {
     $responses = array();
+
     if( ! $login )
         $login = whoAmI();
 

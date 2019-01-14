@@ -1,14 +1,13 @@
 <?php
 require_once BASEPATH . 'autoload.php';
 
-$me = 'muktanm'; // whoAmI();
+$me = whoAmI();
 
 // Local function.
 function feedbackForm(string $year, string $sem, string $cid ) : array
 {
-    global $me;
     // DO NOT use ' to delimit the string; it wont work very well inside table.
-    $numUnanswered = numQuestionsNotAnswered( $me, $year, $sem, $cid);
+    $numUnanswered = numQuestionsNotAnswered( whoAmI(), $year, $sem, $cid);
     $form =  "<form action='".site_url("user/givefeedback/$cid/$sem/$year")."' method='post'>";
     $form .= "<button style='float:right' name='response' value='submit'>Feeback ("
                 . $numUnanswered . " unanswered.)</button>";
@@ -163,9 +162,7 @@ if(count($myCourses) > 0)
 $count = 0;
 
 if(count($myCourses) > 0)
-{
-    echo "<h1>You are registered for following " . count($myCourses) . " courses in $sem-$year.</h1>";
-}
+    echo "<h1>You are registered for following course(s) in $sem-$year</h1>";
 
 echo '<div style="font-size:small">';
 echo '<table border="1pt dotted blue">';
@@ -185,6 +182,8 @@ foreach($myCourses as &$c)
         continue;
 
     // If feedback is not given for this course, display a button.
+    $sem = $c['semester'];
+    $year = $c['year'];
     $feedRes = feedbackForm($year, $sem, $cid );
 
     // If more than 30 days have passed, do not allow dropping courses.
@@ -218,8 +217,6 @@ foreach($myCourses as &$c)
     if( $feedRes['num_unanswered']> 0 )
     {
         // Feeback form
-        $sem = $c['semester'];
-        $year = $c['year'];
         echo "<tr><td> " . $feedRes['html'] . "</td></tr>";
     }
     else
@@ -239,6 +236,12 @@ echo '</div>';
 echo ' <br /> ';
 echo goBackToPageLink( "user/home", "Go back" );
 
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  All courses.
+ */
+/* ----------------------------------------------------------------------------*/
 echo '<h1>My Courses</h1>';
 
 $myAllCourses = getTableEntries( 'course_registration'
@@ -255,6 +258,9 @@ foreach( $myAllCourses as $course )
     $cname = getCourseName( $cid );
     $course = array_insert_after('course_id', $course, 'course_name', $cname);
 
+    // year and semster are course semester.
+    $year = $course['year'];
+    $sem = $course['semester'];
     $res = feedbackForm( $year, $sem, $cid );
     if( $res['num_unanswered']  > 0 )
         $course['Feedback'] = $res['html'];

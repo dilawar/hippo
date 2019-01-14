@@ -341,7 +341,7 @@ class User extends CI_Controller
         $semester = $_POST['semester'];
         $year = $_POST['year'];
 
-        if(!($year && $semester  && $course_id))
+        if(!($year && $semester && $course_id))
         {
             $msg = "Either semester, year or course_id was invalid.";
             $msg .= json_encode( $_POST );
@@ -378,8 +378,7 @@ class User extends CI_Controller
         $error = false;
         foreach( $entries as $entry )
         {
-            // $msg .= json_encode($entry);
-            // var_dump( $entry );
+            $msg .= json_encode($entry);
             $res = insertOrUpdateTable('course_feedback_responses'
                 , 'login,question_id,year,semester,course_id,instructor_email,response'
                 , 'response', $entry
