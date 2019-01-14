@@ -64,10 +64,10 @@ ksort( $feedbackMap );
 foreach( $feedbackMap as $key => $feedbacks )
 {
     $dataInKey = explode( '@@', $key );
-    $caption = str_replace( "@@", " ", $key);
+    $caption = str_replace( "@@", ", ", $key);
 
     $table = '<table class="info">';
-    $table .= "<caption> $caption </caption>";
+    $table .= "<caption style='text-align:left'> <big>$caption </big> </caption>";
 
     $table .= '<tr>';
     foreach( $questionsById as $qid => $qtitle )
@@ -80,7 +80,7 @@ foreach( $feedbackMap as $key => $feedbacks )
         // collect by question id.
         $row = one2oneMappingWithQID( $fs, $questionsById );
         foreach( $row as $qid => $response )
-            $table .= '<td>'. $qid . '. ' . $response . '</td>';
+            $table .= '<td>' . $response . '</td>';
         $table .= "</tr>";
     }
     $table .= '</table>';
