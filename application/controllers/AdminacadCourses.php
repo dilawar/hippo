@@ -306,11 +306,13 @@ trait AdminacadCourses
 
     public function deletequestion( $qid )
     {
-        $res = deleteFromTable( 'course_feedback_questsions', 'id', array( 'id' => $qid ) );
+        $res = updateTable( 'course_feedback_questions', 'id', 'status'
+                , ['id' => $qid, 'status' => 'INVALID']
+            );
         if(! $res)
-            printWarning( "Failed to deleted question from database." );
+            printWarning( "Failed to invalidate question from database." );
         else
-            flashMessage( "Successfully deleted question." );
+            flashMessage( "Successfully invalidated question." );
 
         $this->goBackToReferrer( "adminacad/feedbackquestionnaire" ); 
     }
