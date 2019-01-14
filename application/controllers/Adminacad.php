@@ -65,6 +65,12 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( 'admin_acad_manages_enrollments', $data );
     }
 
+    public function show_enrollments( $user = '' )
+    {
+        $data = [ 'user' => $user ];
+        $this->load_adminacad_view( 'admin_acad_show_enrollments', $data );
+    }
+
     public function grades( )
     {
         $this->load_adminacad_view('admin_acad_manages_grades');

@@ -127,8 +127,15 @@ echo '
   <table class="admin">
     <tr>
         <td>
-            <a class="clickable" href="'.site_url('adminacad/enrollments').'">Manage Enrollments</a>
-            <p>Add/Remove student enrollments from  courses and assign grades.</p>
+            <a class="clickable" href="'.site_url('adminacad/enrollments').'"
+                title="Add/Remove student enrollments from  courses and assign grades"
+            >Manage Enrollments</a>
+            Add/Remove student enrollments from  courses and assign grades
+            <br />
+
+            <a href="'.site_url('adminacad/show_enrollments').'"
+            title="Show enrollments of a student"
+            >Show Enrollments</a>
         </td>
         <td>
             <a class="clickable" href="'.site_url('adminacad/grades').'">Manage Grades</a>
