@@ -113,6 +113,21 @@ class Adminacad extends CI_Controller
         redirect( "adminacad/manages_talks" );
     }
 
+    public function assign_aws_venue( $date, $venue = '' )
+    {
+        $_POST['date'] = $date;
+        // Change the venue on this date.
+        $res = updateTable( 'upcoming_aws', 'date', 'venue', $_POST );
+        if( $res )
+            flashMessage( "Successfully assigned venue " . $_POST['venue'] .
+                    " on $date ." );
+        else
+            flashMessage( "Failed to update venue." );
+
+        redirect( "adminacad/upcoming_aws");
+    }
+
+
     public function send_email( )
     {
         $this->load_adminacad_view( 'admin_acad_send_email' );
@@ -849,7 +864,6 @@ class Adminacad extends CI_Controller
         }
         redirect( "adminacad" );
     }
-
 }
 
 ?>

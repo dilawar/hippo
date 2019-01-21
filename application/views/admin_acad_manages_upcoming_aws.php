@@ -172,11 +172,25 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
     if( $awsThisWeek < 3 )
         $table .= '<td>' . awsAssignmentForm( dbDate( $groupDate ), true ) . '</td>';
 
-    // Attach another td for venue. The admin should be able to change the venue
-    // here.
-    $table .= "</tr><tr><td colspan='3'>";
-    $venueHTML = getAWSVenueForm( $groupDate );
+    // Attach default venue. The admin should be able to change the venue  here.
+    $table .= "</tr><tr><td colspan='2'>";
+
+    // Assign venue if not assigned.
+    //if( __get__($aws,'venue','') )
+    //{
+    //    echo "Assigning venue";
+    //    $venue = getDefaultAWSVenue( $groupDate );
+    //    $res = updateTable( 'upcoming_aws', 'date', 'venue', ['date'=>$groupDate, 'venue'=>$venue] );
+    //    if( ! $res )
+    //        printWarning( "Failed to assign venue. " );
+    //    else
+    //        $aws['venue'] = $venue;
+    //}
+
+    $v = getAWSVenue( $groupDate );
+    $venueHTML = getAWSVenueForm( $groupDate, $v );
     $table .= " $venueHTML </td> ";
+
     $table .= '</tr>';
     $table .= '</div>';
 }
@@ -251,7 +265,6 @@ foreach( $scheduleMap as $date => $schedule )
 
         $speaker = $upcomingAWS[ 'speaker' ];
         $speakerInfo = getLoginInfo( $speaker );
-
         $pastAWSes = getAwsOfSpeaker( $speaker );
 
         // Get PI/HOST and speaker specialization.
@@ -331,8 +344,7 @@ foreach( $scheduleMap as $date => $schedule )
         // $table .= '<input type="hidden" name="date" value="' . $upcomingAWS['date'] . '" >';
         $table .= '<td style="background:white;border:0px;">
             <button name="response" title="Confirm this slot"
-            value="Accept" >' . $symbAccept . '</button>
-            </td>';
+            value="Accept" >' . $symbAccept . '</button> </td>';
         $table .= "</tr>";
         $table .= '</form>';
 

@@ -1814,6 +1814,15 @@ function array_insert_after($key, array &$array, $new_key, $new_value)
   return FALSE;
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get a default venue for a given date.
+    *
+    * @Param $date
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
 function getDefaultAWSVenue( string $date ) : string
 {
     $day = intval( date('d', strtotime($date)) );
@@ -1823,18 +1832,32 @@ function getDefaultAWSVenue( string $date ) : string
         return 'InstemAuditorium100Seater';
 }
 
+function getAWSVenue( string $date ) : string
+{
+    $res = getTableEntry( 'upcoming_aws', 'date', ['date'=>$date]);
+    return $res['venue'];
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Find a venue of upcoming AWS if it is not assigned.
+    *
+    * @Param $date
+    * @Param $defaultVenue
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
 function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
 {
-    $form = '<form action="'.site_url('adminacad/assigned_aws_venue').'" method="post" accept-charset="utf-8">';
+    $form = '<form action="'.site_url("adminacad/assign_aws_venue/$date").'" method="post" accept-charset="utf-8">';
 
-    if( ! $defaultVenue )
+    $defaultVenue = trim( $defaultVenue );
+    if( strlen($defaultVenue)==0)
         $defaultVenue = getDefaultAWSVenue( $date );
 
-    $lhs = getVenuesByTypes( 'LECTURE HALL,AUDITORIUM' );
-
-    // $form = "<input type='text' name='venue' value='$defaultVenue' />";
-    $form = venuesToHTMLSelect( $lhs, false, 'venue', [$defaultVenue] );
-
+    $venues = getVenuesByTypes( 'LECTURE HALL,AUDITORIUM' );
+    $form .= venuesToHTMLSelect( $venues, false, 'venue', [$defaultVenue] );
     $form .= "<button>Change</button>";
     $form .= '</form> ';
     return $form;
