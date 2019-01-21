@@ -168,8 +168,8 @@ echo "<h1>Past Annual Work Seminar</h1>";
 
 echo "<table>";
 echo '<tr><td>
-    If you notice your AWS entry is missing from the list below, please emails details to
-    <a href="mailto:hippo@lists.ncbs.res.in" target="_black">hippo@lists.ncbs.res.in</a>
+    If any of your AWSs is missing from the list below, please emails details to
+    <a href="mailto:officeacad@ncbs.res.in" target="_black">Academic Office</a>
     ';
 echo "</td></tr>";
 echo "</table>";
