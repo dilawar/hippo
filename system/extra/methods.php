@@ -1813,3 +1813,29 @@ function array_insert_after($key, array &$array, $new_key, $new_value)
   }
   return FALSE;
 }
+
+function getDefaultAWSVenue( string $date ) : string
+{
+    $day = intval( date('d', strtotime($date)) );
+    if( $day  % 2 == 0 )
+        return 'Haapus (LH1)';
+    else
+        return 'InstemAuditorium100Seater';
+}
+
+function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
+{
+    $form = '<form action="'.site_url('adminacad/assigned_aws_venue').'" method="post" accept-charset="utf-8">';
+
+    if( ! $defaultVenue )
+        $defaultVenue = getDefaultAWSVenue( $date );
+
+    $lhs = getVenuesByTypes( 'LECTURE HALL,AUDITORIUM' );
+
+    // $form = "<input type='text' name='venue' value='$defaultVenue' />";
+    $form = venuesToHTMLSelect( $lhs, false, 'venue', [$defaultVenue] );
+
+    $form .= "<button>Change</button>";
+    $form .= '</form> ';
+    return $form;
+}

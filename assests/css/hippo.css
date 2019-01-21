@@ -821,6 +821,7 @@ table.infolarge {
     min-width : 500px;
 }
 
+
 table.infolarge tr td 
 {
     /* font-family : 'Fira Sans'; */
@@ -834,6 +835,10 @@ table.infolarge tr td
 table.infolarge tr:nth-of-type( odd )
 {
     background-color: #eee;
+}
+
+tr.bordered td {
+    border: 2px solid lightblue;
 }
 
 /* table for poll */
