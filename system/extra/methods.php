@@ -1834,7 +1834,8 @@ function array_insert_after($key, array &$array, $new_key, $new_value)
 /* ----------------------------------------------------------------------------*/
 function getDefaultAWSVenue( string $date ) : string
 {
-    $day = intval( date('d', strtotime($date)) );
+    // Even of odd week of the year.
+    $day = intval( date('W', strtotime($date)) );
     if( $day  % 2 == 0 )
         return 'Haapus (LH1)';
     else
