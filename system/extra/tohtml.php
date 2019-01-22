@@ -1483,22 +1483,18 @@ function horizontalLine( $width = "100%" )
 function awsToHTMLLarge( $aws, $with_picture = true )
 {
     $speaker = __ucwords__( loginToText( $aws[ 'speaker' ] , false ));
-    $supervisors = array( __ucwords__(
-                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
-                          ,  __ucwords__(
-                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
-                        );
+    $supervisors = array( 
+        __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
+        ,  __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
+    );
     $supervisors = array_filter( $supervisors );
     $tcm = array( );
-    array_push( $tcm, __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
-                , __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
-                ,  __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
-                , __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
-              );
+    array_push( $tcm
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
+    );
     $tcm = array_filter( $tcm );
     $title = $aws[ 'title' ];
     if( strlen( $title ) == 0 )
@@ -1538,9 +1534,11 @@ function awsToHTMLLarge( $aws, $with_picture = true )
              </table>';
 
     $abstract = rescale_inline_images( $abstract );
+    $venueHTML = venueToShortText( $aws['venue'] ) . ' ' . humanReadableTime($aws['time']);
 
     // Add table.
     $html = "<h1>$title</h1>";
+    $html .= p("$venueHTML");
     $right = '<div class="human_readable">' . fixHTML( $abstract ) . '</div>';
     $html .= '<div style="width: 100%; overflow: hidden;">
                 <div style="width: 30%;min-width:250px; float: left;margin-right:25px;">' 
@@ -1563,23 +1561,19 @@ function awsToHTML( $aws, $with_picture = false )
 {
     $speaker = __ucwords__( loginToText( $aws[ 'speaker' ] , false ));
 
-    $supervisors = array( __ucwords__(
-                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
-                          ,  __ucwords__(
-                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
-                        );
+    $supervisors = array( 
+        __ucwords__( loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
+        ,  __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
+    );
     $supervisors = array_filter( $supervisors );
 
     $tcm = array( );
-    array_push( $tcm, __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
-                , __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
-                ,  __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
-                , __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
-              );
+    array_push( $tcm
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
+        ,  __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
+    );
     $tcm = array_filter( $tcm );
 
     $title = $aws[ 'title' ];
@@ -1621,13 +1615,9 @@ function awsToHTML( $aws, $with_picture = false )
 
     // Add table.
     $html = "<h1>$title</h1>";
-    $html .= '<table class="events">';
-    $html .= "<tr><td> $pic </td><td colspan='3'>$extra</td></tr>";
-    $html .= "<tr><td colspan='4'>$abstract</td></tr>";
-    $html .=  "</table>";
-
+    $html .= $extra;
+    $html .= $abstract;
     return $html;
-
 }
 
 function speakerName( $speaker, $with_email = false ) : string

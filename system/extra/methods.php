@@ -116,6 +116,15 @@ function authenticate( $ldap, $pass )
     return $auth;
 }
 
+function venueToShortText( $venue )
+{
+    if( is_string( $venue ) )
+        $venue = getVenueById( $venue );
+    $txt = '';
+    $txt .= $venue['name'];
+    return $txt;
+}
+
 function venueToText( $venue, $show_strength = true )
 {
     if( is_string( $venue ) )
