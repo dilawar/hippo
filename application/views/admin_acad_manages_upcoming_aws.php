@@ -54,7 +54,8 @@ else
         $awsToShow['supervisors'] = getAWSSupervisorsHTML( $upcomingAWS );
         $awsToShow['tcm members'] = getAWSTcmHTML( $upcomingAWS );
         $awsToShow['is_presynopsis_seminar'] = $upcomingAWS['is_presynopsis_seminar'];
-        // $awsToShow['acknowledged'] = $upcomingAWS['acknowledged'];
+        $awsToShow['acknowledged'] = $upcomingAWS['acknowledged'];
+        $awsToShow['venue'] = $upcomingAWS['venue'];
 
         $table .= arrayToVerticalTableHTML($awsToShow, 'aws', '', 'id,status,comment');
         $table .= '<input type="hidden", name="date" , value="' .  $upcomingAWS[ 'date' ] . '"/>';
@@ -175,17 +176,18 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
     // Attach default venue. The admin should be able to change the venue  here.
     $table .= "</tr><tr><td colspan='2'>";
 
-    // Assign venue if not assigned.
-    //if( __get__($aws,'venue','') )
-    //{
-    //    echo "Assigning venue";
-    //    $venue = getDefaultAWSVenue( $groupDate );
-    //    $res = updateTable( 'upcoming_aws', 'date', 'venue', ['date'=>$groupDate, 'venue'=>$venue] );
-    //    if( ! $res )
-    //        printWarning( "Failed to assign venue. " );
-    //    else
-    //        $aws['venue'] = $venue;
-    //}
+    // Assign venue if not already assigned.
+    $defaultVenue = trim( __get__($aws, 'venue', ''));
+    if(! $defaultVenue)
+    {
+        echo p("Assigning venue");
+        $venue = getDefaultAWSVenue( $groupDate );
+        $res = updateTable( 'upcoming_aws', 'date', 'venue', ['date'=>$groupDate, 'venue'=>$venue] );
+        if( ! $res )
+            printWarning( "Failed to assign venue. " );
+        else
+            $aws['venue'] = $venue;
+    }
 
     $v = getAWSVenue( $groupDate );
     $venueHTML = getAWSVenueForm( $groupDate, $v );
