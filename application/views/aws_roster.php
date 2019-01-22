@@ -8,7 +8,7 @@ $dateMap = array( );
 foreach( $upcomingAWS as $aws )
     $dateMap[ $aws['date'] ][] = $aws;
 
-$table = '<table class="info">';
+$table .= '<table class="info">';
 foreach ($dateMap as $date => $awses)
 {
     $table .= '<tr>';
@@ -19,6 +19,7 @@ foreach ($dateMap as $date => $awses)
         $table .= '<td>' . loginToHTML( $aws['speaker']) . ' <br /> '
             . $piOrHost . '</td>';
     }
+    $table .= '<td>' . venueToShortText($awses[0]['venue']) . '</td>';
     $table .= '</tr>';
 }
 $table .= '</table>';
