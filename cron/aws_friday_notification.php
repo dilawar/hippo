@@ -34,8 +34,7 @@ function aws_friday_notification_cron( )
         else
         {
             // There is no AWS this monday.
-            $subject = 'No Annual Work Seminar next week (' .
-                humanReadableDate( $nextMonday ) . ')';
+            $subject = 'No Annual Work Seminar next week (' . humanReadableDate( $nextMonday ) . ')';
 
             $mail = $res[ 'email' ];
             echo( "Sending to $to, $cclist with subject $subject" );
