@@ -781,7 +781,6 @@ function submitRequest( array $request )
             $errorMsg .= "Could not submit request id $gid";
             return 0;
         }
-
     }
 
     flashMessage( $errorMsg, 'warning' );
