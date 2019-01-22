@@ -8,7 +8,7 @@ $dateMap = array( );
 foreach( $upcomingAWS as $aws )
     $dateMap[ $aws['date'] ][] = $aws;
 
-$table .= '<table class="info">';
+$table = '<table class="info">';
 foreach ($dateMap as $date => $awses)
 {
     $table .= '<tr>';
