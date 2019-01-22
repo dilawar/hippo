@@ -2013,22 +2013,25 @@ function getUpcomingAWSOfSpeaker( $speaker )
     *
     * @return
  */
-function acceptScheduleOfAWS( $speaker, $date )
+function acceptScheduleOfAWS($speaker, $date, string $venue='') 
 {
     $hippoDB = initDB();;
 
+    if( ! $venue )
+        $venue = getDefaultAWSVenue( $date );
+
     // If date is invalid, return.
-    if( strtotime( $date ) < 0  or strtotime( $date ) < strtotime( '-7 day' ) )
+    if( strtotime($date) < 0  or strtotime($date) < strtotime( '-7 day' ) )
         return 0;
 
     // If there is already a schedule for this person.
     $res = getTableEntry( 'upcoming_aws', 'speaker,date'
-        , array( 'speaker' => $speaker, 'date' => dbDate( $date ) )
+        , ['speaker' => $speaker, 'date' => dbDate($date), 'venue'=>$venue]
     );
 
     if( $res )
     {
-        echo printInfo( "Already assigned for $speaker on $date" );
+        echo printInfo( "Already assigned for $speaker on $date on venue $venue." );
         return $res[ 'id' ];
     }
 
@@ -2043,15 +2046,16 @@ function acceptScheduleOfAWS( $speaker, $date )
     $hippoDB->beginTransaction( );
 
     $stmt = $hippoDB->prepare(
-        'INSERT INTO upcoming_aws ( speaker, date ) VALUES ( :speaker, :date )'
+        'INSERT INTO upcoming_aws (speaker, date, venue) VALUES (:speaker, :date, :venue)'
     );
 
     $stmt->bindValue( ':speaker', $speaker );
     $stmt->bindValue( ':date', $date );
+    $stmt->bindValue( ':venue', $venue );
 
     $awsID = -1;
-    try {
-
+    try 
+    {
         $res = $stmt->execute( );
         // delete this row from temp table.
         $stmt = $hippoDB->prepare( 'DELETE FROM aws_temp_schedule WHERE
@@ -2069,8 +2073,9 @@ function acceptScheduleOfAWS( $speaker, $date )
         }
 
         // If successful add a query in queries to create a clickable query.
-        $aws = getTableEntry( 'upcoming_aws', 'speaker,date'
-            , array( 'speaker' => $speaker, 'date' => $date )
+        $aws = getTableEntry( 'upcoming_aws'
+            , 'speaker,date,venue'
+            , ['speaker' => $speaker, 'date' => $date, 'venue'=>$venue]
             );
         $awsID = $aws[ 'id' ];
         $clickableQ = "UPDATE upcoming_aws SET acknowledged='YES' WHERE id='$awsID'";
@@ -2084,7 +2089,6 @@ function acceptScheduleOfAWS( $speaker, $date )
         );
         return False;
     }
-
     $hippoDB->commit( );
     return $awsID;
 }

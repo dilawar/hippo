@@ -269,12 +269,14 @@ class Adminacad extends CI_Controller
         redirect( 'adminacad/upcoming_aws');
     }
 
-    public function assignaws( $speaker = '', $date = '' )
+    public function assignaws( $speaker = '', $date = '', $venue = '' )
     {
         if( ! $speaker )
             $speaker = explode( '@', $_POST[ 'speaker' ] )[0];
         if( ! $date )
             $date = $_POST[ 'date' ];
+        if( ! $venue )
+            $venue = $_POST['venue'];
 
         if(  $speaker && getLoginInfo( $speaker ) && strtotime( $date ) > strtotime( '-7 day' ) )
         {
@@ -283,7 +285,7 @@ class Adminacad extends CI_Controller
                 flashMessage( "$speaker already has AWS scheduled. Doing nothing." );
             else
             {
-                $awsID = acceptScheduleOfAWS( $speaker, $date );
+                $awsID = acceptScheduleOfAWS( $speaker, $date, $venue );
                 if( $awsID > 0 )
                 {
                     flashMessage( "Successfully assigned" );
