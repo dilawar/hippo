@@ -9,13 +9,10 @@ else
 $default = array( 'date' => __get__($_GET, 'date', $today) );
 
 $form = '<form method="get" action="">
-            <input class="datepicker" type="text" name="date" value="' .
-                    $default[ 'date' ] . '" > <br />
-            <button type="submit" name="response"
-                    title="Show AWS"
-                    value="show">Show AWSs</button>
-        </form>
-        ';
+        <input class="datepicker" type="text" name="date" value="' . $default[ 'date' ] . '" > <br /> 
+        <button type="submit" name="response" title="Show AWS" value="show">Show AWSs</button>
+    </form>
+    ';
 
 $table = '<table class="info">
         <tr>
