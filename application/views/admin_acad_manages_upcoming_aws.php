@@ -180,7 +180,6 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
     $defaultVenue = trim( __get__($aws, 'venue', ''));
     if(! $defaultVenue)
     {
-        echo p("Assigning venue");
         $venue = getDefaultAWSVenue( $groupDate );
         $res = updateTable( 'upcoming_aws', 'date', 'venue', ['date'=>$groupDate, 'venue'=>$venue] );
         if( ! $res )
@@ -192,7 +191,6 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
     $v = getAWSVenue( $groupDate );
     $venueHTML = getAWSVenueForm( $groupDate, $v );
     $table .= " $venueHTML </td> ";
-
     $table .= '</tr>';
     $table .= '</div>';
 }
