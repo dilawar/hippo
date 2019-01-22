@@ -1872,3 +1872,27 @@ function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
     $form .= '</form> ';
     return $form;
 }
+
+function bookVenue( string $venue, string $date, string $startTime, string $endTime
+    , string $class = 'UNKNOWN', string $title = '', string $desc = '')
+{
+
+    $gid = getUniqueID( 'bookmyvenue_requests' );
+    $rid = 0;
+    $data = array(
+        'gid' => $gid, 'rid' => $rid
+        , 'date' => dbDate( $date )
+        , 'start_time' => $startTime
+        , 'end_time' => $endTime
+        , 'venue' => $venue
+        , 'title' => $title
+        , 'class' => $class
+        , 'description' => 'AUTO BOOKED BY Hippo'
+        , 'created_by' => 'HIPPO'
+        , 'last_modified_on' => dbDateTime( 'now' )
+    );
+    $gid = submitRequest( $data );
+    if( $gid > 0 )
+        approveRequest( $gid, $rid, 'APPROVED' );
+}
+

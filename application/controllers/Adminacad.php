@@ -123,7 +123,6 @@ class Adminacad extends CI_Controller
                     " on $date ." );
         else
             flashMessage( "Failed to update venue." );
-
         redirect( "adminacad/upcoming_aws");
     }
 
