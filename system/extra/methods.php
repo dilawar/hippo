@@ -1877,7 +1877,7 @@ function bookVenue( string $venue, string $date, string $startTime, string $endT
     , string $class = 'UNKNOWN', string $title = '', string $desc = '')
 {
 
-    $gid = getUniqueID( 'bookmyvenue_requests' );
+    $gid = 1 + intval(getUniqueFieldValue( 'bookmyvenue_requests', 'gid' ));
     $rid = 0;
     $data = array(
         'gid' => $gid, 'rid' => $rid

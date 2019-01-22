@@ -84,6 +84,9 @@ class Cron extends CI_Controller {
 
         if( trueOnGivenDayAndTime( 'this monday', '11:00' ) )
             notifyAcadOfficeUnassignedSlot();
+
+        if( trueOnGivenDayAndTime( 'this monday', '8:00' ) )
+            bookVenueForAWS();
     }
 
     public function aws_schedule_fac_student()
