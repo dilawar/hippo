@@ -1483,22 +1483,18 @@ function horizontalLine( $width = "100%" )
 function awsToHTMLLarge( $aws, $with_picture = true )
 {
     $speaker = __ucwords__( loginToText( $aws[ 'speaker' ] , false ));
-    $supervisors = array( __ucwords__(
-                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
-                          ,  __ucwords__(
-                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
-                        );
+    $supervisors = array( 
+        __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
+        ,  __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
+    );
     $supervisors = array_filter( $supervisors );
     $tcm = array( );
-    array_push( $tcm, __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
-                , __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
-                ,  __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
-                , __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
-              );
+    array_push( $tcm
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
+    );
     $tcm = array_filter( $tcm );
     $title = $aws[ 'title' ];
     if( strlen( $title ) == 0 )
@@ -1538,9 +1534,11 @@ function awsToHTMLLarge( $aws, $with_picture = true )
              </table>';
 
     $abstract = rescale_inline_images( $abstract );
+    $venueHTML = venueToShortText( $aws['venue'] ) . ' ' . humanReadableTime($aws['time']);
 
     // Add table.
     $html = "<h1>$title</h1>";
+    $html .= p("$venueHTML");
     $right = '<div class="human_readable">' . fixHTML( $abstract ) . '</div>';
     $html .= '<div style="width: 100%; overflow: hidden;">
                 <div style="width: 30%;min-width:250px; float: left;margin-right:25px;">' 
@@ -1563,23 +1561,19 @@ function awsToHTML( $aws, $with_picture = false )
 {
     $speaker = __ucwords__( loginToText( $aws[ 'speaker' ] , false ));
 
-    $supervisors = array( __ucwords__(
-                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
-                          ,  __ucwords__(
-                              loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
-                        );
+    $supervisors = array( 
+        __ucwords__( loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
+        ,  __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
+    );
     $supervisors = array_filter( $supervisors );
 
     $tcm = array( );
-    array_push( $tcm, __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
-                , __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
-                ,  __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
-                , __ucwords__(
-                    loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
-              );
+    array_push( $tcm
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
+        ,  __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
+        , __ucwords__(loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
+    );
     $tcm = array_filter( $tcm );
 
     $title = $aws[ 'title' ];
@@ -1621,13 +1615,9 @@ function awsToHTML( $aws, $with_picture = false )
 
     // Add table.
     $html = "<h1>$title</h1>";
-    $html .= '<table class="events">';
-    $html .= "<tr><td> $pic </td><td colspan='3'>$extra</td></tr>";
-    $html .= "<tr><td colspan='4'>$abstract</td></tr>";
-    $html .=  "</table>";
-
+    $html .= $extra;
+    $html .= $abstract;
     return $html;
-
 }
 
 function speakerName( $speaker, $with_email = false ) : string
@@ -2804,11 +2794,10 @@ function instructorSpecificQuestion( string $year, string $semester
     , string $cid, array $q, array $instructors, int $nochangeafater=1
 ) : string
 {
-    $row = '<tr>';
-    $row .= '<td>' . $q['question'] . '</td>';
     $qid = $q['id'];
-    $row .= '<td style="width:100%">';
 
+    $row = '<tr>';
+    $row .= "<td><i class='fa fa-2x fa-question-circle-o'></i> " . html2text($q['question']);
     foreach( $instructors as $email => $instructor )
     {
         $responses = getInstructorSpecificFeedback( $year, $semester, $cid, $email );
@@ -2836,9 +2825,9 @@ function instructorSpecificQuestion( string $year, string $semester
         else
             $options = csvToRadio( $choices, $name, $defaultVal, $extra );
 
-        $row .= '<div style="border-top:1px dotted blue">'. $instructor . '<br/>'. 
-            $options .'</div>';
+        $row .= '<div class="radio">'. $instructor . '<br/>'. $options .'</div>';
     }
+    $row .= '<br/></td></tr>';
     return $row;
 }
 
@@ -2846,9 +2835,9 @@ function courseSpecificQuestion( string $year, string $semester, string $course_
     , array $q, int $nochangeafater )
 {
     $row = '<tr>';
-    $row .= '<td>' . $q['question'] . '</td>';
+    $row .= '<td> <i class="fa fa-question-circle-o fa-2x"></i> ' . html2text($q['question']);
     $qid = $q['id'];
-    $row .= '<td style="width:100%">';
+    // $row .= '<td style="width:100%">';
     $oldres = '';
     $defaultVal = '';
     $extra = '';
@@ -2868,7 +2857,7 @@ function courseSpecificQuestion( string $year, string $semester, string $course_
     else
         $options = csvToRadio($choices, "qid=$qid", $defaultVal, $extra);
 
-    $row .= '<div style="border-top:1px dotted blue">' . $options .'</div>';
+    $row .= '<div class="radio">' . $options .'</div>';
     return $row;
 }
 
@@ -2894,7 +2883,7 @@ function courseFeedbackForm( string $year, string $semester, string $course_id
         $html .= '<div>';
         $html .= "<h2>$cat</h2>";
 
-        $table = '<table class="poll info">';
+        $table = '<table class="poll">';
         foreach( $qs as $q )
         {
             // question is instructor specific or course specific.
@@ -2905,7 +2894,9 @@ function courseFeedbackForm( string $year, string $semester, string $course_id
                                 , $instructors, $nochangeafater
                             );
             else
-                $table .= courseSpecificQuestion($year, $semester, $course_id, $q, $nochangeafater);
+                $table .= courseSpecificQuestion($year, $semester, $course_id
+                                , $q, $nochangeafater
+                            );
         }
         $table .= '</table>';
         $html .= $table;

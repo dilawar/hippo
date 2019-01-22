@@ -313,8 +313,9 @@ class BMVPDO extends PDO
                 , title VARCHAR( 1000 )
                 , abstract MEDIUMTEXT
                 , is_presynopsis_seminar ENUM( 'YES', 'NO' ) default 'NO'
+                , venue VARCHAR(50) NOT NULL
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
-                , UNIQUE KEY (speaker, date)
+                , UNIQUE KEY (speaker, date, venue)
                 )"
             );
 
@@ -336,8 +337,9 @@ class BMVPDO extends PDO
                 , comment TEXT
                 , acknowledged ENUM( 'YES', 'NO' ) DEFAULT 'NO'
                 , is_presynopsis_seminar ENUM( 'YES', 'NO' ) default 'NO'
+                , venue VARCHAR(100) NOT NULL
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
-                , UNIQUE (speaker, date) )"
+                , UNIQUE (speaker, date, venue) )"
             );
 
         $res = $this->query( "

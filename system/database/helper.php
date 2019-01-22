@@ -220,6 +220,14 @@ function getVenuesByType( $type )
     return getTableEntries( 'venues', 'id', "type='$type'" );
 }
 
+function getVenuesByTypes( string $csvtypes ) : array
+{
+    $res = [];
+    foreach( explode(',', $csvtypes) as $vtype )
+        $res = array_merge($res, getVenuesByType($vtype));
+    return $res;
+}
+
 function getTableSchema( $tableName )
 {
     $hippoDB = initDB();;

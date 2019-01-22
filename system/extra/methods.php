@@ -116,6 +116,15 @@ function authenticate( $ldap, $pass )
     return $auth;
 }
 
+function venueToShortText( $venue )
+{
+    if( is_string( $venue ) )
+        $venue = getVenueById( $venue );
+    $txt = '';
+    $txt .= $venue['name'];
+    return $txt;
+}
+
 function venueToText( $venue, $show_strength = true )
 {
     if( is_string( $venue ) )
@@ -1812,4 +1821,53 @@ function array_insert_after($key, array &$array, $new_key, $new_value)
     return $new;
   }
   return FALSE;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get a default venue for a given date.
+    *
+    * @Param $date
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getDefaultAWSVenue( string $date ) : string
+{
+    $day = intval( date('d', strtotime($date)) );
+    if( $day  % 2 == 0 )
+        return 'Haapus (LH1)';
+    else
+        return 'InstemAuditorium100Seater';
+}
+
+function getAWSVenue( string $date ) : string
+{
+    $res = getTableEntry( 'upcoming_aws', 'date', ['date'=>$date]);
+    return $res['venue'];
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Find a venue of upcoming AWS if it is not assigned.
+    *
+    * @Param $date
+    * @Param $defaultVenue
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
+{
+    $form = '<form action="'.site_url("adminacad/assign_aws_venue/$date").'" method="post" accept-charset="utf-8">';
+
+    $defaultVenue = trim( $defaultVenue );
+    if( strlen($defaultVenue)==0)
+        $defaultVenue = getDefaultAWSVenue( $date );
+
+    $venues = getVenuesByTypes( 'LECTURE HALL,AUDITORIUM' );
+    $form .= venuesToHTMLSelect( $venues, false, 'venue', [$defaultVenue] );
+    $form .= "<button>Change</button>";
+    $form .= '</form> ';
+    return $form;
 }

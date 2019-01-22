@@ -28,12 +28,11 @@ function generateAWSEmail( $monday )
     // if there is NO AWS this monday, notify users.
     if( count( $upcomingAws ) < 1 )
     {
-        $html .= "<p>Greetings</p>";
+        $html .= "<p>Greetings,</p>";
         $html .= "<p>I could not find any annual work seminar
                 scheduled on " . humanReadableDate( $monday ) . ".</p>";
 
-        $holiday = getTableEntry( 'holidays', 'date'
-                        , array( 'date' => dbDate( $monday ) ) );
+        $holiday = getTableEntry( 'holidays', 'date' , ['date' => dbDate($monday)]);
 
         if( $holiday )
         {
@@ -46,7 +45,7 @@ function generateAWSEmail( $monday )
         $html .= "<p>That's all I know! </p>";
 
         $html .= "<br>";
-        $html .= "<p>-- NCBS Hippo</p>";
+        $html .= "<p>-- Hippo</p>";
 
         return array( "email" => $html, "speakers" => null, 'pdffile' => null );
 
@@ -67,9 +66,14 @@ function generateAWSEmail( $monday )
     $pdffile = $outfile . ".pdf";
     $res[ 'speakers' ] = $speakers;
 
-    $data = array( 'EMAIL_BODY' => $html
+    $firstAws = $upcomingAws[0];
+    $venue = venueToShortText($firstAws['venue']);
+
+    $data = array( 
+         'VENUE' => $venue
+        , 'EMAIL_BODY' => $html
         , 'DATE' => humanReadableDate( $monday )
-        , 'TIME' => '4:00 PM'
+        , 'TIME' => humanReadableTime( $firstAws['time'] )
     );
 
     $mail = emailFromTemplate( 'aws_template', $data );

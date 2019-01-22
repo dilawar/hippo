@@ -54,7 +54,8 @@ else
         $awsToShow['supervisors'] = getAWSSupervisorsHTML( $upcomingAWS );
         $awsToShow['tcm members'] = getAWSTcmHTML( $upcomingAWS );
         $awsToShow['is_presynopsis_seminar'] = $upcomingAWS['is_presynopsis_seminar'];
-        // $awsToShow['acknowledged'] = $upcomingAWS['acknowledged'];
+        $awsToShow['acknowledged'] = $upcomingAWS['acknowledged'];
+        $awsToShow['venue'] = $upcomingAWS['venue'];
 
         $table .= arrayToVerticalTableHTML($awsToShow, 'aws', '', 'id,status,comment');
         $table .= '<input type="hidden", name="date" , value="' .  $upcomingAWS[ 'date' ] . '"/>';
@@ -70,7 +71,7 @@ else
     echo $table;
 }
 
-echo "<h1>Upcoming approved AWSs</h1>";
+echo "<h1>Upcoming AWSs (approved)</h1>";
 echo awsAssignmentForm( );
 
 /* --------------------------------------------------------------------------*/
@@ -101,7 +102,7 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
     $nWeeks = diffDates( $prevDate, $groupDate, 'week' );
     if( $nWeeks > 1 )
     {
-        for ($i = 1; $i <= $nWeeks; $i++) 
+        for ($i = 1; $i < $nWeeks; $i++) 
         {
             $weekDate = humanReadableDate( strtotime( "+$i weeks", strtotime($prevDate)) );
             $table .= "<tr><td colspan='3'> <strong>$weekDate </strong> is missing!</td></tr>";
@@ -110,8 +111,9 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
 
     $prevDate = $groupDate;
     $awsThisWeek = count( $awses );
-    $table .= '<tr>';
+
     // Show AWSes
+    $table .= '<tr>';
     foreach( $awses as $countAWS => $aws )
     {
         $table .= '<td>';
@@ -119,8 +121,8 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
         // Each speaker can be a table as well.
         $speakerTable = '<table class="sticker" border=0> <tr> ';
 
-        $speakerHTML = "<strong>" .  smallCaps( loginToText( $aws['speaker'], $withEmail = false ) 
-            . "</strong>" .  ' (' .  $aws['speaker'] . ')' );
+        $speakerHTML = "<strong>" . loginToText( $aws['speaker'], $withEmail = false ) 
+            . "</strong>" .  ' (' .  $aws['speaker'] . ')';
 
         // Check if user has requested AWS schedule and has it been approved.
         $request = getSchedulingRequests( $aws['speaker'] );
@@ -171,7 +173,28 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
     if( $awsThisWeek < 3 )
         $table .= '<td>' . awsAssignmentForm( dbDate( $groupDate ), true ) . '</td>';
 
+    // Attach default venue. The admin should be able to change the venue  here.
+    $table .= "</tr><tr><td colspan='2'>";
+
+    // Assign venue if not already assigned.
+    $defaultVenue = trim( __get__($aws, 'venue', ''));
+    if(! $defaultVenue)
+    {
+        echo p("Assigning venue");
+        $venue = getDefaultAWSVenue( $groupDate );
+        $res = updateTable( 'upcoming_aws', 'date', 'venue', ['date'=>$groupDate, 'venue'=>$venue] );
+        if( ! $res )
+            printWarning( "Failed to assign venue. " );
+        else
+            $aws['venue'] = $venue;
+    }
+
+    $v = getAWSVenue( $groupDate );
+    $venueHTML = getAWSVenueForm( $groupDate, $v );
+    $table .= " $venueHTML </td> ";
+
     $table .= '</tr>';
+    $table .= '</div>';
 }
 $table .= '</table>';
 echo $table;
@@ -244,7 +267,6 @@ foreach( $scheduleMap as $date => $schedule )
 
         $speaker = $upcomingAWS[ 'speaker' ];
         $speakerInfo = getLoginInfo( $speaker );
-
         $pastAWSes = getAwsOfSpeaker( $speaker );
 
         // Get PI/HOST and speaker specialization.
@@ -324,8 +346,7 @@ foreach( $scheduleMap as $date => $schedule )
         // $table .= '<input type="hidden" name="date" value="' . $upcomingAWS['date'] . '" >';
         $table .= '<td style="background:white;border:0px;">
             <button name="response" title="Confirm this slot"
-            value="Accept" >' . $symbAccept . '</button>
-            </td>';
+            value="Accept" >' . $symbAccept . '</button> </td>';
         $table .= "</tr>";
         $table .= '</form>';
 
