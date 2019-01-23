@@ -31,8 +31,6 @@ $( function() {
     var host = <?php echo json_encode( $facultyForAutoComplete ); ?>;
     var logins = <?php echo json_encode( $loginsForAutoComplete ); ?>;
 
-    console.log( host );
-
     // These emails must not be key value array.
     var emails = <?php echo json_encode( $speakersIds ); ?>;
 
@@ -115,29 +113,63 @@ echo printInfo( "
     <br />
     ", false);
 
-$venueSelect = venuesToHTMLSelect( );
-echo "<table class=\"editable\" >";
-echo '<tr>
-        <td class="db_table_fieldname">Venue</td> <td>' . $venueSelect . '</td>
-    </tr>';
+$venueSelect = venuesToHTMLSelect(null, false, "input_venue");
+echo '<table class="editable" >';
+echo '<tr><td class="db_table_fieldname">Venue</td> <td>' . $venueSelect . '</td></tr>';
 echo '<tr>
         <td class="db_table_fieldname">date</td>
-        <td><input name="date" class="datepicker" type=\"date\" ></td>
+        <td><input id="input_date" name="date" class="datepicker" type=\"date\" ></td>
     </tr>';
 echo '<tr>
         <td class="db_table_fieldname">start time</td>
-        <td><input name="start_time" class="timepicker" type=\"time\" ></td>
+        <td><input id="input_start_time" name="start_time" class="timepicker" type=\"time\" ></td>
     </tr>';
 echo '<tr>
         <td class="db_table_fieldname">end time</td>
-        <td><input name="end_time" class="timepicker" type=\"time\" ></td>
+        <td><input id="input_end_time" name="end_time" class="timepicker" type=\"time\" ></td>
     </tr>';
 echo "</table>";
 echo '<button class="submit" title="Submit talk" name="response" value="submit">Register (and Book)</button>';
 echo '</form>';
-
+echo '<button class="show_as_link" id="input_check_availability" 
+    onClick=checkAvailability(this)
+    style="float:left">Check Availability</button>';
 echo "<br/><br/>";
 
 echo goBackToPageLink( 'user/home' );
 
 ?>
+
+<!-- Javascript to query server when start_time is filled in -->
+<script type="text/javascript" charset="utf-8">
+function checkAvailability()
+{
+    var d = $("#input_date").val();
+    var startTime = $("#input_start_time").val();
+    var endTime = $("#input_end_time").val();
+    var venue = $("#input_venue").val();
+    if( ! (d && startTime && endTime && venue))
+    {
+        console.log( "Data is incomplete." );
+        return false;
+    }
+
+    // Check if venue is available.
+    console.log( "A " + d + ": " + startTime + ", " + endTime + " on venue " + venue);
+
+    $.ajax({
+        type : "POST",
+        url : "<?php echo base_url(); ?>" + "index.php/ajax/user_data_submit",
+        dataType: "json",
+        data: { "venue" : venue, "date" : d, "start_time" : startTime
+                    , "end_time" : endTime, "function" : "isVenueAvailable" },
+        success: function(r) {
+            if( parseInt(r) == 0 )
+                alert("Venue is available on " + d + " and between " + startTime 
+                + " and " + endTime + ".");
+            else
+                alert( "Venue is not available." );
+        }
+    });
+}
+</script>
