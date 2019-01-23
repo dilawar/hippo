@@ -214,7 +214,7 @@ function venuesToHTMLSelect( $venues = null, $ismultiple = false
         $selectName .= "[]";
     }
 
-    $html = "<select $multiple name=\"$selectName\">";
+    $html = "<select $multiple name=\"$selectName\" id=\"$selectName\">";
     if( ! $ismultiple )
         $html .= "<option selected value>$default</option>";
 

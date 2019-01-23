@@ -205,7 +205,7 @@ function executeQuery( $query, $onlyOne = False)
 function executeQueryReadonly( $query )
 {
     $hippoDB = initDB();;
-     $hippoDB->query( $query );
+    $hippoDB->query( $query );
 }
 
 function executeURlQueries( $query )
