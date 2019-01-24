@@ -53,7 +53,6 @@ else
 foreach( $upcomingTalks as $t )
 {
     // Outer table
-    echo '<div class="important" style="font-size:x-small;">';
     echo '<table><tr><td>';
     // Get image of speaker if available.
 
@@ -65,7 +64,7 @@ foreach( $upcomingTalks as $t )
     echo '<table border="0">';
     echo '<tr>';
     echo '<div style="font:x-small">';
-    echo arrayToTableHTML($t, 'info', '' , 'speaker_id,created_by,status');
+    echo arrayToTableHTML($t, 'info', '' , 'speaker_id,created_by,status,description,id');
     echo '</div>';
     echo '</tr><tr>';
     echo '
@@ -85,8 +84,13 @@ foreach( $upcomingTalks as $t )
     // If either a request of event is found, don't let user schedule the talk. 
     // Here we disable the schedule button.
     if( ! ($request || $event ) )
-        echo '<td><button style="float:right" title="Schedule this talk" 
-            name="response" value="schedule">' . $symbCalendar . '</button></td>';
+    {
+        echo '<td>';
+        echo '<button style="float:right" title="Schedule this talk" 
+            name="response" value="schedule">Book A Venue</button> <br />';
+        echo '</td>';
+        echo printNote( "IMP: No venue has been booked yet for this event." );
+    }
     else
         echo '<td></td>';
 
@@ -140,7 +144,6 @@ foreach( $upcomingTalks as $t )
         echo '</form>';
         echo "</tr></table>";
     }
-    echo "</div>";
     echo "<hr>";
     echo "<br />";
 }
