@@ -113,7 +113,7 @@ echo printInfo( "
     <br />
     ", false);
 
-$venueSelect = venuesToHTMLSelect(null, false, "input_venue");
+$venueSelect = venuesToHTMLSelect(null, false, "venue");
 echo '<table class="editable" >';
 echo '<tr><td class="db_table_fieldname">Venue</td> <td>' . $venueSelect . '</td></tr>';
 echo '<tr>
@@ -159,7 +159,7 @@ function checkAvailability()
     var d = $("#input_date").val();
     var startTime = $("#input_start_time").val();
     var endTime = $("#input_end_time").val();
-    var venue = $("#input_venue").val();
+    var venue = $("#venue").val();
     if( ! (d && startTime && endTime && venue))
     {
         console.log( "Data is incomplete." );

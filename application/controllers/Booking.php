@@ -410,7 +410,7 @@ trait Booking
 
                 if( isBookingRequestValid( $_POST ) )
                 {
-                    $date = $_POST[ 'end_time' ];
+                    $date = $_POST[ 'date' ];
                     $venue = $_POST[ 'venue' ];
 
                     if( $venue && $startTime && $endTime && $date )
@@ -453,7 +453,8 @@ trait Booking
                         }
                     }
                     else
-                        $msg .= "<p>The booking request associtated with talk is invalid.</p>";
+                        $msg .= p( "The booking request associtated with talk is invalid.") 
+                                . arrayToTableHTML( $_POST, 'info' );
                 }
             }
             else
@@ -462,10 +463,10 @@ trait Booking
         else
             $msg .= minionEmbarrassed( "Failed to add speaker to database." );
 
-        $msg = p( "If something unexpected has happened, curse my creator and write to my 
-                   current maintainers. You can seek help by writing to hippo@lists.ncbs.res.in. 
-                   It helps to attach screenshots."
-                );
+        //$msg = p( "If something unexpected has happened, curse my creator and write to my
+        //           current maintainers. You can seek help by writing to hippo@lists.ncbs.res.in.
+        //           It helps to attach screenshots."
+        //        );
         echo flashMessage( $msg );
         redirect( "user/show_public");
     }
