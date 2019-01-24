@@ -96,7 +96,7 @@ echo dbTableToHTMLTable( 'speakers', $speaker
     );
 
 
-echo "<h2>Talk information</h2>" ;
+echo "<h2>Talk details</h2>" ;
 echo dbTableToHTMLTable( 'talks', $talk
     , 'class:required,host:required,coordinator,title:required,description:required'
     , ''
@@ -139,6 +139,18 @@ echo "<br/><br/>";
 echo goBackToPageLink( 'user/home' );
 
 ?>
+
+<!-- replace HOST with HOST/PI -->
+<script type="text/javascript" charset="utf-8">
+$(document).ready( function() {
+    var hostTD = $('.db_table_fieldname').filter( function() {
+        return this.textContent.trim() === 'HOST'
+        });
+    console.log( hostTD[0] );
+    hostTD[0].innerHTML = "PI or " + hostTD[0].innerHTML;
+});
+    
+</script>
 
 <!-- Javascript to query server when start_time is filled in -->
 <script type="text/javascript" charset="utf-8">
