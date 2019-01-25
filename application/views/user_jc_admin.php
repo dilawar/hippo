@@ -196,7 +196,7 @@ foreach( $jcIds as $currentJC )
     foreach( $subs as $i => $sub )
     {
         $login = $sub['login'];
-        if( ! $login )
+        if( ! trim($login) )
             continue;
 
         $info = getLoginInfo( $login, true );
@@ -206,7 +206,11 @@ foreach( $jcIds as $currentJC )
             continue;
         }
 
-        $email = mailto( $info[ 'email' ] );
+        $emailID = __get__( $info, 'email', '' );
+        if( ! $emailID )
+            continue;
+
+        $email = mailto( $emailID );
         $allEmails[] = $info['email'];
 
         $presentations =  __get__( $presentationMap, $login, array() );
