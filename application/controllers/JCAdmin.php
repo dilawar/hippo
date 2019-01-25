@@ -273,6 +273,8 @@ trait JCAdmin
             $anyWarning = false;
             foreach( $logins as $emailOrLogin )
             {
+                // Remove '"' from the copy-paste.
+                $emailOrLogin = str_replace( '"', '', $emailOrLogin);
                 $login = explode( '@', $emailOrLogin )[0];
 
                 if( ! getLoginInfo( $login ) )
@@ -290,9 +292,7 @@ trait JCAdmin
                 if( ! $res )
                     $anyWarning = true;
                 else
-                {
                     flashMessage( "$login is successfully added to JC" );
-                }
             }
 
             if( ! $anyWarning )
