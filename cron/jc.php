@@ -10,15 +10,12 @@ function jc_cron( )
 
         foreach( $upcomingPresentations as $i => $presentation )
         {
-            if(! $presentation[ 'presenter'] )
+            if(! trim($presentation[ 'presenter']) )
                 continue;
 
             // If they are exactly after 3 days; send an email.
             if( diffDates( $presentation[ 'date' ], 'today', 'day' ) == 3 )
             {
-                $jcID = $presentation['jc_id'];
-                $jcInfo = getJCInfo( $jcID );
-
                 $listOfAdmins = array_values( getAllAdminsOfJC( $jcID ) );
                 $tableOfJCCoords = arraysToTable( $listOfAdmins );
 
@@ -29,11 +26,7 @@ function jc_cron( )
                 $presenter = arrayToName( $presenter );
 
                 $macro = array(
-                    'VENUE' => venueSummary( $jcInfo[ 'venue' ] )
-                    , 'TITLE' => $title
-                    , 'DATE' => humanReadableDate( $presentation['date'] )
-                    , 'TIME' => humanReadableTime( $jcInfo[ 'time' ] )
-                    , 'PRESENTER' => $presenter
+                    'BODY' => jcToHTML( $presentation )
                     , 'DESCRIPTION' => presentationToHTML( $presentation )
                     , 'TABLE_OF_JC_COORDINATORS' => $tableOfJCCoords
                 );
