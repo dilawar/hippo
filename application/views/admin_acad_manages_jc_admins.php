@@ -18,13 +18,13 @@ foreach( $admins as $i => $admin )
     // Form to detele.
     $table .= '<form action="jc_admins_action" method="post" >';
     $table .= '<button type="submit" name="response" title="Remove admin" 
-                value="Remove Admin"><i class="fa fa-trash fa-3x"></i></button>';
+                value="Remove Admin"><i class="fa fa-trash fa-2x"></i></button>';
     $table .= '</td>';
     $table .= '<input type="hidden" name="jc_id" value="' . $admin['jc_id'] . '" />';
     $table .= '<input type="hidden" name="login" value="' . $admin['login'] . '" />';
     $table .= '</form>';
 
-    if( ($i + 1) % 5 == 0 )
+    if( ($i + 1) % 4 == 0 )
         $table .= '</tr><tr>';
 }
 $table .= '</tr>';
