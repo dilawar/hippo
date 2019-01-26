@@ -20,21 +20,17 @@ if( ! isJCAdmin( whoAmI() ) )
     exit;
 }
 
-$editables = 'title,description,url,time,venue';
+$editables = 'title,description,url,time,venue,other_presenters';
 
+// Edit only date when reschedule button is pressed.
 if( __get__( $_POST, 'response', '' ) == 'Reschdule' )
-{
     $editables = 'date';
-}
 
 // If only id of the jc is given, create $_POST array by fetching the details.
-if( isset($id) )
+if(isset($id) && $id)
 {
-    if($id)
-    {
-        echo p("We are given id of JC entry $id." );
-        $_POST = getTableEntry( 'jc_presentations', 'id', [ 'id' => $id ] );
-    }
+    echo p("We are given id of JC entry $id." );
+    $_POST = getTableEntry( 'jc_presentations', 'id', [ 'id' => $id ] );
 }
 
 // get default parameters for this JC.
