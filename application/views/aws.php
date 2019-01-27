@@ -69,9 +69,7 @@ else
         $awstext .= '<a href="'.site_url("user/downloadaws/".$aws['date']."/".$aws['speaker']).'"
             target="_blank">Download PDF</a>';
 
-        echo "<div class='notice'>";
         echo $awstext;
-        echo "</div>";
     }
 }
 
