@@ -46,7 +46,7 @@ $count = 0;
 $eventWidth = 200;
 $maxEventsInLine = 4;
 
-$table = '<table class="td_as_tile">';
+$table = '<table>';
 $table .= '<tr>';
 foreach( $events as $ev )
 {
@@ -103,7 +103,7 @@ $todaySlots = getSlotsAtThisDay( $day, $slots );
 
 $count = 0;
 $eventWidth = 150;
-echo '<table class="td_as_tile">';
+echo '<table>';
 echo '<tr>';
 foreach( $todaySlots as $slot )
 {
@@ -145,6 +145,7 @@ if( count( $requests ) > 0 )
     echo '<tr>';
     foreach( $requests as $ev )
     {
+        $count += 1;
         if( $count % $maxEventsInLine == 0 )
             echo "</tr><tr>";
 
@@ -153,7 +154,6 @@ if( count( $requests ) > 0 )
         echo "<td class=\"infonote\" style=\"background:$background;\">";
         echo requestToShortHTML( $ev );
         echo "</td>";
-        $count += 1;
     }
     echo '</tr>';
     echo '</table>';
@@ -168,6 +168,7 @@ if( count( $cancelled ) > 0 )
     echo '<tr>';
     foreach( $cancelled as $ev )
     {
+        $count += 1;
         if( $count % $maxEventsInLine == 0 )
             echo "</tr><tr>";
 
@@ -176,7 +177,6 @@ if( count( $cancelled ) > 0 )
         echo "<td class=\"infonote\" style=\"background:$background;\">";
         echo eventToShortHTML( $ev );
         echo "</td>";
-        $count += 1;
     }
     echo '</tr>';
     echo '</table>';

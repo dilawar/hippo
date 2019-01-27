@@ -46,10 +46,12 @@ else
             if( strtotime($event['date']) < strtotime( $whichDay) + 7*24*3600 )
             {
                 $talkHtml .= '<div class="notice">';
+                // This is the where-when line at the top.
                 $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML( $event ) . '</p>';
                 $talkHtml .= talkToHTMLLarge( $talk, $with_picture = true );
                 $talkHtml .= '</div>';
                 $talkHtml .= "<br>";
+
                 // Link to pdf file.
                 $talkHtml.= '<a style="margin-left:100%;align:right;" target="_blank" href="'
                         . site_url("user/downloadtalk/".$default['date']."/$talkId") . '">
