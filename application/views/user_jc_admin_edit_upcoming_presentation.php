@@ -35,12 +35,9 @@ if(isset($id) && $id)
 
 // get default parameters for this JC.
 $jcInfo = getJCInfo( $_POST['jc_id'] );
-if( ! __get__($_POST, 'venue', '') )
-{
-    $venues = getVenuesNames( );
-    $venueSelect = arrayToSelectList( 'venue', $venues, array(), false,  $jcInfo['venue'] );
-    $_POST['venue'] = $venueSelect;
-}
+$venues = getVenuesNames( );
+$venueSelect = arrayToSelectList( 'venue', $venues, array(), false,  $jcInfo['venue'] );
+$_POST['venue'] = $venueSelect;
 
 if( __get__($_POST, 'time', '00:00:00') == "00:00:00" )
 {
