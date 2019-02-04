@@ -26,6 +26,8 @@ function aws_friday_notify_faculty_cron()
                     $email = emailFromTemplate( 'NOTIFY_SUPERVISOR_TCM_ABOUT_AWS'
                         , array( 'FACULTY' => $name, 'AWS_SPEAKER' => $speaker
                         , 'AWS_DATE' => humanReadableDate( $aws[ 'date' ] )
+                        , 'AWS_TIME' => humanReadableTime( $aws[ 'time' ] )
+                        , 'AWS_VENUE' => venueToText( $aws[ 'venue' ], false )
                         , 'AWS_DATE_DB' => $aws[ 'date' ]
                     )
                 );
