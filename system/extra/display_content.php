@@ -8,6 +8,7 @@ function printErrorSevere($msg, $append = false )
         $_SESSION['warning'] =  "<p>$msg </p>";
 
     error_log( $msg );
+    log_message( 'error', $msg);
     return $msg;
 }
 
@@ -19,6 +20,7 @@ function printWarning($msg, $append = true)
     if( $append )
         if(isset($_SESSION))
             $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . p($msg);
+    log_message( 'warning', $msg);
     return $msg;
 }
 
@@ -63,8 +65,9 @@ function minionEmbarrassed( string $msg, string $info = '' ) : string
     $r = "<p class=\"embarassed\"> This is embarassing! <br>";
     $r .= " $msg <br> $info ";
     $r .= "I have logged this error!. ";
-    error_log( "FAILED : " . $r );
     $r .= "</p>";
+    error_log( "FAILED : " . $r );
+    log_message( 'error', $r);
     return $r;
 }
 
