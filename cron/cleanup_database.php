@@ -2,7 +2,6 @@
 
 function cleanup_database_cron( )
 {
-
     /* Every monday, check students who are not eligible for AWS anymore */
     if( trueOnGivenDayAndTime( 'this monday', '17:00' ) )
     {
@@ -31,7 +30,7 @@ function cleanup_database_cron( )
         {
             $speaker = getSpeakerByID( $talk['speaker_id'] ) or getSpeakerByName( $talk[ 'speaker' ] );
             $login = findAnyoneWithEmail( __get__( $speaker, 'email', '' ) );
-            if( $login )
+            if( __get__($login, 'login', '') )
             {
                 $login = $login[ 'login'];
                 if( isEligibleForAWS( $login ) )
@@ -113,6 +112,25 @@ function cleanup_database_cron( )
             }
         }
     }
+
+    // Remove those users who are not active on LDAP.
+    if( trueOnGivenDayAndTime( 'this monday', '9:00' ) )
+    {
+        echo printInfo( "Removing inactive accounts" );
+        $logins = getTableEntries( 'logins', 'login', "status='ACTIVE'");
+        foreach( $logins as $login )
+        {
+            $id = $login['login'];
+            $ldap = getUserInfoFromLdap( $id );
+            if( ! $ldap )
+                inactiveAccount( $id );
+
+            $isActive = strtolower($ldap['is_active']);
+            if( $isActive === 'false' )
+                inactivateAccount($id);
+        }
+    }
 }
+
 
 ?>
