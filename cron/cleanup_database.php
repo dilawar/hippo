@@ -134,7 +134,8 @@ function cleanup_database_cron( )
             if( $isActive === 'false' )
                 $toInactivate[] = $id;
         }
-        inactiveAccounts( $toInactivate);
+        if( count($toInactivate) > 0)
+            inactiveAccounts( $toInactivate);
     }
 }
 
