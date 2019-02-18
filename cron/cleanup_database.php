@@ -114,7 +114,7 @@ function cleanup_database_cron( )
     }
 
     // Remove those users who are not active on LDAP.
-    if( trueOnGivenDayAndTime( 'this monday', '9:00' ) )
+    if( trueOnGivenDayAndTime( 'this monday', '17:15' ) )
     {
         echo printInfo( "Removing inactive accounts" );
         $logins = getTableEntries( 'logins', 'login', "status='ACTIVE'");
