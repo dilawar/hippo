@@ -118,17 +118,19 @@ function cleanup_database_cron( )
     {
         echo printInfo( "Removing inactive accounts" );
         $logins = getTableEntries( 'logins', 'login', "status='ACTIVE'");
+        $toInactivate = [];
         foreach( $logins as $login )
         {
             $id = $login['login'];
             $ldap = getUserInfoFromLdap( $id );
             if( ! $ldap )
-                inactiveAccount( $id );
+                $toInactivate[] = $id;
 
             $isActive = strtolower($ldap['is_active']);
             if( $isActive === 'false' )
-                inactivateAccount($id);
+                $toInactivate[] = $id;
         }
+        inactiveAccounts( $toInactivate);
     }
 }
 
