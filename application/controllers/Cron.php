@@ -3,7 +3,6 @@ require_once FCPATH . './cron/helper.php';
 require_once FCPATH . './cron/cleanup_database.php';
 require_once FCPATH . './cron/aws_annoy.php';
 require_once FCPATH . './cron/aws_friday_notification.php';
-require_once FCPATH . './cron/cleanup_database.php';
 require_once FCPATH . './cron/aws_annoy.php';
 require_once FCPATH . './cron/aws_friday_notify_faculty.php';
 require_once FCPATH . './cron/aws_monday_morning.php';
