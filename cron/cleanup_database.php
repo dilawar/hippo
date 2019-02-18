@@ -122,6 +122,8 @@ function cleanup_database_cron( )
         foreach( $logins as $login )
         {
             $id = $login['login'];
+            if(!$id)
+                continue;
             $ldap = getUserInfoFromLdap( $id );
             if( ! $ldap )
                 $toInactivate[] = $id;
