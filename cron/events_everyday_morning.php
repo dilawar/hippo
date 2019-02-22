@@ -5,7 +5,7 @@ function events_everyday_morning_cron()
     /*
      * Task 2. Send today's event every day at 8am.
      */
-    if( trueOnGivenDayAndTime( 'today', '10:15' ) )
+    if( trueOnGivenDayAndTime( 'today', '8:00' ) )
     {
         $today = dbDate( 'today' );
         error_log( "8am. Event for today" );
