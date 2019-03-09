@@ -15,7 +15,7 @@ else
 {
     echo '<form method="post" action="'.site_url('adminacad/update_aws_entry').'">';
     echo dbTableToHTMLTable( 'upcoming_aws', $aws
-        , 'abstract,title,is_presynopsis_seminar', 'Update AWS Entry' );
+        , 'abstract,title,is_presynopsis_seminar,supervisor_1', 'Update AWS Entry' );
     echo '</form>';
 }
 
