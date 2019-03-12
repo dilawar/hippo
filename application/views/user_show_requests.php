@@ -56,6 +56,7 @@ else
 
 echo ' <br />';
 echo goBackToPageLink( "user/home", "Go back" );
+echo ' <br />';
 
 echo '<h1>Approved booking</h1>';
 $groups = getEventsOfUser(whoAmI());
