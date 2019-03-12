@@ -117,22 +117,22 @@ echo '</form>';
 if( __get__( $_POST, 'id', '' ) )
 {
     // Get the real speaker id for database table.
-    $speaker = $speakersMap[ $_POST[ 'id' ] ];
-    if( $speaker )
+    $speakerID = __get__($speakersMap, $_POST['id'], '');
+    if( $speakerID )
     {
-        $picPath = getSpeakerPicturePath( $speaker );
+        $picPath = getSpeakerPicturePath( $speakerID );
         $html = '<table class="show_info" border="1"> <tr>';
         $html .= '<td>';
         $html .= showImage( $picPath );
         $html .= '</td>';
         $html .= '<td>';
-        $html .= arrayToVerticalTableHTML( $speaker, 'info' );
+        $html .= arrayToVerticalTableHTML( $speakerID, 'info' );
         $html .= '</td>';
         $html .= '</tr></table>';
         echo $html;
     }
     else
-        echo alertUser( "No speaker is found for entry : " . $_POST[ 'email' ] );
+        echo alertUser( "No speaker is found for entry : " . __get__($_POST, 'id', 'NA'));
 }
 
 echo '<h1>Edit speaker details</h1>';

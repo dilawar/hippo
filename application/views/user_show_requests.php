@@ -3,7 +3,7 @@ require_once BASEPATH.'autoload.php';
 require_once BASEPATH.'extra/booking_methods.php';
 
 echo userHTML( );
-$requests = getRequestOfUserGroupedAndWithCount( whoAmI(), $status = 'PENDING' );
+$requests = getRequestOfUserGroupedAndWithCount(whoAmI(), $status = 'PENDING');
 
 echo '<h1>Pending requests</h1>';
 if( count( $requests ) < 1 )
@@ -58,7 +58,7 @@ echo ' <br />';
 echo goBackToPageLink( "user/home", "Go back" );
 
 echo '<h1>Approved booking</h1>';
-$groups = getEventsOfUser( whoAmI() );
+$groups = getEventsOfUser(whoAmI());
 if( count( $groups ) < 1 )
     echo alertUser( "No booking found." );
 else 
@@ -68,7 +68,6 @@ else
 
     foreach( $groups as $group )
     {
-
         echo '<div class="important">';
         $gid = $group['gid'];
 
