@@ -77,6 +77,8 @@ class Api extends CI_Controller
     public function events()
     {
         $args = func_get_args();
+        if(count($args)==0)
+            $args[] = "latest";
         $this->process_events_requests($args);
     }
 
@@ -120,6 +122,8 @@ class Api extends CI_Controller
     public function aws()
     {
         $args = func_get_args();
+        if(count($args)==0)
+            $args = ['latest'];
         $this->process_aws_requests($args);
     }
 
