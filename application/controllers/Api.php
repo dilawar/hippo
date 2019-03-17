@@ -18,44 +18,82 @@ class Api extends CI_Controller
         $this->send_data($what);
     }
 
-    private function send_events(string $from, string $to)
+    private function send_events($events, $status='ok')
     {
-        $events = getTableEntries( 'events', 'date,start_time,end_time'
-            , "status='VALID' AND date >= '$from' AND date < '$to'"
-            , "class,title,description,date,venue,created_by,start_time,end_time,url"
-            );
-        $this->send_data($events);
+        $this->send_data(['status'=>$status, 'data'=>$events]);
     }
 
-    private function process_get_requests($args)
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  
+        *
+        * @Param $args
+        *   Following type of get requests are supported.
+        *     /date/2019-01-03                   // On this date.
+        *     /date/2019-01-03/2019-01-11        // From one date to another.
+        *     /latest                            // Return last 20s.
+        *     /latest/100                        // Return last 100.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    private function process_events_requests($args)
     {
-        $what = $args[0];
-        if( $what == 'events' )
+        $events = [];
+        $status = 'ok';
+        if( $args[0] === 'date')
         {
             $from = __get__($args, 1, 'today');
-            $to = __get__($args, 2, strtotime("+14 days", strtotime($from)));
+            $to = __get__($args, 2, strtotime("+1 day", strtotime($from)));
             $from = dbDate($from);
             $to = dbDate($to);
-            $this->send_events($from, $to);
+            $events = getTableEntries( 'events', 'date,start_time,end_time'
+                , "status='VALID' AND date >= '$from' AND date < '$to'"
+                , "class,title,description,date,venue,created_by,start_time,end_time,url"
+                );
         }
-    }
-
-    public function get()
-    {
-        $args = func_get_args();
-        if(count($args) == 0)
+        else if( $args[0] === 'latest')
         {
-            $args['status' ] = 'error';
-            $args['msg'] = "You requested nothing.";
-            $this->send_data($args);
+            $numEvents = __get__($args, 1, 20);
+
+            // Maximum limit event when 'all' is given.
+            if( $numEvents == 'all')
+                $numEvents = 1000;
+
+            $from = dbDate('today');
+            $events = getTableEntries( 'events', 'date,start_time,end_time'
+                , "status='VALID' AND date >= '$from'"
+                , "class,title,description,date,venue,created_by,start_time,end_time,url"
+                , min($numEvents, 1000)
+                );
         }
         else
-            $this->process_get_requests($args);
+        {
+            $status = 'error';
+            $events['msg'] = "Unknow request: " . $args[0];
+        }
+
+        $this->send_events($events, $status);
     }
 
-    public function post()
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Return events based on GET query.
+        * Examples of endpoints,
+        *     - events/latest                       Latest 20 events.
+        *     - events/latest/50             
+        *     - events/date/2019-03-01              On this date.
+        *     - events/date/2019-03-01/2019-04-01   From this date to this date.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function events()
     {
+        $args = func_get_args();
+        $this->process_events_requests($args);
     }
+
 }
 
 ?>
