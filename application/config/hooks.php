@@ -12,8 +12,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 
-// // NOTE: Using function here is not a great idea since function can't access
-// // $_SESSION etc.
+// NOTE: Using function here is not a great idea since function can't access
+// $_SESSION etc.
 $hook['post_controller_constructor'] = array( 
     'class' => 'HippoHooks'
     , 'function' => 'PreController' 
