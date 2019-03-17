@@ -33,6 +33,7 @@ class Api extends CI_Controller
         *     /date/2019-01-03/2019-01-11        // From one date to another.
         *     /latest                            // Return last 20s.
         *     /latest/100                        // Return last 100.
+        *     /latest/all                        // Return all (maximum of 1000)
         *
         * @Returns   
      */
@@ -72,7 +73,6 @@ class Api extends CI_Controller
             $status = 'error';
             $events['msg'] = "Unknow request: " . $args[0];
         }
-
         $this->send_events($events, $status);
     }
 
@@ -93,6 +93,8 @@ class Api extends CI_Controller
         $args = func_get_args();
         $this->process_events_requests($args);
     }
+
+
 
 }
 
