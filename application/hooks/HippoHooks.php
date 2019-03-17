@@ -15,6 +15,10 @@ class HippoHooks
     public function PreController( )
     {
         $class = $this->CI->router->fetch_class();
+        if( $class === 'api' )
+        {
+            return;
+        }
         if( $class === 'info' ) 
         {
             // Just check we are inside intranet.
