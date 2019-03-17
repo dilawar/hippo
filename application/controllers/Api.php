@@ -20,8 +20,9 @@ class Api extends CI_Controller
 
     private function send_events(string $from, string $to)
     {
-        $events = getTableEntries( 'events', 'date'
+        $events = getTableEntries( 'events', 'date,start_time,end_time'
             , "status='VALID' AND date >= '$from' AND date < '$to'"
+            , "class,title,description,date,venue,created_by,start_time,end_time,url"
             );
         $this->send_data($events);
     }
