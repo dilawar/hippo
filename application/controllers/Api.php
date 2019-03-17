@@ -6,38 +6,24 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Api extends CI_Controller
 {
 
-    private function send_data( $data )
+    private function send_data_helper(array $data)
     {
         $json = json_encode($data);
         $this->output->set_content_type('application/json' );
         $this->output->set_output($json);
     }
 
-    public function get_without_auth($what)
+    public function get_without_auth(string $what)
     {
         $this->send_data($what);
     }
 
-    private function send_events($events, $status='ok')
+    private function send_data(array $events, string $status='ok')
     {
-        $this->send_data(['status'=>$status, 'data'=>$events]);
+        $this->send_data_helper(['status'=>$status, 'data'=>$events]);
     }
 
-    /* --------------------------------------------------------------------------*/
-    /**
-        * @Synopsis  
-        *
-        * @Param $args
-        *   Following type of get requests are supported.
-        *     /date/2019-01-03                   // On this date.
-        *     /date/2019-01-03/2019-01-11        // From one date to another.
-        *     /latest                            // Return last 20s.
-        *     /latest/100                        // Return last 100.
-        *     /latest/all                        // Return all (maximum of 1000)
-        *
-        * @Returns   
-     */
-    /* ----------------------------------------------------------------------------*/
+    // Helper function for process() function.
     private function process_events_requests($args)
     {
         $events = [];
@@ -73,7 +59,7 @@ class Api extends CI_Controller
             $status = 'error';
             $events['msg'] = "Unknow request: " . $args[0];
         }
-        $this->send_events($events, $status);
+        $this->send_data($events, $status);
     }
 
     /* --------------------------------------------------------------------------*/
@@ -92,6 +78,49 @@ class Api extends CI_Controller
     {
         $args = func_get_args();
         $this->process_events_requests($args);
+    }
+
+    // Helper function for aws() function.
+    private function process_aws_requests($args)
+    {
+        $results = [];
+        $status = 'ok';
+        if($args[0] === 'date')
+        {
+            $from = dbDate($args[1]);
+            $to = dbDate(__get__($args, 2, strtotime('+14 day', strtotime($from))));
+            $results = getTableEntries( 'annual_work_seminars', 'date'
+                , "date >= '$from' AND date < '$to'"
+            );
+        }
+        else if($args[0] === 'latest')
+        {
+            $numEvents = __get__($args, 1, 6);
+            $from = dbDate('today');
+            // echo " x $from $numEvents ";
+            $results = getTableEntries('upcoming_aws', 'date'
+                , "date >= '$from'", '*', $numEvents
+            );
+        }
+        else
+            $status = 'warning';
+        $this->send_data($results, $status);
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Return AWS based on GET query.
+        * Examples of endpoints:
+        *     - /aws/latest/6
+        *     - /aws/date/2019-03-01               // Find AWS in this week.
+        *     - /aws/date/2019-03-01/2019-04-01    // Find AWS between these  dates.
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function aws()
+    {
+        $args = func_get_args();
+        $this->process_aws_requests($args);
     }
 
 
