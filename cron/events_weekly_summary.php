@@ -17,7 +17,7 @@ function events_weekly_summary_cron()
             . humanReadableDate( $thisMonday )
         );
 
-        $events = getEventsBeteen( $from = 'today', $duration = '+6 day' );
+        $events = getEventsBetween( $from = 'today', $duration = '+6 day' );
 
         if( count( $events ) > 0 )
         {
