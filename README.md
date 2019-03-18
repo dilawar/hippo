@@ -10,6 +10,7 @@
 - Requires PHP >= 7.x 
 - php7, php7-imap, php7-ldap, php7-imagick
 - php-gd, php-mbstring, php-zip
+- php-oauth
 - sudo -E pecl install mailparse
 - mysql 
 - python-pypandoc
@@ -59,3 +60,7 @@ For rewrite rule to work: see this post https://stackoverflow.com/a/8260985/1805
     $ sudo a2enmod rewrite
     $ sudo systemctl restart apache2
 
+## To enable ssl
+  
+    $ sudo a2enmod ssl
+    $ sudo a2ensite default-ssl

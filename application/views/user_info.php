@@ -95,6 +95,32 @@ if(__get__($info, 'eligible_for_aws', 'NO') =="NO")
 //$form .= '</form>';
 //echo $form;
 
+echo "<h2>Advanced settings</h2>";
+echo printInfo("This section is related to mobile apps developed by third party.");
+$myKeys = getUserKyes(whoAmI());
+
+$table = '<table class="info">';
+$table .= '<tr><th>ID</th><th>KEY</th> <th>created on</th> <th></th></tr>';
+foreach( $myKeys as $key )
+{
+    $id = $key['id'];
+    $revokeForm = '<form method="post" action="'.site_url("/user/revoke_key/$id").'">';
+    $revokeForm .= "<button>Revoke</button>";
+    $revokeForm .= '</form>';
+    $table .= "<tr>" . arrayToRowHTML($key, 'info', 'level,login,ignore_limits', '', false) 
+        . "<td> $revokeForm </td></tr>";
+}
+
+$table .= "</table>";
+echo $table;
+
+// Add a new key
+$form = "<form method='post' action='" . site_url("/user/generate_key"). "'>";
+$form .= "<button>Generate a New Key</button>";
+$form .= "</form>";
+
+echo $form;
+
 echo goBackToPageLink( "/user/home", "Go back" );
 
 ?>
