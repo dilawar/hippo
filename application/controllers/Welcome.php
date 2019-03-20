@@ -42,20 +42,12 @@ class Welcome extends CI_Controller
 
         // Check if ldap is available. If it is use LDAP else fallback to imap based 
         // authentication.
-        $auth = false;
-        if( ldapAlive( 'ldap.ncbs.res.in' ) )
-            $auth = authenticateUsingLDAP( $ldap, $pass );
-        else
+        $auth = authenticateUser($ldap, $pass);
+        if(! $auth)
         {
-            // Try login using IMAP.
-            $auth = authenticateUsingIMAP( $ldap, $pass );
-            if( ! $auth )
-            {
-                $this->session->set_flashdata( 'error', "Loging unsucessful. Try again!" );
-                redirect( "welcome" );
-            }
+            $this->session->set_flashdata( 'error', "Loging unsucessful. Try again!" );
+            redirect( "welcome" );
         }
-
         if( $auth )
         {
             $this->session->set_userdata( 'AUTHENTICATED', true);

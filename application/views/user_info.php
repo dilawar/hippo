@@ -97,7 +97,7 @@ if(__get__($info, 'eligible_for_aws', 'NO') =="NO")
 
 echo "<h2>Advanced settings</h2>";
 echo printInfo("This section is related to mobile apps developed by third party.");
-$myKeys = getUserKyes(whoAmI());
+$myKeys = getUserKeys(whoAmI());
 
 $table = '<table class="info">';
 $table .= '<tr><th>ID</th><th>KEY</th> <th>created on</th> <th></th></tr>';
