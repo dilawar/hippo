@@ -33,6 +33,11 @@ following in `httpd.conf` file
     SetEnv HTTP_PROXY 172.16.223.223:3128
     SetEnv HTTPS_PROXY 172.16.223.223:3128
 
+To make sure that server accepts API requests from android app.
+
+    header set access-control-allow-origin "*"
+    header set access-control-allow-headers "content-type"
+
 # How to setup google-calendar.
 
 0. Go to google-api console, and setup an API key. Download the key and store it
