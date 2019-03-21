@@ -17,7 +17,7 @@
 - sudo pip install mysql-connector-python-rf
 - pandoc >= 1.19.2.1
 - python-PIL (for background image processing).
-- python > 3.6 (Photography club scripts require it)
+- python >= 3.6 (Photography club scripts require it)
 
 ## Optional 
 
@@ -35,8 +35,8 @@ following in `httpd.conf` file
 
 To make sure that server accepts API requests from android app.
 
-    header set access-control-allow-origin "*"
-    header set access-control-allow-headers "content-type"
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Headers "content-type"
 
 # How to setup google-calendar.
 
