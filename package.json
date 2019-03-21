@@ -9,7 +9,7 @@
     "grunt-contrib-cssmin": "^0.5.0",
     "grunt-contrib-less": "^0.7.0",
     "grunt-contrib-uglify": "^0.2.0",
-    "highcharts": "~5.0.7",
+    "highcharts": ">=6.1.0",
     "anchorme": "~1.1.2"
   },
   "devDependencies": {},
