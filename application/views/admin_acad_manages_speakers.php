@@ -1,8 +1,9 @@
 <?php
 require_once BASEPATH.'autoload.php';
-global $symbDelete;
 
 echo userHTML( );
+
+global $symbDelete;
 
 $ref = $controller;
 if( $ref == 'user' )
@@ -33,11 +34,13 @@ function speakerKey( $x )
 // Use speaker ID.
 $speakersMap = array( );
 foreach( $speakers as $x )
-    if( intval( $x[ 'id' ] ) > 0 )
+{
+    if( intval($x[ 'id'] ) > 0 )
     {
         $speakersMap[ speakerKey($x) ] = $x;
         $speakersMap[ intval($x['id']) ] = $x;
     }
+}
 
 // This must not be a key => value array else autocomplete won't work. Or have
 // any null value,
@@ -54,43 +57,6 @@ foreach( $speakers as $x )
 $faculty = array_map( function( $x ) { return loginToText( $x ); }, $faculty );
 $logins = array_map( function( $x ) { return loginToText( $x ); }, $logins );
 
-?>
-
-<script type="text/javascript" charset="utf-8">
-// Autocomplete speaker.
-$( function() {
-    var speakersDict = <?php echo json_encode( $speakersMap ) ?>;
-    var host = <?php echo json_encode( $faculty ); ?>;
-    var logins = <?php echo json_encode( $logins ); ?>;
-
-    var id;
-
-    // Keys for autocompletion.
-    var ids = <?php echo json_encode( $speakerAutoCompleteKeys ); ?>;
-
-    $( "#talks_host" ).autocomplete( { source : host });
-    $( "#talks_host" ).attr( "placeholder", "autocomplete" );
-
-    $( "#talks_coordinator" ).autocomplete( { source : logins });
-    $( "#talks_coordinator" ).attr( "placeholder", "autocomplete" );
-
-
-    // Once email is matching we need to fill other fields.
-    $( "#speakers_id" ).autocomplete( { source : ids
-        , focus : function( ) { return false; }
-    }).on( 'autocompleteselect', function( e, ui )
-        {
-            id = ui.item.value;
-            $('#speakers_id').val( speakersDict[ id ]['id'] );
-        }
-    );
-    $('#speakers_id').val( id );
-    $( "#speakers_id" ).attr( "placeholder", "autocomplete" );
-});
-</script>
-
-<?php
-
 // Logic for POST requests.
 $speaker = array(
     'first_name' => '', 'middle_name' => '', 'last_name' => '', 'email' => ''
@@ -105,8 +71,9 @@ $talk = [ 'created_by' => whoAmI(), 'created_on' => dbDateTime('now') ];
 
 echo "<h1>Speaker details</h1>";
 
-echo alertUser( "If you know the speaker id, use the id (its an interger value), else I'll
-    try to find the speaker." , false);
+echo alertUser( "If you know the speaker id, use the id (its an interger value), 
+    else I'll try to find the speaker." , false);
+
 echo '<form method="post" action="">';
 echo '<input id="speakers_id" name="id" type="text" value="" >';
 echo '<button type="submit" name="response" value="show">Show details</button>';
@@ -117,16 +84,16 @@ echo '</form>';
 if( __get__( $_POST, 'id', '' ) )
 {
     // Get the real speaker id for database table.
-    $speakerID = __get__($speakersMap, $_POST['id'], '');
-    if( $speakerID )
+    $speaker = __get__($speakersMap, $_POST['id'], '');
+    if( $speaker )
     {
-        $picPath = getSpeakerPicturePath( $speakerID );
+        $picPath = getSpeakerPicturePath( $speaker['id'] );
         $html = '<table class="show_info" border="1"> <tr>';
         $html .= '<td>';
         $html .= showImage( $picPath );
         $html .= '</td>';
         $html .= '<td>';
-        $html .= arrayToVerticalTableHTML( $speakerID, 'info' );
+        $html .= arrayToVerticalTableHTML( $speaker, 'info' );
         $html .= '</td>';
         $html .= '</tr></table>';
         echo $html;
@@ -170,3 +137,31 @@ echo "<br/><br/>";
 echo goBackToPageLink( "$ref/home", 'Go back' );
 
 ?>
+
+<script type="text/javascript" charset="utf-8">
+// Autocomplete speaker.
+$( function() {
+    var speakersDict = <?php echo json_encode($speakersMap) ?>;
+
+    var host = <?php echo json_encode( $faculty ); ?>;
+    var logins = <?php echo json_encode( $logins ); ?>;
+
+    var id;
+
+    // Keys for autocompletion.
+    var ids = <?php echo json_encode( $speakerAutoCompleteKeys ); ?>;
+
+    // Once email is matching we need to fill other fields.
+    $( "#speakers_id" ).autocomplete( { source : ids
+        , focus : function( ) { return false; }
+    }).on( 'autocompleteselect', function( e, ui ) {
+            id = ui.item.value;
+            $('#speakers_id').val( speakersDict[ id ]['id'] );
+        }
+    );
+
+    $('#speakers_id').val( id );
+    $( "#speakers_id" ).attr( "placeholder", "autocomplete" );
+});
+</script>
+
