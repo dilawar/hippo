@@ -8,7 +8,6 @@ $email = array( );
 if( $_POST )
 {
     $templ = json_decode( $_POST[ 'template' ], $assoc = true );
-
     $email[ 'email_body' ] = $templ[ 'email_body'];
     $email[ 'recipients' ] = $templ[ 'recipients'] ;
     $email[ 'cc' ] = $templ[ 'cc'] ;
