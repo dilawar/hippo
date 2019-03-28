@@ -77,6 +77,7 @@ function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" ) : array
                 , "first_name" => $i['profilefirstname'][0]
                 , "lname" => $i['profilelastname'][0]
                 , "last_name" => $i['profilelastname'][0]
+                , "extension" => $i['profilelandline'][0]
                 , "uid" => $profileidentification
                 , "id" => $profileidentification
                 , "email" => $i['mail'][0]
