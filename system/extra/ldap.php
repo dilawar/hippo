@@ -49,7 +49,7 @@ function getUserInfoFromLdap( $query, $ldap_ip="ldap.ncbs.res.in" ) : array
     }
 
     $base_dn = "dc=ncbs,dc=res,dc=in";
-    $sr = @ldap_search($ds, $base_dn, "uid=$login");
+    $sr = @ldap_search($ds, $base_dn, "(|(uid=$login*)(givenname=$login*))");
     $info = @ldap_get_entries($ds, $sr);
 
     $result = array();
