@@ -50,7 +50,6 @@ function jc_assign_n_weeks_in_advance_cron( )
                                     , 'venue' => $jc['venue']
                                 )
                             );
-
                         if( $res )
                             echo printInfo( "Success! " );
                     }
