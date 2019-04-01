@@ -101,7 +101,8 @@ class Feed extends CI_Controller
             if( strlen( $e[ 'title' ] ) < 2 )
                 continue;
 
-            $eventXML .= "<title>" . todayTomorrowWeek( $e['date'] ) . sanitize($e['title']) . " @" . $e['venue'] . "</title>";
+            $eventXML .= "<title>".todayTomorrowWeek($e['date']).sanitize($e['title'])
+                ." @" .$e['venue'] . "</title>";
 
             $eventXML .= "<link> https://ncbs.res.in/hippo/events.php?date=" . $e['date'] . 
                         "</link>";
