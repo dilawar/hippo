@@ -107,9 +107,12 @@ function getUserInfoFromLdapRelaxed($q, $ldap_ip="ldap.ncbs.res.in") : array
         return [];
 
     $base_dn = "dc=ncbs,dc=res,dc=in";
-    $sr = @ldap_search($ds, $base_dn, 
-        "!(uid=$query*)(profilefirstname=*$q*)"
-    );
+    $sr = @ldap_search($ds, $base_dn
+        , "("
+            . "|(uid=$q*)(profilelastname=*$q*)(profilelaboffice=*$q*)"
+            . "(profilelandline=$q)"
+            . ")"
+        );
     $info = @ldap_get_entries($ds, $sr);
     $result = array();
     for( $s=0; $s < $info['count']; $s++)
