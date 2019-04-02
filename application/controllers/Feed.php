@@ -40,12 +40,6 @@ function sanitize( $title )
     return $title;
 }
 
-function cmp( $a, $b )
-{
-    return strtotime( $a[ 'date' ] ) > strtotime( $b['date'] );
-}
-
-
 class Feed extends CI_Controller 
 {
 
