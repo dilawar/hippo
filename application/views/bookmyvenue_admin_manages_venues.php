@@ -29,7 +29,7 @@ if( __get__( $_POST, 'response', '' ) == 'Select'  )
     $task ='update';
 }
 
-$editables = 'name,institute,building_name,floor,location,type,strength';
+$editables = 'name,institute,building_name,floor,longitude,latitude,location,type,strength';
 $editables .= ',distance_from_ncbs';
 $editables .= ',suitable_for_conference,has_projector,has_skype';
 
