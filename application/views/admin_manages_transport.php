@@ -3,23 +3,32 @@ include_once FCPATH . 'system/autoload.php';
 mustHaveAllOfTheseRoles( Array( 'ADMIN' ) );
 echo userHTML( );
 
-echo '<h3>Quick Add</h3>';
+echo '<h1>Quick Add/Update</h1>';
+
+$default = ['vehicle'=>'', 'pickup_point'=>'', 'drop_point'=>'', 'trip_start_time'=>'' ];
+$action='quickadd';
+if( isset($_POST) )
+{
+    $action = 'quickupdate';
+    $default = array_merge($default, $_POST);
+}
 
 $table = "<table class='editable_transport' id='editable_transport'>";
 $table .= ' 
     <tr>
     <td>Vehicle</td> 
-    <td> <input type="text" name="vehicle" id="" value="" /> </td>
+    <td> <input type="text" name="vehicle" value="'. $default['vehicle']. '" /> </td>
     </tr><tr>
-    <td>Trip Pickup Point</td> 
-    <td> <input type="text" name="pickup_point" id="" value="" /> </td>
+    <td>Pickup Point</td> 
+    <td> <input type="text" name="pickup_point" value="' . $default['pickup_point']. '" /> </td>
     </tr><tr>
-    <td>Trip Drop Point</td> 
-    <td> <input type="text" name="drop_point" id="" value="" /> </td>
+    <td>Drop Point</td> 
+    <td> <input type="text" name="drop_point" value="'. $default['drop_point'].'" /> </td>
     </tr><tr>
-    <td>Trip Start Times</td> 
-    <td> <input type="text" name="trip_start_times" id="" value="" 
-            placeholder="HH:MM e.g. 09:00,10:00,13:30" /> </td>
+    <td>Start Times</td> 
+    <td> <input type="text" name="trip_start_times" 
+            value="' . $default['trip_start_time'] 
+            . '" placeholder="HH:MM e.g. 09:00,10:00,13:30" /> </td>
     </tr><tr>
     <td>Duration (mins)</td> 
     <td> <input type="text" name="trip_duration" id="" value="" /> </td>
@@ -32,7 +41,7 @@ $table .= '
     </tr>';
 $table .= "</table>";
 
-$form = '<form action="' . site_url("admin/transport/quickadd") . '" method="post">';
+$form = '<form action="' . site_url("admin/transport/$action") . '" method="post">';
 $form .= $table;
 $form .= '<button class="submit" type="submit">Submit</button> ';
 $form .= '</form>';
@@ -89,13 +98,22 @@ foreach( $schedule as $key => $table )
     echo "<table class='info'>";
     foreach( $table as $row )
     {
+        $trip_start_time = $row['trip_start_time'];
+
         echo '<tr>';
-        echo '<form action="'.site_url('admin/transport/quickdelete').'" method="post">';
         echo arrayToRowHTML($row, 'info', '', true, false);
+        echo '<form action="'.site_url('admin/transport/quickdelete').'" method="post">';
         echo "<input type='hidden' name='vehicle' value='$vehicle' />";
         echo "<input type='hidden' name='pickup_point' value='$pickup_point' />";
         echo "<input type='hidden' name='drop_point' value='$drop_point' />";
         echo '<td> <button type="submit">Delete</button> </td>';
+        echo '</form>';
+        echo '<form action="#" method="post">';
+        echo "<input type='hidden' name='vehicle' value='$vehicle' />";
+        echo "<input type='hidden' name='pickup_point' value='$pickup_point' />";
+        echo "<input type='hidden' name='drop_point' value='$drop_point' />";
+        echo "<input type='hidden' name='trip_start_time' value='$trip_start_time' />";
+        echo '<td> <button type="submit">Update</button> </td>';
         echo '</form>';
         echo '</tr>';
     }
