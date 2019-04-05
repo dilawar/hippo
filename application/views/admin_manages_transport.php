@@ -76,11 +76,30 @@ $hide = 'vehicle_no,score,edited_by,vehicle,pickup_point,'
         . 'drop_point,status,last_modified_on';
 $class = 'info sortable exportable';
 
-foreach( $schedule as $key => $tables )
+foreach( $schedule as $key => $table )
 {
     $arr = explode('||', $key);
+    $vehicle = $arr[0];
+    $pickup_point = $arr[1];
+    $drop_point = $arr[2];
+
     echo "<h3>" . vsprintf( "%s from %s to %s", $arr) . '</h3>';
-    echo arraysToCombinedTableHTML($tables, 'info', 'vehicle,pickup_point,drop_point');
+
+    // We need a form to delete them as well.
+    echo "<table class='info'>";
+    foreach( $table as $row )
+    {
+        echo '<tr>';
+        echo '<form action="'.site_url('admin/transport/quickdelete').'" method="post">';
+        echo arrayToRowHTML($row, 'info', '', true, false);
+        echo "<input type='hidden' name='vehicle' value='$vehicle' />";
+        echo "<input type='hidden' name='pickup_point' value='$pickup_point' />";
+        echo "<input type='hidden' name='drop_point' value='$drop_point' />";
+        echo '<td> <button type="submit">Delete</button> </td>';
+        echo '</form>';
+        echo '</tr>';
+    }
+    echo "</table>";
 }
 
 
