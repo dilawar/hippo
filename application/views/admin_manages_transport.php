@@ -34,7 +34,7 @@ foreach( $table as $row )
 echo '<h1> Transport details </h1>';
 
 
-$hide = 'id,vehicle_no,score,edited_by,vehicle,pickup_point,drop_point,status,last_modified_on';
+$hide = 'vehicle_no,score,edited_by,vehicle,pickup_point,drop_point,status,last_modified_on';
 $class = 'info sortable exportable';
 foreach( $groupBy as $key => $tables )
 {
