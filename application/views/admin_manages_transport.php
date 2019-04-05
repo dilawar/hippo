@@ -10,8 +10,8 @@ $default = [];
 $action = 'Add';
 if( __get__($_POST, 'id', 0) > 0)
 {
-    $action = 'Update';
     $default = getTableEntry( 'transport', 'id', $_POST);
+    $action = 'Update';
 }
 
 echo '<form method="post" action="'.site_url("admin/manage_transport/$action").'">';
@@ -21,7 +21,7 @@ echo dbTableToHTMLTable( 'transport'
         , $action
     );
 $groupBy = [];
-$table = getTableEntries('transport', 'day,trip_start_time', "status='VALID'");
+$table = getTableEntries('transport', 'day,trip_start_time', "");
 foreach( $table as $row )
 {
     $key = implode('||', [$row['vehicle'], $row['pickup_point'], $row['drop_point']]);
@@ -34,7 +34,7 @@ foreach( $table as $row )
 echo '<h1> Transport details </h1>';
 
 
-$hide = 'vehicle_no,score,edited_by,vehicle,pickup_point,drop_point,status,last_modified_on';
+$hide = 'vehicle_no,edited_by,vehicle,pickup_point,drop_point,last_modified_on';
 $class = 'info sortable exportable';
 foreach( $groupBy as $key => $tables )
 {
