@@ -5,22 +5,48 @@ echo userHTML( );
 
 echo '<h3>Manage transport</h3>';
 
-$default = array( );
-echo '<form method="post" action="'.site_url("admin/add_transport").'">';
+
+$default = [];
+$action = 'Add';
+if( __get__($_POST, 'id', 0) > 0)
+{
+    $action = 'Update';
+    $default = getTableEntry( 'transport', 'id', $_POST);
+}
+
+echo '<form method="post" action="'.site_url("admin/manage_transport/$action").'">';
 echo dbTableToHTMLTable( 'transport'
         , $default
         , 'vehicle,vehicle_no,pickup_point,drop_point,day,trip_start_time,trip_end_time,comment'
-        , 'Add'
+        , $action
     );
-
-$tables = getTableEntries('transport', 'day', "status='VALID'");
-if($tables)
+$groupBy = [];
+$table = getTableEntries('transport', 'day,trip_start_time', "status='VALID'");
+foreach( $table as $row )
 {
-    echo '<h1> Transport details </h1>';
+    $key = implode('||', [$row['vehicle'], $row['pickup_point'], $row['drop_point']]);
+    $groupBy[$key][]=$row;
+}
 
-    $hide = 'id,vehicle_no,score,edited_by';
-    $class = 'info sortable exportable';
-    $html = "<table id='transport' class='$class'>";
+
+// Group these entries by vehicle, pickup_point and drop_points.
+
+echo '<h1> Transport details </h1>';
+
+
+$hide = 'id,vehicle_no,score,edited_by,vehicle,pickup_point,drop_point,status,last_modified_on';
+$class = 'info sortable exportable';
+foreach( $groupBy as $key => $tables )
+{
+    $arr = explode('||', $key);
+    $vehicle = $arr[0];
+    $from = $arr[1];
+    $to = $arr[2];
+
+    $route ="$vehicle-$from-$to";
+    echo "<h2>$vehicle from $from to $to </h2>";
+
+    $html = "<table id='$route' class='$class'>";
     $html .= arrayToTHRow( $tables[0], $class, $hide );
     foreach( $tables as $table )
     {
@@ -30,6 +56,11 @@ if($tables)
         $html .= "<form action='" .site_url('admin/delete_transport/'.$table['id']). "' method='post'>";
         $html .= "<button type='submit'>Delete</button>";
         $html .= "</form>";
+        $html .= '</td><td>';
+        $html .= "<form action='#' method='post'>";
+        $html .= '<input type="hidden" name="id" id="" value="'.$table['id'].'" />';
+        $html .= "<button type='submit'>Edit</button>";
+        $html .= '</form>';
         $html .= "</td>";
         $html .= '</tr>';
     }
