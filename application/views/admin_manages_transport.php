@@ -5,7 +5,9 @@ echo userHTML( );
 
 echo '<h1>Quick Add/Update</h1>';
 
-$default = ['vehicle'=>'', 'pickup_point'=>'', 'drop_point'=>'', 'trip_start_time'=>'' ];
+$default = ['vehicle'=>'', 'pickup_point'=>'', 'drop_point'=>''
+    , 'trip_start_time'=>'', 'url' => ''];
+
 $action='quickadd';
 if( isset($_POST) )
 {
@@ -37,7 +39,7 @@ $table .= '
     <td> <input type="text" name="days" id="" placeholder="Sun,Mon etc" value="" /> </td>
     </tr><tr>
     <td>URL/Route</td> 
-    <td> <input type="url" name="url" id="" value="" /> </td>
+    <td> <input type="url" name="url" id="" value="'.$default['url'].'" /> </td>
     </tr>';
 $table .= "</table>";
 
@@ -75,6 +77,7 @@ foreach( $groupBy as $key => $tables )
     $entry['pickup_point'] = $arr[1];
     $entry['drop_point'] = $arr[2];
     $entry['trip_start_time'] = $arr[3];
+    $entry['url'] = $tables[0]['url'];
     $schedule[$newKey][] = $entry;
 }
 ksort($schedule);
@@ -99,20 +102,22 @@ foreach( $schedule as $key => $table )
     foreach( $table as $row )
     {
         $trip_start_time = $row['trip_start_time'];
+        $url = $row['url'];
 
         echo '<tr>';
-        echo arrayToRowHTML($row, 'info', '', true, false);
+        echo arrayToRowHTML($row, 'info', $hide, true, false);
         echo '<form action="'.site_url('admin/transport/quickdelete').'" method="post">';
         echo "<input type='hidden' name='vehicle' value='$vehicle' />";
         echo "<input type='hidden' name='pickup_point' value='$pickup_point' />";
         echo "<input type='hidden' name='drop_point' value='$drop_point' />";
-        echo '<td> <button type="submit">Delete</button> </td>';
+        echo '<td> <button type="submit" onclick="AreYouSure()">Delete</button> </td>';
         echo '</form>';
         echo '<form action="#" method="post">';
         echo "<input type='hidden' name='vehicle' value='$vehicle' />";
         echo "<input type='hidden' name='pickup_point' value='$pickup_point' />";
         echo "<input type='hidden' name='drop_point' value='$drop_point' />";
         echo "<input type='hidden' name='trip_start_time' value='$trip_start_time' />";
+        echo "<input type='hidden' name='url' value='$url' />";
         echo '<td> <button type="submit">Update</button> </td>';
         echo '</form>';
         echo '</tr>';
