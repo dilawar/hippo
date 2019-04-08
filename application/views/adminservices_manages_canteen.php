@@ -24,7 +24,9 @@ $action = 'add';
 if(intval(__get__($_POST, 'id', 0)) > 0)
 {
     $action = 'update';
-    $default = array_merge($default, $_POST);
+    $entry = getTableEntry( 'canteen_menu', 'id', $_POST);
+    $entry['days_csv'] = $entry['day'];
+    $default = array_merge($default, $entry);
 }
 
 echo '<form action="'.site_url("adminservices/canteen/$action") .'" method="post">';
@@ -41,20 +43,33 @@ if( $items )
 
 $itemGrouped = [];
 foreach( $items as $item)
-    $itemGrouped[$item['canteen_name']][] = $item;
+    $itemGrouped[$item['canteen_name']][$item['day']][] = $item;
 
 $hide = 'id,description,days_csv,modified_by,modified_on';
-foreach( $itemGrouped as $canteen => $items)
+foreach( $itemGrouped as $canteen => $dayItems)
 {
     echo "<h2> Menu for $canteen </h2>";
-    $table = '<table class="info">';
-    $table .= arrayToTHRow($items[0], 'info', $hide);
-    foreach( $items as $item)
+    foreach( $dayItems as $day => $items)
     {
-        $table .= arrayToRowHTML($item, 'info', $hide);
+        echo "<h3> On day $day </h3>";
+        $table = '<table class="info">';
+        $table .= arrayToTHRow($items[0], 'info', $hide);
+        foreach( $items as $item)
+        {
+            $table .= '<tr>';
+            $table .= arrayToRowHTML($item, 'info', $hide, '', false);
+            $table .= '<td>
+                <form action="#" method="post">
+                    <input type="hidden" name="id" value="'. $item['id'] . '"></input>
+                    <button>Edit</button></form>
+                </form>';
+            $table .= "</td><td>";
+            $table .= "<button>Delete</button>";
+            $table .= '</td></tr>'; 
+        }
+        $table .= '</table>';
+        echo $table;
     }
-    $table .= '</table>';
-    echo $table;
 }
 
 echo '<br />';
