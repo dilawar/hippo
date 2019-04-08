@@ -43,7 +43,7 @@ $table .= '
     </tr>';
 $table .= "</table>";
 
-$form = '<form action="' . site_url("admin/transport/$action") . '" method="post">';
+$form = '<form action="' . site_url("adminservices/transport/$action") . '" method="post">';
 $form .= $table;
 $form .= '<button class="submit" type="submit">Submit</button> ';
 $form .= '</form>';
@@ -106,7 +106,7 @@ foreach( $schedule as $key => $table )
 
         echo '<tr>';
         echo arrayToRowHTML($row, 'info', $hide, true, false);
-        echo '<form action="'.site_url('admin/transport/quickdelete').'" method="post">';
+        echo '<form action="'.site_url('adminservices/transport/quickdelete').'" method="post">';
         echo "<input type='hidden' name='vehicle' value='$vehicle' />";
         echo "<input type='hidden' name='pickup_point' value='$pickup_point' />";
         echo "<input type='hidden' name='drop_point' value='$drop_point' />";
@@ -126,7 +126,7 @@ foreach( $schedule as $key => $table )
 }
 
 
-echo goBackToPageLink( "admin/home", "Go back" );
+echo goBackToPageLink( "$controller/home", "Go back" );
 
 ?>
 
