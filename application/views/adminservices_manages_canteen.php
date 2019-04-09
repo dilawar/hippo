@@ -56,6 +56,7 @@ foreach( $itemGrouped as $canteen => $dayItems)
         $table .= arrayToTHRow($items[0], 'info', $hide);
         foreach( $items as $item)
         {
+            $id = $item['id'];
             $table .= '<tr>';
             $table .= arrayToRowHTML($item, 'info', $hide, '', false);
             $table .= '<td>
@@ -64,7 +65,9 @@ foreach( $itemGrouped as $canteen => $dayItems)
                     <button>Edit</button></form>
                 </form>';
             $table .= "</td><td>";
+            $table .= '<form action="' .site_url("adminservices/canteen/delete/$id") .'" method="post">';
             $table .= "<button>Delete</button>";
+            $table .= '</form>';
             $table .= '</td></tr>'; 
         }
         $table .= '</table>';
