@@ -60,14 +60,10 @@ echo '
         <td>
             <a class="clickable" href="'.site_url( 'admin/holidays') . '">Manage holidays</a>
         </td>
-        <td>
-            <a class="clickable" href="'.site_url( 'admin/transport') . '">Manage Transport</a>
-        </td>
     </tr>
     ';
 
 echo '</table>';
-
 
 
 echo ' <br /> <br />';
