@@ -2,8 +2,59 @@
 include_once FCPATH . 'system/autoload.php';
 echo userHTML( );
 
-echo '<h1>Add/Update Canteen Items</h1>';
+echo '<h1>Quick Add/Update Menu</h1>';
 
+$mealHtml = arrayToSelectList('which_meal', getTableColumnTypes('canteen_menu', 'which_meal'));
+echo '<form action="'. site_url("adminservices/canteen/quickadd") .'" method="post">
+    <table class="editable_canteen_menu_quick">
+    <tr>
+        <td>Canteen Name</td>
+        <td>
+            <input type="text" name="canteen_name" id="" value="" />
+        </td>
+    </tr>
+    <tr>
+        <td>Day</td>
+        <td>
+            <input type="text" name="day" placeholder="Tue,Wed etc." value="" />
+        </td>
+    </tr>
+    <tr>
+        <td>Which Meal?</td>
+        <td>
+            ' . $mealHtml . '
+        </td>
+    </tr>
+    <tr>
+        <td>Available From</td>
+        <td>
+            <input class="timepicker" name="available_from" id="" value="" />
+        </td>
+    </tr>
+    <tr>
+        <td>Available Upto</td>
+        <td>
+            <input class="timepicker" name="available_upto" id="" value="" />
+        </td>
+    </tr>
+    <tr>
+        <td>Menu</td>
+        <td>
+            <textarea name="menu" rows="4" cols="60"
+                placeholder="name1=price1,name2=price2"
+                required
+                > item1=2;item2=3;
+            </textarea>
+        </td>
+    </tr>
+    </table>
+    <button class="submit">Submit</button>
+    </form>';
+
+echo ' <br /> <br />';
+
+
+echo '<h1>Add/Update Menu Items</h1>';
 $default = ['canteen'=>''
     , 'name'=>''
     , 'description'=>''
@@ -45,7 +96,7 @@ $itemGrouped = [];
 foreach( $items as $item)
     $itemGrouped[$item['canteen_name']][$item['day']][] = $item;
 
-$hide = 'id,description,days_csv,modified_by,modified_on';
+$hide = 'id,description,days_csv,modified_by,modified_on,status,popularity';
 foreach( $itemGrouped as $canteen => $dayItems)
 {
     echo "<h2> Menu for $canteen </h2>";
