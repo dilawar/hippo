@@ -6,7 +6,7 @@ include_once 'methods.php';
 include_once 'tohtml.php';
 include_once 'check_access_permissions.php';
 
-mustHaveAllOfTheseRoles( array( 'AWS_ADMIN' ) );
+mustHaveAllOfTheseRoles( array( 'ACAD_ADMIN' ) );
 
 echo userHTML( );
 

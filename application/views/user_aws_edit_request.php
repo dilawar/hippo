@@ -2,7 +2,7 @@
 require_once BASEPATH.'autoload.php';
 
 // User submit a request to change some description in his/her AWS. The request 
-// must be approved by AWS_ADMIN.
+// must be approved by ACAD_ADMIN.
 echo userHTML( );
 
 // If we have come here by a post request, get the speaker and date and fetch 
