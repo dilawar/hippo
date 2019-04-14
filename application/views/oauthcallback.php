@@ -9,7 +9,7 @@ include_once 'check_access_permissions.php';
 require_once './calendar/NCBSCalendar.php';
 require_once './calendar/methods.php';
 
-mustHaveAllOfTheseRoles( 'BOOKMYVENUE_ADMIN', 'ADMIN', 'AWS_ADMIN' );
+mustHaveAllOfTheseRoles( 'BOOKMYVENUE_ADMIN', 'ADMIN', 'ACAD_ADMIN' );
 
 
 echo userHTML( );
