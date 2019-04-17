@@ -4,13 +4,14 @@
   "description": "Calendar module based on Bootsrap and jQuery",
   "main": "./js/calendar.js",
   "dependencies": {
+    "anchorme": "~1.1.2",
     "bower": "^0.8.5",
     "grunt": "^0.4.1",
     "grunt-contrib-cssmin": "^0.5.0",
     "grunt-contrib-less": "^0.7.0",
     "grunt-contrib-uglify": "^0.2.0",
     "highcharts": ">=6.1.0",
-    "anchorme": "~1.1.2"
+    "vue2": "^1.0.0"
   },
   "devDependencies": {},
   "scripts": {
