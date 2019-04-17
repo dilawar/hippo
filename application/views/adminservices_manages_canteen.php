@@ -54,35 +54,35 @@ echo '<form action="'. site_url("adminservices/canteen/quickadd") .'" method="po
 echo ' <br /> <br />';
 
 
-echo '<h1>Add/Update Menu Items</h1>';
-$default = ['canteen'=>''
-    , 'name'=>''
-    , 'description'=>''
-    , 'price'=>''
-    , 'which_meal' => ''
-    , 'days' => ''
-    , 'available_from'=>''
-    , 'available_upto'=>''
-    , 'canteen_name' => ''
-    , 'days_csv' => ''
-    , 'modified_by'=> whoAmI()
-    , 'status' => 'VALID'
-];
-
-$editables = array_keys($default);
-$hide = 'day,modified_by,popularity';
-$action = 'add';
-if(intval(__get__($_POST, 'id', 0)) > 0)
-{
-    $action = 'update';
-    $entry = getTableEntry( 'canteen_menu', 'id', $_POST);
-    $entry['days_csv'] = $entry['day'];
-    $default = array_merge($default, $entry);
-}
-
-echo '<form action="'.site_url("adminservices/canteen/$action") .'" method="post">';
-echo dbTableToHTMLTable('canteen_menu', $default, $editables, $action, $hide);
-echo '</form>';
+//echo '<h1>Add/Update Menu Items</h1>';
+//$default = ['canteen'=>''
+//    , 'name'=>''
+//    , 'description'=>''
+//    , 'price'=>''
+//    , 'which_meal' => ''
+//    , 'days' => ''
+//    , 'available_from'=>''
+//    , 'available_upto'=>''
+//    , 'canteen_name' => ''
+//    , 'days_csv' => ''
+//    , 'modified_by'=> whoAmI()
+//    , 'status' => 'VALID'
+//];
+//
+//$editables = array_keys($default);
+//$hide = 'day,modified_by,popularity';
+//$action = 'add';
+//if(intval(__get__($_POST, 'id', 0)) > 0)
+//{
+//    $action = 'update';
+//    $entry = getTableEntry( 'canteen_menu', 'id', $_POST);
+//    $entry['days_csv'] = $entry['day'];
+//    $default = array_merge($default, $entry);
+//}
+//
+//echo '<form action="'.site_url("adminservices/canteen/$action") .'" method="post">';
+//echo dbTableToHTMLTable('canteen_menu', $default, $editables, $action, $hide);
+//echo '</form>';
 
 // Now show the menu.
 $items = getTableEntries('canteen_menu'
@@ -136,4 +136,11 @@ echo goBackToPageLink( "$controller/home", "Go back" );
 <script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));
+</script>
+
+<script>
+$(#accordion).accordion({
+    heightStyle : "fill"
+    , collapsible: true
+});
 </script>
