@@ -32,10 +32,12 @@ if( __get__( $_POST, 'response', '' ) == 'Select'  )
 }
 
 $editables = 'name,institute,building_name,floor,location,type,strength';
-$hide = '';
-if($controller === 'admin')
+$editables .= ',allow_booking_on_hippo,note_to_user';
+$hide = 'location,';
+if($controller === 'admin') {
     $editables .= 'latitude,longitude';
-else
+}
+else 
     $hide .= 'latitude,longitude';
 
 $editables .= ',distance_from_ncbs';

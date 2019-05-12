@@ -46,7 +46,6 @@ function msg_fade_out( $msg , $class = "info" )
 function alertUser( $msg, $flash = true )
 {
     $info ="<div class=\"alert alert-warning\">" . $msg . "</div>";
-    
     if($flash)
         if(isset($_SESSION))
             $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . "<p>$msg </p>";
