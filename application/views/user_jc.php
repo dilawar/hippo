@@ -88,7 +88,7 @@ else
     echo '<br />';
     echo printInfo( 'No JC presentation has been assigned for you. If you have something 
         cool to present, raise a <a class="clickable" 
-        href="'.site_url('user/jc_request').'">presentation request</a>.' 
+        href="'.site_url('user/jc_presentation_requests').'">presentation request</a>.' 
     );
 }
 
