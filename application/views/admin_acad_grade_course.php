@@ -26,7 +26,7 @@ foreach( $enrollments as $enrol )
 
     $gradeAction = 'Change';
     if( __get__($enrol,'grade', 'X') == 'X' )
-        $gradeAction = colored('Assign', 'blue');
+        $gradeAction = 'Assign';
 
     $table .= "<td> <button class='btn btn-primary' 
         name='response' value='Assign One'>$gradeAction</button> </td>";
@@ -42,9 +42,9 @@ foreach( $enrollments as $enrol )
 $table .= '<input type="hidden" name="student_ids" value="' . implode(',', $ids) . '" >';
 $table .= '</table>';
 
+echo '<br /> <br />';
 echo '<h2>Modify grades </h2>';
 echo $table;
-
 
 echo '<br />';
 echo goBackToPageLink( 'adminacad/grades', 'Go back' );
