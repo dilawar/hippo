@@ -29,9 +29,9 @@ $courseSelected = __get__( $_POST, 'course_id', '' );
 $taskSelected = 'Grade';
 
 $runningCourses = array();
+$nonGradable = array();
 
-$nonGradable = array( );
-foreach( getSemesterCourses( $year, $sem ) as $c )
+foreach(getSemesterCourses($year, $sem) as $c)
 {
     $cid = $c[ 'course_id' ];
     $endDate = strtotime( $c['end_date'] );
