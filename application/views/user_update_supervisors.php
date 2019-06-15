@@ -42,10 +42,11 @@ $( function() {
 </script>
 
 <?php
+
 echo "<h3>Adding a supervisor</h3>";
 
-echo printInfo( "The supervisor is idenfitied by his/her email addreess. 
-    It must be correct. I might send him/her emails before your AWS.
+echo printInfo( "A supervisor is idenfitied by his/her email address. 
+    It must be correct. I send them notification before your AWS.
     ");
 
 echo "<form id=\"add_supervisor\" method=\"post\" 
