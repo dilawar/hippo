@@ -20,6 +20,8 @@
     "jquery-ui-dist": "^1.12.1",
     "jquery-ui-multidatespicker": "^1.6.6",
     "sorttable": "^1.0.2",
+    "vue": "^2.6.10",
+    "vue-cli": "^2.9.6",
     "vue2": "^1.0.0"
   },
   "devDependencies": {},
