@@ -21,6 +21,7 @@
     "jquery-ui-dist": "^1.12.1",
     "jquery-ui-multidatespicker": "^1.6.6",
     "sorttable": "^1.0.2",
+    "sweetalert2": "^8.13.0",
     "tinymce": "^5.0.7",
     "vue2": "^1.0.0"
   },
