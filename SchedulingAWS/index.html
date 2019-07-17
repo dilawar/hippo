@@ -11,6 +11,8 @@
       <meta http-equiv="x-ua-compatible" content="ie=edge">
       
       
+        <link rel="canonical" href="https://ncbs.res.in/hippo/SchedulingAWS/">
+      
       
         <meta name="author" content="Dilawar Singh <dilawars@ncbs.res.in>">
       
@@ -33,21 +35,21 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="/hippo/assets/images/favicon.png">
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.0">
     
     
       
-        <title>NCBS Hippo</title>
+        <title>SchedulingAWS - NCBS Hippo</title>
       
     
     
-      <link rel="stylesheet" href="/hippo/assets/stylesheets/application.0284f74d.css">
+      <link rel="stylesheet" href="../assets/stylesheets/application.0284f74d.css">
       
       
     
     
-      <script src="/hippo/assets/javascripts/modernizr.74668098.js"></script>
+      <script src="../assets/javascripts/modernizr.74668098.js"></script>
     
     
       
@@ -56,10 +58,10 @@
         <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
       
     
-    <link rel="stylesheet" href="/hippo/assets/fonts/material-icons.css">
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
     
     
-      <link rel="stylesheet" href="/hippo/extra.css">
+      <link rel="stylesheet" href="../extra.css">
     
     
       
@@ -88,7 +90,7 @@
       <div class="md-flex__cell md-flex__cell--shrink">
         <a href="https://ncbs.res.in/hippo" title="NCBS Hippo" class="md-header-nav__button md-logo">
           
-            <img src="/hippo/images/logo.svg" width="24" height="24">
+            <img src="../images/logo.svg" width="24" height="24">
           
         </a>
       </div>
@@ -103,7 +105,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                
+                SchedulingAWS
               
             </span>
           
@@ -180,7 +182,7 @@
   <label class="md-nav__title md-nav__title--site" for="__drawer">
     <a href="https://ncbs.res.in/hippo" title="NCBS Hippo" class="md-nav__button md-logo">
       
-        <img src="/hippo/images/logo.svg" width="48" height="48">
+        <img src="../images/logo.svg" width="48" height="48">
       
     </a>
     NCBS Hippo
@@ -214,7 +216,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/hippo/." title="Home" class="md-nav__link">
+    <a href=".." title="Home" class="md-nav__link">
       Home
     </a>
   </li>
@@ -226,7 +228,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/hippo/user_manual/" title="User Manual" class="md-nav__link">
+    <a href="../user_manual/" title="User Manual" class="md-nav__link">
       User Manual
     </a>
   </li>
@@ -257,7 +259,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/hippo/bmv_admin_manual/" title="BookMyVenue Admin manual" class="md-nav__link">
+    <a href="../bmv_admin_manual/" title="BookMyVenue Admin manual" class="md-nav__link">
       BookMyVenue Admin manual
     </a>
   </li>
@@ -269,7 +271,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/hippo/acadic_admin_manual.md" title="Acadmic Admin Manual" class="md-nav__link">
+    <a href="../acadic_admin_manual.md" title="Acadmic Admin Manual" class="md-nav__link">
       Acadmic Admin Manual
     </a>
   </li>
@@ -281,7 +283,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/hippo/admin_manual/" title="Admin Manual" class="md-nav__link">
+    <a href="../admin_manual/" title="Admin Manual" class="md-nav__link">
       Admin Manual
     </a>
   </li>
@@ -298,7 +300,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/hippo/developer.md" title="Developer Documents" class="md-nav__link">
+    <a href="../developer.md" title="Developer Documents" class="md-nav__link">
       Developer Documents
     </a>
   </li>
@@ -327,8 +329,36 @@
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
-  <h1>404 - Not found</h1>
-
+                
+                  <a href="https://github.com/dilawar/Hippo/edit/master/docs/SchedulingAWS.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                  <h1>SchedulingAWS</h1>
+                
+                <p>= How is AWS schedule computed? </p>
+<p>The AWS schedule is computed by network-flow methods. For each available slot,
+we draw an edge from every speaker and put a cost on this edge. Lets say the
+potential slot is x days away from the last AWS date. The cost is minimum if x
+is 365 days; and it increases with (x-365). For x &lt; 365, cost is very hight.
+Now the problem is to select edges such that this cost is minimized i.e. all
+speakers give their AWS exactly 1 year after the joining or after their last AWS
+date. This is the general idea. The real situation more complicated that this.
+Following policy is enforced.</p>
+<p>All Ph.D/Int. PhD/Post.Doc are eligible for AWS. Everyone gets same weightage no
+matter where they are registered.  Int.Phd. gets their fist AWS after 15 months,
+M.Sc. by research after 18 months (and only 1 ), and everyone else gets it after
+12 months.  First 2 AWS are given most weightage i.e. they are most likely to
+come after an ideal gap of 12-13 months. Later AWS will be come at progressively
+slower rate (since we have more speakers than slots).  No speaker is likely to
+get more than 5 AWS.  The AWS admin can override any of the above and schedule
+AWS in any arbitrary manner.</p>
+<p>Prodiving technical details of implementation is beyond the scope of this note.
+However following image shows the cost function. The different curve represents
+the cost function of speaker with different number of given AWSs.</p>
+                
+                  
+                
+              
               
                 
 
@@ -358,7 +388,7 @@
       </div>
       
   <div class="md-footer-social">
-    <link rel="stylesheet" href="/hippo/assets/fonts/font-awesome.css">
+    <link rel="stylesheet" href="../assets/fonts/font-awesome.css">
     
       <a href="https://github.com/dilawar" class="md-footer-social__link fa fa-github"></a>
     
@@ -370,9 +400,9 @@
       
     </div>
     
-      <script src="/hippo/assets/javascripts/application.245445c6.js"></script>
+      <script src="../assets/javascripts/application.245445c6.js"></script>
       
-      <script>app.initialize({version:"1.0.4",url:{base:"/hippo"}})</script>
+      <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       
     
   </body>
