@@ -1,7 +1,15 @@
 site_name: NCBS Hippo
+author: Dilawar Singh <dilawars@ncbs.res.in>
+site_url: https://ncbs.res.in/hippo
+site_author: Dilawar Singh <dilawars@ncbs.res.in>
+copyright: 'Copyright &copy; 2016-2019 Dilawar Singh'
 repo_url: https://github.com/dilawar/Hippo
 theme:
-    name: readthedocs
+    name: material
+    # font:
+        # text: 'Ubuntu'
+        # code: 'Ubuntu Mono'
+    logo: images/logo.svg
     highlightjs: true
     hljs_languages:
         - php
@@ -9,16 +17,20 @@ theme:
 
 nav:
     - Home: index.md
-    - User: user_manual.md
-    - BookMyVenue admin: bookmyvenue_admin.md
-    - Academic Admin: academic_admin.md
-    - Admin: admin.md
+    - User Manual: user_manual.md
+    - Admin Manual:
+        - BookMyVenue Admin manual: bmv_admin_manual.md
+        - Acadmic Admin Manual: acadic_admin_manual.md
+        - Admin Manual: admin_manual.md
+    - Developer Documents: developer.md
+    - Bug tracker: https://github.com/dilawar/hippo/issues
 
 extra_css: [extra.css]
 
 markdown_extensions:
     - admonition
     - toc
+    - attr_list
     # - pymdownx.arithmatex
     - pymdownx.betterem:
         smart_enable: all
@@ -34,6 +46,11 @@ markdown_extensions:
     - pymdownx.tasklist:
         custom_checkbox: true
     - pymdownx.tilde
+
+extra:
+    social:
+        - type: 'github'
+          link: 'https://github.com/dilawar'
 
 # extra_javascript:
   # - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
