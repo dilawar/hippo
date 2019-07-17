@@ -1,0 +1,40 @@
+site_name: NCBS Hippo
+repo_url: https://github.com/dilawar/Hippo
+theme:
+    name: readthedocs
+    highlightjs: true
+    hljs_languages:
+        - php
+        - python
+
+nav:
+    - Home: index.md
+    - User: user_manual.md
+    - BookMyVenue admin: bookmyvenue_admin.md
+    - Academic Admin: academic_admin.md
+    - Admin: admin.md
+
+extra_css: [extra.css]
+
+markdown_extensions:
+    - admonition
+    - toc
+    # - pymdownx.arithmatex
+    - pymdownx.betterem:
+        smart_enable: all
+    - pymdownx.caret
+    - pymdownx.details
+    - pymdownx.inlinehilite
+    - pymdownx.magiclink
+    - pymdownx.mark
+    - pymdownx.emoji:
+       emoji_generator: !!python/name:pymdownx.emoji.to_svg
+    - pymdownx.smartsymbols
+    - pymdownx.superfences
+    - pymdownx.tasklist:
+        custom_checkbox: true
+    - pymdownx.tilde
+
+# extra_javascript:
+  # - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
+#
