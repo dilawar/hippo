@@ -71,4 +71,32 @@ function areThereAMissingRequestsAssociatedWithThisGID( string $gid ) : array
     return generateSubRequestsTable( $gid );
 }
 
+function venueUsageBetweenDates($user, $venue, $start, $end): int
+{
+    $events = getAllBookingsBetweenTheseDays($start, $end, $user, $venue);
+    $duration = 0;
+    foreach( $events as &$ev )
+        $duration += (strtotime($ev['end_time']) - strtotime($ev['start_time']))/60;
+    return $duration;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get weekly usage of a user on a given venue.
+    *
+    * @Param $user
+    * @Param $venue
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getWeeklyUsage(string $user, string $venue) : int
+{
+    // Check if user has booked this venue this week.
+    $end = strtotime('this friday');
+    $start = dbDate($end - 5*86400);
+    $end = dbDate($end);
+    return venueUsageBetweenDates($user, $venue, $start, $end);
+}
+
 ?>

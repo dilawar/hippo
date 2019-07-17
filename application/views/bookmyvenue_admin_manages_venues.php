@@ -31,7 +31,7 @@ if( __get__( $_POST, 'response', '' ) == 'Select'  )
     $task ='update';
 }
 
-$editables = 'name,institute,building_name,floor,location,type,strength';
+$editables = 'name,institute,building_name,floor,location,type,quota,strength';
 $editables .= ',allow_booking_on_hippo,note_to_user';
 $hide = 'location,';
 if($controller === 'admin') {
@@ -43,25 +43,30 @@ else
 $editables .= ',distance_from_ncbs';
 $editables .= ',suitable_for_conference,has_projector,has_skype';
 
-echo ' <h2>Add or Update venue </h2> ';
+echo heading('Add or Update venue', 2);
+echo p("<strong><tt>QUOTA</tt></strong>: Add quota on a venue. If a user exceed this
+    , she will not be able to book the venue for the whole week.
+    Quota is specified in minutes per week. -1 means no quota.
+    ");
+
 echo '<form method="post" action="'.site_url('adminbmv/venues_action').'">';
-if( $task == 'add new' )     // Append id to the editable since we are creating new entry.
-{
+// Append id to the editable since we are creating new entry.
+if( $task == 'add new' )
     $editables .= ',id';
-}
+
 echo dbTableToHTMLTable( 'venues', $default, $editables, $task, $hide);
 
-if( $task != 'add new' )
+if( strtolower($task) != 'add new' )
 {
-    echo '<button name="response" value="delete" onClick="AreYouSure(this)" 
-            title="Delete this entry">' . $symbDelete . '</button>';
+    echo '<button class="btn btn-primary" 
+        name="response" value="delete" onClick="AreYouSure(this)" 
+        title="Delete this entry">' . $symbDelete . '</button>';
 }
 
 echo '</form>';
 echo goBackToPageLink( "$controller/home", 'Go back' );
 
-echo '<h1> List of venues </h1>';
-echo ' <br />';
+echo heading('List of venues');
 
 echo '<table class="info sortable exportable" id="venues">';
 echo arrayHeaderRow( $venues[0], 'venue', $hide );
