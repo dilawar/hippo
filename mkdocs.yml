@@ -51,6 +51,7 @@ extra:
     social:
         - type: 'github'
           link: 'https://github.com/dilawar'
+    site_url: 'https://dilawar.github.io/hippo'
 
 # extra_javascript:
   # - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
