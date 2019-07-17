@@ -363,12 +363,15 @@
                   <a href="https://github.com/dilawar/Hippo/edit/master/docs/bmv_admin_manual.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <p>Welcome to BookMyVenue Admin manual.</p>
+                <p>I am going to assume that you are on <strong>BookMyVenue Admin</strong> page. To reach to
+this page, <mark><em>My Home</em> (top right corner) &rarr;  <em>BookMyVenue Admin</em></mark>.</p>
+<p><img alt="BookMyVenue Admin Home Page" src="../images/bmv_admin.png" style="width:60%" /></p>
 <h1 id="manage-bookings">Manage bookings</h1>
 <details class="optional-class"><summary>Cancel a booked event</summary><p>Go to <mark><em>Home Page -&gt; Academic Admin -&gt; Manage talks/seminar</em></mark>.</p>
 <p><img alt="" src="../images/faq_cancel_public_talk_1.png" style="width:60%" /></p>
-<p>Then search for talk you are looking for. In front of the talk, you will find the booking.
-There is <mark><strong>Cancel</strong></mark> button to cancel the booked event.</p>
+<p>Then search for talk you are looking for. In front of the talk, you will
+find the booking.</p>
+<p>There is <mark><strong>Cancel</strong></mark> button to cancel the booked event.</p>
 <p><img alt="" src="../images/faq_cancel_public_talk_2.png" style="width:60%" /></p>
 <p>After the booking is cancelled, a new booking request can be created
 by clicking on button with calendar icon. The user can also create a fresh
@@ -376,7 +379,51 @@ booking request by visiting appropriate links related to <code>Public
 Talks/Seminars</code>.</p>
 </details>
 <h1 id="manage-venues">Manage venues</h1>
-<details class="optional-class" open="open"><summary>How do I block a venue?</summary><p>In your admin page (i.e., <mark><em>Home -&gt; BookMyVenue Admin</em></mark>), you will find link
+<p>For the following tasks, you must be at 
+<mark><strong>My Home</strong> &rarr; <strong>BookMyVenue Admin</strong> &rarr; <strong>Manage Venues</strong></mark>
+page.</p>
+<details class="optional-class"><summary>How do I add a new venue?</summary><p><mark><strong>My Home</strong> &rarr; <strong>BookMyVenue Admin</strong> &rarr; <strong>Manage Venues</strong></mark></p>
+<p>To add a new venue, fill the form. In the example below, I am adding a new
+venue called <code>Safeda</code>. </p>
+<p>In the <code>ID</code> field, do not use any space.</p>
+<p>Press <mark><strong>add new</strong></mark> button when you are done. The new venue will apear in
+the list of venues below this form (not shown in the image below).</p>
+<p><img alt="Add new venue" src="../images/bmv_admin_new_venue.png" style="width:60%" /></p>
+</details>
+<details class="optional-class"><summary>How do I edit a venue?</summary><p><mark><strong>My Home</strong> &rarr; <strong>BookMyVenue Admin</strong> &rarr; <strong>Manage Venues</strong></mark></p>
+<p>To edit an existing venue, select the venue from the drop down list and
+press <mark><strong>Select</strong></mark>. The form will be filled by old value. Edit these
+values and press <mark><strong>update</strong></mark> button.</p>
+<p>In the example below, I selected <strong>FF-North Wing-Lecture Room</strong> venue from
+the dropdown list and pressed <mark><strong>Select</strong></mark> (this step is not shown in
+figure below). I was presented the following
+form with old values. Here I am adding <code>NOTE TO USER</code> and adding <code>QUOTA</code>.</p>
+<p><img alt="Edit venue" src="../images/bmv_admin_edit_venue.png" style="width:60%" /></p>
+<p>Here is table of not-so-obvious options.</p>
+<ul>
+<li><code>ALLOW BOOKING ON HIPPO</code>: <code>NO</code> to disable booking by common pool.  Admin
+  can still book this venue.</li>
+<li><code>NOTE TO USER</code>: Show extra information to user e.g., <code>Do not book in night</code></li>
+<li><code>QUOTA</code>: Set quota on venue in minutes per week i.e.  user can not book it
+  for more than this duration within a week. In the example above, no one
+  can book this venue for more than 60 minutes per week. <strong>Set this to -1 to
+  remove quota</strong>.</li>
+</ul>
+</details>
+<details class="optional-class"><summary>How to I restrict booking on a venue?</summary><p>There is only one option available for you. That is <code>QUOTA</code> option in venue.
+When <code>QUOTA</code> is set to <code>-1</code>, there is no restriction on the venue. Set it to
+non-zero positive venue to restrict the booking.</p>
+<p>If <code>QUOTA</code> is set to <code>x</code> then no one can book this venue for more than <code>x</code>
+minutes in a week. </p>
+<div class="admonition note">
+<p class="admonition-title">Potential misuse</p>
+<p>Lets assume that you have enabled quota on a venue of 60 minutes. I can
+book this venue first time for 59 minutes. This way I could create
+another booking since 59 minutes is still less than maximum quota of 60
+minutes. Currently there is no protection from this trick!</p>
+</div>
+</details>
+<details class="optional-class"><summary>How do I block a venue?</summary><p>In your admin page (i.e., <mark><em>Home -&gt; BookMyVenue Admin</em></mark>), you will find link
 <mark><strong>Block Venues</strong></mark>. Click on it and you will be presented a form.</p>
 <p>Select multiple venues (press down <em>Ctrl</em> key), select start and end dates
 and start and end times. Select a reason for blocking the venue and pick the
