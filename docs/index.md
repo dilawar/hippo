@@ -1,5 +1,6 @@
-Welcome to the NCBS’s Hippo!
+Welcome to the [NCBS’s Hippo](https://ncbs.res.in/hippo).
 
+![Login Window](images/login.png)
 
 Use your NCBS/InStem/CCAMP login id to login. If it is your first time, you will
 be taken to a page to review your profile. Kindly review/edit your details. If
