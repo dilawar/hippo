@@ -45,7 +45,7 @@ else
         {
             if( strtotime($event['date']) < strtotime( $whichDay) + 7*24*3600 )
             {
-                $talkHtml .= '<div class="notice">';
+                $talkHtml .= '<div class="container">';
                 // This is the where-when line at the top.
                 $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML( $event ) . '</p>';
                 $talkHtml .= talkToHTMLLarge( $talk, $with_picture = true );
