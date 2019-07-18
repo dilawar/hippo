@@ -2,17 +2,17 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
      <loc>https://ncbs.res.in/hippo/</loc>
-     <lastmod>2019-07-17</lastmod>
+     <lastmod>2019-07-18</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://ncbs.res.in/hippo/user_manual/</loc>
-     <lastmod>2019-07-17</lastmod>
+     <lastmod>2019-07-18</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>https://ncbs.res.in/hippo/bmv_admin_manual/</loc>
-     <lastmod>2019-07-17</lastmod>
+     <lastmod>2019-07-18</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
@@ -21,8 +21,8 @@
      <changefreq>daily</changefreq>
     </url>
     <url>
-     <loc>https://ncbs.res.in/hippo/admin_manual/</loc>
-     <lastmod>2019-07-17</lastmod>
+     <loc></loc>
+     
      <changefreq>daily</changefreq>
     </url>
     <url>
