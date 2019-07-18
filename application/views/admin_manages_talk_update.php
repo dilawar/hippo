@@ -18,7 +18,7 @@ $talk = getTableEntry( 'talks', 'id', $data );
 
 echo '<form method="post" action="'.site_url("$ref/update_talk_action").'">';
 echo dbTableToHTMLTable('talks', $talk
-    , 'class,coordinator,host,title,description'
+    , 'class,coordinator,host,host_extra,title,description'
     , 'submit');
 echo '</form>';
 
