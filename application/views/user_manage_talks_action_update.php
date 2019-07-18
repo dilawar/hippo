@@ -7,7 +7,7 @@ $response = __get__($_POST, 'response', '');
 
 if( $response == 'edit' )
 {
-    echo alertUser( "Here you can change the host, coordinator, title and 
+    echo alertUser( "Here you can change the hosts, coordinator, title and 
             description of the talk.", false
             );
 
@@ -16,14 +16,14 @@ if( $response == 'edit' )
 
     echo '<form method="post" action="'.site_url("user/manage_talks_action").'">';
     echo dbTableToHTMLTable('talks', $talk
-        , 'class,coordinator,host,title,description'
+        , 'class,coordinator,host,host_extra,title,description'
         , 'Update');
     echo '</form>';
 }
 else if( $response == 'submit' )
 {
     $res = updateTable( 'talks', 'id'
-                , 'class,host,coordinator,title,description'
+                , 'class,host,host_extra,coordinator,title,description'
                 , $_POST 
             );
 
