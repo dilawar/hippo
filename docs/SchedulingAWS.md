@@ -1,4 +1,4 @@
-= How is AWS schedule computed? 
+## How is AWS schedule computed? 
 
 The AWS schedule is computed by network-flow methods. For each available slot,
 we draw an edge from every speaker and put a cost on this edge. Lets say the
