@@ -77,6 +77,11 @@ class Info extends CI_Controller
         $this->loadview( 'preprints.php');
     }
 
+    public function phpinfo() 
+    {
+        echo phpinfo();
+    }
+
 }
 
 ?>
