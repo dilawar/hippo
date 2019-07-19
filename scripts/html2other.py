@@ -23,7 +23,7 @@ import locale
 
 # Set locale to utf-8 otherwise calling this script from apache will have
 # decoding issues.
-locale.setlocale( locale.LC_ALL, "en_IN.UTF-8")
+locale.setlocale( locale.LC_ALL, "en_US.UTF-8")
 os.environ[ "PYTHONENCODING"] = "utf-8"
 
 pandoc_ = True

@@ -23,6 +23,7 @@ run :  build
 	    -e HIPPO_BASE_URL:$(HIPPO_BASE_URL) \
 	    -v $(PWD)/..:/var/www/html/hippo:rw \
 	    -v /etc/hipporc:/etc/hipporc:ro \
+	    -v /tmp:/tmp \
 	    $(LATESTTAG) $(CMD)
 
 upload :
