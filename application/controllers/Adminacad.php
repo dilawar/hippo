@@ -217,10 +217,10 @@ class Adminacad extends CI_Controller
         flashMessage( json_encode( $_POST ));
         $method = $_POST['method'];
         $ret = rescheduleAWS($method);
-        if($ret)
-            flashMessage("Failed to compute schedule. Request method $method.");
+        if($ret['status'])
+            echo flashMessage("Failed to compute ($method):" . $ret['output']);
         else
-            flashMessage('Sucessfully computed schedule.');
+            echo flashMessage("Sucessfully computed schedule");
         redirect( 'adminacad/upcoming_aws#temporary_assginments');
     }
 

@@ -28,6 +28,7 @@ function flashMessage( $msg, $category = 'success' )
 {
     if(isset($_SESSION))
         $_SESSION[ $category ] = $msg;
+    return $msg;
 }
 
 function printInfo( $msg )
