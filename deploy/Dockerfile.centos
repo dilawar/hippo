@@ -4,12 +4,24 @@ RUN yum update -y
 RUN yum -y install epel-release
 RUN yum install -y https://$(rpm -E '%{?centos:centos}%{!?centos:rhel}%{rhel}').iuscommunity.org/ius-release.rpm
 RUN yum install -y python36u-pip
+RUN yum install -y python36u-pip
 RUN yum install -y git
+RUN yum install -y yum-plugin-replace
 RUN yum install -y php72u
 RUN yum install -y php72u-pecl-imagick 
 RUN yum install -y php72u-{imap,ldap,mbstring,pdo,mysqlnd}
-RUN yum install -y php72u-{xml,json}
+RUN yum install -y mariadb nmap
 
-COPY hippo.conf /etc/httpd/conf.d/
+# install npm
+RUN curl -sL https://rpm.nodesource.com/setup_12.x | bash -
+RUN yum install -y nodejs
+
+WORKDIR /var/www/html
+#RUN git clone -b devel --depth 1 https://github.com/dilawar/hippo
+#RUN cd /var/www/html/hippo && npm install .
+# Change ownership so apache can read it
+#RUN chown -c -R apache:root /var/www/html/hippo
+
+# RUN a2enmod rewrite
 COPY httpd-foreground /usr/local/bin/
 CMD ["httpd-foreground"]

@@ -1,0 +1,12 @@
+version: '3'
+services:
+    web:
+        build: . 
+        dockerfile: Dockerfile
+        ports:
+            - "8888:80"
+        volumes:
+            - /etc/hipporc:/etc/hipporc
+            - logvolume01:/var/log
+volumes:
+  logvolume01: {}
