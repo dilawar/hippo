@@ -773,7 +773,8 @@ function getThumbnail( $originalImage )
     // $img->setImageAlphaChannel(Imagick::ALPHACHANNEL_REMOVE);
     $img = $img->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
 
-    $outputImage = $originalImage . "_thumbnail.jpg";
+    // Create thumbnain in temp dir.
+    $outputImage = tempnam(sys_get_temp_dir(), "thub") . '.jpg';
     $img->writeImage( $outputImage );
     $img->clear( );
     $img->destroy( );
