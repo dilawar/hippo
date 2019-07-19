@@ -1,13 +1,9 @@
-FROM httpd:alpine
-MAINTAINER Dilawar Singh
+FROM ulsmith:alpine-apache-php7
+MAINTAINER Dilawar Singh <dialwars@ncbs.res.in>
 
 # install npm
 RUN apk add --update nodejs nodejs-npm
 
 WORKDIR /var/www/html
-#RUN git clone -b devel --depth 1 https://github.com/dilawar/hippo
-#RUN cd /var/www/html/hippo && npm install .
-# Change ownership so apache can read it
-#RUN chown -c -R apache:root /var/www/html/hippo
 
 CMD ["httpd-foreground"]
