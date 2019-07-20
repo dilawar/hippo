@@ -1,6 +1,6 @@
 VERSION := $(shell date +"%Y.%m.%d")
 PWD := $(shell pwd)
-HIPPO_BASE_URL:= 172.16.223.30/hippo
+HIPPO_BASE_URL:= 127.0.0.1/hippo
 TAG := dilawars/hippo:$(VERSION)
 LATESTTAG := dilawars/hippo:latest
 

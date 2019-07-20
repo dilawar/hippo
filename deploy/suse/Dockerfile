@@ -13,11 +13,14 @@ RUN zypper in -y python3-regex
 COPY requirements.txt /tmp
 RUN python3 -m pip install -r /tmp/requirements.txt
 RUN zypper in -y texlive-fontawesome texlive-pdftex-bin
+RUN zypper in -y tmux
 
 # copy to vhost.
-COPY hippo.conf /etc/apache2/vhost.d/
+COPY hippo.conf /etc/apache2/vhosts.d/
 COPY httpd-foreground /usr/local/bin/
 
 RUN a2enmod php7 
 RUN a2enmod rewrite
+RUN a2enmod ldap
+RUN a2enmod -l
 CMD ["httpd-foreground"]
