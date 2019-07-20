@@ -3,4 +3,4 @@ set -e
 set -x
 export http_proxy=http://proxy.ncbs.res.in:3128/
 export https_proxy=http://proxy.ncbs.res.in:3128/
-exec apache2ctl -DFOREGROUND "$@"
+exec apache2 -DFOREGROUND "$@"

@@ -1,4 +1,4 @@
-FROM debian:10
+FROM debian:9
 MAINTAINER Dilawar Singh <dilawars@ncbs.res.in>
 
 RUN apt-get update
@@ -13,7 +13,7 @@ COPY requirements.txt /tmp
 RUN python3 -m pip install -r /tmp/requirements.txt
 RUN apt-get install -y texlive-latex-base texlive-xetex
 
-COPY hippo.conf /etc/apache2/sites-enabled/
+#COPY hippo.conf /etc/apache2/sites-enabled/
 COPY httpd-foreground /usr/local/bin/
 
 # RUN a1enmod php7
