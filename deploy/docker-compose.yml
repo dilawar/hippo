@@ -1,6 +1,7 @@
 version: '3'
 services:
     web:
+        image: dilawars/hippo:2019.07.20
         build:
             context: suse
             args:
