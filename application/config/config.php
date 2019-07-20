@@ -26,7 +26,7 @@ date_default_timezone_set('Asia/Kolkata');
 |
 */
 
-$config['base_url'] = getenv('HIPPO_BASE_URL');
+$config['base_url'] = 'http://172.16.223.30/hippo';
 //$config['base_url'] = 'https://ncbs.res.in/hippo';
 
 /*

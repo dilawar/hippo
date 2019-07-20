@@ -1,9 +1,8 @@
-==This is a work in progress. If you want to correct a mistake or add some material, feel free to edit the page.==
-
-## Login 
-
+## Login
 To login, use your NCBS, InStem, or CCAMP login id and password. Hippo accepts
-usernames/password associated with `intranet` and `webmail` accounts. If you are using
+usernames/password associated with both
+[INTRANET]({{ intranet }}){target=blank} and 
+[WEBMAIL]({{ webmail }}){target=blank} accounts. If you are using
 `webmail` credentials, the login will be slow. We recommend that you use your
 [intranet](http://intranet.ncbs.res.in/user){target=blank} credentials.
 
@@ -14,11 +13,21 @@ usernames/password associated with `intranet` and `webmail` accounts. If you are
     discrepency, write email to [Academic
     Office](mailto:acadoffice@ncbs.res.in).
 
+## Whom to contact?
+
+- In case of booking related queries, write to [__Dean's
+  Office__](mailto:deansoffice@ncbs.res.in).
+- For AWS/Thesis Seminar related queries, write to [__Academic
+  Office__](mailto:acadoffice@ncbs.res.in)
+- For Hippo related queries, write to [__Hippo Mailing
+  List__](mailto:hippo@lists.ncbs.res.in). ==Use NCBS/InStem account.==
 
 
 ## FAQ 
 
-??? optional-class "How to create a general booking request?"
+### Booking related
+
+??? question "How to create a general booking request?"
 
     Click on ==**QuickBook**== at the top-right corner of the page. 
 
@@ -56,40 +65,18 @@ usernames/password associated with `intranet` and `webmail` accounts. If you are
     advance before your last event expires.
 
 
-??? optional-class "I need to change a confirmed booking (of a public Talks/Seminar)?"
+??? question "I need to change a confirmed booking (of a public Talks/Seminar)?"
 
     If the talk is already confirmed, then you need to contact academic admin or
     deans office to cancel it. If not, then you need to cancel pending request.
 
 
-??? optional-class "How do I upload my AWS abstract?"
-    Click on ==__My AWS__== link in your home page. If you cant’t find this link
-    that means you are not eligible for AWS. Please contact academic office if
-    you are (why would you be reading this otherwise!).
-
-    ![](images/faq_user_click_myaws.png) 
-
-    Click on it!
-
-    If you haven’t acknowledged the AWS schedule yet, you will see a button
-    ==__Acknowledge AWS__==. Click it. After acknowledging the AWS, you will see
-    a table of your AWS entry.  Press ==__Edit__== button below it.
-
-    ![](images/faq_user_edit_aws.png)
-
-    Clicking on ==Edit== button will take to you a form. Fill it and ==Submit==.
-    Read the instructions at the top of the page. If you need help, do write to
-    [Academic Office](mainto:acadoffice@ncbs.res.in). 
-
-    After successful upload, you can see your abstract
-    [here](https://ncbs.res.in/hippo/info/aws). Select the appropriate date.
-
-??? optional-class "How do I book my thesis seminar?"
+??? question "How do I book my thesis seminar?"
 
     See the item just below. While booking, select the talk `CLASS` to `THESIS
     SEMINAR`.
 
-??? optional-class "How to book a public talk, lecture or seminar?"
+??? question "How to book a public talk, lecture or seminar?"
 
     !!! info 
         Keep the photo and email id of speaker handy. You can continue without them but
@@ -113,14 +100,14 @@ usernames/password associated with `intranet` and `webmail` accounts. If you are
     mailing lists at appropriate times. Morning 8am is the usual time when
     automatic email is sent.
 
-??? optional-class "Editing/updating/scheduling talks?"
+??? question "Editing/updating/scheduling talks?"
 
     Go to your home page, and click on ==__Manage my public events__==. You will
     see all upcoming talks registered by you. You can click on ==__Edit__==
     button to edit the description and title.  If it is not already scheduled,
     you can schedule it by clicking on ==__Schedule__== button.
 
-??? optional-class "How to cancel or edit booking request/event?"
+??? question "How to cancel or edit booking request/event?"
 
     To edit or cancel a request or a confirmed booking, click 'My Home' (on top
     right corner box) then on 'Manage My Private Events'.
@@ -133,3 +120,51 @@ usernames/password associated with `intranet` and `webmail` accounts. If you are
 
     ![](images/faq_cancel_private_events.png){: style="width:60%"}
 
+### AWS related
+
+??? question "How do I know I am eligible for AWS?"
+
+    Go to your profile page. At the top-right corner, click on ==__Hi user__==
+    link.
+
+    ![User profile entry](images/user_profile_entry.png){: style="width:60%"}
+
+    Check __Your profile__ table. The field `ELIGIBLE_FOR_AWS` should be `YES`
+    if you are eligible for aws.
+
+    ![eligible for aws](images/user_eligible_aws.png){:style="width:60%"}
+
+    If it is set to `NO`, write to _Academic Office_ to include yourself to the
+    roster. Every two months, Hippo sends an email to your PI to review the
+    list of students who are eligible for AWS. If you are missing on this list,
+    probably they will inform Academic Office. But why leave this to older
+    people!
+
+
+??? question "How do I upload my AWS abstract?"
+    Click on ==__My AWS__== link in your home page. If you cant’t find this
+    link, you are not eligible for AWS. Please contact academic office if
+    you are (why would you be reading this otherwise!).
+
+    ![](images/faq_user_click_myaws.png) 
+
+    Click on it!
+
+    If you haven’t acknowledged the AWS schedule yet, you will see a button
+    ==__Acknowledge AWS__==. Click it. After acknowledging the AWS, you will see
+    a table of your AWS entry.  Press ==__Edit__== button below it.
+
+    ![](images/faq_user_edit_aws.png)
+
+    Clicking on ==Edit== button will take to you a form. Fill it and ==Submit==.
+    Read the instructions at the top of the page. If you need help, write to
+    [Academic Office](mainto:acadoffice@ncbs.res.in).
+
+    !!! warning "Do no copy/paste from MS Word or PDF"
+        Please do not copy paste from MS Work or PDF. It may contain special
+        characters which will not display OK in html. Copy your content to a
+        html editor (Google docs etc.) and see if everything looks fine. 
+        
+
+    After successful upload, you can see your abstract
+    [here](https://ncbs.res.in/hippo/info/aws){target=blank}.

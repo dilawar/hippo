@@ -225,17 +225,8 @@ echo $methodTable;
 
 $schedule = getTentativeAWSSchedule( );
 $scheduleMap = array( );
-if(! $schedule )
-{
-    echo printWarning("Failed to compute and commit schedule.");
-}
-else
-{
-    // This is used to group slots.
-    $weekDate = $schedule[0]['date'];
-    foreach( $schedule as $sch )
-        $scheduleMap[ $sch['date'] ][ ] = $sch;
-}
+foreach( $schedule as $sch )
+    $scheduleMap[ $sch['date'] ][ ] = $sch;
 
 $header = "<tr>
     <th>Speaker</th><th>Scheduled On</th><th>Last AWS on</th><th># Day</th><th>#AWS</th>
@@ -243,6 +234,8 @@ $header = "<tr>
 
 echo '<br>';
 
+// This is used to group slots.
+$weekDate = $schedule[0]['date'];
 
 $csvdata = array( "Speaker,Scheduled on,Last AWS on,Days since last AWS,Total AWS so far" );
 
@@ -368,7 +361,7 @@ foreach( $scheduleMap as $date => $schedule )
 
 $csvText = implode( "\n", $csvdata );
 
-$upcomingAWSScheduleFile = sys_get_temp_dir() . '/upcoming_aws_schedule.csv';
+$upcomingAWSScheduleFile = FCPATH.'/temp/upcoming_aws_schedule.csv';
 
 $res = saveDataFile( $upcomingAWSScheduleFile, $csvText );
 
@@ -380,6 +373,7 @@ echo goBackToPageLink( "adminacad/home", "Go back" );
 
 ?>
 
+/* <!-- This should be copy pasted --> */
 <script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
 <script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
 <script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>

@@ -449,19 +449,13 @@ class User extends CI_Controller
     public function downloadtalk( $date, $id )
     {
         $pdffile = generatePdfForTalk( $date, $id );
+        $this->download( $pdffile, false );
 
-        if( file_exists($pdffile) )
-        {
-            echo "File exists ... ";
-            $this->download( $pdffile, false );
-            echo '<script type="text/javascript" charset="utf-8">
-                    window.onload = function() {
-                        window.close()
-                    };
-                </script>';
-        }
-        else
-            echo flashMessage( "Could not generate pdf: $pdffile" );
+        echo '<script type="text/javascript" charset="utf-8">
+                window.onload = function() {
+                    window.close();
+                };
+            </script>';
     }
 
     public function logout( )

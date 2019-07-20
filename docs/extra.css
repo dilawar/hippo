@@ -1,8 +1,13 @@
-p {
+h3 {
+
 }
 
-@media only screen and (min-width: 100em) {
-  html {
-    font-size: 62.5%; /* previsouly: 68.75%; */
-  }
+img {
+    padding-left: 20px;
+    padding: 10px;
+    /* border: 5px solid lightblue; */
+    min-width: 500px;
+    width: 60%;
+    background-color: white;
+    align: right;
 }
