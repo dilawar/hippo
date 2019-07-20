@@ -1,0 +1,5 @@
+numpy
+networkx
+dateparser
+pypandoc
+mysql-connector-python

@@ -1,2 +1,2 @@
-FROM nimmis/alpine-apache-php7:latest
+FROM httpd:alpine
 MAINTAINER Dilawar Singh

@@ -17,11 +17,11 @@ build : $(DOCKERFILE)
 run :  build
 	docker rm -f "NCBS-Hippo" || echo "Failed to remove"
 	docker run \
-	    -dit \
+	    -it \
 	    --net host \
 	    --name "NCBS-Hippo"\
 	    -e HIPPO_BASE_URL:$(HIPPO_BASE_URL) \
-	    -v $(PWD)/..:/usr/local/apache2/htdocs/hippo:rw \
+	    -v $(PWD)/../..:/var/www/html/hippo:rw \
 	    -v /etc/hipporc:/etc/hipporc:ro \
 	    -v /tmp:/tmp \
 	    $(LATESTTAG) $(CMD)
