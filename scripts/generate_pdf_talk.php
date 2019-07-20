@@ -146,7 +146,7 @@ function eventToTex( $event, $talk = null )
         $extra .= '\end{tabular}';
     }
 
-    $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0,breakable]' . $desc . $extra . '\end{tcolorbox}';
+    $tex[] =  $desc . $extra ;
 
     $texText = implode( "\n", $tex );
     return $texText;

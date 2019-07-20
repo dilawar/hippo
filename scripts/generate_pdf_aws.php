@@ -58,8 +58,8 @@ function awsToTex( $aws )
 
 
     // Date and plate
-    $date = '\faCalendarCheckO\, \textsc{\bf \textcolor{red}{ ' . humanReadableDate( $aws[ 'date' ] ) .  ' | 4:00 pm' . '}}';
-    $place = '\faHome\, \textsc{\bf \textcolor{red}{Haapus (LH1), Eastern Lab Complex}}';
+    $date = '\textsc{\bf \textcolor{red}{ ' . humanReadableDate( $aws[ 'date' ] ) .  ' | 4:00 pm' . '}}';
+    $place = '\textsc{\bf \textcolor{red}{Haapus (LH1), Eastern Lab Complex}}';
 
     // Two columns here.
     $head = '';
@@ -118,7 +118,7 @@ function awsToTex( $aws )
     $extra .= '\textbf{Thesis Committee Member(s)} & ' . implode( ", ", $tcm ) . '\\\\';
     $extra .= '\end{tabular}';
 
-    $autoscale = true;
+    $autoscale = false;
     if( $autoscale )
     {
         $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
@@ -126,7 +126,7 @@ function awsToTex( $aws )
             . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
     }
     else
-        $tex[] = $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '}';
+        $tex[] = $abstract . '\vfill{5mm}' . '{\normalsize \vfill ' . $extra . '}';
 
     return implode( "\n", $tex );
 
@@ -157,14 +157,15 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
         , "\usepackage[]{color}"
         , "\usepackage{tikz}"
         , "\usepackage{wrapfig}"
-        , "\usepackage{fontawesome}"
         , '\pagenumbering{gobble}'
+        , '\usepackage{fontspec}'
+        , '\setmainfont{Nimbus Mono L}'
         , '\linespread{1.2}'
         , '\usetikzlibrary{calc,positioning,arrows,fit}'
         // , '\usepackage{ebgaramond}'
-        , '\usepackage[sfdefault,light]{FiraSans}'
+        //, '\usepackage[sfdefault,light]{FiraSans}'
         , '\usepackage{tcolorbox}'
-        , '\tcbuselibrary{fitting}'
+        //, '\tcbuselibrary{fitting}'
         , '\begin{document}'
         );
 
