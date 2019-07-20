@@ -18,6 +18,6 @@ RUN zypper in -y texlive-fontawesome texlive-pdftex-bin
 COPY hippo.conf /etc/apache2/vhost.d/
 COPY httpd-foreground /usr/local/bin/
 
-# RUN a1enmod php7
+RUN a2enmod php7 rewrite
 # CMD rcapache2 restart && tail -f /var/log/apache2/*log
 CMD ["httpd-foreground"]
