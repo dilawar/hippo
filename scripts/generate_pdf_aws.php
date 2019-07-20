@@ -75,7 +75,7 @@ function awsToTex( $aws )
     $head .= '\begin{tikzpicture}[remember picture, overlay
         , every node/.style={rectangle, node distance=5mm,inner sep=0mm} ]';
     $head .= '\node[below=of current page.north west, anchor=north west, xshift=10mm] (logo) 
-        {\includegraphics[height=1cm]{' . $logo . '}};';
+        {\includegraphics[height=2cm]{' . $logo . '}};';
     $head .= '\node[below=of current page.north east, anchor=north east,xshift=-10mm] (aws) 
             {\LARGE \textbf{\textsc{' . $awsType . '}}};';
     $head .= '\node[below=of aws.south west,anchor=north west] (date) { ' . $date . ' }; ';
@@ -107,13 +107,12 @@ function awsToTex( $aws )
     hippo_shell_exec( "$cmd $tempFile tex", $texAbstractFile, $stderr );
 
     $texAbstract = file_get_contents( trim($texAbstractFile) );
-    // unlink( $tempFile );
 
     if( strlen(trim($texAbstract)) > 10 )
         $abstract = $texAbstract;
 
     // Title and abstract
-    $extra = '\begin{tabular}{ll}';
+    $extra = '\begin{tabular}{p{0.3\linewidth} p{0.7\linewidth}}';
     $extra .= '\textbf{Supervisor(s)} & ' . implode( ",", $supervisors) . '\\\\';
     $extra .= '\textbf{Thesis Committee Member(s)} & ' . implode( ", ", $tcm ) . '\\\\';
     $extra .= '\end{tabular}';
@@ -126,7 +125,7 @@ function awsToTex( $aws )
             . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
     }
     else
-        $tex[] = $abstract . '\vfill{5mm}' . '{\normalsize \vfill ' . $extra . '}';
+        $tex[] = $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '}';
 
     return implode( "\n", $tex );
 
@@ -158,9 +157,10 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
         , "\usepackage{tikz}"
         , "\usepackage{wrapfig}"
         , '\pagenumbering{gobble}'
+        , '\usepackage{booktabs}'
         , '\usepackage{fontspec}'
-        , '\setmainfont{Nimbus Mono L}'
-        , '\linespread{1.2}'
+        , '\renewcommand{\familydefault}{\sfdefault}'
+        //, '\linespread{1.2}'
         , '\usetikzlibrary{calc,positioning,arrows,fit}'
         // , '\usepackage{ebgaramond}'
         //, '\usepackage[sfdefault,light]{FiraSans}'

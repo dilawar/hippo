@@ -26,6 +26,7 @@ RUN ln -s /opt/pandoc-2.7.3/bin/pandoc* /usr/local/bin/
 
 RUN yum install -y texlive-luatex texlive-wrapfig texlive-xetex texlive-tcolorbox
 RUN yum install -y texlive-ifluatex texlive texlive-euenc
+RUN yum install -y texlive-booktabs
 RUN texhash
 RUN fc-cache -vsf
 RUN fc-list
