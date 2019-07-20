@@ -1,0 +1,6 @@
+mysql-connector-python
+networkx
+requests
+pillow
+openpyxl
+pypandoc

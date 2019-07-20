@@ -1,0 +1,18 @@
+version: '3'
+services:
+    web:
+        build:
+            context: suse
+            args:
+                http_proxy: "http://proxy.ncbs.res.in:3128"
+                https_proxy: "http://proxy.ncbs.res.in:3128"
+        environment:
+            - DEBUG="1"
+            - http_proxy="http://proxy.ncbs.res.in:3128"
+            - https_proxy="http://proxy.ncbs.res.in:3128"
+        volumes:
+            - .:/srv/www/htdocs/hippo
+            - /tmp:/tmp
+        network_mode: host
+
+            

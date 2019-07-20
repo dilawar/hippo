@@ -1,0 +1,45 @@
+[AUD]Dasheri, 200 Seater Auditorium, SLC [VC]
+[AUD]Malgova, 70 Seater Auditorium, SLC [VC]
+[LH]Haapus (LH-1), 108 seater, GF, ELC [VC]
+[LH]Himsagar (LH-3) SF, ELC [Skype]
+[LH]Langra (LH-2) (Courses) 70 seater, FF, ELC [Skype]
+[LH]Raspuri, Workshop Room, 72 seater GF, SLC [Skype]
+[LH]Safeda, (Courses) 50 seater, SF, SLC [Skype]
+[MTG] Meeting Rooms
+[MTG]Axon, 15 seater, SF, Admin Block [VC]
+[MTG]Bleb, 8 seater, GF, Admin Block [No Projector]
+[MTG]Chloroplast, 25 seater, SF, ELC [Skype]
+[MTG]Director's Annex, 8 seater, SF, Admin Block [VC]
+[MTG]Endosome, 12 seater, FF, SLC [Skype]
+[MTG]Faculty Lounge, 63 seater, SF, SLC [VC]
+[MTG]Golgi, 25 seater, FF, ELC [Skype]
+[MTG]Mitochondrion, 12 seater, SF, SLC [Skype]
+[MTG]Nucleus, 25 seater, GF, ELC [Skype]
+[MTG]Synapse, 12 seater, GF, SLC [Skype]
+[OPN] Open-Air Meeting Space
+[OPN]Amphitheatre, 40 seater, Near Reception
+[OPN]Lawns
+[OPN]Plasmid, 15 seater, SF, ELC, Near Fly Facility
+[OPN]Sausage Tree, 12 seater, Near Main Gate
+[OPN]Simons Centre Terrace, 30 seater, SF, ELC
+[OPN]SLC, Colonnade, 150 seater,
+[OPN]Vacuole, 15 seater, SF, ELC, Near Collection Room
+[OPN]Vesicle, 12 seater, FF, Near Bank, ELC
+[SPRT] Sports and Recreation
+[SPRT]inStem sports complex
+[SPRT]NCBS Sports complex
+[TEA] (Eat outs)
+[TEA]Cafeteria, 20 seater, SF, Admin Block
+[TEA]Cafeteria, 50 seater, FF, ELC
+[TEA]Canteen, 50 seater, Near Main Parking
+[AUD] Auditoriums
+[TEA]Glass Roof Canteen, 36 seater, Near SLC
+[TEA]Main Canteen, 120 seater, (FF)
+[TEA]Main Canteen, 157 seater, (GF)
+[VENM] Venues-Misc
+[VENM]Medical Centre
+[VENM]Virtual Room (Block the slot if venue is uncertain)
+[VEN] Venues at C-CAMP
+[VEN]Centriole, 12 seater, FF, C-CAMP [VC]
+[VEN]Chausa, 48 seater, C-CAMP
+[VEN]Ribosome, 12 seater, GF, C-CAMP [Skyp

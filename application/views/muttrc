@@ -1,0 +1,7 @@
+set copy=no
+set smtp_url=smtp://mail.ncbs.res.in:587/
+set from="noreply@ncbs.res.in"
+set realname="NCBS Hippo"
+set ssl_verify_host=no
+set ssl_verify_dates=no
+set certificate_file=/home/cal/.mutt_certificate
