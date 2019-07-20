@@ -9,4 +9,4 @@ export https_proxy=http://proxy.ncbs.res.in:3128/
 # Apache gets grumpy about PID files pre-existing
 rm -f /usr/local/apache2/logs/httpd.pid
 
-exec apache2 -DFOREGROUND "$@"
+exec httpd -DFOREGROUND "$@"

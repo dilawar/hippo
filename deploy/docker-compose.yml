@@ -1,12 +1,22 @@
-version: '3'
+version: "2"
 services:
-    web:
-        build: . 
-        dockerfile: Dockerfile
-        ports:
-            - "8888:80"
-        volumes:
-            - /etc/hipporc:/etc/hipporc
-            - logvolume01:/var/log
-volumes:
-  logvolume01: {}
+  apache:
+    build: ./
+    labels:
+      - "traefik.backend=alpine"
+      - "traefik.frontend.rule=Host:alpine.docker.localhost"
+    environment:
+      - MYSQL_HOST=mysql
+      - APACHE_SERVER_NAME=alpine.docker.localhost
+      - PHP_SHORT_OPEN_TAG=On
+      - PHP_ERROR_REPORTING=E_ALL
+      - PHP_DISPLAY_ERRORS=On
+      - PHP_HTML_ERRORS=On
+      - PHP_XDEBUG_ENABLED=true
+    networks:
+      - default
+    volumes:
+      - ./..:/app/public
+    cap_add:
+      - SYS_TIME
+      - SYS_NICE

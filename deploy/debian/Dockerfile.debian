@@ -1,0 +1,21 @@
+FROM debian:10
+MAINTAINER Dilawar Singh <dilawars@ncbs.res.in>
+
+RUN apt-get update
+RUN apt-get install -y libapache2-mod-php
+RUN apt-get install -y php-mysql php-imap php-ldap php-mbstring 
+RUN apt-get install -y php-imagick
+RUN apt-get install -y python3-numpy python3-networkx python3-pip
+RUN apt-get install -y python3-regex
+
+RUN apt-get install -y pandoc
+COPY requirements.txt /tmp
+RUN python3 -m pip install -r /tmp/requirements.txt
+RUN apt-get install -y texlive-fontawesome texlive-pdftex-bin
+
+COPY hippo.conf /etc/apache2/conf.d/
+COPY httpd-foreground /usr/local/bin/
+
+# RUN a1enmod php7
+# CMD rcapache2 restart && tail -f /var/log/apache2/*log
+CMD ["httpd-foreground"]
