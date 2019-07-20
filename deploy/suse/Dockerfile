@@ -14,7 +14,8 @@ COPY requirements.txt /tmp
 RUN python3 -m pip install -r /tmp/requirements.txt
 RUN zypper in -y texlive-fontawesome texlive-pdftex-bin
 
-COPY hippo.conf /etc/apache2/conf.d/
+# copy to vhost.
+COPY hippo.conf /etc/apache2/vhost.d/
 COPY httpd-foreground /usr/local/bin/
 
 # RUN a1enmod php7
