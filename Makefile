@@ -1,6 +1,6 @@
 VERSION := $(shell date +"%Y.%m.%d")
 PWD := $(shell pwd)
-HIPPO_BASE_URL:= 172.16.223.30/hippo
+HIPPO_BASE_URL:= 127.0.0.1/hippo
 TAG := dilawars/hippo:$(VERSION)
 LATESTTAG := dilawars/hippo:latest
 
@@ -21,7 +21,8 @@ run :  build
 	    --net host \
 	    --name "NCBS-Hippo"\
 	    -e HIPPO_BASE_URL:$(HIPPO_BASE_URL) \
-	    -v $(PWD)/..:/var/www/html/hippo:rw \
+	    -v $(PWD)/../..:/srv/www/htdocs/hippo:rw \
+	    -v /tmp/apache2:/var/log/apache2:rw \
 	    -v /etc/hipporc:/etc/hipporc:ro \
 	    -v /tmp:/tmp \
 	    $(LATESTTAG) $(CMD)

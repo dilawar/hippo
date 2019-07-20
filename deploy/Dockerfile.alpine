@@ -1,9 +1,0 @@
-FROM ulsmith:alpine-apache-php7
-MAINTAINER Dilawar Singh <dialwars@ncbs.res.in>
-
-# install npm
-RUN apk add --update nodejs nodejs-npm
-
-WORKDIR /var/www/html
-
-CMD ["httpd-foreground"]

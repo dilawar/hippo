@@ -1,1 +1,5 @@
-deploy/requirements.txt
+numpy
+networkx
+dateparser
+pypandoc
+mysql-connector-python
