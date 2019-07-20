@@ -21,7 +21,7 @@ run :  build
 	    --net host \
 	    --name "NCBS-Hippo"\
 	    -e HIPPO_BASE_URL:$(HIPPO_BASE_URL) \
-	    -v $(PWD)/../..:/srv/www/htdocs/hippo:rw \
+	    -v $(PWD)/.:/srv/www/htdocs/hippo:rw \
 	    -v /tmp/apache2:/var/log/apache2:rw \
 	    -v /etc/hipporc:/etc/hipporc:ro \
 	    -v /tmp:/tmp \

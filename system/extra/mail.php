@@ -4,11 +4,10 @@ include_once BASEPATH. 'database.php';
 include_once BASEPATH. 'extra/methods.php';
 
 // Directory to store the mdsum of sent emails.
-$maildir = getDataDir(). '/_mails';
+$maildir = sys_get_temp_dir(). '/_mails';
 
 if( ! file_exists( $maildir ) )
 {
-    echo "Creating directory $maildir ";
     mkdir( $maildir, 0777, true );
 }
 
