@@ -10,10 +10,16 @@ RUN zypper install -y \
     php7-mysql \
     php7-imagick \
     php7-json \
+    && zypper clean --all
+
+RUN zypper install -y \
     python3-numpy python3-networkx \
     python3-regex python3-pip \
     python3-mysql-connector-python \
     python3-Pillow \
+    && zypper clean --all
+
+RUN zypper install -y \
     pandoc \
     texlive-fontawesome texlive-pdftex-bin \
     texlive-xetex-bin \
