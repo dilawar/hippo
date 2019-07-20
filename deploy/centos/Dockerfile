@@ -24,9 +24,8 @@ RUN python3 -m pip install pip --upgrade
 RUN python3 -m pip install -r /tmp/requirements.txt
 RUN ln -s /opt/pandoc-2.7.3/bin/pandoc* /usr/local/bin/
 
-RUN yum install -y texlive-luatex texlive
-
-RUN yum clean all
-RUN rm -rf $HOME/.cache/*
+RUN yum install -y texlive-luatex texlive-wrapfig texlive-xetex texlive-tcolorbox
+RUN fc-cache -vsf
+RUN fc-list
 
 CMD ["httpd-foreground"]
