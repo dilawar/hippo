@@ -93,8 +93,8 @@ function eventToTex( $event, $talk = null )
 
 
     // Logo etc.
-    $date = ' ,' .  $when;
-    $place = ' ,' . $where;
+    $date = $when;
+    $place = $where;
 
     $head .= '\begin{tikzpicture}[remember picture,overlay
         , every node/.style={rectangle, node distance=5mm,inner sep=0mm} ]';
@@ -146,9 +146,7 @@ function eventToTex( $event, $talk = null )
         $extra .= '\end{tabular}';
     }
 
-    $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-        , fit to height=17 cm, fit basedim=16pt
-        ]' . $desc . $extra . '\end{tcolorbox}';
+    $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0,breakable]' . $desc . $extra . '\end{tcolorbox}';
 
     $texText = implode( "\n", $tex );
     return $texText;
@@ -176,9 +174,11 @@ function generatePdfForTalk( string $date, string $id = '' ) : string
         , '\linespread{1.15}'
         , '\pagenumbering{gobble}'
         , '\usetikzlibrary{fit,calc,positioning,arrows,backgrounds}'
-        , '\usepackage[sfdefault,light]{FiraSans}'
+        , '%\usepackage[sfdefault,light]{FiraSans}'
+        , '\usepackage{fontspec}'
+        , '\setmainfont{Nimbus Sans L}' // available on centos7
         , '\usepackage{tcolorbox}'          // Fit text in one page.
-        , '\tcbuselibrary{fitting}'
+        , '%\tcbuselibrary{fitting}' // not available on centos
         , '\begin{document}'
     );
 
