@@ -93,8 +93,8 @@ function eventToTex( $event, $talk = null )
 
 
     // Logo etc.
-    $date = '\faClockO \,' .  $when;
-    $place = ' \faHome \,' . $where;
+    $date = ' ,' .  $when;
+    $place = ' ,' . $where;
 
     $head .= '\begin{tikzpicture}[remember picture,overlay
         , every node/.style={rectangle, node distance=5mm,inner sep=0mm} ]';
@@ -173,7 +173,6 @@ function generatePdfForTalk( string $date, string $id = '' ) : string
         , "\usepackage[colorlinks=true]{hyperref}"
         , "\usepackage[]{color}"
         , "\usepackage{tikz}"
-        , "\usepackage{fontawesome}"
         , '\linespread{1.15}'
         , '\pagenumbering{gobble}'
         , '\usetikzlibrary{fit,calc,positioning,arrows,backgrounds}'

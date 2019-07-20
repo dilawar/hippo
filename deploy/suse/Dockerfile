@@ -2,7 +2,7 @@ FROM opensuse/leap:15.1
 MAINTAINER Dilawar Singh <dilawars@ncbs.res.in>
 
 # RUN zypper ref
-RUN zypper in -y apache2-mod_php7
+RUN zypper in -y apache2-mod_php7 
 RUN zypper in -y php7-{ldap,mbstring,pdo,mysql,imagick,json}
 RUN zypper install -y python3-numpy python3-networkx \
     python3-pip \
@@ -18,6 +18,6 @@ RUN zypper in -y texlive-fontawesome texlive-pdftex-bin
 COPY hippo.conf /etc/apache2/vhost.d/
 COPY httpd-foreground /usr/local/bin/
 
-RUN a2enmod php7 rewrite
-# CMD rcapache2 restart && tail -f /var/log/apache2/*log
+RUN a2enmod php7 
+RUN a2enmod rewrite
 CMD ["httpd-foreground"]
