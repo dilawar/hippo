@@ -1,20 +1,8 @@
-FROM opensuse/leap:15.1
+FROM dilawars/leap151-apache2:latest
+
 MAINTAINER Dilawar Singh <dilawars@ncbs.res.in>
 
-# Install dependencies.
-RUN zypper install -y apache2-mod_php7 \
-    && rm -rf /var/cache/zypp/packages/*
-
-RUN zypper install -y \
-    php7-ldap \
-    php7-mbstring \
-    php7-pdo \
-    php7-mysql \
-    php7-imagick \
-    php7-json \
-    php7-dom \
-    && rm -rf /var/cache/zypp/packages/*
-
+# python3
 RUN zypper install -y \
     python3-numpy python3-networkx \
     python3-regex python3-pip \
@@ -23,6 +11,7 @@ RUN zypper install -y \
     vim \
     && rm -rf /var/cache/zypp/packages/*
 
+# texlive and pandoc.
 RUN zypper install -y \
     pandoc \
     texlive-fontawesome texlive-pdftex-bin \
@@ -33,9 +22,11 @@ RUN zypper install -y \
     tmux \
     && rm -rf /var/cache/zypp/packages/*
 
+# cron
 RUN zypper install -y cronie \
     && rm -rf /var/cache/zypp/packages/*
 
+# Other dependencies.
 
 COPY requirements.txt /tmp
 RUN python3 -m pip install -r /tmp/requirements.txt

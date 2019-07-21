@@ -5,7 +5,23 @@ class BMVPDO extends PDO
 {
     function __construct( $host = 'localhost'  )
     {
-        $conf = parse_ini_file( '/etc/hipporc', $process_section = TRUE );
+        $conf = [
+            'mysql' => [
+                'host' => '127.0.0.1'
+                , 'port' => 3306 
+                , 'user' => getenv('HIPPO_DB_USERNAME')
+                , 'passwrod' => getenv('HIPPO_DB_PASSWORD')
+                , 'database' => 'hippo'
+            ]
+        ];
+
+        try {
+            $conf = parse_ini_file( '/etc/hipporc', $process_section = TRUE );
+        } catch (Exception $e) {
+            // could  not read for some reason.
+            throw("Could not read /etc/hipporc file. Without it, I can not continute...");
+        }
+
         $options = array ( PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION );
         $host = $conf['mysql']['host'];
         $port = $conf['mysql']['port'];

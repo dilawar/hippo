@@ -1,19 +1,19 @@
 version: '3'
 services:
     hippo:
-        image: dilawars/hippo:latest
+        image: dilawars/hippo:${VERSION:-latest}
         build:
             context: suse
-            args:
-                http_proxy: ${http_proxy}
-                https_proxy: ${https_proxy}
+            # args:
+                # http_proxy: ${http_proxy}
+                # https_proxy: ${https_proxy}
         environment:
             - DEBUG="1"
             - http_proxy="http://proxy.ncbs.res.in:3128"
             - https_proxy="http://proxy.ncbs.res.in:3128"
         volumes:
-            - ./..:/srv/www/htdocs/hippo
+            - ./..:/srv/www/htdocs/hippo:rw
             - /tmp:/tmp
             - /var/log:/var/log:rw 
-            - /etc/hipporc:/etc/hipporc:ro
+            - /etc/hipporc:/etc/hipporc
         network_mode: host

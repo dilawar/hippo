@@ -5,6 +5,9 @@ set -x
 export http_proxy=http://proxy.ncbs.res.in:3128/
 export https_proxy=http://proxy.ncbs.res.in:3128/
 
+# Apache log.
+mkdir -p /var/log/apache2
+
 # Launch cron (from chronie/SUSE)
 (cron -n &)
 exec apache2ctl -DFOREGROUND "$@"
