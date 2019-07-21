@@ -4,9 +4,9 @@ services:
         image: dilawars/hippo:latest
         build:
             context: suse
-            # args:
-                # http_proxy: "http://proxy.ncbs.res.in:3128"
-                # https_proxy: "http://proxy.ncbs.res.in:3128"
+            args:
+                http_proxy: ${http_proxy}
+                https_proxy: ${https_proxy}
         environment:
             - DEBUG="1"
             - http_proxy="http://proxy.ncbs.res.in:3128"
