@@ -12,8 +12,9 @@ services:
             - http_proxy="http://proxy.ncbs.res.in:3128"
             - https_proxy="http://proxy.ncbs.res.in:3128"
         volumes:
-            - .:/srv/www/htdocs/hippo
+            - ..:/srv/www/htdocs/hippo
             - /tmp:/tmp
+            - /etc/hipporc:/etc/hipporc:ro
         network_mode: host
 
             
