@@ -17,6 +17,7 @@ RUN zypper install -y \
     python3-regex python3-pip \
     python3-mysql-connector-python \
     python3-Pillow \
+    nano \
     && zypper clean --all
 
 RUN zypper install -y \
