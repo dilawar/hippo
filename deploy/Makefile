@@ -4,8 +4,12 @@ all : ./docker-compose.yml
 	docker-compose build 
 
 run:
-	docker run -it \
+	docker-compose up
+
+test:
+	docker run \
+	    -it \
 	    --net host \
-	    -v /tmp:/tmp \
+	    -v /etc/hipporc:/etc/hipporc \
 	    -v $(PWD)/..:/srv/www/htdocs/hippo \
-	    dilawars/hippo:2019.07.20
+	    dilawars/hippo $(CMD)

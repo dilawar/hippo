@@ -1,0 +1,27 @@
+version: "2"
+services:
+  myservice:
+    build: ./
+    labels:
+      - "traefik.backend=myservice"
+      - "traefik.frontend.rule=Host:myservice.docker.localhost"
+    environment:
+      - MYSQL_HOST=mysql
+      - APACHE_SERVER_NAME=myservice.docker.localhost
+      - PHP_SHORT_OPEN_TAG=On
+      - PHP_ERROR_REPORTING=E_ALL
+      - PHP_DISPLAY_ERRORS=On
+      - PHP_HTML_ERRORS=On
+      - PHP_XDEBUG_ENABLED=true
+    networks:
+      - default
+    volumes:
+      - ./:/app
+	# ADD in permission for setting system time to host system time
+    cap_add:
+      - SYS_TIME
+      - SYS_NICE
+networks:
+  default:
+    external:
+      name: docker_docker-localhost
