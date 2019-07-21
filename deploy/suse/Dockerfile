@@ -12,6 +12,7 @@ RUN zypper install -y \
     php7-mysql \
     php7-imagick \
     php7-json \
+    php7-dom \
     && rm -rf /var/cache/zypp/packages/*
 
 RUN zypper install -y \
@@ -27,6 +28,8 @@ RUN zypper install -y \
     texlive-fontawesome texlive-pdftex-bin \
     texlive-xetex-bin \
     texlive-wrapfig \
+    texlive-tcolorbox \
+    texlive-nimbus15-fonts \
     tmux \
     && rm -rf /var/cache/zypp/packages/*
 
