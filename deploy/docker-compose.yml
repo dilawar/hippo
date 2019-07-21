@@ -1,6 +1,6 @@
 version: '3'
 services:
-    web:
+    hippo:
         image: dilawars/hippo:latest
         build:
             context: suse
@@ -14,5 +14,6 @@ services:
         volumes:
             - ./..:/srv/www/htdocs/hippo
             - /tmp:/tmp
+            - /var/log:/var/log:rw 
             - /etc/hipporc:/etc/hipporc:ro
         network_mode: host

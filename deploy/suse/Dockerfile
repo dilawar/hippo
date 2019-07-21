@@ -33,9 +33,9 @@ RUN zypper install -y \
     tmux \
     && rm -rf /var/cache/zypp/packages/*
 
-RUN zypper install -y \
-    nodejs-common \
+RUN zypper install -y cronie \
     && rm -rf /var/cache/zypp/packages/*
+
 
 COPY requirements.txt /tmp
 RUN python3 -m pip install -r /tmp/requirements.txt
@@ -43,6 +43,8 @@ RUN python3 -m pip install -r /tmp/requirements.txt
 # copy to vhost.
 COPY hippo.conf /etc/apache2/vhosts.d/
 COPY httpd-foreground /usr/local/bin/
+COPY hippo-cron /etc/cron.d/hippo-cron
+RUN touch /var/log/cron.log
 
 RUN a2enmod php7 
 RUN a2enmod rewrite
