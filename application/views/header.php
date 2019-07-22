@@ -155,7 +155,7 @@ $(document).ready(function(){
     <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
     <td><a class="bright" href="<?= getConfigValue( 'CALENDAR_URL' ) ?>" target="hippo_popup">Calendar</a> </td>
-    <td><a class="bright" href="https://dilawar.github.io/hippo" target="hippo_popup">Docs</a> </td>
+    <td><a class="bright" href="https://ncbs-hippo.readthedocs.io/en/latest/" target="hippo_popup">Docs</a> </td>
     </tr>
 </table>
 </div>
