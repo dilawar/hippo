@@ -23,8 +23,30 @@ Welcome to [NCBS’s Hippo](https://ncbs.res.in/hippo) documentation.
     Playstore](https://play.google.com/store/apps/details?id=com.dilawar.hippo&hl=en_IN).
     This app is still in beta.
 
-## Credits
+# Getting Help
 
-- NCBS IT Dept for providing servers.
-- Nuno Jesus for logo.
-- Android App: Sweety Meel for background image.
+If [User Manual](user_manual) is not sufficient:
+
+Whom To Contact                               | For what
+----------------------------------------------|---------------------
+NCBS Academic Office                          | AWS and courses
+Deans Office                                  | Approvals and venue related queries.
+[Hippo Mailing List](hippo@lists.ncbs.res.in) | Website, technical problems
+
+# Reporting bugs 
+
+Ideal place to report bug is this url {{ bugs }}. You can also write to [Hippo
+mailing list]( {{ hippo_mailing_list }} ). But you know, mailing lists are
+stupid and things can fall into cracks.
+
+# Deploying 
+
+See [System Administration Manual](system_admin_manual) for details.
+
+???+ info "Credits"
+    NCBS IT Dept for providing servers and infrastructure. [Nuno
+    Jesus](https://github.com/nunojesus) for logo. Sweety Meel for background the
+    image for Hippo App.
+
+
+Last modified on: {{ git_revision_date }}

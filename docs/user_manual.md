@@ -168,3 +168,7 @@ usernames/password associated with both
 
     After successful upload, you can see your abstract
     [here](https://ncbs.res.in/hippo/info/aws){target=blank}.
+
+??? tip "Not found what you are looking for?"
+    Open a issue on repository [{{ bugs }}]({{ bugs }}) or write to [Hippo mailing
+    list]( {{ hippo_mailing_list }} ). 

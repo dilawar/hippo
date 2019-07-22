@@ -1,37 +1,105 @@
-# Deploying Hippo
+# Deploying Hippo 
+
+I recommend to use `docker`. It will save you a lot of troubles. Like most other
+websites, this website also have tons of dependencies. All of which have been
+put into a [docker
+image](https://cloud.docker.com/u/dilawars/repository/docker/dilawars/hippo).
 
 ## Using docker
 
-First, create `/etc/hipporc` file with following details.
+### Create `/etc/hipporc` file.
+
+This file contains all sensitive parameters which must be kept in isolation.
+Make sure default values works.  Hippo will not launch without this file. And
+example script should be available in the repository `deploy/hipporc`.
+
+    ```
+    [global]
+    ldap_ip = ldap.example.in
+    ldap_port = 8862
+    log_file = /var/log/hippo.log
+
+    [email]
+    send_emails = true
+    smtp_server = mail.example.in
+    smtp_port = 581
+
+    [mysql]
+    host = 127.0.0.1
+    user = hippouser
+    port = 3306
+    ; Escape the special characters in password by enclosing it in " "
+    password = "m!#ypassword"
+    database = hippo
+
+    [data]
+    ; Users/speaker photos are stored here.
+    user_imagedir = /srv/hippo/userimages
+
+    [google calendar]
+    ; More on this in appropriate section.
+    calendar_id = d2jud2r7bsj0i820k0f6j702qo@group.calendar.google.com
+    service_account_email = hippo-588@hippo-179605.iam.gserviceaccount.com 
+    service_account_secret = /etc/hippo/hippo-f1811b036a3f.json
+    ```
+
+### Install `docker` and `docker-compose`
+
+Official docker documentation is pretty good: https://docs.docker.com/install/
+
+On my system
+
+```bash
+[dilawars@chamcham ~]$ docker -v
+Docker version 18.09.7, build 2d0083d657f8
+[dilawars@chamcham ~]$ docker-compose -v
+docker-compose version 1.24.0, build 0aa5906
+```
+
+### Install nodejs 10+
+
+https://nodejs.org/en/download/package-manager/
+
+On my system:
+```bash
+[dilawars@chamcham ~]$ npm -v 
+6.9.0
+[dilawars@chamcham ~]$ node -v
+v10.16.0
+```
+
+### Download Hippo
+
+```bash
+git clone {{repo_url}} --depth 10 --recursive
+```
+
+and install `node` dependencies.
 
 ```
-[global]
-ldap_ip = ldap.example.in
-ldap_port = 8862
-log_file = /var/log/hippo.log
-
-[email]
-send_emails = true
-smtp_server = mail.example.in
-smtp_port = 581
-
-[mysql]
-host = 127.0.0.1
-user = hippouser
-; Use the default port
-port = -1
-; Escape the special characters in password by enclosing it in " "
-password = "m!#ypassword"
-database = hippo
-
-[data]
-user_imagedir = /srv/hippo/userimages
-
-[google calendar]
-calendar_id = d2jud2r7bsj0i820k0f6j702qo@group.calendar.google.com
-service_account_email = hippo-588@hippo-179605.iam.gserviceaccount.com 
-service_account_secret = /etc/hippo/hippo-f1811b036a3f.json
+$ cd hippo
+$ npm ci
 ```
+
+
+### Launch Hippo using `docker`
+
+```bash
+cd hippo/deploy && docker-compose up -d
+```
+
+It will download the image and launch the website inside the container. The
+website is shared between host and docker. Any change made to the local website
+will reflect in docker as well.
+
+Point to `127.0.0.1/hippo` and you should hippo is alive.
+
+???+ info "docker-compose"
+    Command `docker-compose` read `docker.compose.yml` file which is in `deploy`
+    directory. This is the base directory you should be in when calling
+    `docker-compose`.
+
+
 
 ## Manually
 
