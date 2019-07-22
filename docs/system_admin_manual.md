@@ -85,7 +85,19 @@ $ npm ci
 ### Launch Hippo using `docker`
 
 ```bash
-cd hippo/deploy && docker-compose up -d
+[dilawars@ghevar deploy (master)]$ cd hippo/deploy && docker-compose up
+Creating deploy_hippo_1 ...
+Creating deploy_hippo_1 ... done
+Attaching to deploy_hippo_1
+hippo_1  | + export http_proxy=http://proxy.ncbs.res.in:3128/
+hippo_1  | + http_proxy=http://proxy.ncbs.res.in:3128/
+hippo_1  | + export https_proxy=http://proxy.ncbs.res.in:3128/
+hippo_1  | + https_proxy=http://proxy.ncbs.res.in:3128/
+hippo_1  | + cron -n
+hippo_1  | + exec apache2ctl -DFOREGROUND
+hippo_1  | which: no w3m in (/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin)
+hippo_1  | which: no lynx in (/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin)
+
 ```
 
 It will download the image and launch the website inside the container. The
