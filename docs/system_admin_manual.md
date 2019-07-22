@@ -122,3 +122,15 @@ $ sudo systemctl restart apache2
 $ sudo a2enmod ssl
 $ sudo a2ensite default-ssl
 ```
+
+# Hippo AI
+
+Hippo AI is an optional module to train a neural network to write Annual Work
+Seminar. It's source code is hosted on
+[github](https://github.com/dilawar/hippo-ai). See the instructions there how to
+install it.
+
+This repository is a `git subtree` prefixed to `hippo-ai` folder. That is, a
+snapshot of `hippo-ai` repository is kept in this repository as `hippo-ai`. 
+
+??? todo "More to follow"
