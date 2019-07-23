@@ -5,12 +5,10 @@
 }
 
 
-/* h1, h2, h3 { */
-    /* font-family : 'EB Garamond'; */
-    /* font-family: Ubuntu; */
-    /* line-height: 140%; */
-    /* font-size: 2vw; */
-/* } */
+h1, h2, h3, h4, h5, h6 {
+    line-height: 200%;
+    margin-bottom: 20px;
+}
 
 body {
     /* font-family: "Libre Baskerville"; */
@@ -1265,4 +1263,9 @@ details > p {
   padding: 2px 6px;
   margin: 0;
   box-shadow: 3px 3px 4px black;
+}
+
+form {
+    margin-bottom: 20px;
+    margin-top: 20px;
 }

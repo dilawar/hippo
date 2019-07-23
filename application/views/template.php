@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
 <html>
+<meta charset="utf-8">
 <head>
     <title><?php if(isset($title)){ echo $title;}else{echo "Hippo";} ?></title>
 </head>
@@ -13,38 +13,18 @@ if(isset($header))
 else
     echo "";
 
-if( isset( $_SESSION['success'] ) )
+
+$cats = explode(",", "success,info,error,warning,failure,primary,primary,secondary,light,dark");
+foreach( $cats as $x )
 {
-    echo '<div class="alert alert-success">
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-        <strong>' . $_SESSION['success'] . '</strong>
-        </div>';
-    unset( $_SESSION['success'] );
-}
-else if( isset($_SESSION['info']) )
-{
-    echo '<div class="alert alert-info">
-    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-    <strong>' . $_SESSION['info'] . '</strong></div>';
-    unset( $_SESSION['info'] );
-}
-else if( isset( $_SESSION['error'] ) )
-{
-    echo '<div class="alert alert-error">
-        <i class="fa fa-exclamation-circle fa-2x"></i>
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-        <strong>' . $_SESSION['error'] . '</strong></div>
-        ';
-    unset( $_SESSION['error'] );
-}
-else if( isset($_SESSION['warning']) )
-{
-    echo '<div class="alert alert-error">
-        <i class="fa fa-exclamation-circle fa-2x"></i>
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-        <strong>' . $_SESSION['warning'] . '</strong></div>
-        ';
-    unset( $_SESSION['warning'] );
+    if( isset( $_SESSION[$x] ) )
+    {
+        echo '<div class="alert alert-' . $x . '">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+            <strong>' . $_SESSION[$x] . '</strong>
+            </div>';
+        unset( $_SESSION[$x] );
+    }
 }
 
 $symbDelete = ' <i class="fa fa-trash "></i> ';

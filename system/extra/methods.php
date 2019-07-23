@@ -216,7 +216,23 @@ function toColor($n)
  */
 function getDataDir( )
 {
-    return FCPATH.'temp/';
+    return '/srv/hippo';
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Find the upload directory. Its hardcoded to the
+    * getDataDir()/images.
+    *
+    * @Returns   getDataDir() / images
+ */
+/* ----------------------------------------------------------------------------*/
+function getUploadDir( )
+{
+    $dir = getDataDir() . '/images/';
+    if( ! is_dir($dir))
+        mkdir($dir, 0700, true);
+    return $dir;
 }
 
 /**

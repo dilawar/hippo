@@ -1209,9 +1209,10 @@ function updateEvent( $gid, $eid, $options )
 }
 
 // Create user if does not exists and fill information form LDAP server.
-function createUserOrUpdateLogin( $userid, $ldapInfo = Array() )
+function createUserOrUpdateLogin( $userid, $ldapInfo = Array(), $db=NULL)
 {
-    $hippoDB = initDB();;
+    if( ! $db )
+        $db = initDB();;
 
     if( ! $ldapInfo )
         $ldapInfo = @getUserInfoFromLdap( $userid );
@@ -1220,7 +1221,7 @@ function createUserOrUpdateLogin( $userid, $ldapInfo = Array() )
        if($ldapInfo[ 'last_name' ] == 'NA' )
            $ldapInfo[ 'last_name' ] = '';
 
-    $stmt = $hippoDB->prepare(
+    $stmt = $db->prepare(
        "INSERT IGNORE INTO logins
         (id, login, first_name, last_name, email, created_on, institute, laboffice)
             VALUES
@@ -1241,7 +1242,7 @@ function createUserOrUpdateLogin( $userid, $ldapInfo = Array() )
     $stmt->bindValue( ':institute', $institute );
     $stmt->execute( );
 
-    $stmt = $hippoDB->prepare( "UPDATE logins SET last_login=NOW() WHERE login=:login" );
+    $stmt = $db->prepare( "UPDATE logins SET last_login=NOW() WHERE login=:login" );
     $stmt->bindValue( ':login', $userid );
     return $stmt->execute( );
 }

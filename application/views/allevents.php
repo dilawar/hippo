@@ -3,50 +3,37 @@
 require_once BASEPATH . 'autoload.php';
 
 // This page displays all events on campus. Select all venues.
-$venues = getVenues( $sortby = 'id' );
 $venuesDict = array( );
 foreach( $venues as $v )
     $venuesDict[$v['id']] = $v;
 
 $venuesIds = array_map( function( $v ) { return $v['id']; }, $venues );
 
-$defaults = array( 'date' => dbDate( 'today' ));
+$defaults = array('date' => dbDate($date));
 
-if( array_key_exists( 'date', $_GET ) )
-    $defaults[ 'date' ] = $_GET[ 'date' ];
-
-echo '<form action="" method="get" accept-charset="utf-8">
-    <table class="info">
-    <tr>
-        <td> <input  class="datepicker" name="date" value="' .
-            $defaults[ 'date' ] . '" /> </td>
-            <td> <button name="response"> Select Date</i>
-            </button> </td>
-    </tr>
-    </table>
+echo '
+<div class="float-right">
+<form action="'. site_url("info/booking"). '" method="post" accept-charset="utf-8">
+     <input  class="datepicker" name="date" value="'. $date.'" />
+            <button class="btn btn-primary" name="response"> Select Date </button>
     </form>
-    ';
+</div>
+<br />
+<br />
+';
 
-$calendarDate = humanReadableDate( $defaults[ 'date' ] );
+$calendarDate = humanReadableDate( $date );
 
-echo "<h2>Confirmed bookings for $calendarDate.</h2>";
-
-$events = getEventsOn( $defaults['date' ] );
-$cancelled = getEventsOn( $defaults[ 'date' ], 'CANCELLED' );
-
-
+echo heading("Confirmed bookings on $calendarDate", 3);
 
 /*
- * ******************************************************************************
- * Get requests are well.
- * *****************************************************************************
+ * REQUESTS is sent from controller.
  */
-$requests = getPendingRequestsOnThisDay( $defaults[ 'date' ] );
 $count = 0;
 $eventWidth = 200;
 $maxEventsInLine = 4;
 
-$table = '<table>';
+$table = '<table class="table table-responsive">';
 $table .= '<tr>';
 foreach( $events as $ev )
 {
@@ -93,19 +80,17 @@ if( isAuthenticated( ) )
 
 echo '<br />';
 
-echo '<h2>Classes</h2>';
 /*******************************************************************************
  * Get running courses.
  **/
-$slots = getTableEntries( 'slots' );
-$day = date( 'D', strtotime( $defaults[ 'date' ] ) );
-$todaySlots = getSlotsAtThisDay( $day, $slots );
-
 $count = 0;
 $eventWidth = 150;
-echo '<table>';
+if(count($slots) > 0)
+    echo heading("Classes", 3);
+
+echo '<table class="table table-responsive">';
 echo '<tr>';
-foreach( $todaySlots as $slot )
+foreach( $slots as $slot )
 {
     $slotId = $slot[ 'id' ];
     $runningCourses = getRunningCoursesOnTheseSlotTiles( $defaults['date'], $slotId );

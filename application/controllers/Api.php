@@ -1,7 +1,4 @@
 <?php
-header('Access-Control-Allow-Origin *');
-header('Access-Control-Allow-Headers "Content-Type"');
-
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once __DIR__.'/ApiHelper.php';
@@ -60,9 +57,25 @@ function getLogin()
 class Api extends CI_Controller
 {
 
+    // To enable CORS.
+    public function __construct($config = 'rest')
+    {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: login, hippo-api-key, x-requested-with, cache-control, Content-Type');
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+        parent::__construct();
+    }
+
     private function send_data_helper(array $data)
     {
-        $json = json_encode($data);
+        try
+        {
+            $json = json_encode($data);
+        } 
+        catch ( Exception $e )
+        {
+            $json = $e->getMessage();
+        }
         $this->output->set_content_type('application/json' );
         $this->output->set_output($json);
     }
@@ -152,7 +165,6 @@ class Api extends CI_Controller
             $args[] = "latest";
         $this->process_events_requests($args);
     }
-
 
     // Helper function for aws() function.
     private function process_aws_requests($args)
@@ -833,10 +845,31 @@ class Api extends CI_Controller
         {
             $limit = intval(__get__($args, 1, 300));
             $data = [];
-            $available = getTableEntries( 'inventory', 'name'
-                        , "status='VALID'"
-                        , "*", $limit 
-                    );
+
+            // Generate list of inventories.
+            $this->db->select('*')
+                 ->where([ 'status'=>'VALID'])
+                 ->limit($limit)
+             ;
+
+            $inventories = $this->db->get('inventory')->result_array();
+            $available = [];
+            foreach($inventories as $inv )
+            {
+                // Fetch imgage is any.
+                $inv['image_id'] = [];
+                $invID = $inv['id'];
+
+                $this->db->select('id')
+                     ->where(['external_id' => "inventory.$invID"]);
+
+                $imgs = $this->db->get('images')->result_array();
+                foreach($imgs as $img)
+                    $inv['image_id'][] = $img['id'];
+
+                $available[] = $inv;
+            }
+
             $data['list'] = $available;
             $data['count'] = count($available);
             $data['item_conditions'] = getTableColumnTypes('inventory', 'item_condition');
@@ -1063,6 +1096,131 @@ class Api extends CI_Controller
         //    return;
         //}
         return;
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Download images.
+        *
+        * @Param $arg
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function images()
+    {
+        $args = func_get_args();
+        if( count($args) == 0)
+            $args[] = 'get';
+
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        if( $args[0] === 'get')
+        {
+            $ids = $args[1];
+            $data = ['args' => $ids];
+            foreach(explode(',', $ids) as $id)
+            {
+                $images = $this->db->get_where('images', ['id' => trim($id)])->result_array();
+                foreach($images as $res)
+                {
+                    if( ! __get__($res, 'path', ''))
+                        continue;
+
+                    $filepath = getUploadDir() . '/' . $res['path'];
+                    if(! file_exists( $filepath))
+                        continue;
+                    try
+                    {
+                        $i = new Imagick( $filepath );
+                        $i->scaleImage(100, 0);
+                        $i->setImageFormat( "jpeg" );
+                        $bytes = $i->getImageBlob();
+                        $data[$id][] = 'data:image/jpeg;base64, '.base64_encode($bytes);
+                    } 
+                    catch (Exception $e) 
+                    {
+                        $data['exception'] = $e->getMessage();
+                    }
+                }
+            }
+            $this->send_data($data, "ok");
+            return;
+        }
+        else
+        {
+            $this->send_data([], "Unsupported command $get");
+            return;
+        }
+
+        $this->send_data([], "error");
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Upload images.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function upload()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $args = func_get_args();
+        if( count($args) == 0 )
+            $args[0] = 'images';
+
+        $res = [];
+        if( $args[0] == 'images')
+        {
+            $invId = intval(__get__($_POST, 'inventory_id', -1));
+            if($invId < 0)
+            {
+                $this->send_data($res, "Inventory ID is not found.");
+                return;
+            }
+
+            $storeFolder = getUploadDir();
+            if (!empty($_FILES)) 
+            {
+                $tempFile = $_FILES['file']['tmp_name'];          
+                $md5 = md5_file( $tempFile );
+                $filename = $md5 . $_FILES['file']['name'];
+                $targetFile =  $storeFolder . "/$filename";
+
+                $res['stored'] = move_uploaded_file($tempFile, $targetFile); 
+
+                // Add this value to database.
+                $this->db->select_max('id', 'maxid');
+                $r = $this->db->get('images')->result_array();
+                $id = $r[0]['maxid'];
+
+                // Prepare data to send back to client.
+                $data = [ 'external_id' => 'inventory.' . $invId ];
+                $data['path'] = $filename;
+                $data['uploaded_by'] = getLogin();
+                $data['id'] = intval($id)+1;
+                $this->db->insert('images', $data);
+                $res['dbstatus'] = $this->db->error();
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else
+            {
+                $this->send_data( $res, 'No file uploaded.');
+                return;
+            }
+            $this->send_data($res, 'error');
+        }
     }
 
     /* --------------------------------------------------------------------------*/

@@ -824,6 +824,18 @@ class BMVPDO extends PDO
                 )"
             );
 
+        // Images.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS images (
+                id INT PRIMARY KEY
+                , external_id VARCHAR(50) DEFAULT 'NONE.-1' -- associated table.id in some other table
+                , path VARCHAR(300) NOT NULL -- relative path on the disk.
+                , uploaded_by VARCHAR(100) default 'NA'
+                , last_modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP  
+                )"
+            );
+
+
         // API keys.
         $res = $this->query("
             CREATE TABLE IF NOT EXISTS apikeys (

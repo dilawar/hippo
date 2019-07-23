@@ -41,5 +41,6 @@ RUN a2enmod php7
 RUN a2enmod rewrite
 RUN a2enmod ldap
 RUN a2enmod imap
+RUN a2enmod headers
 RUN a2enmod -l
 CMD ["httpd-foreground"]

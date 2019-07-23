@@ -1,39 +1,46 @@
 <?php
-
 require_once BASEPATH.'autoload.php';
 
-echo ' <h2>Upcoming AWS</h2> ';
-$upcomingAWS = getUpcomingAWS( );
+// Called from controller.
+
+echo heading('Upcoming AWS', 1);
+
 $dateMap = array( );
 foreach( $upcomingAWS as $aws )
     $dateMap[ $aws['date'] ][] = $aws;
 
-$table = '<table class="info">';
+$table = '<table class="table table-hover table-condensed">';
 foreach ($dateMap as $date => $awses)
 {
     $table .= '<tr>';
     $table .= '<td>' . humanReadableDate( $date ) . '</td>';
+
     foreach( $awses as $aws )
     {
         $piOrHost = getPIOrHost( $aws[ 'speaker' ] );
-        $table .= '<td>' . loginToHTML( $aws['speaker']) . ' <br /> '
-            . $piOrHost . '</td>';
+        $table .= '<td>' . loginToHTML( $aws['speaker']) 
+            . ' <br /><small><tt>' . $piOrHost . '</tt></small></td>';
     }
+
+    for ($i = 0; $i < 4 - count($awses) ; $i++) {
+        $table .= '<td></td>';
+    }
+
     $table .= '<td>' . venueToShortText($awses[0]['venue']) . '</td>';
     $table .= '</tr>';
 }
+
 $table .= '</table>';
 echo $table;
 
-echo ' <h2>List of AWS Speakers</h2> ';
+echo heading('List of AWS Speakers', 1);
+
 echo alertUser( "If your name is not on this list, please write to "
         . mailto( "acadoffice@ncbs.res.in", "Academic Office" ) . "."
         , false
     );
 
-$speakers = getAWSSpeakers( );
-
-$table = ' <table class="info sortable"> ';
+$table = ' <table class="table table-hover sortable"> ';
 $table .= '<tr> <th></th> <th>Name</th> <th>PI/HOST</th> <th>Specialization</th> </tr>';
 $index = 0;
 foreach( $speakers as $i => $speaker )

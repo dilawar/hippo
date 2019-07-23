@@ -4,12 +4,13 @@ include_once BASEPATH. 'database.php';
 include_once BASEPATH. 'extra/methods.php';
 
 // Directory to store the mdsum of sent emails.
-$maildir = sys_get_temp_dir(). '/_mails';
+$maildir = sys_get_temp_dir(). '/mails';
 
-if( ! file_exists( $maildir ) )
-{
-    mkdir( $maildir, 0777, true );
-}
+//if( ! is_dir( $maildir ) )
+//{
+//    echo "$maildir not found. Create it.";
+//    mkdir( trim($maildir), 0700, true );
+//}
 
 function generateAWSEmail( $monday )
 {

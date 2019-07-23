@@ -1,20 +1,14 @@
 <?php
 require_once BASEPATH.'autoload.php';
 
-if( strtotime( 'today' ) == strtotime( 'this monday' ) )
-    $today = dbDate( 'this monday' );
-else
-    $today = dbDate( 'next monday' );
-
-$default = array( 'date' => __get__($_GET, 'date', $today) );
-
-$form = '<form method="get" action="">
-        <input class="datepicker" type="text" name="date" value="' . $default[ 'date' ] . '" > <br /> 
-        <button type="submit" name="response" title="Show AWS" value="show">Show AWSs</button>
+$form = '<form method="post" action="'.site_url('info/aws').'">
+        <input class="datepicker" type="text" name="date" value="' . $date . '" > 
+        <button class="btn btn-primary" 
+                type="submit" name="response" title="Show AWS" value="show">Show AWSs</button>
     </form>
     ';
 
-$table = '<table class="info">
+$table = '<table class="table table-info">
         <tr>
             <td>
                 <a href="'.site_url('info/aws/search'). '">Click to search AWS database.</a>
@@ -22,27 +16,17 @@ $table = '<table class="info">
             <td>
                 <a href="'.site_url( 'info/aws/roster'). '"> List of AWS speakers <br /> 
                     and upcoming AWSs</a>
-            </td>
-            <td>' . $form . 
-            '</td></tr></table>';
+            </td> 
+        </tr>
+        <tr>
+             <td colspan="2">' . $form .  '</td>
+        </tr></table>';
 
-echo "<h3>Annual Work Seminars on " .  humanReadableDate( $default[ 'date' ] ) . ".</h3>";
 echo $table;
 echo "<br />";
 
-if( $_GET )
-{
-    if( array_key_exists( 'date', $_GET ) )
-        $default[ 'date' ] = $_GET[  'date' ];
-    else
-        $default = array( 'date' => $today );
-}
-
-$whichDay = $default[ 'date' ];
-
-$awses = getTableEntries( 'annual_work_seminars', 'date' , "date='$whichDay'" );
-$upcoming = getTableEntries( 'upcoming_aws', 'date', "date='$whichDay'" );
-$awses = array_merge( $awses, $upcoming );
+$whichDay = $date;
+echo heading("Annual Work Seminars on " .  humanReadableDate($whichDay), 5);
 
 if( count( $awses ) < 1 )
 {

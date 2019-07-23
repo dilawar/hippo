@@ -6,4 +6,3 @@ RewriteRule ^(.*)$ index.php/$1 [L,QSA]
 
 SetEnv HTTP_PROXY 172.16.223.223:3128
 SetEnv HTTPS_PROXY 172.16.223.223:3128
-

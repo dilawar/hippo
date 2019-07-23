@@ -120,6 +120,13 @@ Hippo is written in `php7` and `python3`. You must have at least `php7.1` and
 manager, you can install them using `pip` (for python) or `pecl` (for php).
 Some essential dependencies are in source code.
 
+### Server configurations
+
+```bash
+$ sudo a2enmod rewrite
+$ sudo a2enmod php
+```
+
 ### PHP dependencies 
 
 - imap

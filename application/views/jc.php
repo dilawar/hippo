@@ -1,33 +1,19 @@
 <?php
-
 require BASEPATH.'autoload.php';
 
-$default = array( 'date' => dbDate( 'today' ) );
-
-if( $_GET )
-{
-    if( array_key_exists( 'date', $_GET ) )
-        $default[ 'date' ] = $_GET[  'date' ];
-    else
-        $default = array( 'date' => $today );
-}
-
-echo '<form method="get" action="">
-    <table class="info">
-        <tr>
-            <td><input class="datepicker" type="text" name="date" value="' .
-                    $default[ 'date' ] . '" ></td>
-            <td><button type="submit" name="response"
-                    title="Show JCs on this day."
-                    value="show"> Show All JCs</button></td>
-        </tr>
-    </table>
+echo '
+<div class="container">
+<form method="post" action="'.site_url('info/jc'). '">
+    <input class="datepicker" type="text" name="date" value="'.$date.'" >
+    <button class="btn btn-primary" name="response" 
+            title="Show JCs on this day." value="show"
+        > Show All JCs</button>
     </form>
-    ';
+</div> 
+<br />
+';
 
-$whichDay = $default[ 'date' ];
-
-$jcs = getTableEntries( 'jc_presentations', 'date', "date >= '$whichDay' AND status='VALID'" );
+$whichDay = $date;
 
 if( count( $jcs ) < 1 )
 {
@@ -38,7 +24,8 @@ else
 {
     // Display details of JCs which are withing this week. Otherwise just show
     // the summary.
-    echo "<h2>Upcoming presentations in Journal Clubs</h2>";
+    echo heading("Upcoming presentations in Journal Clubs", 2);
+
     foreach( $jcs as $jc )
     {
         if( strtotime( $jc['date'] ) < strtotime( $whichDay ) + 7*24*3600 )

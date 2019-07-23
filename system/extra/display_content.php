@@ -26,6 +26,7 @@ function printWarning($msg, $append = true)
 
 function flashMessage( $msg, $category = 'success' )
 {
+    // See template.php file how this is flash messages are managed.
     if(isset($_SESSION))
         $_SESSION[ $category ] = $msg;
     return $msg;

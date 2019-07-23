@@ -10,33 +10,25 @@ if( ! (isIntranet( ) || isAuthenticated( ) ) )
     exit;
 }
 
-
 echo '<strong>Multiple keywords can be separated by , </strong>';
-echo '<form action="" method="get" accept-charset="utf-8">
+echo '<form action="'.site_url("info/aws/search").'" method="post">
     <input type="text" name="query" value="" >
     <button type="submit" name="response" value="Search">Search</button>
     </form>
     ';
 
-if( isset( $_GET[ 'query' ] ) )
-{
-    $query = $_GET['query' ];
-    $query = implode( '%', explode( ',', $query ));
+echo printInfo( "Total matches " .  count( $awses ) );
 
-    $awses = queryAWS( $query );
-    echo printInfo( "Total matches " .  count( $awses ) );
-    foreach( $awses as $aws )
-    {
-        // Add user info to table.
-        $aws['speaker'] = loginToHTML( $aws[ 'speaker' ], true );
-        $aws['date'] = humanReadableDate( $aws[ 'date' ] );
-        echo arrayToVerticalTableHTML( $aws, 'aws', ''
-            , array( 'id', 'time', 'supervisor_2'
-            , 'tcm_member_1', 'tcm_member_2', 'tcm_member_3', 'tcm_member_4'
-        )
-    );
-        echo '<br>';
-    }
+foreach( $awses as $aws )
+{
+    // Add user info to table.
+    $aws['speaker'] = loginToHTML( $aws[ 'speaker' ], true );
+    $aws['date'] = humanReadableDate( $aws[ 'date' ] );
+
+    echo "<div class='container'>";
+    echo awsToHTMLLarge( $aws,  true);
+    echo "</div>";
+    echo '<hr/>';
 }
 
 

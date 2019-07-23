@@ -139,6 +139,7 @@ class User extends CI_Controller
 
             $_POST['login'] = whoAmI();
             $res = updateTable("logins", "login", $where, $_POST);
+
             if( $res )
             {
                 echo msg_fade_out( "User details have been updated sucessfully" );
