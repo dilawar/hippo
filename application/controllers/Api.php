@@ -1137,7 +1137,6 @@ class Api extends CI_Controller
                     try
                     {
                         $i = new Imagick( $filepath );
-                        $i->scaleImage(100, 0);
                         $i->setImageFormat( "jpeg" );
                         $bytes = $i->getImageBlob();
                         $data[$id][] = 'data:image/jpeg;base64, '.base64_encode($bytes);
