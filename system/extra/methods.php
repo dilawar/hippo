@@ -2093,3 +2093,24 @@ function getUpcomingPublicEventsFormatted(string $startDate, int $limit = 20, in
     }
     return $all;
 }
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Genearte base64 image out of a path.
+    *
+    * @Param $filepath
+    * @Param $width
+    * @Param $height
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getBase64JPEG(string $filepath, int $width=0, int $height = 0) : string
+{
+    $i = new Imagick( $filepath );
+    $i->setImageFormat( "jpeg" );
+    if( $width > 0 || $height > 0)
+        $i->adaptiveResizeImage($width, $height);
+    $bytes = $i->getImageBlob();
+    return 'data:image/jpeg;base64, '.base64_encode($bytes);
+}

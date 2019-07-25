@@ -931,6 +931,7 @@ class Api extends CI_Controller
         $user = getLogin();
         $piOrHost = getPIOrHost($user);
         $args = func_get_args();
+        $data = [];
 
         // After this we need authentication.
         if(! authenticateAPI(getKey(), getLogin()))
@@ -943,24 +944,42 @@ class Api extends CI_Controller
         {
             $limit = intval(__get__($args, 1, 500));
             $data = [];
-            $available = getTableEntries( 'inventory', 'name,item_condition'
-                , "status='VALID' AND faculty_in_charge='$piOrHost'"
-                , "*"
-                , $limit 
-            );
 
-            $borrowed = [];
-            foreach($available as $item)
+            $this->db->select('*')
+                 ->where(['status'=>'VALID', 'faculty_in_charge'=>$piOrHost])
+                 ->limit($limit);
+            $available = $this->db->get( 'inventory')->result_array();
+
+            $itemsToSend = [];
+
+            // Should have a default value.
+            $item['borrowing'] = [ ['borrower' => ''] ];
+
+            foreach($available as &$item)
             {
                 $id = $item['id'];
-                $bres = getTableEntry('borrowing', 'inventory_id,status'
-                    , ['inventory_id'=>$id, 'status'=>'VALID']
-                );
+                $bres = $this->db->get_where('borrowing'
+                   , ['inventory_id'=>$id, 'status'=>'VALID'])->result_array();
                 $item['borrowing'] = $bres;
-                $borrowed[] = $item;
+
+                // Get the thumbnail.
+                $this->db->select('id, path')->where(['external_id'=>"inventory.$id"]);
+                $images = $this->db->get('images')->result_array();
+                $thumbs = [];
+                foreach( $images as $img )
+                {
+                    $path = getUploadDir() . '/' . $img['path'];
+                    if(file_exists($path))
+                    {
+                        $thumb = getBase64JPEG($path, 100, 0);
+                        $thumbs[] = [ 'id' => $img['id'], 'base64' => $thumb ] ;
+                    }
+                }
+                $item['thumbnails'] = $thumbs;
+                $itemsToSend[] = $item;
             }
 
-            $data['list'] = $borrowed;
+            $data['list'] = $itemsToSend;
             $data['count'] = count($available);
             $data['item_conditions'] = getTableColumnTypes('inventory', 'item_condition');
             $this->send_data( $data, 'ok');
@@ -992,12 +1011,14 @@ class Api extends CI_Controller
         else if($args[0] === 'gotback')
         {
             $invId = __get__($args, 1, 0);
-            $res = updateTable( 'borrowing', 'inventory_id', 'status'
-                , ['inventory_id'=>$invId, 'status'=>'RETURNED']
-                );
-            if( $res )
-                $this->send_data(['Cleared'], 'ok');
-            return;
+            if( !  $this->db->set('status', 'RETURNED')
+                     ->where('inventory_id', $invId)
+                     ->update('borrowing') )
+            {
+                $this->send_data($this->db->error(), 'error');
+                return;
+            }
+            $this->send_data([], 'ok');
         }
         else if($args[0] === 'delete')
         {
@@ -1136,15 +1157,43 @@ class Api extends CI_Controller
                         continue;
                     try
                     {
-                        $i = new Imagick( $filepath );
-                        $i->setImageFormat( "jpeg" );
-                        $bytes = $i->getImageBlob();
-                        $data[$id][] = 'data:image/jpeg;base64, '.base64_encode($bytes);
+                        $data[$id][] = getBase64JPEG($filepath);
                     } 
                     catch (Exception $e) 
                     {
                         $data['exception'] = $e->getMessage();
                     }
+                }
+            }
+            $this->send_data($data, "ok");
+            return;
+        }
+        if( $args[0] === 'delete')
+        {
+            $ids = $args[1];
+            $data = ['args' => $ids, 'msg' => ''];
+            foreach(explode(',', $ids) as $id)
+            {
+                $images = $this->db->get_where('images', ['id' => trim($id)])->result_array();
+                foreach($images as $res)
+                {
+                    $filepath = getUploadDir() . '/' . $res['path'];
+                    if(! file_exists( $filepath))
+                    {
+                        $data['msg'] .= " $filepath not found." ;
+                        // File not found. Mark it invalid.
+                        $this->db->set('status', 'INVALID')
+                             ->where('id', $res['id'])
+                             ->update('images');
+                        continue;
+                    }
+
+                    // Its here delete the file and update the table.
+                    unlink($filepath);
+                    $data['removed_filepath'] = $filepath;
+                    $this->db->set('status', 'DELETED')
+                         ->where('id', $res['id'])
+                         ->update('images');
                 }
             }
             $this->send_data($data, "ok");

@@ -832,6 +832,7 @@ class BMVPDO extends PDO
                 , path VARCHAR(300) NOT NULL -- relative path on the disk.
                 , uploaded_by VARCHAR(100) default 'NA'
                 , last_modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP  
+                , status ENUM('VALID', 'INVALID', 'DELETED') default 'VALID'
                 )"
             );
 
