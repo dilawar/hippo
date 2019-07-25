@@ -57,12 +57,13 @@ function getLogin()
 class Api extends CI_Controller
 {
 
-    // To enable CORS.
+    // To enable CORS just for this API. DO NOT CHANGE THEM IN apache2.conf or 
+    // httpd.conf file.
     public function __construct($config = 'rest')
     {
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Headers: login, hippo-api-key, x-requested-with, cache-control, Content-Type');
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+        header('Access-Control-Allow-Headers: cache-control,login,hippo-api-key,x-requested-with,Content-Type');
+        header("Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE");
         parent::__construct();
     }
 
@@ -1250,7 +1251,10 @@ class Api extends CI_Controller
                 // Add this value to database.
                 $this->db->select_max('id', 'maxid');
                 $r = $this->db->get('images')->result_array();
-                $id = $r[0]['maxid'];
+                if($r)
+                    $id = $r[0]['maxid'];
+                else
+                    $id = 0;
 
                 // Prepare data to send back to client.
                 $data = [ 'external_id' => 'inventory.' . $invId ];
