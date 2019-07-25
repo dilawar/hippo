@@ -38,7 +38,7 @@ if( strpos( $thisPage, 'welcome' ) !== false )
                 var div = document.getElementById("div_background_image");
                 div.style.backgroundImage = "url(' . "./$background" . ')";
                 div.style.width = "100%";
-                div.style.height = "100%";
+                div.style.height = "1000px";
             }; 
             </script>';
     }
