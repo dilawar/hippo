@@ -44,7 +44,7 @@ class Info extends CI_Controller
         {
             $this->template->set('header', 'header.php' );
 
-            $date = __get__($_POST, 'date', 'this monday');
+            $date = __get__($_POST, 'date', dbDate('this monday'));
             $data['date'] = $date;
 
             // Get aws.
