@@ -42,10 +42,8 @@ div.sticker {
 
 div.user_float {
     position : fixed;
-    top : 1%;
-    width: 90%;
-    max-width: var(--maxwidth);
-    margin:auto;
+    top : 2%;
+    right: 10%;
 }
 
 table.user_float {
