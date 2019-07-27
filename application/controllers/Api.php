@@ -821,6 +821,47 @@ class Api extends CI_Controller
             return [ 'This action is not available ' . json_encode($args) ];
     }
 
+    public function comment( )
+    {
+        // After this we need authentication.
+        if(! authenticateAPI(getKey(), getLogin()))
+        {
+            $this->send_data(["Not authenticated"], "error");
+            return;
+        }
+
+        $args = func_get_args();
+        if( $args[0] == 'delete')
+        {
+            $id = __get__($args, 1, 0);
+            $res = User::deleteComment($id);
+            $this->send_data($res, 'ok');
+            return;
+        }
+        else if( $args[0] == 'post')
+        {
+            // posting comment.
+            $_POST['commenter'] = getLogin();
+            $_POST['external_id'] = $_POST['external_id'];
+            $res = User::postComment($_POST);
+            $this->send_data($res, 'ok');
+            return;
+        }
+        else if( $args[0] == 'get')
+        {
+            // Fetching comments.
+            $comms = $this->db->get_where("comment",
+                ["external_id" => $args[1], 'status' => 'VALID'])->result_array();
+            $this->send_data($comms, 'ok');
+            return;
+        }
+        else
+        {
+            $this->send_data(['unsupported ' + $args[0]], 'failure');
+            return;
+        }
+    }
+
     /* --------------------------------------------------------------------------*/
     /**
         * @Synopsis  Inventory management.
@@ -1273,6 +1314,103 @@ class Api extends CI_Controller
             }
             $this->send_data($res, 'error');
         }
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Forum API.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function forum()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $args = func_get_args();
+        $data = [];
+
+        if(count($args) == 0)
+            $args[0] = 'list';
+
+        if($args[0] === 'list')
+        {
+            $limit = 100;
+            if(count($args) > 1)
+                $limit = intval($args[1]);
+
+            $this->db->select('*')
+                 ->where('status', 'VALID')
+                 ->where('created_on >=', 'DATE_SUB(CURDATE(), INTERVAL 7 DAY)', FALSE)
+                 ->limit( $limit );
+
+            $data = $this->db->get('forum')->result_array();
+
+            // Convert all tags to a list.
+            foreach($data as &$e)
+            {
+                $e['tags'] = explode(',', $e['tags']);
+                $eid = 'forum.' . $e['id'];
+                $this->db->select('id')->where(['external_id'=>$eid, 'status'=>'VALID']);
+                $e['num_comments'] = $this->db->count_all_results('comment');
+            }
+
+            $this->send_data( $data, 'ok' );
+            return;
+        }
+        else if( $args[0] === 'delete' )
+        {
+            $id = __get__($args, 1, -1);
+            $this->db->set('status', 'DELETED')->where('id', $id);
+            $this->db->update('forum');
+            $this->send_data(['deleted' => $id], 'ok');
+            return;
+        }
+        else if( $args[0] === 'post' )
+        {
+
+            // Unique id for the forum post.
+            $id = __get__( $_POST, 'id', 0);
+            if( $id == 0 )
+            {
+                $this->db->select_max('id', 'maxid');
+                $r = $this->db->get('forum')->result_array();
+                $id = intval($r[0]['maxid'])+1;
+            }
+
+            $createdBy = getLogin();
+            $tags = implode(',', $_POST['tags']);
+
+            // Commit to table.
+            if( ! $this->db->replace('forum'
+                , ['id'=>$id, 'created_by'=>$createdBy, 'tags'=>$tags
+                    , 'title'=>$_POST['title']
+                    , 'description'=>$_POST['description']
+                ])
+            )
+            {
+                $data['db_error'] = $this->db->error();
+                $this->send_data($data, 'error');
+                return;
+            }
+            $this->send_data($data, 'ok');
+            return;
+        }
+        else if( $args[0] === 'alltags' )
+        {
+            // fixme: This should be from database.
+            $tags = explode(',', "food,emergency,canteen,acadmic");
+            $this->send_data($tags, 'ok' );
+            return;
+        }
+
+        $data['status'] = "Invalid request " . $args[0];
+        $this->send_data($data, 'ok' );
+        return;
     }
 
     /* --------------------------------------------------------------------------*/

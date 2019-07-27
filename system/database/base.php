@@ -836,6 +836,20 @@ class BMVPDO extends PDO
                 )"
             );
 
+        // Forum table.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS forum (
+                id INT PRIMARY KEY
+                , title VARCHAR(200) NOT NULL
+                , tags VARCHAR(200) NOT NULL -- csv not null, at least one is required.
+                , description MEDIUMTEXT NOT NULL
+                , created_by VARCHAR(50) NOT NULL
+                , status ENUM('VALID', 'INVALID', 'EXPIRED', 'DELETED') DEFAULT 'VALID'
+                , created_on TIMESTAMP default CURRENT_TIMESTAMP
+                , last_modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )"
+            );
+
 
         // API keys.
         $res = $this->query("
