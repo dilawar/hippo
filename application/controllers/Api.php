@@ -1349,6 +1349,7 @@ class Api extends CI_Controller
 
             $this->db->select('*')
                  ->where('status', 'VALID')
+                 ->order_by('date DESC')
                  ->where('created_on >=', 'DATE_SUB(CURDATE(), INTERVAL 7 DAY)', FALSE)
                  ->limit( $limit );
 
