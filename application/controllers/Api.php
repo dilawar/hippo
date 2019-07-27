@@ -850,8 +850,12 @@ class Api extends CI_Controller
         else if( $args[0] == 'get')
         {
             // Fetching comments.
-            $comms = $this->db->get_where("comment",
-                ["external_id" => $args[1], 'status' => 'VALID'])->result_array();
+            $limit = __get__($args, 1, 20);
+            $this->db->select('*')
+                 ->where(["external_id" => $args[1], 'status' => 'VALID'])
+                 ->order_by( 'date DESC' )
+                 ->limit($limit);
+            $comms = $this->db->get("comment")->result_array();
             $this->send_data($comms, 'ok');
             return;
         }
