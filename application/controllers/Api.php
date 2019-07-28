@@ -853,7 +853,7 @@ class Api extends CI_Controller
             $limit = __get__($args, 1, 20);
             $this->db->select('*')
                  ->where(["external_id" => $args[1], 'status' => 'VALID'])
-                 ->order_by( 'date DESC' )
+                 ->order_by( 'created_on DESC' )
                  ->limit($limit);
             $comms = $this->db->get("comment")->result_array();
             $this->send_data($comms, 'ok');
@@ -1349,7 +1349,7 @@ class Api extends CI_Controller
 
             $this->db->select('*')
                  ->where('status', 'VALID')
-                 ->order_by('date DESC')
+                 ->order_by('created_on DESC')
                  ->where('created_on >=', 'DATE_SUB(CURDATE(), INTERVAL 7 DAY)', FALSE)
                  ->limit( $limit );
 
@@ -1408,7 +1408,9 @@ class Api extends CI_Controller
         else if( $args[0] === 'alltags' )
         {
             // fixme: This should be from database.
-            $tags = explode(',', "food,emergency,canteen,acadmic");
+            $tags = explode(',', "food,acadmic,info,emergency,social,sports," .
+                "culture,borrow,accomodation");
+            ksort($tags);
             $this->send_data($tags, 'ok' );
             return;
         }
