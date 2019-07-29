@@ -9,6 +9,8 @@ $dateMap = array( );
 foreach( $upcomingAWS as $aws )
     $dateMap[ $aws['date'] ][] = $aws;
 
+ksort($dateMap);
+
 $table = '<table class="table table-hover table-condensed">';
 foreach ($dateMap as $date => $awses)
 {
