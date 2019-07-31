@@ -15,20 +15,15 @@ body {
     /* font-size: 16px; */
     /* font-family : 'EB Garamond'; */
     font-family: "Open Sans", "Arial", sans-serif;
-    line-height: 150%;
-    max-width: 90%;
-    margin-left: auto;
-    margin-right: auto;
+    width: 90%;
+    margin: auto;
+}
 
-    /* display:block; */
-    background-color:var(--background);
-    background-position: 50% 200px;
-    background-repeat:no-repeat;
-    /* background-size: cover; */
-    background-size: 100%;
-    /* background-attachment:fixed; */
-    background-attachment: scroll;
-    /* margin: auto; */
+#div_background_image {
+    display:block;
+    width: 100%;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 
@@ -407,11 +402,9 @@ div.notice {
 }
 
 div.header {
-    max-width : var(--maxwidth);
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-    padding: 10px;
+    width : inherit;
     float: top;
+    margin: auto;
     background-color: darkblue;
 }
 
