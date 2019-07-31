@@ -25,6 +25,7 @@
     "tableexport": "^5.2.0",
     "tinymce": "^5.0.12",
     "vue2": "^1.0.0",
+    "vuex": "^3.1.1",
     "xlsx": "^0.14.3"
   },
   "devDependencies": {},

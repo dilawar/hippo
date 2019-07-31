@@ -24,6 +24,8 @@
 
 <!-- new vue -->
 <script src="<?= base_url() ?>/node_modules/vue/dist/vue.js"></script>
+<script src="<?= base_url() ?>/assests/js/mixin.js"></script>
+<script src="<?= base_url() ?>/assests/js/vuex.js"></script>
  
 <!-- Font awesome -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
