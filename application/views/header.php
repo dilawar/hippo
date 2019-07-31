@@ -21,6 +21,9 @@
 <!-- Multi-dates pickers -->
 <link  href="<?= base_url() ?>/node_modules/jquery-ui-multidatespicker/jquery-ui.multidatespicker.css" rel="stylesheet" type="text/css" />
 <script src="<?= base_url() ?>/node_modules/jquery-ui-multidatespicker/jquery-ui.multidatespicker.js"></script>
+
+<!-- new vue -->
+<script src="<?= base_url() ?>/node_modules/vue/dist/vue.js"></script>
  
 <!-- Font awesome -->
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>

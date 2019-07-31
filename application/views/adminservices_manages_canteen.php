@@ -6,7 +6,7 @@ echo '<h1>Quick Add/Update Menu</h1>';
 
 $mealHtml = arrayToSelectList('which_meal', getTableColumnTypes('canteen_menu', 'which_meal'));
 echo '<form action="'. site_url("adminservices/canteen/quickadd") .'" method="post">
-    <table class="editable_canteen_menu_quick">
+    <table class="table table-responsive editable_canteen_menu_quick">
     <tr>
         <td>Canteen Name</td>
         <td>
@@ -48,7 +48,7 @@ echo '<form action="'. site_url("adminservices/canteen/quickadd") .'" method="po
         </td>
     </tr>
     </table>
-    <button class="submit">Submit</button>
+    <button class="btn btn-primary submit">Submit</button>
     </form>';
 
 echo ' <br /> <br />';
@@ -113,11 +113,11 @@ foreach( $itemGrouped as $canteen => $dayItems)
             $table .= '<td>
                 <form action="#" method="post">
                     <input type="hidden" name="id" value="'. $item['id'] . '"></input>
-                    <button>Edit</button></form>
+                    <button class="btn btn-primary">Edit</button></form>
                 </form>';
             $table .= "</td><td>";
             $table .= '<form action="' .site_url("adminservices/canteen/delete/$id") .'" method="post">';
-            $table .= "<button>Delete</button>";
+            $table .= "<button class='btn btn-danger'>Delete</button>";
             $table .= '</form>';
             $table .= '</td></tr>'; 
         }
@@ -128,7 +128,6 @@ foreach( $itemGrouped as $canteen => $dayItems)
 
 echo '<br />';
 echo goBackToPageLink( "$controller/home", "Go back" );
-
 ?>
 
 <script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
@@ -138,9 +137,22 @@ echo goBackToPageLink( "$controller/home", "Go back" );
 TableExport(document.getElementsByClassName("exportable"));
 </script>
 
+<div id="app">
+  {{ message }}
+</div>
+
 <script>
 $(#accordion).accordion({
     heightStyle : "fill"
     , collapsible: true
 });
 </script>
+
+<script type="text/javascript" charset="utf-8">
+var app = new Vue({
+el: '#app',
+    data: {
+    message: 'Hello Vue!'
+}
+})
+    </script>
