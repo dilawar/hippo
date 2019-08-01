@@ -25,8 +25,6 @@ Welcome to [NCBS’s Hippo](https://ncbs.res.in/hippo) documentation.
 
 # Getting Help
 
-If [User Manual](user_manual) is not sufficient:
-
 Whom To Contact                               | For what
 ----------------------------------------------|---------------------
 NCBS Academic Office                          | AWS and courses

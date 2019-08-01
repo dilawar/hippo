@@ -3,7 +3,7 @@ author: Dilawar Singh <dilawars@ncbs.res.in>
 site_url: https://ncbs.res.in/hippo
 site_author: Dilawar Singh <dilawars@ncbs.res.in>
 copyright: 'Copyright &copy; 2016-2019 Dilawar Singh'
-repo_url: https://github.com/dilawar/Hippo
+repo_url: https://gitlab.com/dilawar/Hippo
 theme:
     name: material
     logo: images/logo.svg
@@ -19,7 +19,7 @@ nav:
     - Acadmic Admin Manual: acadmic_admin_manual.md
     - System Admin Manual: system_admin_manual.md
     - Developer Document: developer.md
-    - Bug tracker: https://github.com/dilawar/hippo/issues
+    - Bug tracker: https://gitlab.com/dilawar/hippo/issues
 
 extra_css: [extra.css]
 
@@ -48,10 +48,10 @@ plugins:
 
 extra:
     social:
-        - type: 'github'
-          link: 'https://github.com/dilawar'
-    site_url: 'https://dilawar.github.io/hippo'
-    repo_url: 'https://github.com/dilawar/hippo'
+        - type: 'gitlab'
+          link: 'https://gitlab.com/dilawar'
+    site_url: 'https://ncbs-hippo.readthedocs.io/en/latest/'
+    repo_url: 'https://gitlab.com/dilawar/hippo'
     intranet: 'http://intranet.ncbs.res.in'
     webmail: 'https://webmail.ncbs.res.in'
     bugs: 'https://github.com/dilawar/hippo/issues'

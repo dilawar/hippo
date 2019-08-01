@@ -111,7 +111,6 @@ Point to `127.0.0.1/hippo` and you should hippo is alive.
     directory. This is the base directory you should be in when calling
     `docker-compose`.
 
-
 ## Manually on CentOS
 
 Hippo is written in `php7` and `python3`. You must have at least `php7.1` and
@@ -152,13 +151,37 @@ Numerous. After checking out the source code. Do a `npm ci`.
 - mariadb (>= 10.0) 
 - pandoc (>= 1.19.2.1)
 
-### Optional 
+### Hippo AI (optional)
+
+Hippo AI is an optional module to train a neural network to write Annual Work
+Seminar. It's source code is hosted on
+[github](https://github.com/dilawar/hippo-ai). See the instructions there how to
+install it.
+
+This repository is a `git subtree` prefixed to `hippo-ai` folder. That is, a
+snapshot of `hippo-ai` repository is kept in this repository as `hippo-ai`. 
 
 To train the NN with AWS abstract.
 
 - torch-rnn 
 
-# Apache behind proxy
+
+## Notes
+
+- For rewrite rule to work: see this post
+  https://stackoverflow.com/a/8260985/1805129
+```bash
+$ sudo a2enmod rewrite
+$ sudo systemctl restart apache2
+```
+
+- To enable ssl
+```bash
+$ sudo a2enmod ssl
+$ sudo a2ensite default-ssl
+```
+
+### Apache behind proxy
 
 To communicate to google-calendar, apache needs to know proxy server. Write
 following in `httpd.conf` file
@@ -175,7 +198,7 @@ Header set Access-Control-Allow-Origin "*"
 Header set Access-Control-Allow-Headers "content-type"
 ```
 
-# How to setup google-calendar.
+### How to setup google-calendar.
 
 0. Go to google-api console, and setup an API key. Download the key and store it
    in `/etc/hippo/hippo-f1811b036a3f.json`.
@@ -194,32 +217,8 @@ $this->client->setSubject( 'google-service_account@gservice.com' );
 $this->client->setScopes( 'https://www.googleapis.com/auth/calendar');
 ```
 
-# Notes
 
-- For rewrite rule to work: see this post
-  https://stackoverflow.com/a/8260985/1805129
-```bash
-$ sudo a2enmod rewrite
-$ sudo systemctl restart apache2
-```
-
-- To enable ssl
-```bash
-$ sudo a2enmod ssl
-$ sudo a2ensite default-ssl
-```
-
-## Hippo AI (optional)
-
-Hippo AI is an optional module to train a neural network to write Annual Work
-Seminar. It's source code is hosted on
-[github](https://github.com/dilawar/hippo-ai). See the instructions there how to
-install it.
-
-This repository is a `git subtree` prefixed to `hippo-ai` folder. That is, a
-snapshot of `hippo-ai` repository is kept in this repository as `hippo-ai`. 
-
-# Data Migration
+## Temporary migration to other server
 
 This section deals with migrating Hippo to a temporary server.
 
