@@ -112,8 +112,7 @@ Point to `127.0.0.1/hippo` and you should hippo is alive.
     `docker-compose`.
 
 
-
-## Manually
+## Manually on CentOS
 
 Hippo is written in `php7` and `python3`. You must have at least `php7.1` and
 `python3.6` installed. Some dependencies may not be available in your package
@@ -210,7 +209,7 @@ $ sudo a2enmod ssl
 $ sudo a2ensite default-ssl
 ```
 
-# Hippo AI
+## Hippo AI (optional)
 
 Hippo AI is an optional module to train a neural network to write Annual Work
 Seminar. It's source code is hosted on
@@ -220,4 +219,46 @@ install it.
 This repository is a `git subtree` prefixed to `hippo-ai` folder. That is, a
 snapshot of `hippo-ai` repository is kept in this repository as `hippo-ai`. 
 
-??? todo "More to follow"
+# Data Migration
+
+This section deals with migrating Hippo to a temporary server.
+
+0. Copy the `/var/www/html/hippo` from old sever to new server.
+1. Dump the database to a `sql` file on the current hippo server
+   `hippo_server`.
+
+    ```bash
+    $ mysqldump -u hippo -h hippo_server -p hippo > _mysqldump.sql 
+    ```
+
+2. Use this dump to replicated database on the new temporary server `new_hippo`.
+   ```bash
+   $ mysql -h new_hippo -u hippo -p < _mysqldump.sql
+   ```
+
+    !!! note "Check username/password and permissions"
+        Check database section in `/etc/hipporc` configuration file. The mariadb
+        sever on `new_hippo` should be configured for given credentials.
+
+3. Setup apache2 and php. See dependencies above.
+
+4. `new_hippo` should be given permission to access NCBS Ldap server. Without
+  it, Hoppo would not be able to authenticate the users.
+
+5. Copy directory `/srv/hippo`. apache user (e.g., `apache` or `www-data` or
+   `wwwrun`) should be able to write in this directory.
+
+       ```bash
+       $ rsync -azv hippo@hippo_server:/srv/hippo hippo@new_hippo@/srv/hippo
+       $ chown apache:apache /src/hippo # or apache 
+       ```
+
+6. Create a bogus booking request and check if you get an email. If not, check
+   the email settings in `/etc/hipporc`. Also check `php7-imap` is installed.
+
+???+ info "phpinfo"
+    url `https://ncbs.res.in/hippo/info/phpinfo` will dump the output of
+    `phpinfo()`.
+
+Since it is a temporary migration, we are not setting up the cron jobs. I.e.,
+this server will not send out automatic emails and notifications.
