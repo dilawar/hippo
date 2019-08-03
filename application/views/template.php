@@ -28,9 +28,9 @@ foreach( $cats as $x )
 $symbDelete = ' <i class="fa fa-trash "></i> ';
 ?>
 
-    <div class="container" id="contents"><?= $contents ?></div>
-    <div class="container" id="div_background_image"></div>
-    <div class="container" id="footer">
+    <div id="contents"><?= $contents ?></div>
+    <div id="div_background_image"></div>
+    <div id="footer">
         <?php if(isset($footer)){echo $footer;}else{echo "";} ?>
     </div>
 </body>

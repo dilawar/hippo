@@ -16,12 +16,12 @@ body {
     /* font-family : 'EB Garamond'; */
     font-family: "Open Sans", "Arial", sans-serif;
     width: 90%;
+    min-width: 400px;
     margin: auto;
 }
 
 #div_background_image {
-    display:block;
-    width: 100%;
+    /* width: 100%; */
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -96,10 +96,6 @@ h3 {
 h4 {
     font-family: 'EB Garamond';
     margin-bottom: 10px;
-}
-
-pre {
-    display : inline;
 }
 
 .editable {
@@ -402,7 +398,6 @@ div.notice {
 }
 
 div.header {
-    width : inherit;
     float: top;
     margin: auto;
     background-color: darkblue;
