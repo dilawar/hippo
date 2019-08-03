@@ -16,6 +16,7 @@ body {
     /* font-family : 'EB Garamond'; */
     font-family: "Open Sans", "Arial", sans-serif;
     width: 90%;
+    max-width: 1000px;
     min-width: 400px;
     margin: auto;
 }
@@ -1168,6 +1169,7 @@ a.clickable {
 
 a.bright {
     color : white;
+    font-variant: small-caps;
 }
 
 a.clickable_small {

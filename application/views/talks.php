@@ -43,7 +43,7 @@ else
         $talk = getTableEntry( 'talks', 'id', array( 'id' => $talkId ) );
         if( $talk )
         {
-            if( strtotime($event['date']) < strtotime( $whichDay) + 7*24*3600 )
+            if( strtotime($event['date']) < strtotime( $whichDay) + 14*24*3600 )
             {
                 $talkHtml .= '<div class="container">'; 
                 // This is the where-when line at the top. 
@@ -61,7 +61,6 @@ else
                 $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML( $event ) . '</p>';
                 $talkHtml .= talkToEventTitle( $talk );
             }
-            $talkHtml .= horizontalLine( );
         }
     }
     echo $talkHtml;
