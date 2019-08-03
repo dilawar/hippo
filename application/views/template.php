@@ -4,15 +4,13 @@
 <head>
     <title><?php if(isset($title)){ echo $title;}else{echo "Hippo";} ?></title>
 </head>
+
 <body>
-
-
 <?php 
 if(isset($header))
     require_once "$header";
 else
     echo "";
-
 
 $cats = explode(",", "success,info,error,warning,failure,primary,primary,secondary,light,dark");
 foreach( $cats as $x )
@@ -28,11 +26,13 @@ foreach( $cats as $x )
 }
 
 $symbDelete = ' <i class="fa fa-trash "></i> ';
-
 ?>
-    <div class="container" id="contents"><?= $contents ?></div>
-    <div class="container" id="div_background_image"></div>
-    <div class="container" id="footer"><?php if(isset($footer)){echo $footer;}else{echo "";} ?></div>
 
+    <div id="contents"><?= $contents ?></div>
+    <div id="div_background_image"></div>
+    <div id="footer">
+        <?php if(isset($footer)){echo $footer;}else{echo "";} ?>
+    </div>
 </body>
+
 </html>

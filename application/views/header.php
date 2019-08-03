@@ -143,9 +143,13 @@ $(document).ready(function(){
 });
 </script>
 
-<div style="font-size:small" class="header">
-<h1 class="title"><a href="<?= site_url( 'welcome' ) ?>" >
-<?php echo img( 'data/HippoLogoCropped.png', false, array('height'=>'70px')); ?> Hippo</a></h1>
+<div class="header">
+<h1 class="title">
+<a href="<?= site_url( 'welcome' ) ?>" >
+  <?php echo img( 'data/HippoLogoCropped.png', false, array('height'=>'70px')); ?> <span style="font-size:60px">Hippo</span>
+</a>
+</h1>
+
 <table class="public_links">
     <tr>
     <td><a class="bright" href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
