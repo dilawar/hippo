@@ -2712,7 +2712,13 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
         if( ! $studentId )
             continue;
 
+
         $info = getUserInfo( explode('@', $studentId)[0] );
+        if( ! __get__($info, 'email', '') )
+            $info['email'] = 'Email not found';
+        if( ! __get__($info, 'first_name', '') )
+            $info['first_name'] = 'Name not found';
+
         if( $info )
         {
             $row = '';
