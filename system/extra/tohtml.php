@@ -2715,9 +2715,15 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
 
         $info = getUserInfo( explode('@', $studentId)[0] );
         if( ! __get__($info, 'email', '') )
-            $info['email'] = 'Email not found';
+        {
+            $info['email'] = 'Email not found.'
+                . '<br/>'
+                . 'Most likely, your LDAP profile is incomplete. Please contact IT dept.'
+                ;
+        }
+
         if( ! __get__($info, 'first_name', '') )
-            $info['first_name'] = 'Name not found';
+            $info['first_name'] = $r['student_id'];
 
         if( $info )
         {
