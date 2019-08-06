@@ -1295,7 +1295,7 @@ function getUserInfo( string $user, bool $query_ldap = false, bool $search_every
     // Fetch ldap as well.
     $ldap = array( );
     if( $query_ldap )
-        $ldap = getUserInfoFromLdap( $login );
+        $ldap = @getUserInfoFromLdap( $login );
 
     if(is_array($ldap) && is_array($res) && $ldap  )
     {

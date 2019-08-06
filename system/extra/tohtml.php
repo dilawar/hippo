@@ -2712,7 +2712,6 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
         if( ! $studentId )
             continue;
 
-
         $info = getUserInfo( explode('@', $studentId)[0], true);
         if( ! __get__($info, 'email', '') )
         {
