@@ -560,6 +560,24 @@ class User extends CI_Controller
         return ['failure'];
     }
 
+    /* --------------------------------------------------------------------------*/
+    /**
+      * @Synopsis  Get notification for given user.
+      *
+      * @Param $ci  An object of CI_Controller
+      * @Param $user Username.
+      * @Param $limit Limit.
+      *
+      * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public static function getNotifications($ci, string $user, int $limit=10) : array
+    {
+      $query = $ci->db->get_where('notifications'
+          , ['login'=>$user, 'status'=>'VALID'], $limit);
+      return $query->result_array();
+    }
+
     public static function deleteComment( $id )
     {
         $res = updateTable('comment', 'id', 'status', ['id'=>$id, 'status'=>'DELETED']);

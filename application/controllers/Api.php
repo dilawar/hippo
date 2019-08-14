@@ -1420,6 +1420,30 @@ class Api extends CI_Controller
         return;
     }
 
+    public function notifications()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+        $args = func_get_args();
+        $data = [];
+        if(count($args) == 0)
+          $args[] = 'get';
+
+        $user = getLogin();
+        if( $args[0] === 'get')
+        {
+            $limit = __get__($args, 1, 10);
+            $notifications = User::getNotifications($this, $user, $limit);
+            $this->send_data($notifications, "ok");
+            return;
+        }
+        else
+          $this->send_data($data, "Unknown request");
+    }
+
     /* --------------------------------------------------------------------------*/
     /**
         * @Synopsis  Menu management.
@@ -1494,7 +1518,6 @@ class Api extends CI_Controller
 
         $this->send_data($data, 'ok');
     }
-
 }
 
 ?>
