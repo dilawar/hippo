@@ -562,16 +562,19 @@ class User extends CI_Controller
 
     /* --------------------------------------------------------------------------*/
     /**
-      * @Synopsis  Collect all notifications for this user.
+      * @Synopsis  Get notification for given user.
       *
-      * @Param $user
+      * @Param $ci  An object of CI_Controller
+      * @Param $user Username.
+      * @Param $limit Limit.
       *
       * @Returns   
      */
     /* ----------------------------------------------------------------------------*/
-    public static function getNotifications(string $user) : array
+    public static function getNotifications($ci, string $user, int $limit=10) : array
     {
-      return ["NA"];
+      $query = $ci->db->get_where('notifications', ['login'=>$user], $limit);
+      return $query->result_array();
     }
 
     public static function deleteComment( $id )

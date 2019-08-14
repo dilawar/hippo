@@ -1435,7 +1435,8 @@ class Api extends CI_Controller
         $user = getLogin();
         if( $args[0] === 'get')
         {
-            $notifications = User::getNotifications($user);
+            $limit = __get__($args, 1, 10);
+            $notifications = User::getNotifications($this, $user, $limit);
             $this->send_data($notifications, "ok");
             return;
         }
