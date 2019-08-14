@@ -841,7 +841,8 @@ class BMVPDO extends PDO
             CREATE TABLE IF NOT EXISTS notifications (
                 id INT AUTO_INCREMENT PRIMARY KEY
                 , login VARCHAR(50) NOT NULL
-                , text VARCHAR(500) NOT NULL
+                , title VARCHAR(200) NOT NULL
+                , text MEDIUMTEXT
                 , is_read BOOL default FALSE
                 , status ENUM('VALID', 'INVALID', 'EXPIRED', 'DELETED') DEFAULT 'VALID'
                 , created_on TIMESTAMP default CURRENT_TIMESTAMP

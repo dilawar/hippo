@@ -573,7 +573,8 @@ class User extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public static function getNotifications($ci, string $user, int $limit=10) : array
     {
-      $query = $ci->db->get_where('notifications', ['login'=>$user], $limit);
+      $query = $ci->db->get_where('notifications'
+          , ['login'=>$user, 'status'=>'VALID'], $limit);
       return $query->result_array();
     }
 
