@@ -560,6 +560,20 @@ class User extends CI_Controller
         return ['failure'];
     }
 
+    /* --------------------------------------------------------------------------*/
+    /**
+      * @Synopsis  Collect all notifications for this user.
+      *
+      * @Param $user
+      *
+      * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public static function getNotifications(string $user) : array
+    {
+      return ["NA"];
+    }
+
     public static function deleteComment( $id )
     {
         $res = updateTable('comment', 'id', 'status', ['id'=>$id, 'status'=>'DELETED']);
