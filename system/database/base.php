@@ -843,6 +843,7 @@ class BMVPDO extends PDO
                 , login VARCHAR(50) NOT NULL
                 , title VARCHAR(200) NOT NULL
                 , text MEDIUMTEXT
+                , external_id VARCHAR(50)  -- reference to external table.
                 , is_read BOOL default FALSE
                 , status ENUM('VALID', 'INVALID', 'EXPIRED', 'DELETED') DEFAULT 'VALID'
                 , created_on TIMESTAMP default CURRENT_TIMESTAMP

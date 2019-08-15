@@ -1372,6 +1372,12 @@ class Api extends CI_Controller
             $id = __get__($args, 1, -1);
             $this->db->set('status', 'DELETED')->where('id', $id);
             $this->db->update('forum');
+
+            // Remove any notifications for this id.
+            $this->db->where( 'external_id', 'forum.'.$id)
+                ->set('status', 'INVALID')
+                ->update('notifications');
+
             $this->send_data(['deleted' => $id], 'ok');
             return;
         }
@@ -1395,27 +1401,55 @@ class Api extends CI_Controller
 
             // Unique id for the forum post.
             $id = __get__( $_POST, 'id', 0);
+            $action = 'update';
             if( $id == 0 )
             {
                 $this->db->select_max('id', 'maxid');
                 $r = $this->db->get('forum')->result_array();
                 $id = intval($r[0]['maxid'])+1;
+                $action = 'new';
             }
 
             $createdBy = getLogin();
             $tags = implode(',', $_POST['tags']);
 
             // Commit to table.
-            if( ! $this->db->replace('forum'
-                , ['id'=>$id, 'created_by'=>$createdBy, 'tags'=>$tags
-                    , 'title'=>$_POST['title']
-                    , 'description'=>$_POST['description']
-                ])
-            )
+            if($action === 'new')
             {
+                $this->db->insert('forum'
+                    , ['id'=>$id, 'created_by'=>$createdBy, 'tags'=>$tags
+                        , 'title'=>$_POST['title']
+                        , 'description'=>$_POST['description']
+                    ]);
                 $data['db_error'] = $this->db->error();
-                $this->send_data($data, 'error');
-                return;
+
+                // Also add notifications for subscribed users.
+                foreach( $_POST['tags'] as $tag)
+                {
+                    // Get the list of subscribers.
+                    $subs = $this->db->select('login')
+                        ->get_where('board_subscriptions'
+                        , ['board' => $tag, 'status' => 'VALID' ])->result_array();
+
+                    // Create notifications for each subscriber.
+                    foreach($subs as $sub)
+                    {
+                        $this->db->insert("notifications"
+                            , ['login'=>$sub['login'], 'title'=>$_POST['title']
+                                , 'text' => $_POST['description'] 
+                                , 'external_id' => 'forum.' . $id 
+                            ]);
+                    }
+                }
+            }
+            else
+            {
+                $this->db->where('id', $id)
+                    ->update('forum', ['tags'=>$tags
+                        , 'title'=>$_POST['title']
+                        , 'description'=>$_POST['description']
+                    ]);
+                $data['db_error'] = $this->db->error();
             }
             $this->send_data($data, 'ok');
             return;
