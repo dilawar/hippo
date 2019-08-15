@@ -1355,7 +1355,7 @@ class Api extends CI_Controller
 
             $data = $this->db->get('forum')->result_array();
 
-            // Convert all tags to a list.
+            // Convert all tags to a list and also collect number of comments.
             foreach($data as &$e)
             {
                 $e['tags'] = explode(',', $e['tags']);
@@ -1374,6 +1374,12 @@ class Api extends CI_Controller
             $this->db->update('forum');
             $this->send_data(['deleted' => $id], 'ok');
             return;
+        }
+        else if( $args[0] === 'subscribe')
+        {
+            $forumName = $args[1];
+            $login = getLogin();
+            
         }
         else if( $args[0] === 'post' )
         {
@@ -1441,15 +1447,24 @@ class Api extends CI_Controller
             $this->send_data($notifications, "ok");
             return;
         }
-        else if($args[0] === 'dismiss')
+        else if($args[0] === 'dismiss' || $args[0] == 'markread')
         {
             $id = __get__($args, 1, 0);
-
             $this->db->where('id', $id)
                 ->where( 'login', $login)
-                ->update("notifications", ["is_read"=>True]);
+                ->update("notifications", ["is_read"=>true]);
 
-            $this->send_data(["read $id"], "ok");
+            $this->send_data(["Marked read: $id"], "ok");
+            return;
+        }
+        else if($args[0] == 'markunread')
+        {
+            $id = __get__($args, 1, 0);
+            $this->db->where('id', $id)
+                ->where( 'login', $login)
+                ->update("notifications", ["is_read"=>false]);
+
+            $this->send_data(["Marked unread: $id"], "ok");
             return;
         }
         else

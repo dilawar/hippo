@@ -863,7 +863,6 @@ class BMVPDO extends PDO
                 )"
             );
 
-
         // API keys.
         $res = $this->query("
             CREATE TABLE IF NOT EXISTS apikeys (
