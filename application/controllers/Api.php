@@ -1427,17 +1427,29 @@ class Api extends CI_Controller
             $this->send_data([], "Not authenticated");
             return;
         }
+
+        $login = getLogin();
         $args = func_get_args();
         $data = [];
         if(count($args) == 0)
           $args[] = 'get';
 
-        $user = getLogin();
         if( $args[0] === 'get')
         {
             $limit = __get__($args, 1, 10);
-            $notifications = User::getNotifications($this, $user, $limit);
+            $notifications = User::getNotifications($this, $login, $limit);
             $this->send_data($notifications, "ok");
+            return;
+        }
+        else if($args[0] === 'dismiss')
+        {
+            $id = __get__($args, 1, 0);
+
+            $this->db->where('id', $id)
+                ->where( 'login', $login)
+                ->update("notifications", ["is_read"=>True]);
+
+            $this->send_data(["read $id"], "ok");
             return;
         }
         else
