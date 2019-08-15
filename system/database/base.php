@@ -849,7 +849,8 @@ class BMVPDO extends PDO
                 )"
             );
 
-        // Forum table.
+        // Forum table. This table keeps information posted on forums. TAGS
+        // keeps forum name.
         $res = $this->query( "
             CREATE TABLE IF NOT EXISTS forum (
                 id INT PRIMARY KEY
@@ -860,6 +861,19 @@ class BMVPDO extends PDO
                 , status ENUM('VALID', 'INVALID', 'EXPIRED', 'DELETED') DEFAULT 'VALID'
                 , created_on TIMESTAMP default CURRENT_TIMESTAMP
                 , last_modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                )"
+            );
+
+        // Which board user has subscribed to. Note that forum and board are
+        // often used interchangeablly. Unfortunately its a historial baggage.
+        $res = $this->query( "
+            CREATE TABLE IF NOT EXISTS board_subscriptions (
+                board VARCHAR(30) NOT NULL -- this is one of the forum.tags
+                , login VARCHAR(30) NOT NULL
+                , status ENUM('VALID', 'INVALID', 'EXPIRED', 'BLACKLISTED') DEFAULT 'VALID'
+                , created_on TIMESTAMP default CURRENT_TIMESTAMP
+                , last_modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                , UNIQUE KEY(board, login)
                 )"
             );
 
