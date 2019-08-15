@@ -578,6 +578,31 @@ class User extends CI_Controller
       return $query->result_array();
     }
 
+    public static function subscribeToForum($ci, $login, $board)
+    {
+        $ci->db->replace('board_subscriptions', ['login'=>$login, 'board'=>$board]);
+        $ci->db->replace('board_subscriptions', ['login'=>$login, 'board'=>'emergency']);
+        return true;
+    }
+
+    public static function unsubscribeToForum($ci, $login, $board)
+    {
+        $ci->db->where('login', $login)
+           ->where('board', $board)
+           ->delete('board_subscriptions');
+        return true;
+    }
+
+    public static function getBoardSubscriptions($ci, string $login) : array
+    {
+        $q = $ci->db->select('board')
+                ->get_where('board_subscriptions' 
+                , ['login' => $login, 'status' => 'VALID']
+            );
+        $data = array_map(function($x) { return $x['board'];}, $q->result_array());
+        return $data;
+    }
+
     public static function deleteComment( $id )
     {
         $res = updateTable('comment', 'id', 'status', ['id'=>$id, 'status'=>'DELETED']);

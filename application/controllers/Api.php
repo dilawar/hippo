@@ -1379,7 +1379,16 @@ class Api extends CI_Controller
         {
             $forumName = $args[1];
             $login = getLogin();
-            
+            User::subscribeToForum($this, $login, $forumName);
+            $this->send_data(["Subscribed"], "ok");
+            return;
+        }
+        else if( $args[0] === 'subscriptions')
+        {
+            $login = getLogin();
+            $data = User::getBoardSubscriptions($this, $login);
+            $this->send_data($data, "ok");
+            return;
         }
         else if( $args[0] === 'post' )
         {
@@ -1414,9 +1423,8 @@ class Api extends CI_Controller
         else if( $args[0] === 'alltags' )
         {
             // fixme: This should be from database.
-            $tags = explode(',', "food,acadmic,info,emergency,social,sports," .
-                "culture,borrow,accomodation");
-            ksort($tags);
+            $tags = explode(',', getConfigValue('ALLOWED_BOARD_TAGS'));
+            sort($tags, SORT_STRING);
             $this->send_data($tags, 'ok' );
             return;
         }
