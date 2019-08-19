@@ -1093,20 +1093,19 @@ class Api extends CI_Controller
     public function geolocation( )
     {
         $args = func_get_args();
-
         if($args[0] === 'submit') 
         {
             $salt = 'ZhanduBalmZhanduBalmPeedaHariBalm';
             $crypt_id = crypt(getUserIpAddr(), $salt);
             $_POST['crypt_id'] = $crypt_id;
 
+
             foreach(explode(',', 'session_num,altitude,accuracy,heading,speed') as $key)
                 $_POST[$key] = __get__( $_POST, $key, '');
 
             // 10 Km/Hr = 2.77 m/s
             if(
-                floatVal($_POST['latitude']) <= 0 || floatVal($_POST['longitude']) <= 0.0 
-                //|| floatVal($_POST['speed']) <= 1.0
+                floatVal($_POST['latitude']) <= 0 || floatVal($_POST['longitude']) <= 0.0 || floatVal($_POST['speed']) <= 1.0
             )
             {
                 $this->send_data( ["Invalid or not moving."], "warn");
