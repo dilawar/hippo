@@ -754,6 +754,7 @@ class Api extends CI_Controller
         else if( $args[0] === 'course')
         {
             $data = getMyAllCourses($user);
+            ksort($data);
         }
         //else if( $args[0] === 'jc')
         //{

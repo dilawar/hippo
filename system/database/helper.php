@@ -2685,7 +2685,7 @@ function getMyCourses( $sem, $year, $user  ) : array
 function getMyAllCourses(string $user) : array
 {
     $whereExpr = "(status='VALID' OR status='WAITLIST') AND student_id='$user'";
-    $courses = getTableEntries( 'course_registration', 'year, semester', $whereExpr );
+    $courses = getTableEntries( 'course_registration', 'year DESC, semester', $whereExpr );
     foreach($courses as &$course)
         $course['name'] = getCourseName($course['course_id']);
     return $courses;
