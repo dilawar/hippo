@@ -2650,11 +2650,44 @@ function getCourseRegistrations( string $cid, int $year, string $semester ) : ar
     );
 }
 
+function canIChangeRegistration($c, $login) : bool
+{
+    $today = strtotime('now');
+    $res = [ 'answer' => 'yes', 'why' => '' ]; 
+
+    // If already registered, say no.
+    $cstart = strtotime( $c[ 'start_date' ] );
+
+    // Registration and dropping is allowed for 3 weeks from course start date.
+    if( ($cstart + 21*24*3600) > $today )
+        return false;
+    return true;
+}
+
+
 function getMyCourses( $sem, $year, $user  ) : array
 {
     $whereExpr = "(status='VALID' OR status='WAITLIST') AND semester='$sem' AND year='$year' 
         AND student_id='$user'";
     $courses = getTableEntries( 'course_registration', 'course_id', $whereExpr );
+    return $courses;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Return all courses of a user.
+    *
+    * @Param $user
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getMyAllCourses(string $user) : array
+{
+    $whereExpr = "(status='VALID' OR status='WAITLIST') AND student_id='$user'";
+    $courses = getTableEntries( 'course_registration', 'year, semester', $whereExpr );
+    foreach($courses as &$course)
+        $course['name'] = getCourseName($course['course_id']);
     return $courses;
 }
 
@@ -2967,7 +3000,6 @@ function getCourseSlot( $cid )
     $slot = getTableEntry( 'courses', 'slot', "course_id='$cid'" );
     return $slots[ 'slot' ];
 }
-
 
 function getCourseById( $cid )
 {
@@ -3739,6 +3771,68 @@ function updateCourseWaitlist( string $cid, string $year, string $semester ): bo
         );
     }
     return true;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  
+    *
+    * @Param $course
+    * @Param array
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function registerForCourse(array $course, array $data): array
+{
+    $res = ['success'=>true, 'msg' => ''];
+    $data['last_modified_on'] = dbDateTime( 'now' );
+    $data['registered_on'] = dbDateTime('now');
+    $data['status'] = 'VALID';
+    $data['year'] = $course['year'];
+    $data['semester'] = $course['semester'];
+
+    $cid = $course['course_id'];
+
+    // If user has asked for AUDIT but course does not allow auditing,
+    // do not register and raise and error.
+    if( $course['is_audit_allowed'] == 'NO' && $data['type'] == 'AUDIT' )
+    {
+        $res['msg'] = "Sorry but course $cid does not allow <tt>AUDIT</tt>.";
+        return $res;
+    }
+
+    // If number of students are over the number of allowed students
+    // then add student to waiting list and raise a flag.
+    if( $course['max_registration'] > 0)
+    {
+        $numEnrollments = count(getCourseRegistrations( $cid, $course['year'], $course['semester'] ));
+        if( intval($numEnrollments) >= intval($course['max_registration']) )
+        {
+            $data['status'] = 'WAITLIST';
+            $res['msg'] .= p( "<i class=\"fa fa-flag fa-2x\"></i>
+                Number of registrations have reached the limit. I've added you to 
+                <tt>WAITLIST</tt>. Please contact academic office or your instructor about 
+                the policy on <tt>WAITLIST</tt>. By default, <tt>WAITLIST</tt> means 
+                <tt>NO REGISTRATION</tt>.");
+        }
+    }
+
+    // If already registered then update the type else register new.
+    $r = insertOrUpdateTable( 'course_registration'
+        , 'student_id,semester,year,type,course_id,registered_on,last_modified_on'
+        , 'type,last_modified_on,status'
+        , $data 
+    );
+
+    if( ! $r )
+    {
+        $res['msg'] .= p( "I could not enroll you!" );
+        $res['success'] = false;
+    }
+    else
+        $res['msg'] .= p( "Successfully registered." );
+    return $res;
 }
 
 ?>

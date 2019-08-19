@@ -2353,7 +2353,7 @@ function getCourseInstructorsEmails( string $cid, string $year = '', string $sem
     return $instructors;
 }
 
-function getCourseInfo( $cid )
+function getCourseInfo( $cid ) : string
 {
     $c =  getCourseById( $cid );
     $instructors = getCourseInstructors( $c );

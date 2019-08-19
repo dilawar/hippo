@@ -210,6 +210,8 @@ class User extends CI_Controller
     {
         // There must be a course id.
         $cid = __get__( $_POST, 'course_id', '' );
+        assert($cid);
+
         $action = strtolower( $action );
         if( ! $cid )
         {
@@ -220,52 +222,15 @@ class User extends CI_Controller
         $course = getRunningCourseByID($cid);
         if( $action == 'register' )
         {
-            $_POST[ 'last_modified_on' ] = dbDateTime( 'now' );
-            $_POST[ 'registered_on' ] = dbDateTime( 'now' );
-            $_POST[ 'status' ] = 'VALID';
-
-            $msg = '';
-
+            $res = registerForCourse($course, $_POST);
             // If user has asked for AUDIT but course does not allow auditing,
             // do not register and raise and error.
-            if( $course['is_audit_allowed'] == 'NO' && $_POST['type'] == 'AUDIT' )
+            if(! $res['success'])
             {
-                flashMessage( "Sorry but course $cid does not allow <tt>AUDIT</tt>. " .
-                    '<i class="fa fa-frown-o fa-2x"></i>'
-                 );
+                flashMessage($res['msg']);
                 redirect( 'user/courses' );
             }
-
-            // If number of students are over the number of allowed students
-            // then add student to waiting list and raise a flag.
-            if( $course['max_registration'] > 0)
-            {
-                $numEnrollments = count(getCourseRegistrations( $cid, $course['year'], $course['semester'] ));
-                if( intval($numEnrollments) >= intval($course['max_registration']) )
-                {
-                    $_POST['status'] = 'WAITLIST';
-                    $msg .= p( "<i class=\"fa fa-flag fa-2x\"></i>
-                        Number of registrations have reached the limit. I've added you to 
-                        <tt>WAITLIST</tt>. Please contact academic office or your instructor about 
-                        the policy on <tt>WAITLIST</tt>. By default, <tt>WAITLIST</tt> means 
-                        <tt>NO REGISTRATION</tt>.");
-                }
-            }
-
-            // If already registered then update the type else register new.
-            $res = insertOrUpdateTable( 'course_registration'
-                , 'student_id,semester,year,type,course_id,registered_on,last_modified_on'
-                , 'type,last_modified_on,status'
-                , $_POST 
-            );
-
-            if( ! $res )
-                $msg .= p( "I could not enroll you!" );
-            else
-                $msg .= p( "Successfully registered." );
-
-            if( $msg )
-                echo flashMessage($msg);
+            echo flashMessage($res['msg']);
             redirect( 'user/courses' );
         }
         else if( $action == 'feedback' )

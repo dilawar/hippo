@@ -141,6 +141,88 @@ class Api extends CI_Controller
 
     /* --------------------------------------------------------------------------*/
     /**
+        * @Synopsis  Course related API.
+        *
+        *    -  /courses/running
+        *    - /course/register/course_id/[CREDIT,AUDIT,DROP]
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function courses()
+    {
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $args = func_get_args();
+        if(count($args)==0)
+            $args[] = "running";
+
+        if($args[0] === 'running')
+        {
+            $data = getRunningCourses();
+
+            // For convinience, let user know if he/she can register for this
+            // course.
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'register')
+        {
+            $data = ['type' => strtoupper($args[2]) ];
+            $data['student_id'] = getLogin();
+
+            $fs = splitAt(base64_decode($args[1]), '-');
+            $course = getRunningCourseByID($fs[0], $fs[2], $fs[1]);
+            if(true) 
+            {
+                $res = registerForCourse($course, $data);
+                if($res['success'])
+                  $this->send_data($res, 'ok');
+                else
+                  $this->send_data($res, 'error');
+            }
+            else
+                $this->send_data([$course, $fs], "debug");
+            return;
+        }
+        else if($args[0] === 'metadata')
+        {
+            $cids = __get__($args, 1, 'all');
+            if( $cids === 'all')
+            {
+                $data = [];
+                $metadata = getTableEntries('courses_metadata');
+                foreach($metadata as $m)
+                {
+                    $m['instructors'] = getCourseInstructors($m['id']);
+                    $data[$m['id']] = $m;
+                }
+            }
+            else
+            {
+                $cids = explode(',', $args[1]);
+                $data = [];
+                foreach($cids as $cid)
+                    $data[$cid] = getCourseInfo($cid);
+            }
+
+            $this->send_data($data, "ok");
+            return;
+        }
+        else
+        {
+            $this->send_data(["Unknown request"], "error");
+            return;
+        }
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
         * @Synopsis  Return events based on GET query.
         * Examples of endpoints,
         *     - events/latest                       Latest 20 events.
@@ -666,6 +748,10 @@ class Api extends CI_Controller
             if($upcoming)
                 $data[] = $upcoming;
             $data = getAwsOfSpeaker($user);
+        }
+        else if( $args[0] === 'course')
+        {
+            $data = getMyAllCourses($user);
         }
         //else if( $args[0] === 'jc')
         //{
