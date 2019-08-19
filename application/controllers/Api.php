@@ -176,18 +176,20 @@ class Api extends CI_Controller
             $data = ['type' => strtoupper($args[2]) ];
             $data['student_id'] = getLogin();
 
+            assert($args[1]);
+
             $fs = splitAt(base64_decode($args[1]), '-');
+            assert(count($fs)==3);
+
             $course = getRunningCourseByID($fs[0], $fs[2], $fs[1]);
-            if(true) 
-            {
-                $res = registerForCourse($course, $data);
-                if($res['success'])
-                  $this->send_data($res, 'ok');
-                else
-                  $this->send_data($res, 'error');
-            }
+            $res = registerForCourse($course, $data);
+            $res['recieved'] = json_encode(array_merge($course,$data));
+
+            if($res['success'])
+              $this->send_data($res, 'ok');
             else
-                $this->send_data([$course, $fs], "debug");
+              $this->send_data($res, 'error');
+
             return;
         }
         else if($args[0] === 'metadata')

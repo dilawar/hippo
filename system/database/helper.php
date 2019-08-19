@@ -3793,6 +3793,12 @@ function registerForCourse(array $course, array $data): array
     $data['semester'] = $course['semester'];
 
     $cid = $course['course_id'];
+    if(! $cid)
+    {
+        $res['success'] = false;
+        $res['msg'] = "Empty course id";
+        return $res;
+    }
 
     // If user has asked for AUDIT but course does not allow auditing,
     // do not register and raise and error.
@@ -3817,6 +3823,8 @@ function registerForCourse(array $course, array $data): array
                 <tt>NO REGISTRATION</tt>.");
         }
     }
+
+    $data = array_merge($data, $course);
 
     // If already registered then update the type else register new.
     $r = insertOrUpdateTable( 'course_registration'
