@@ -3789,6 +3789,11 @@ function registerForCourse(array $course, array $data): array
     $data['last_modified_on'] = dbDateTime( 'now' );
     $data['registered_on'] = dbDateTime('now');
     $data['status'] = 'VALID';
+
+    // This is not very clean solution. 
+    if($data['type'] === 'DROP')
+        $data['status'] = 'DROPPED';
+
     $data['year'] = $course['year'];
     $data['semester'] = $course['semester'];
 
