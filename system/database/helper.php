@@ -3852,17 +3852,16 @@ function registerForCourse(array $course, array $data): array
     $cid = $data['course_id'];
     $login = getLoginInfo($data['student_id'], true, true);
     $msg = p( "Dear " . arrayToName($login, true));
-    $msg .= p("I have successfully updated course. Following is what you requested.");
-    $msg .= arrayToVerticalTableHTML($data, 'info');
+    $msg .= p("I have successfully updated your courses.");
 
     $sem = getCurrentSemester( );
     $year = getCurrentYear( );
 
     // User courses and slots.
     $myCourses = getMyCourses($sem, $year, $user=$data['student_id']);
-    $msg .= p("Followings are your current courses.");
+    $msg .= p("Followings are your courses this semester.");
     foreach( $myCourses as $c )
-        $msg .= arrayToVerticalTableHTML($c, 'info');
+        $msg .= arrayToVerticalTableHTML($c, 'info','','grade,grade_is_given_on');
 
     $to = $login['email'];
     sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, 'hippo@lists.ncbs.res.in');
