@@ -12,5 +12,5 @@ echo "<footer>
     Logo credit: <a href=\"https://github.com/nunojesus\" target=\"_blank\">Nuno Jesus</a>
     </div>
     </footer>";
-
 ?>
+

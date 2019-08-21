@@ -2,6 +2,14 @@
 <script type="text/javascript" href="<?= base_url() ?>/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="<?= base_url() ?>/node_modules/bootstrap/dist/css/bootstrap.min.css"></link>
 
+
+<!--
+<script type="text/javascript" 
+    href="<?= base_url() ?> ./node_modules/bootstrap-material-design/dist/js/bootstrap-material-design.min.js"></script>
+<link rel="stylesheet" href="<?= base_url() ?>/node_modules/bootstrap-material-design/dist/css/bootstrap-material-design.min.css"></link>
+-->
+
+
 <!--  REQUIRED -->
 <script src="<?= base_url() ?>/node_modules/jquery/dist/jquery.js"></script>
 <script src="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>

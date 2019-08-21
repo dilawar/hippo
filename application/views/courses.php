@@ -124,6 +124,7 @@ function showRunningCourse( x )
 
 
 $table = slotTable();
+
 echo p("Click on tiles such as <button class=\"tiles\" disabled>1A</button> to see the
     courses running on this slot.");
 echo $table;
@@ -157,7 +158,7 @@ $html = '';
 // This semester courses.
 foreach( $slotCourses as $slot => $courses )
 {
-    $div = '<div class="">';
+    $div = '<div class="container">';
     foreach( $courses as $c )
     {
         $cid = $c[ 'course_id' ];

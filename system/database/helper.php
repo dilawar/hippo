@@ -3842,9 +3842,28 @@ function registerForCourse(array $course, array $data): array
     {
         $res['msg'] .= p( "I could not enroll you!" );
         $res['success'] = false;
+        return $res;
     }
-    else
-        $res['msg'] .= p( "Successfully registered." );
+
+    $res['msg'] .= p( "Successfully registered." );
+
+    // Send email to user.
+    $type = $data['type'];
+    $cid = $data['course_id'];
+    $login = getLoginInfo($data['student_id'], true, true);
+    $msg = p( "Dear " . arrayToName($login, true));
+    $msg .= p("I have successfully updated course. Following is what you requested.");
+    $msg .= arrayToVerticalTableHTML($data, 'info');
+
+    $sem = getCurrentSemester( );
+    $year = getCurrentYear( );
+
+    // User courses and slots.
+    $myCourses = getMyCourses($sem, $year, $user=$data['student_id']);
+    $msg .= p("Followings are your current courses.");
+    foreach( $myCourses as $c )
+        $msg .= arrayToVerticalTableHTML($c, 'info');
+    sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, 'hippo@lists.ncbs.res.in');
     return $res;
 }
 

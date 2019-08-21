@@ -142,6 +142,7 @@ table.public_links {
     border-collapse: separate;
     border-spacing: 5px 5px;
     table-layout: fixed;
+    margin-bottom: 10px;
 }
 
 table.public_links tr td {
@@ -1157,14 +1158,12 @@ a.link_as_button {
 }
 
 a.clickable {
-    font-size: x-large;
-    /* font-weight: bold; */
-    /* text-decoration: underline; */
+    font-size: xx-large;
+    font-weight: bold;
     font-variant: small-caps;
     cursor: url;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-    vertical-align: bottom;
+    padding: 5px;
+    margin-bottom: 5px;
 }
 
 a.bright {

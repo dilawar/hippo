@@ -28,6 +28,10 @@ class User extends CI_Controller
     {
         $data['controller'] = 'user';
         $this->template->set( 'header', 'header.php' );
+
+        // Fill data before sending to view.
+        // Only show this section if user is eligible for AWS.
+        $data['cUserInfo'] = getLoginInfo( whoAmI() );
         $this->template->load( $view, $data );
     }
 
@@ -48,7 +52,6 @@ class User extends CI_Controller
 
     }
 
-
     public function update_supervisors( )
     {
         $this->load_user_view( "user_update_supervisors" );
@@ -64,8 +67,7 @@ class User extends CI_Controller
     // Show user home.
     public function home()
     {
-        $this->template->set( 'header', 'header.php' );
-        $this->template->load( 'user' );
+        $this->load_user_view('user');
     }
 
     // BOOKING. Rest of the functions are in Booking traits.

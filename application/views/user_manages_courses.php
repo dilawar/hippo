@@ -116,14 +116,15 @@ echo alertUser( "A course will be visible in registration form upto 21 days from
 
 if( count( $courseMap ) > 0 )
 {
-    echo '<form method="post" action="manage_course/register">';
-    echo dbTableToHTMLTable( 'course_registration'
+    $form = '<form method="post" action="manage_course/register">';
+    $form .= dbTableToHTMLTable( 'course_registration'
         , $default
         , 'course_id:required,type:required'
         , 'Submit'
         , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
     );
-    echo '</form>';
+    $form .= '</form>';
+    echo $form;
 }
 else
 {
@@ -255,7 +256,7 @@ $myAllCourses = getTableEntries( 'course_registration'
 
 // Add feedback URL as well.
 $myCoursesWithFeedback = array();
-foreach( $myAllCourses as $course )
+foreach($myAllCourses as $course)
 {
     $cid = $course['course_id'];
     $cname = getCourseName( $cid );
@@ -272,10 +273,10 @@ foreach( $myAllCourses as $course )
     $myCoursesWithFeedback[] = $course;
 }
 
-if( count( $myCoursesWithFeedback ) > 0 )
+if(count($myCoursesWithFeedback ) > 0 )
 {
     $hide = 'student_id,status,last_modified_on';
-    $table = '<table class="info sorttable">';
+    $table = '<table class="info sorttable table">';
     $table .= arrayToTHRow( $myCoursesWithFeedback[0], 'info', $hide );
     foreach( $myCoursesWithFeedback as $course )
     {
@@ -291,7 +292,7 @@ else
 echo goBackToPageLink( "user/home", "Go back" );
 
 // Course table.
-$table = '<table class="info small">';
+$table = '<table class="info small table">';
 $header = '<tr><th>Course Name</th><th>Schedule</th>' .
     '<th>Slot/Venue</th>' .
     '<th>Auditing allowed?</th><th>Max Enrollments</th>' .
