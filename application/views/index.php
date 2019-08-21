@@ -11,7 +11,8 @@ function loginForm()
     $table .= '<tr><td> <input type="password"  name="pass" 
         id="pass" placeholder="Password" > </td></tr>';
     $table .= '<tr><td> 
-            <input style="float:right" type="submit" name="response" value="Login" /> 
+            <button style="float:right" class="btn btn-primary" 
+                    name="response" value="Login">Login</button> 
         </td></tr>';
     $table .= '</table>';
     $table .= '</form>';

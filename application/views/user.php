@@ -1,38 +1,36 @@
 <?php
 require_once BASEPATH. 'autoload.php';
 echo userHTML( );
-
 $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
-// Only show this section if user is eligible for AWS.
-$userInfo = getLoginInfo( whoAmI() );
+?>
 
-$html = '<table class="admin">';
-$html .= '<tr><td>
-            <i class="fa fa-book fa-2x"></i>
-            <a class="clickable" href="'. site_url('/user/courses' ) . '">
-            My Courses</a>
-            <br /> Manage courses for semester  (' . $thisSem . ' ) 
-                <small>Register/deregister courses for this semster. </small>
-        </td>';
+<div class="row">
+    <div class="col card m-3 p-1 text-center">
+        <i class="fa fa-book fa-2x">
+            <a class="clickable" href="<?=site_url('/user/courses')?>">My Courses</a>
+        </i>
+        <br />
+        Register/deregister courses for <?=$thisSem?> semster.
+    </div>
+<?php if( __get__($cUserInfo, 'eligible_for_aws', 'NO' ) == 'YES'): ?>
+    <div class="col card m-3 p-1 text-center">
+        <i class="fa fa-graduation-cap fa-2x">
+            <a class="clickable" href="<?=site_url("/user/aws")?>" >My AWS</a> 
+        </i>
+            See your previous AWSs and update them. Check
+            the details about upcoming AWS and provide preferred dates.
+            <br />
+            <a class="btn btn-secondary"
+                 href="<?=site_url("/user/update_supervisors") ?>">
+                Update TCM Members/Supervisors</a>
+    </div>
+<?php else: ?>
+    <div class="col card">
+    </div>
+<?php endif; ?>
+</div>
 
-if( __get__($userInfo, 'eligible_for_aws', 'NO' ) == 'YES' )
-{
-    $html .=  '<td> 
-        <i class="fa fa-graduation-cap fa-2x"></i>
-        <a class="clickable" href="'. site_url("/user/aws"). '">My AWS</a> <br />
-        List of your Annual Work Seminar <br />
-        <small> See your previous AWSs and update them. Check
-        the details about upcoming AWS and provide preferred dates.
-        </small> <br />
-        <a href="'. site_url("/user/update_supervisors"). '">Update TCM Members/Supervisors</a>
-        </td>';
-}
-else
-    $html .= ' <td></td> ';
-$html .= '</tr></table>';
-
-echo $html;
-
+<?php
 // Journal club entry.
 $table = '<table class="admin">
     <tr>

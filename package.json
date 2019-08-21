@@ -8,6 +8,7 @@
     "bootstrap": "^4.3.1",
     "bootstrap-datepicker": "^1.9.0",
     "bootstrap-datetimepicker": "0.0.7",
+    "bootstrap-material-design": "^4.1.1",
     "font-awesome": "^4.7.0",
     "fontawesome": "^5.6.3",
     "grunt": "^1.0.4",
