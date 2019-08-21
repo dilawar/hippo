@@ -113,7 +113,7 @@ function mailFooter( ) {
     ";
 }
 
-function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $cclist = '', $attachment = null )
+function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $cclist='', $attachment=null, bool $backgorund=false)
 {
     global $maildir;
     $conf = getConf( );
@@ -160,6 +160,8 @@ function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $ccli
 
     // Use \" whenever possible. ' don't escape especial characters in bash.
     $cmd= FCPATH . "scripts/sendmail.py -t $to -s \"$sub\" -i \"$msgfile\" ";
+    if($background)
+        $cmd .= " &";
 
     if( $cclist )
     {
@@ -188,11 +190,11 @@ function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $ccli
 }
 
 function sendHTMLEmail( string $msg, string $sub, string $to
-    , string $cclist = '', $attachment = null )
+    , string $cclist = '', $attachment = null, bool $background=false)
 {
     try 
     {
-        return sendHTMLEmailUnsafe( $msg, $sub, $to, $cclist, $attachment );
+        return sendHTMLEmailUnsafe( $msg, $sub, $to, $cclist, $attachment, $background);
     } 
     catch (Exception $e)
     {
@@ -200,7 +202,7 @@ function sendHTMLEmail( string $msg, string $sub, string $to
         $body .= $e->getMessage();
         error_log( $body );
         return sendHTMLEmailUnsafe( $body, "WARN | Hippo could not send an email"
-            , "hippo@lists.ncbs.res.in" 
+            , "hippo@lists.ncbs.res.in", $background
             );
     }
 }

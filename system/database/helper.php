@@ -3783,7 +3783,7 @@ function updateCourseWaitlist( string $cid, string $year, string $semester ): bo
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function registerForCourse(array $course, array $data): array
+function registerForCourse(array $course, array $data, bool $background=true): array
 {
     $res = ['success'=>true, 'msg' => ''];
     $data['last_modified_on'] = dbDateTime( 'now' );
@@ -3862,9 +3862,11 @@ function registerForCourse(array $course, array $data): array
     $msg .= p("Followings are your courses this semester.");
     foreach( $myCourses as $c )
         $msg .= arrayToVerticalTableHTML($c, 'info','','grade,grade_is_given_on');
-
     $to = $login['email'];
-    sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, 'hippo@lists.ncbs.res.in');
+
+    // Send in background. Its faster this way. App will hand otherwise.
+    sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, 'hippo@lists.ncbs.res.in', null, true);
+
     return $res;
 }
 
