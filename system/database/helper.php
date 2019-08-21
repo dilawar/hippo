@@ -3863,6 +3863,8 @@ function registerForCourse(array $course, array $data): array
     $msg .= p("Followings are your current courses.");
     foreach( $myCourses as $c )
         $msg .= arrayToVerticalTableHTML($c, 'info');
+
+    $to = $login['email'];
     sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, 'hippo@lists.ncbs.res.in');
     return $res;
 }
