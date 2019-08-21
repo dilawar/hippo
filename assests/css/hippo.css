@@ -142,6 +142,7 @@ table.public_links {
     border-collapse: separate;
     border-spacing: 5px 5px;
     table-layout: fixed;
+    margin-bottom: 10px;
 }
 
 table.public_links tr td {
