@@ -1191,12 +1191,14 @@ class Api extends CI_Controller
             $_POST['crypt_id'] = $crypt_id;
 
 
-            foreach(explode(',', 'session_num,altitude,accuracy,heading,speed') as $key)
+            foreach(explode(',', 'session_num,device_id,altitude,accuracy,heading,speed') as $key)
                 $_POST[$key] = __get__( $_POST, $key, '');
 
             // 10 Km/Hr = 2.77 m/s
             if(
-                floatVal($_POST['latitude']) <= 0 || floatVal($_POST['longitude']) <= 0.0 || floatVal($_POST['speed']) <= 1.0
+                floatVal($_POST['latitude']) <= 0 
+                    || floatVal($_POST['longitude']) <= 0.0 
+                    || floatVal($_POST['speed']) <= 1.0
             )
             {
                 $this->send_data( ["Invalid or not moving."], "warn");
@@ -1204,7 +1206,7 @@ class Api extends CI_Controller
             }
 
             $res = insertIntoTable( 'geolocation'
-                , 'latitude,longitude,altitude,accuracy,heading,speed,session_num,crypt_id'
+                , 'latitude,longitude,altitude,device_id,accuracy,heading,speed,session_num,crypt_id'
                 , $_POST
             );
 
