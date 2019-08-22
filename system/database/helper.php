@@ -3743,22 +3743,16 @@ function updateCourseWaitlist( string $cid, string $year, string $semester ): bo
     $course = getTableEntry( 'courses', 'course_id,year,semester', $data);
 
     if( ! $course ) 
-    {
         return false;
-    }
 
     // Otherwise get the waitlist.
     $nmax = intval( $course['max_registration']);
     $curEnroll = count(getCourseRegistrations( $cid, $year, $semester));
-    var_dump( $nmax, $curEnroll );
 
     $data['status'] = 'WAITLIST';
     $waitList = getTableEntries( 'course_registration', 'registered_on'
         , "status='WAITLIST' AND year='$year' AND semester='$semester'"
     );
-    var_dump( $waitList );
-
-    echo " $nmax, $curEnroll ";
 
     for( $i = 0; $i < min(count($waitList), $nmax - $curEnroll); $i++)
     {
@@ -3842,14 +3836,14 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
     if(strtoupper($data['type']) === 'DROP')
         updateCourseWaitlist( $data['course_id'], $data['year'], $data['semester'] );
 
-    if( ! $r )
+    if(! $r)
     {
         $res['msg'] .= p( "I could not enroll you!" );
         $res['success'] = false;
         return $res;
     }
 
-    $res['msg'] .= p('Successfully ' . $data['type'] . 'ed course '.$data['course_id'].'.' );
+    $res['msg'] .= p('Successfully '.$data['type'] .'ed course '.$data['course_id'].'.' );
 
     if($sendEmail)
     {
@@ -3879,7 +3873,6 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
         // Send in background. Its faster this way. App will hand otherwise.
         sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, '', true);
     }
-
     return $res;
 }
 

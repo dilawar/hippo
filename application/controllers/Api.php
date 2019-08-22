@@ -173,11 +173,12 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'register')
         {
-            $data = ['type' => strtoupper($args[2]) ];
+            $data = ['type' => strtoupper($args[2])];
             $data['student_id'] = getLogin();
-
             assert($args[1]);
 
+            // We are sending base64 encoded string because course id can have
+            // banned characters e.g. '&' in B&B
             $fs = splitAt(base64_decode($args[1]), '-');
             assert(count($fs)==3);
 
@@ -185,13 +186,13 @@ class Api extends CI_Controller
 
             // Do not send email when using APP.
             $res = registerForCourse($course, $data, false);
-            $res['recieved'] = json_encode(array_merge($course,$data));
 
             if($res['success'])
-              $this->send_data($res, 'ok');
+                $this->send_data($res, 'ok');
             else
-              $this->send_data($res, 'error');
+                $this->send_data($res, 'error');
 
+            $this->send_data($res, 'ok');
             return;
         }
         else if($args[0] === 'metadata')
