@@ -1,3 +1,5 @@
+This project is moved to https://gitlab.com/dilawar/hippo .
+
 <p align="center">
 <img src="https://user-images.githubusercontent.com/34600369/41531871-d050fa18-72ec-11e8-82e8-9d6067b1a59d.png" width="450">
 
