@@ -37,7 +37,7 @@ def main( args ):
     msg[ 'To' ] = ",".join( args.to )
 
     # send to hippologs@lists.ncbs.res.in by default.
-    if not argc.cc:
+    if not args.cc:
         args.cc = []
     args.cc.append('hippologs@lists.ncbs.res.in')
     
