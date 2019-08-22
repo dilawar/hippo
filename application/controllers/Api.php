@@ -1196,7 +1196,9 @@ class Api extends CI_Controller
 
             // 10 Km/Hr = 2.77 m/s
             if(
-                floatVal($_POST['latitude']) <= 0 || floatVal($_POST['longitude']) <= 0.0 || floatVal($_POST['speed']) <= 1.0
+                floatVal($_POST['latitude']) <= 0 
+                    || floatVal($_POST['longitude']) <= 0.0 
+                    || floatVal($_POST['speed']) <= 1.0
             )
             {
                 $this->send_data( ["Invalid or not moving."], "warn");
