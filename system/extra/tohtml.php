@@ -143,6 +143,103 @@ function addToGoogleCalLink( array $event )
     return $res;
 }
 
+function showCourseFeedbackLink(string $year, string $sem, string $cid )
+{
+    return "<a target='Feedback' href='".site_url( "user/seefeedback/$cid/$sem/$year" )
+        . "'>Show Feedback</a>";
+}
+
+// Local function.
+function feedbackForm(string $year, string $sem, string $cid ) : array
+{
+    // DO NOT use ' to delimit the string; it wont work very well inside table.
+    $numUnanswered = numQuestionsNotAnswered( whoAmI(), $year, $sem, $cid);
+    $form =  "<form action='".site_url("user/givefeedback/$cid/$sem/$year")."' method='post'>";
+    $form .= "<button style='float:right' name='response' value='submit'>Feeback ("
+                . $numUnanswered . " unanswered.)</button>";
+    $form .= "</form>";
+    return ['html'=>$form, 'num_unanswered'=>$numUnanswered];
+}
+
+
+function coursesToHTMLTable(array $courses, array $runningCourses=null
+    , bool $withFeedbackForm=false, $classes=''): array
+{
+    $htmlArr = [];
+
+    // If runnung courses were not provided, fetch them.
+    if(! $runningCourses)
+        $runningCourses = getRunningCourses();
+
+    if(count($courses) == 0)
+        return $htmlArr;
+
+    // Else add all tables.
+    $table = "<table class='$classes'>";
+    foreach($courses as &$c)
+    {
+        $action = 'drop';
+        $cid = $c[ 'course_id' ];
+        $course = getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
+        if(!$course)
+            continue;
+
+        // If feedback is not given for this course, display a button.
+        $sem = $c['semester'];
+        $year = $c['year'];
+
+        // If more than 30 days have passed, do not allow dropping courses.
+        if( __get__($runningCourses, $cid, ''))
+        {
+            // This course is not in running courses. So sad//
+            $cstartDate = $runningCourses[$cid]['start_date'];
+            if(strtotime('today') > (strtotime($cstartDate)+21*24*3600))
+                $action = '';
+        }
+
+        // TODO: Don't show grades unless student has given feedback.
+        $tofilter = 'student_id,registered_on,last_modified_on';
+
+        // Show grade if it is available and user has given feedback.
+        if( __get__($c, 'grade', 'X' ) != 'X' )
+        {
+            $numUnanswered = $feedRes['num_unanswered'];
+            if($numUnanswered > 0 )
+            {
+                $c['grade'] = colored( "Grade is available.<br />
+                    Feedback is due. $numUnanswered unanswered.", 'darkred' 
+                );
+            }
+        }
+
+        $table = '<table>';
+        if($withFeedbackForm)
+        {
+            // Show form. Form is inside another table.
+            $feedRes = feedbackForm($year, $sem, $cid );
+            $table .= '<table><tr><td>';
+            $table .= '<form method="post" action="'.site_url("user/manage_course/$action").'">';
+            $table .= dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
+            $table .= '</form>';
+            $table .= '</td>';
+
+            if( $feedRes['num_unanswered']> 0 )
+            {
+                // Feeback form
+                $table .= "<tr><td> " . $feedRes['html'] . "</td></tr>";
+            }
+            else
+                $table .= "<tr><td colspan=2><strong>Feedback has been given. </strong> <br />"
+                    .  showCourseFeedbackLink( $year, $sem, $cid ) . "</td></tr>";
+            $table.= '</table>';
+        }
+        // Next col of all courses.
+        $table .= '</table>';
+        $htmlArr[] = $table;
+    }
+    return $htmlArr;
+}
+
 
 function bookingToHtml( array $booking, $equipmentMap=array() ) : string
 {
@@ -944,12 +1041,12 @@ function editor_script( $id, $default = '' )
     * @return  An html table. You need to wrap it in a form.
  */
 function dbTableToHTMLTable( string $tablename, array $defaults = array()
-    , $editables = '', $button_val = 'submit', $hide = '' ) 
+    , $editables = '', string $button_val = 'submit', string $hide = '', string $classes = '' ) 
 {
     global $dbChoices;
     global $useCKEditor;
 
-    $html = "<table class=\"editable_$tablename\" id=\"$tablename\">";
+    $html = "<table class=\"editable_$tablename $classes\" id=\"$tablename\">";
     $schema = getTableSchema( $tablename );
 
     if( is_string( $editables ) )
@@ -2470,20 +2567,18 @@ function piSpecializationHTML( $pi, $specialization, $prefix = 'PI/HOST:' )
     return "$specialization <br />$prefix $pi";
 }
 
-function goBackToPageLink( $url, $title = "Go back" ) : string
+function goBackToPageLink($url, $title="Go back") : string
 {
-    $html = '<br/>';
-    $html .= '<div class="goback" style="float:left">';
+    $html = '<div class="btn btn-link">';
     $html .= goBackToPageLinkInline( $url, $title );
-    $html .= '</div><br/> <br />';
+    $html .= '</div>';
     return $html;
 }
 
-function goBackToPageLinkInline( $url, $title = "Go back" ) : string
+function goBackToPageLinkInline(string $url, string $title="Go back" ) : string
 {
-    $html = '<a href="' . site_url( $url ) . '">
-                <font color="blue" size="5">' . $title . '</font>
-            </a>';
+    $html = '<a  class="fa fa-step-backward fa-2x my-2"
+        href="' . site_url($url) . '"> '.$title .'</a>';
     return $html;
 }
 
