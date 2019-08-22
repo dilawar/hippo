@@ -1,7 +1,8 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth : 100%;
+    --maxwidth: 1000px;
+    --minwidth: 400px;
 }
 
 
@@ -16,9 +17,10 @@ body {
     /* font-family : 'EB Garamond'; */
     font-family: "Open Sans", "Arial", sans-serif;
     width: 90%;
-    max-width: 1000px;
-    min-width: 400px;
+    max-width: var(--maxwidth);
+    min-width: var(--minwidth);
     margin: auto;
+    /* background: #A9FFCB !important; */
 }
 
 #div_background_image {
@@ -40,6 +42,7 @@ div.user_float {
     position : fixed;
     top : 2%;
     right: 10%;
+    max-width: var(--maxwidth);
 }
 
 table.user_float {
@@ -921,10 +924,6 @@ table.first_column_important tr td:first-child {
 
 /* paragraphs */
 
-p  {
-    min-width : 100%;
-}
-
 p.justify {
     max-width: var(--maxwidth);
     text-align: justify;
@@ -1240,7 +1239,7 @@ details > p {
   margin: 0;
   box-shadow: 3px 3px 4px black;
 }
-
+<
 form {
     margin-bottom: 20px;
     margin-top: 20px;

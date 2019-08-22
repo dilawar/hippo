@@ -259,7 +259,8 @@ if ( ! function_exists('mailto'))
 			$title = $email;
 		}
 
-		return '<a href="mailto:'.$email.'"'._stringify_attributes($attributes).'>'.$title.'</a>';
+        return '<a class="btn btn-link"
+            href="mailto:'.$email.'"'._stringify_attributes($attributes).'>'.$title.'</a>';
 	}
 }
 

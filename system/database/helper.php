@@ -3838,6 +3838,10 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
         , $data 
     );
 
+    // Update waiting lists.
+    if(strtoupper($data['type']) === 'DROP')
+        updateCourseWaitlist( $data['course_id'], $data['year'], $data['semester'] );
+
     if( ! $r )
     {
         $res['msg'] .= p( "I could not enroll you!" );
@@ -3845,7 +3849,7 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
         return $res;
     }
 
-    $res['msg'] .= p( "Successfully registered." );
+    $res['msg'] .= p('Successfully ' . $data['type'] . 'ed course '.$data['course_id'].'.' );
 
     if($sendEmail)
     {

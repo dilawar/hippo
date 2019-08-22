@@ -1,24 +1,19 @@
 <?php
 require_once BASEPATH.'autoload.php';
 
-function showAlertTable( )
-{
-    $html = '<div class="">
-        <table> <tr>
-            <td><i class="fa fa-flag-o fa-2x"></i>
-                To enroll, visit <a class="clickable" href="user_manages_courses.php">My Courses</a>
-                link in your home page after login.
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <i class="fa fa-flag-checkered fa-2x"></i>
-                Registration on Hippo is mandatory; 
-                <a href="http://moodle.ncbs.res.in" target="_blank">MOODLE</a> enrollment
-                is independent of it!
-            </td>
-        </tr>
-        </table></div>';
+function showAlertTable( ) {
+    $html = '<div class="row">
+            <div class="col">
+                <i class="fa fa-flag-o"></i>
+                To enroll, visit <a class="btn btn-link" href="user_manages_courses.php">
+                My Courses</a> link in your home page after login.
+            </div>
+            <div class="col">
+                <i class="fa fa-flag-checkered fa-1x"></i> Registration on Hippo is mandatory; 
+                <a class="btn btn-link" href="http://moodle.ncbs.res.in" target="_blank">MOODLE</a> 
+                enrollment is independent of it!
+            </div>
+        </div>';
     return $html;
 }
 
@@ -78,61 +73,20 @@ foreach( $upcomingCourses as $c )
 }
 
 $tileCoursesJSON = json_encode( $tileCourses );
+$table = slotTable();
 ?>
 
-<script type="text/javascript" charset="utf-8">
-function showCourseInfo( x )
-{
-    swal.fire({
-        title : x.title
-        , html : "<div align=\"left\">" + atob(x.value) + "</div>"
-    });
-}
-
-function showRunningCourse( x )
-{
-    var slotId = x.value;
-    var courses = <?php echo $tileCoursesJSON; ?>;
-    var runningCourses = courses[ slotId ];
-    var title;
-    var runningCoursesTxt;
-
-    if( runningCourses && runningCourses.length > 0 )
-    {
-        runningCoursesTxt = runningCourses.map(
-            function(x, index) { return (1 + index) + '. ' + x.name
-            + ' at ' + x.venue ; }
-        ).join( "<br>");
-
-        title = "Following courses are running in slot " + slotId;
-    }
-    else
-    {
-        title = "No course is running on slot " + slotId;
-        runningCoursesTxt = "";
-    }
-
-    swal.fire({
-        title : title
-        , html : runningCoursesTxt
-        , type : "info"
-        });
-}
-</script>
+<div class="card m-1 p-1">
+    <div class="card-header h2"> Slot Table </div> 
+    <div class="card-body"> <?=$table ?> </div> 
+    <div class="card-footer">
+        Click on tiles such as <button class=\"tiles\" disabled>1A</button> 
+        to see the courses running on this slot.
+    </div>
+</div>
 
 <?php
-
-
-$table = slotTable();
-
-echo p("Click on tiles such as <button class=\"tiles\" disabled>1A</button> to see the
-    courses running on this slot.");
-echo $table;
-
 /* Select year and semester */
-
-echo ' <br /> ';
-echo horizontalLine( );
 $autumnSelected = '';
 $springSelected = '';
 if( $sem == 'AUTUMN' )
@@ -141,15 +95,10 @@ else
     $springSelected = 'selected';
 
 /* Enrollment table. */
-
 // Show select semester/year.
 $form = selectYearSemesterForm( $year, $sem );
-echo $form;
+
 $showEnrollText = 'Show Enrollement';
-
-echo showAlertTable( );
-echo ' <br />';
-
 // Go over courses and populate the entrollment array.
 $header = '<tr><th>Course/Instructors</th><th>Schedule</th><th>Slot/Venue</th><th>URL</th></tr>';
 $enrollments = array( );
@@ -203,12 +152,19 @@ foreach( $slotCourses as $slot => $courses )
     }
     $html .= $div;
 }
+?>
 
-echo p('Click on <i class="fa fa-info-circle fa-2x"></i> in front of course name
-    to see the course content.');
-echo $html;
+<div class="card m-2 p-2">
+    <div class="card-header"> <?=$form?> </div>
+    <div class="card-body>
+        <?= showAlertTable() ?>
+        <?=$html?>
+    </div>
+</div>
 
 
+
+<?php
 /*******************************************************************************
  * Upcoming courses in next semester.
  *******************************************************************************/
@@ -255,4 +211,43 @@ echo closePage( );
 <script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));
+</script>
+
+<script type="text/javascript" charset="utf-8">
+function showCourseInfo( x )
+{
+    swal.fire({
+        title : x.title
+        , html : "<div align=\"left\">" + atob(x.value) + "</div>"
+    });
+}
+function showRunningCourse( x )
+{
+    var slotId = x.value;
+    var courses = <?php echo $tileCoursesJSON; ?>;
+    var runningCourses = courses[ slotId ];
+    var title;
+    var runningCoursesTxt;
+
+    if( runningCourses && runningCourses.length > 0 )
+    {
+        runningCoursesTxt = runningCourses.map(
+            function(x, index) { return (1 + index) + '. ' + x.name
+            + ' at ' + x.venue ; }
+        ).join( "<br>");
+
+        title = "Following courses are running in slot " + slotId;
+    }
+    else
+    {
+        title = "No course is running on slot " + slotId;
+        runningCoursesTxt = "";
+    }
+
+    swal.fire({
+        title : title
+        , html : runningCoursesTxt
+        , type : "info"
+        });
+}
 </script>

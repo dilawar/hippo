@@ -1,31 +1,9 @@
 <?php
 require_once BASEPATH . 'autoload.php';
-
 $me = whoAmI();
-
-// Local function.
-function feedbackForm(string $year, string $sem, string $cid ) : array
-{
-    // DO NOT use ' to delimit the string; it wont work very well inside table.
-    $numUnanswered = numQuestionsNotAnswered( whoAmI(), $year, $sem, $cid);
-    $form =  "<form action='".site_url("user/givefeedback/$cid/$sem/$year")."' method='post'>";
-    $form .= "<button style='float:right' name='response' value='submit'>Feeback ("
-                . $numUnanswered . " unanswered.)</button>";
-    $form .= "</form>";
-    return ['html'=>$form, 'num_unanswered'=>$numUnanswered];
-}
-
-function showFeedbackLink(string $year, string $sem, string $cid )
-{
-    return "<a target='Feedback' href='".site_url( "user/seefeedback/$cid/$sem/$year" )
-        . "'>Show Feedback</a>";
-}
-
 echo userHTML( );
-
 $sem = getCurrentSemester( );
 $year = getCurrentYear( );
-
 $runningCourses = array( );
 $semCourses = getSemesterCourses( $year, $sem );
 foreach( $semCourses as $rc )
@@ -35,10 +13,8 @@ foreach( $semCourses as $rc )
     $rc[ 'slot_tiles' ] = getCourseSlotTiles( $rc );
     $runningCourses[ $cid ] = $rc;
 }
-
 // User courses and slots.
 $myCourses = getMyCourses( $sem, $year, $user = $me );
-
 $mySlots = array( );
 foreach( $myCourses as $c )
 {
@@ -61,7 +37,6 @@ foreach( $myCourses as $c )
         );
     }
 }
-
 $mySlots = array_unique( $mySlots );
 
 /* --------------------------------------------------------------------------*/
@@ -103,196 +78,77 @@ foreach( $runningCourses as $c )
         }
     }
 }
-
 $courseSelect = arrayToSelectList( 'course_id', $options, $courseMap );
 $default = ['student_id' => $me, 'semester' => $sem, 'year' => $year, 'course_id' => $courseSelect];
+$myCourseTables = coursesToHTMLTable($myCourses, $runningCourses, $withFeedbackForm = true);
+?>
 
-echo "<h1>Registration form</h1>";
-echo alertUser( "A course will be visible in registration form upto 21 days from its starting date." .
-    " Some courses may not allowed <tt>AUDIT</tt>. Some courses may put a ceiling on the number of ".
-    " enrollments. See the table at the end of page." 
-    , false
-);
+<div class="card m-2 p-2">
+<div class="card-header h1">Registration form</div>
+<div class="card-body">
+<small>A course will be visible in registration form 
+upto 21 days from its starting date.
+Some courses may not allowed <tt>AUDIT</tt>. Some courses may put a ceiling on the 
+number of enrollments. See the table at the end of page.
 
-if( count( $courseMap ) > 0 )
-{
-    $form = '<form method="post" action="manage_course/register">';
-    $form .= dbTableToHTMLTable( 'course_registration'
+<?php if(count($courseMap)>0): ?>
+    <form method="post" action="manage_course/register">
+    <?= dbTableToHTMLTable( 'course_registration'
         , $default
         , 'course_id:required,type:required'
         , 'Submit'
-        , 'status,registered_on,last_modified_on,grade,grade_is_given_on'
-    );
-    $form .= '</form>';
-    echo $form;
-}
-else
-{
-    echo printNote( "Time limit for registration have passed for all courses. Please 
-        write to academic office." );
-}
+        , 'status,registered_on,last_modified_on,grade,grade_is_given_on')?>
+    </form>
+<?php else: ?>
+    <div class="text">
+    Time limit for registration have passed for all courses. Please write to academic office.
+    </div>
+<?php endif; ?>
+</div>
+</div>
 
-// Show user which slots have been blocked.
-
-
-/**
-    * @name Show the registered courses.
-    * @{ */
-/**  @} */
-
+<?php
 $tofilter = 'student_id';
 $action = 'drop';
+?>
 
+<div class="card p-2 m-2">
+    <div class="card-header h2">
+        You are registered for following course(s) in <?=$sem?>-<?=$year?>
+    </div>
 
-if(count($myCourses) > 0)
-{
-    echo ' <br />';
-    // Dropping policy
-    echo noteWithFAIcon( 
-        colored("<strong>Policy for dropping courses </strong><br />", "blue") .
-        "Upto 30 days from starting of course, you are free to drop a course.
-        After that, you need to contact appropriate authority."
-        , "fa-bell-o" );
-}
+    <div class="card-body">
+        <p class="text text-sm m-2">
+            <i class="fa fa-info-circle"></i>
+            Courses with status <tt>WAITLIST</tt> does not count. You are in <tt>WAITLIST</tt> 
+            because this course has an upper limit on number of students allowed. 
+            If enough people drop the course, <tt>WAITLIST</tt> will 
+            automatically change to <tt>CREDIT/AUDIT</tt>. You can always write to 
+            Academic Office for clarification/update.
+        </p>
+        <div class="m-2">
+            <strong>Policy for dropping courses:</strong>
+            Upto 30 days from starting of course, you are free to drop a course using 
+            Hippo. After that, you need to contact Academic Office authority.
+        </div>
+        <!-- table of courses -->
+        <?php if(count($myCourses) > 0): ?>
+            <div class="row">
+            <?php foreach($myCourseTables as $table): ?>
+                <div class="col"><?= $table ?></div>
+            <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            No course found.
+        <?php endif; ?>
+    </div>
+</div> 
+<?=goBackToPageLink( "user/home", "Go back" )?>
 
-$count = 0;
-
-if(count($myCourses) > 0)
-{
-    echo "<h1>You are registered for following course(s) in $sem-$year</h1>";
-    echo p( "Course with status <tt>WAITLIST</tt> do not count. <tt>WAITLIST</tt> appears 
-        because this course has upper limit on registration. You have to convert them to 
-        proper registration. If enough people drop the course, <tt>WAITLIST</tt> will 
-        automatically change to <tt>CREDIT/AUDIT</tt>. Write to Academic Office for clarification.
-    " );
-}
-
-echo '<div style="font-size:small">';
-echo '<table border="1pt dotted blue">';
-echo '<tr>';
-foreach($myCourses as &$c)
-{
-    $action = 'drop';
-
-    // Break at 3 courses.
-    if( $count % 3 == 0 )
-        echo '</tr><tr>';
-
-    $cid = $c[ 'course_id' ];
-    $course = getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
-
-    if(!$course)
-        continue;
-
-    // If feedback is not given for this course, display a button.
-    $sem = $c['semester'];
-    $year = $c['year'];
-    $feedRes = feedbackForm($year, $sem, $cid );
-
-    // If more than 30 days have passed, do not allow dropping courses.
-    $cstartDate = $runningCourses[$cid]['start_date'];
-    if(strtotime('today') > (strtotime($cstartDate)+21*24*3600))
-        $action = '';
-
-    // TODO: Don't show grades unless student has given feedback.
-    $tofilter = 'student_id,registered_on,last_modified_on';
-
-    // Show grade if it is available and user has given feedback.
-    if( __get__($c, 'grade', 'X' ) != 'X' )
-    {
-        $numUnanswered = $feedRes['num_unanswered'];
-        if($numUnanswered > 0 )
-        {
-            $c['grade'] = colored( "Grade is available.<br />
-                Feedback is due. $numUnanswered unanswered.", 'darkred' 
-            );
-        }
-    }
-    echo '<td>';
-
-    // Show form.
-    echo '<table><tr><td>';
-    echo '<form method="post" action="'.site_url("user/manage_course/$action").'">';
-    echo dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
-    echo '</form>';
-    echo '</td>';
-
-    if( $feedRes['num_unanswered']> 0 )
-    {
-        // Feeback form
-        echo "<tr><td> " . $feedRes['html'] . "</td></tr>";
-    }
-    else
-    {
-        echo "<tr><td colspan=2><strong>Feedback has been given. </strong> <br />"
-            .  showFeedbackLink( $year, $sem, $cid ) . "</td></tr>";
-    }
-    echo '</table>';
-
-    // Next col of all courses.
-    echo '</td>';
-    $count += 1;
-}
-echo '</table>';
-echo '</div>';
-
-echo ' <br /> ';
-echo goBackToPageLink( "user/home", "Go back" );
-
-
-/* --------------------------------------------------------------------------*/
-/**
- * @Synopsis  All courses.
- */
-/* ----------------------------------------------------------------------------*/
-echo ' <br />';
-echo '<h1>My Courses</h1>';
-
-$myAllCourses = getTableEntries( 'course_registration'
-    , 'year, semester'
-    , "student_id='$me' AND status='VALID'"
-    );
-
-
-// Add feedback URL as well.
-$myCoursesWithFeedback = array();
-foreach($myAllCourses as $course)
-{
-    $cid = $course['course_id'];
-    $cname = getCourseName( $cid );
-    $course = array_insert_after('course_id', $course, 'course_name', $cname);
-
-    // year and semster are course semester.
-    $year = $course['year'];
-    $sem = $course['semester'];
-    $res = feedbackForm( $year, $sem, $cid );
-    if( $res['num_unanswered']  > 0 )
-        $course['Feedback'] = $res['html'];
-    else
-        $course['Feedback'] = showFeedbackLink($year, $sem, $cid);
-    $myCoursesWithFeedback[] = $course;
-}
-
-if(count($myCoursesWithFeedback ) > 0 )
-{
-    $hide = 'student_id,status,last_modified_on';
-    $table = '<table class="info sorttable table">';
-    $table .= arrayToTHRow( $myCoursesWithFeedback[0], 'info', $hide );
-    foreach( $myCoursesWithFeedback as $course )
-    {
-        $cid = $course[ 'course_id' ];
-        $table .= arrayToRowHTML( $course, 'info', $hide );
-    }
-    $table .= "</table>";
-    echo $table;
-}
-else
-    echo printInfo( "I could not find any course belonging to '$user' in my database." );
-
-echo goBackToPageLink( "user/home", "Go back" );
-
+<!-- Summary of runnung courses. -->
+<?php
 // Course table.
-$table = '<table class="info small table">';
+$table = '<table class="info small">';
 $header = '<tr><th>Course Name</th><th>Schedule</th>' .
     '<th>Slot/Venue</th>' .
     '<th>Auditing allowed?</th><th>Max Enrollments</th>' .
@@ -323,9 +179,60 @@ foreach( $runningCourses as $cid => $course )
     $table .=  $row;
 }
 $table .= '</table>';
-echo ' <br /> ';
-echo '<h1>Summary of current running courses </h1>';
-echo $table;
+?>
+<div class="card">
+<div class="card-header h2">Summary of current running courses</div>
+<div class="card-body"> <?=$table ?> </div>
+</div>
+<?=goBackToPageLink( "user/home", "Go back" )?>
+
+<!-- MY all courses. -->
+<div class="card">
+<div class="card-header h2">My courses</div>
+
+<?php
+$myAllCourses = getTableEntries( 'course_registration'
+    , 'year, semester'
+    , "student_id='$me' AND status='VALID'"
+    );
+
+// Add feedback URL as well.
+$myCoursesWithFeedback = array();
+foreach($myAllCourses as $course)
+{
+    $cid = $course['course_id'];
+    $cname = getCourseName( $cid );
+    $course = array_insert_after('course_id', $course, 'course_name', $cname);
+
+    // year and semster are course semester.
+    $year = $course['year'];
+    $sem = $course['semester'];
+    $res = feedbackForm( $year, $sem, $cid );
+    if( $res['num_unanswered']  > 0 )
+        $course['Feedback'] = $res['html'];
+    else
+        $course['Feedback'] = showCourseFeedbackLink($year, $sem, $cid);
+    $myCoursesWithFeedback[] = $course;
+}
+
+if(count($myCoursesWithFeedback ) > 0 )
+{
+    $hide = 'student_id,status,last_modified_on';
+    $table = '<table class="info sorttable w-auto">';
+    $table .= arrayToTHRow( $myCoursesWithFeedback[0], 'info', $hide );
+    foreach( $myCoursesWithFeedback as $course )
+    {
+        $cid = $course[ 'course_id' ];
+        $table .= arrayToRowHTML( $course, 'info', $hide );
+    }
+    $table .= "</table>";
+    echo $table;
+}
+else
+    echo printInfo( "I could not find any course belonging to '$user' in my database." );
+echo '</div>';
+
+echo goBackToPageLink( "user/home", "Go back" );
 
 ?>
 

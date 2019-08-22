@@ -208,13 +208,13 @@ class User extends CI_Controller
     }
 
     // Edit update courses.
-    public function manage_course( $action = '' )
+    public function manage_course($action='')
     {
         // There must be a course id.
         $cid = __get__( $_POST, 'course_id', '' );
         assert($cid);
 
-        $action = strtolower( $action );
+        $action = strtolower($action);
         if( ! $cid )
         {
             flashMessage( 'No course selected!', 'warning' );
@@ -224,7 +224,9 @@ class User extends CI_Controller
         $course = getRunningCourseByID($cid);
         if( $action == 'register' )
         {
+            $_POST['student_id'] = whoAmI();
             $res = registerForCourse($course, $_POST);
+
             // If user has asked for AUDIT but course does not allow auditing,
             // do not register and raise and error.
             if(! $res['success'])
@@ -241,20 +243,10 @@ class User extends CI_Controller
         }
         else if( $action == 'drop' )
         {
-            $_POST['status'] = 'DROPPED';
-            $_POST['student_id'] = whoAmI();
-            $res = updateTable( 'course_registration'
-                        , 'student_id,semester,year,course_id'
-                        , 'status'
-                        , $_POST 
-                    );
-            if( $res )
-            {
-                flashMessage( "Successfully dropped course." );
-                updateCourseWaitlist( $_POST['course_id'], $_POST['year'], $_POST['semester'] );
-            }
-            else
-                flashMessage( "Something went wrong. Couldn't drop the course." );
+            // Using the same function to AUDIT/CREDIT/DROP courses. Function
+            // registerForCourse is also called by App API.
+            $_POST['type'] = 'DROP';
+            $this->manage_course('register');
         }
         else
         {
