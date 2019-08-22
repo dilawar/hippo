@@ -2212,9 +2212,8 @@ function slotTable( $width = "15px" )
 {
 
     $days = array( 'Mon', 'Tue', 'Wed', 'Thu', 'Fri' );
-
     $html = '<table class="timetable">';
-    $html .= "<caption>Slot Table</caption>";
+
     // Generate columns. Each one is 15 min long. Starting from 9am to 6:00pm
     $maxNumCols = intval( ( 18 - 9 ) * 4 );
 

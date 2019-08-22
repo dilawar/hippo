@@ -14,6 +14,9 @@ class Adminservices extends CI_Controller
     public function load_admin_view( $view, $data = array() )
     {
         $data['controller'] = 'adminservices';
+
+
+
         $this->template->set( 'header', 'header.php' );
         $this->template->load( $view, $data );
     }
@@ -28,7 +31,24 @@ class Adminservices extends CI_Controller
     {
         if( ! $action )
         {
-            $this->load_admin_view( 'adminservices_manages_canteen' );
+            $data['cMealHtml'] = arrayToSelectList('which_meal', getTableColumnTypes('canteen_menu', 'which_meal'));
+            $data['today'] = date('D', strtotime('now'));
+
+            // Now show the menu.
+            $items = getTableEntries('canteen_menu'
+                , 'canteen_name,which_meal,available_from'
+                , "status='VALID'");
+
+            $itemGroupedByCanteen = [];
+            $itemGroupedByDay = [];
+            foreach( $items as $item)
+            {
+                $itemGroupedByCanteen[$item['canteen_name']][$item['day']][] = $item;
+                $itemGroupedByDay[$item['day']][$item['canteen_name']][] = $item;
+            }
+            $data['cItemGroupedByCanteen'] = $itemGroupedByCanteen;
+            $data['cItemGroupedByDay'] = $itemGroupedByDay;
+            $this->load_admin_view( 'adminservices_manages_canteen', $data);
             return;
         }
         $this->manage_canteen($action, $id);
