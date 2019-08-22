@@ -36,6 +36,11 @@ def main( args ):
     msg = EmailMessage( )
     msg[ 'To' ] = ",".join( args.to )
 
+    # send to hippologs@lists.ncbs.res.in by default.
+    if not argc.cc:
+        args.cc = []
+    args.cc.append('hippologs@lists.ncbs.res.in')
+    
     if args.cc:
         msg[ 'CC' ] = ','.join( args.cc )
         toAddr += args.cc
