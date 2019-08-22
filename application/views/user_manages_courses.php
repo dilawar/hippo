@@ -135,9 +135,7 @@ $action = 'drop';
         <?php if(count($myCourses) > 0): ?>
             <div class="row">
             <?php foreach($myCourseTables as $table): ?>
-                <div class="col">
-                    <?= $table ?>
-                </div>
+                <div class="col"><?= $table ?></div>
             <?php endforeach; ?>
             </div>
         <?php else: ?>
@@ -186,17 +184,17 @@ $table .= '</table>';
 <div class="card-header h2">Summary of current running courses</div>
 <div class="card-body"> <?=$table ?> </div>
 </div>
+<?=goBackToPageLink( "user/home", "Go back" )?>
 
 <!-- MY all courses. -->
 <div class="card">
-<div class="card-header h2">My Courses</div>
+<div class="card-header h2">My courses</div>
 
 <?php
 $myAllCourses = getTableEntries( 'course_registration'
     , 'year, semester'
     , "student_id='$me' AND status='VALID'"
     );
-
 
 // Add feedback URL as well.
 $myCoursesWithFeedback = array();
@@ -220,7 +218,7 @@ foreach($myAllCourses as $course)
 if(count($myCoursesWithFeedback ) > 0 )
 {
     $hide = 'student_id,status,last_modified_on';
-    $table = '<table class="info sorttable table">';
+    $table = '<table class="info sorttable w-auto">';
     $table .= arrayToTHRow( $myCoursesWithFeedback[0], 'info', $hide );
     foreach( $myCoursesWithFeedback as $course )
     {
