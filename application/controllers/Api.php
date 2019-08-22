@@ -182,7 +182,9 @@ class Api extends CI_Controller
             assert(count($fs)==3);
 
             $course = getRunningCourseByID($fs[0], $fs[2], $fs[1]);
-            $res = registerForCourse($course, $data);
+
+            // Do not send email when using APP.
+            $res = registerForCourse($course, $data, false);
             $res['recieved'] = json_encode(array_merge($course,$data));
 
             if($res['success'])

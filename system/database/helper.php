@@ -3783,7 +3783,7 @@ function updateCourseWaitlist( string $cid, string $year, string $semester ): bo
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function registerForCourse(array $course, array $data, bool $background=true): array
+function registerForCourse(array $course, array $data, bool $sendEmail=true): array
 {
     $res = ['success'=>true, 'msg' => ''];
     $data['last_modified_on'] = dbDateTime( 'now' );
@@ -3847,25 +3847,34 @@ function registerForCourse(array $course, array $data, bool $background=true): a
 
     $res['msg'] .= p( "Successfully registered." );
 
-    // Send email to user.
-    $type = $data['type'];
-    $cid = $data['course_id'];
-    $login = getLoginInfo($data['student_id'], true, true);
-    $msg = p( "Dear " . arrayToName($login, true));
-    $msg .= p("I have successfully updated your courses.");
+    if($sendEmail)
+    {
+        // Send email to user.
+        $type = $data['type'];
+        $cid = $data['course_id'];
+        $login = getLoginInfo($data['student_id'], true, true);
+        $msg = p( "Dear " . arrayToName($login, true));
+        $msg .= p("I have successfully updated your courses.");
 
-    $sem = getCurrentSemester( );
-    $year = getCurrentYear( );
+        $sem = getCurrentSemester( );
+        $year = getCurrentYear( );
 
-    // User courses and slots.
-    $myCourses = getMyCourses($sem, $year, $user=$data['student_id']);
-    $msg .= p("Followings are your courses this semester.");
-    foreach( $myCourses as $c )
-        $msg .= arrayToVerticalTableHTML($c, 'info','','grade,grade_is_given_on');
-    $to = $login['email'];
+        // User courses and slots.
+        $myCourses = getMyCourses($sem, $year, $user=$data['student_id']);
+        if(count($myCourses)>0)
+        {
+            $msg .= p("Followings are your courses this semester.");
+            foreach( $myCourses as $c )
+                $msg .= arrayToVerticalTableHTML($c, 'info','','grade,grade_is_given_on');
+        }
+        else
+            $msg .= p("You are registered for no course this semester.");
 
-    // Send in background. Its faster this way. App will hand otherwise.
-    sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, 'hippo@lists.ncbs.res.in', null, true);
+        $to = $login['email'];
+
+        // Send in background. Its faster this way. App will hand otherwise.
+        sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, '', true);
+    }
 
     return $res;
 }
