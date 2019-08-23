@@ -34,9 +34,22 @@ trait AdminacadCourses
         $this->load_adminacad_view( 'admin_acad_manages_course_questionnaire' );
     }
 
-    public function show_course_feedback()
+    public function show_course_feedback(string $year='', string $semester='')
     {
-        $this->load_adminacad_view( 'admin_acad_show_course_feedback' );
+        if(! $year)
+            $year = __get__($_POST, 'year', getCurrentYear());
+        if(! $semester)
+            $semester = __get__($_POST, 'semester', getCurrentSemester());
+
+        // Now get all the feedback available for this year and semester.
+        $feedback = getTableEntries(
+            'course_feedback_responses'
+            , 'last_modified_on'
+            ,  "status='VALID' AND year='$year' AND semester='$semester'" 
+        );
+        $data = ['cYear'=>$year, 'cSemester'=>$semester, 'cFeedback'=>$feedback];
+        $this->load_adminacad_view( 'admin_acad_show_course_feedback', $data);
+        return;
     }
 
     function goBackToReferrer( $fallback )

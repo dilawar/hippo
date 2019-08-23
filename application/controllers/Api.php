@@ -143,8 +143,12 @@ class Api extends CI_Controller
     /**
         * @Synopsis  Course related API.
         *
-        *    -  /courses/running
-        *    - /course/register/course_id/[CREDIT,AUDIT,DROP]
+        *    - /courses/running
+        *    - /courses/register/course_id/[CREDIT,AUDIT,DROP]
+        *    - /courses/feedback/questions
+        *       Return questions for feedback.
+        *    - /courses/metadata
+        *       Return metadata for all courses.
         *
         * @Returns   
      */
@@ -216,6 +220,25 @@ class Api extends CI_Controller
                     $data[$cid] = getCourseInfo($cid);
             }
 
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === "feedback")
+        {
+            $data = [];
+            $request = __get__($args, 1, '');
+            if($request === "questions")
+            {
+                $data = getCourseFeedbackQuestions();
+            }
+            else if($request === "getfeedback")
+            {
+                $fs = explode('-', base64_decode($args[2]));
+                assert(count($fs)==3);
+                $data = getCourseSpecificFeedback($fs[2], $fs[1], $fs[0], getLogin());
+            }
+            else
+                $data = ["Unsupported request: $request"];
             $this->send_data($data, "ok");
             return;
         }
