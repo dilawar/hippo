@@ -5,6 +5,12 @@ This project is moved to https://gitlab.com/dilawar/hippo .
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/209e3bc107ba462c99d6342ea15ece70)](https://www.codacy.com/app/dilawar/HippoIgnited?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dilawar/HippoIgnited&amp;utm_campaign=Badge_Grade)
 
+
+## Playstore
+
+NCBS Hippo: https://play.google.com/store/apps/details?id=com.dilawar.hippo
+NCBS Tracker: https://play.google.com/store/apps/details?id=com.dilawar.hipposhare
+
 # NCBS Hippo
 
 # Dependencies 
