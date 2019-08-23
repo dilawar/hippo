@@ -1199,10 +1199,10 @@ class Api extends CI_Controller
             if(
                 floatVal($_POST['latitude']) <= 0 
                     || floatVal($_POST['longitude']) <= 0.0 
-                    || floatVal($_POST['speed']) <= 1.0
+                    //|| floatVal($_POST['speed']) <= 1.0
             )
             {
-                $this->send_data( ["Invalid or not moving."], "warn");
+                $this->send_data( ["Invalid data."], "warn");
                 return;
             }
 
