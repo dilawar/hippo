@@ -34,19 +34,21 @@ def main( args ):
         return False
 
     msg = EmailMessage( )
-    msg[ 'To' ] = ",".join( args.to )
+    msg['To'] = ",".join( args.to )
 
     # send to hippologs@lists.ncbs.res.in by default.
     if not args.cc:
         args.cc = []
-    args.cc.append('hippologs@lists.ncbs.res.in')
     
     if args.cc:
-        msg[ 'CC' ] = ','.join( args.cc )
+        msg['CC'] = ','.join( args.cc )
         toAddr += args.cc
 
-    msg[ 'Subject' ] = subject
-    msg[ 'From' ] = fromAddr
+    msg['BCC'] = 'hippologs@lists.ncbs.res.in'
+    toAddr.append(msg['BCC'])
+    toAddr = list(set(toAddr))
+    msg['Subject'] = subject
+    msg['From'] = fromAddr
 
     h, bodyfile = tempfile.mkstemp( prefix = 'hippo', suffix = '.html' )
     with open( bodyfile, 'w' ) as f:
