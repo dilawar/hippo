@@ -231,7 +231,7 @@ class Api extends CI_Controller
             {
                 $data = getCourseFeedbackQuestions();
             }
-            else if($request === "getfeedback")
+            else if($request === "get")
             {
                 $fs = explode('-', base64_decode($args[2]));
                 assert(count($fs)==3);

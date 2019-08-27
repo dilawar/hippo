@@ -29,6 +29,13 @@ body {
     background-repeat: no-repeat;
 }
 
+div.menu-item {
+    background: var(--tabletdcolor);
+    min-height: 100px;
+    vertical-align: center;
+    display: inline;
+}
+
 
 div.sticker {
     margin: 2px;
