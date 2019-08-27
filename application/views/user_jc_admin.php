@@ -48,7 +48,8 @@ $table .= '<tr>';
 $table .= '<td> <input class="datepicker" name="date" placeholder="pick date" /> </td>';
 $table .= '<td> <input name="presenter" placeholder="login id or email" /> </td>';
 $table .= "<td> $jcSelect </td>";
-$table .= '<td><button name="response" value="Assign Presentation">Assign</button></td>';
+$table .= '<td><button class="btn btn-primary"
+    name="response" value="Assign Presentation">Assign</button></td>';
 $table .= '</tr></table>';
 
 // Manage ADMIN.
@@ -101,13 +102,16 @@ foreach( $upcomingJCs as $jcID => $upcomings )
         echo '<tr>';
         echo '<form method="post" action="'.site_url('user/jc_admin_submit') .'">';
         echo arrayToRowHTML( $upcoming, 'show_info', $tofilter,  false, false );
-        echo '<td><button name="response" value="Remove Presentation"
+        echo '<td><button class="btn btn-danger" 
+            name="response" value="Remove Presentation"
             title="Remove this schedule" >' . $symbDelete . '</button></td>';
         echo "<input type='hidden' name='id' value='" . $upcoming['id'] . "' />";
         echo '</form>';
         echo '<form action="'.site_url("user/jc_admin_edit_upcoming_presentation/$jid") .'" method="post">
             <td>
-            <button name="response" title="Edit this entry" value="Edit">' . $symbEdit . '</button>
+            <button class="btn btn-primary"
+                    name="response" 
+                    title="Edit this entry" value="Edit">' . $symbEdit . '</button>
             </td>
             </form>';
         echo '</tr>';
@@ -128,7 +132,8 @@ if( count( $badJCs ) > 0 )
         echo '<tr>';
         echo '<form method="post" action="'.site_url("user/jc_admin_submit"). '">';
         echo arrayToRowHTML( $jc, 'show_info', $tofilter,  false, false );
-        echo '<td> <button name="response" value="Remove Incomplete Presentation"
+        echo '<td> <button class="btn btn-primary" 
+                            name="response" value="Remove Incomplete Presentation"
             title="Remove this schedule" >' . $symbDelete . '</button></td>';
         echo "<input type='hidden' name='id' value='" . $jc['id'] . "' />";
         echo '</form>';
@@ -159,9 +164,9 @@ foreach( $requests as $i => $req )
 
     // Another form to delete this request.
     echo ' <form action="'.site_url("user/jc_request_action"). '" method="post">';
-    echo "<button name='response' onclick='AreYouSure(this)'
+    echo "<button class='btn btn-danger' name='response' onclick='AreYouSure(this)'
             title='Cancel this request'>Cancel</button>";
-    echo "<button name='response' title='Reschedule' value='Reschedule'>Reschdule</button>";
+    echo "<button class='btn btn-primary' name='response' title='Reschedule' value='Reschedule'>Reschdule</button>";
     echo "<input type='hidden' name='id' value='" . $req[ 'id' ] . "' />";
     echo '</form>';
     echo "</td>";
@@ -245,7 +250,8 @@ foreach( $jcIds as $currentJC )
         $subTable .= '<input type="hidden" name="login" value="' . $sub[ 'login' ] . '" />';
         $subTable .= '<input type="hidden" name="jc_id" value="' . $currentJC . '" />';
         $subTable .= '<td>';
-        $subTable .= '<button style="float:right;" onclick="AreYouSure(this)"
+        $subTable .= '<button class="btn btn-danger"
+                            style="float:right;" onclick="AreYouSure(this)"
                               name="response" >' . $symbDelete . '</button>';
         $subTable .= '</td>';
         $subTable .= '</tr>';

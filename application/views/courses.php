@@ -25,14 +25,12 @@ function showAlertTable( ) {
     href="<?=site_url()?>/node_modules/sweetalert2/dist/sweetalert.css">
 
 <?php
-/* get this semester and next semester courses */
-
-$year = __get__( $_GET, 'year', getCurrentYear( ) );
-$sem = __get__( $_GET, 'semester', getCurrentSemester( ) );
 
 $slotCourses = array( );
 $tileCourses = array( );
-$runningCourses = getSemesterCourses( $year, $sem );
+$runningCourses = $cRunningCourses;
+$sem = $cSemester;
+$year = $cYear;
 
 // Collect both metadata and other information in slotCourse array.
 foreach( $runningCourses as $c )
@@ -172,9 +170,9 @@ foreach( $slotCourses as $slot => $courses )
 
 
 $newTab = '<table id="upcoming_courses" class="info">';
-$header = '<tr><th>Course <br> Instructors</th><th>Schedule</th><th>Slot Tiles</th><th>Venue</th>
-    <th>Enrollments</th><th>URL</th> </tr>';
-
+$header = '<tr><th>Course <br> Instructors</th><th>Schedule</th>
+    <th>Slot Tiles</th><th>Venue</th>
+    <th>Enrollments</th><th>URL</th></tr>';
 
 foreach( $slotUpcomingCourses as $slot => $ucs )
 {

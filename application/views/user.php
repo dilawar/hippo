@@ -5,7 +5,7 @@ $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
 ?>
 
 <div class="row">
-    <div class="col rounded bg-light text-left m-3 p-2">
+    <div class="col rounded menu-item text-left m-3 p-2">
         <a class="fa fa-book fa-2x " 
             href="<?=site_url('/user/courses')?>"> My Courses
         </a>
@@ -13,7 +13,7 @@ $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
         Register/deregister courses for <?=$thisSem?> semster.
     </div>
 <?php if( __get__($cUserInfo, 'eligible_for_aws', 'NO' ) == 'YES'): ?>
-    <div class="col rounded bg-light m-3 p-2 text-left">
+    <div class="col rounded menu-item m-3 p-2 text-left">
         <a class="fa fa-2x fa-graduation-cap" 
             href="<?=site_url("/user/aws")?>"> My AWS</a> 
         <br />
@@ -32,7 +32,7 @@ $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
 </div>
 
 <div class="row">
-    <div class="col rounded bg-light text-left m-3 p-2">
+    <div class="col rounded menu-item text-left m-3 p-2">
         <a class=" fa fa-2x" 
             href="<?=site_url("/user/jc")?>">My Journal Clubs
         </a>
@@ -40,7 +40,7 @@ $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
         Subscribe/Unsubscribe from journal club. See upcoming presentation.
         Vote on presentation requests.
     </div>
-    <div class="col rounded bg-light text-left m-3 p-2">
+    <div class="col rounded menu-item text-left m-3 p-2">
         <a class="fa fa-2x " 
             href="<?=site_url("/user/jc_presentation_requests")?>">
             My JC Presentation Requests
@@ -54,9 +54,9 @@ $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
 
 <?php if(isJCAdmin( whoAmI())): ?>
     <div class="row">
-        <div class="col rounded bg-light text-left m-3 p-2">
+        <div class="col rounded menu-item text-left m-3 p-2">
             <i class="fa fa-lock fa-2x"></i>
-            <a class="" href="'. site_url("/user/jcadmin"). '">JC Admin</a> <br />
+            <a class="" href="<?=site_url("/user/jcadmin")?>">JC Admin</a> <br />
             Journal club admin</td>
         </div>
         <div class="col rounded">
@@ -79,7 +79,7 @@ if( count( $reqs ) > 0)
 ?>
 
 <div class="row">
-<div class="col rounded bg-light text-left m-3 p-2">
+<div class="col rounded menu-item text-left m-3 p-2">
      <a class=" fa fa-hand-pointer-o fa-2x" 
          href="<?=site_url("/user/book/venue")?>">
          Book for small event
@@ -92,7 +92,7 @@ if( count( $reqs ) > 0)
         Manage My Private Events ('<?=$flag?>)
     </a> 
 </div>
-<div class="col rounded bg-light text-left m-3 p-2">
+<div class="col rounded menu-item text-left m-3 p-2">
     <a class="fa fa-comments fa-2x " 
         href="<?=site_url("/user/register_talk")?>">
         Book for talks/seminar etc. (Academic Events)
@@ -116,12 +116,12 @@ booked by your lab members.  This is not a replacement of
 common equipment booking system.</div>
 
 <div class="row">
-<div class="col rounded bg-light text-left m-3 p-2">
+<div class="col rounded menu-item text-left m-3 p-2">
      <a class="fa fa-hand-archive fa-2x" 
      href="<?=site_url("/user/inventory_browse")?>">
         Browse Lab Inventory or Book Equipments</a>
 </div>
-<div class="col rounded bg-light text-left m-3 p-2">
+<div class="col rounded menu-item text-left m-3 p-2">
      <a class="fa fa-flask fa-2x" 
          href="<?=site_url("/user/inventory_manage")?>"
         >Manage Lab Inventory</a>
@@ -137,11 +137,11 @@ $roles =  getRoles(whoAmI() );
     <div class=" p-2 my-2">
     <h1> Services Admin </h1>
     <div class="row">
-        <div class="col rounded bg-light text-left m-3 p-2">
+        <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-bus fa-2x" 
                 href="<?=site_url( 'adminservices/transport')?>"> Manage Transport</a>
         </div>
-        <div class="col rounded bg-light text-left m-3 p-2">
+        <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-cutlery fa-2x"
             href="<?=site_url("adminservices/canteen")?>"> Manage Canteen Menu</a>
         </div>
@@ -154,23 +154,23 @@ $roles =  getRoles(whoAmI() );
 
     <div class="row">
     <?php if(in_array("ADMIN", $roles)): ?>
-       <div class="col rounded bg-light text-left m-3 p-2"> 
+       <div class="col rounded menu-item text-left m-3 p-2"> 
             <a class="fa fa-lock fa-2x" 
                 href="<?=site_url("/admin")?>"> Admin</a>
         </div>
     <?php endif; ?>
 
     <?php if(in_array("BOOKMYVENUE_ADMIN", $roles)): ?>
-       <div class="col rounded bg-light text-left m-3 p-2">
+       <div class="col rounded menu-item text-left m-3 p-2">
            <a class="fa fa-calendar-plus-o fa-2x" 
                 href="<?=site_url("/adminbmv")?>"> Book My Venue Admin</a>
        </div>
     <?php else: ?>
-       <div class="col rounded bg-light text-left m-3 p-2"></div>
+       <div class="col rounded menu-item text-left m-3 p-2"></div>
     <?php endif; ?>
 
     <?php if( in_array( "ACAD_ADMIN", $roles)): ?>
-       <div class="col rounded bg-light text-left m-3 p-2">
+       <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-graduation-cap fa-2x" 
                 href="<?=site_url("/adminacad")?>"> Academic Admin</a>
        </div>

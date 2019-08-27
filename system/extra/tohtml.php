@@ -2866,8 +2866,7 @@ function selectYearSemesterForm( $defaultYear = '', $defaultSem = '' )
     $years = range(intval(getCurrentYear( )) + 1, 2010);
     $yearSelect = arrayToSelectList('year', $years, array(), false, $defaultYear);
     $semSelect = arrayToSelectList('semester', array( 'SPRING', 'AUTUMN' ), array(), false, $defaultSem);
-    $form = '<form action="'.site_url("adminacad/show_course_feedback").'"
-         method="post">'; 
+    $form = '<form action="'.site_url("info/courses").'" method="get">'; 
     $form .= "<table><tr> <td> $yearSelect </td><td> $semSelect </td>";
     $form .= "<td><button class='show_as_link'> Show Courses </button></td>";
     $form .= "</tr></table>";

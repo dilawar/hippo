@@ -13,6 +13,15 @@ class Info extends CI_Controller
         $this->template->load($view, $data);
     }
 
+    public function courses( )
+    {
+        $year = __get__( $_GET, 'year', getCurrentYear());
+        $sem = __get__( $_GET, 'semester', getCurrentSemester());
+        $runningCourses = getSemesterCourses( $year, $sem );
+        $data = ['cRunningCourses'=> $runningCourses, 'cSemester'=>$sem, 'cYear'=>$year];
+        $this->loadview('courses', $data);
+    }
+
     public function aws($arg='')
     {
         if( $arg === 'search' )
@@ -104,11 +113,6 @@ class Info extends CI_Controller
         $this->template->load('statistics' );
     }
 
-    public function courses( )
-    {
-        $this->template->set('header', 'header.php' );
-        $this->template->load('courses' );
-    }
 
     public function publications()
     {
