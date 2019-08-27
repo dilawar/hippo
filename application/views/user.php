@@ -56,7 +56,7 @@ $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
     <div class="row">
         <div class="col rounded menu-item text-left m-3 p-2">
             <i class="fa fa-lock fa-2x"></i>
-            <a class="" href="'. site_url("/user/jcadmin"). '">JC Admin</a> <br />
+            <a class="" href="<?=site_url("/user/jcadmin")?>">JC Admin</a> <br />
             Journal club admin</td>
         </div>
         <div class="col rounded">
