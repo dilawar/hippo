@@ -6,6 +6,7 @@ trait AWS
 {
     public function aws( string $arg = '', string $arg2 = '' )
     {
+        $user = whoAmI();
         if( strtolower($arg) == 'schedulingrequest' )
         {
             if( $arg2 == 'create' )
@@ -78,7 +79,7 @@ trait AWS
                 $res = insertOrUpdateTable( 'aws_scheduling_request', $keys, $updateKeys, $_POST);
 
                 if( $res )
-                    $_POST[ 'id' ] = $res[ 'id' ];
+                    $_POST['id'] = $res[ 'id' ];
                 else
                     $sendEmail = false;
 
@@ -119,7 +120,12 @@ trait AWS
             else
             {
                 // All action are done. Send user back to aws page.
-                $this->load_user_view( 'user_aws' );
+                $scheduledAWS = scheduledAWSInFuture( $user);
+                $tempScheduleAWS = temporaryAwsSchedule( $user);
+                // THis data is for user_aws.php page.
+                $userAWSData = ['cUser'=>whoAmI(), 'cScheduledAWS'=>$scheduledAWS
+                    , 'cTempScheduleAWS'=>$tempScheduleAWS];
+                $this->load_user_view('user_aws', $userAWSData);
             }
         }
         else if( strtolower(trim($arg)) == 'update_upcoming_aws' )
@@ -167,7 +173,17 @@ trait AWS
             if( $arg )
                 flashMessage( "Unnown action $arg", 'error' );
 
-            $this->load_user_view( "user_aws" );
+            // All action are done. Send user back to aws page.
+            $scheduledAWS = scheduledAWSInFuture( $user);
+            $tempScheduleAWS = temporaryAwsSchedule( $user);
+
+            // This data is for user_aws.php page.
+            $userAWSData = ['cUser'=>whoAmI()
+                , 'cScheduledAWS'=>$scheduledAWS
+                , 'cTempScheduleAWS'=>$tempScheduleAWS
+            ];
+
+            $this->load_user_view("user_aws", $userAWSData);
         }
     }
 
