@@ -266,3 +266,12 @@ this server will not send out automatic emails and notifications.
    https://stackoverflow.com/a/39468939/1805129)
 
     setsebool -P httpd_can_network_connect 1
+
+8. Disable `PrivateTmp` for apache using systemd. Else temporary files will be
+   created into
+   `/tmp/systemd-private-7bfc885d8c04469f8bf9cf6931d53c87-httpd.service-Vwz3sj/`
+   etc.
+
+    mkdir /etc/systemd/system/httpd.service.d
+    echo "[Service]" >  /etc/systemd/system/httpd.service.d/nopt.conf
+    echo "PrivateTmp=false" >> /etc/systemd/system/httpd.service.d/nopt.conf
