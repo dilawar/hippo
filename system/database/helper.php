@@ -1730,21 +1730,11 @@ function insertOrUpdateTable( $tablename, $keys, $updatekeys, $data )
         $stmt->bindValue( ":$k", $value );
     }
 
-    $res = null;
-    try
-    {
-        $res = $stmt->execute( );
-    }
-    catch ( PDOException $e )
-    {
-        echo minionEmbarrassed( "Failed to execute <pre> " . $query . "</pre>"
-            , $e->getMessage( )
-        );
-    }
+    $res = $stmt->execute( );
 
     // This is MYSQL specific. Only try this if table has an AUTO_INCREMENT
     // id field.
-    if( array_key_exists( 'id', $data) && $res )
+    if(array_key_exists( 'id', $data) && $res)
     {
         // When created return the id of table else return null;
         $stmt = $hippoDB->query( "SELECT LAST_INSERT_ID() FROM $tablename" );
@@ -3782,11 +3772,13 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
     $res = ['success'=>true, 'msg' => ''];
     $data['last_modified_on'] = dbDateTime( 'now' );
     $data['registered_on'] = dbDateTime('now');
-    $data['status'] = 'VALID';
 
     // This is not very clean solution. 
-    if($data['type'] === 'DROP')
-        $data['status'] = 'DROPPED';
+    $what = $data['type'] . 'ED';
+    if($data['status'] !== 'DROPPED')
+        $data['status'] = 'VALID';
+    else
+        $what = 'DROPPed';
 
     $data['year'] = $course['year'];
     $data['semester'] = $course['semester'];
@@ -3833,17 +3825,17 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
     );
 
     // Update waiting lists.
-    if(strtoupper($data['type']) === 'DROP')
+    if(strtoupper($data['status']) === 'DROPPED')
         updateCourseWaitlist( $data['course_id'], $data['year'], $data['semester'] );
 
     if(! $r)
     {
-        $res['msg'] .= p( "I could not enroll you!" );
+        $res['msg'] .= p( "Failed to $what the course " . $data['course_id'] );
         $res['success'] = false;
         return $res;
     }
 
-    $res['msg'] .= p('Successfully '.$data['type'] .'ed course '.$data['course_id'].'.' );
+    $res['msg'] .= p("Successfully $what course ".$data['course_id'].'.' );
 
     if($sendEmail)
     {

@@ -962,9 +962,11 @@ function saveDownloadableFile( string $filename, string $content ) : bool
 function getConf( )
 {
     $inifile = '/etc/hipporc';
-    if( ! isset( $_SESSION ) || ! array_key_exists( 'conf', $_SESSION) || ! $_SESSION[ 'conf' ] )
+    if(! isset($_SESSION))
         return parse_ini_file( $inifile, $process_section = True );
 
+    if(! __get__($_SESSION, 'conf', []))
+        $_SESSION['conf'] = parse_ini_file( $inifile, $process_section = True );
     return $_SESSION['conf'];
 }
 

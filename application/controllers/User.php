@@ -245,7 +245,7 @@ class User extends CI_Controller
         {
             // Using the same function to AUDIT/CREDIT/DROP courses. Function
             // registerForCourse is also called by App API.
-            $_POST['type'] = 'DROP';
+            $_POST['status'] = 'DROPPED';
             $this->manage_course('register');
         }
         else

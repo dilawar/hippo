@@ -3,14 +3,16 @@
 include_once BASEPATH. 'database.php';
 include_once BASEPATH. 'extra/methods.php';
 
-// Directory to store the mdsum of sent emails.
-$maildir = sys_get_temp_dir(). '/mails';
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+require_once 'vendor/autoload.php';
 
-//if( ! is_dir( $maildir ) )
-//{
-//    echo "$maildir not found. Create it.";
-//    mkdir( trim($maildir), 0700, true );
-//}
+
+// Directory to store the mdsum of sent emails.
+$maildir = FCPATH. '/temp/_mails';
+
+if(! is_dir($maildir))
+    mkdir(trim($maildir), 0700, true);
 
 function generateAWSEmail( $monday )
 {
@@ -116,6 +118,18 @@ function mailFooter( ) {
 function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $cclist='', $attachment=null, bool $backgorund=false)
 {
     global $maildir;
+    $mail = new PHPMailer(true);
+
+    $mail->isSMTP();                                          
+    $mail->Host       = 'mail.ncbs.res.in';                    
+    $mail->Username   = 'noreply@ncbs.res.in';
+    $mail->Password   = '';       
+    $mail->SMTPSecure = 'tls';   
+    $mail->Port       = 587; 
+
+    $mail->setFrom('noreply@ncbs.res.in', "NCBS Hippo");
+
+
     $conf = getConf( );
 
     //echo printInfo( "Trying to send email to $to, $cclist with subject $sub" );
@@ -125,19 +139,12 @@ function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $ccli
         return false;
     }
 
-    if( ! array_key_exists( 'send_emails', $conf['global' ] ) )
+    if(! __get__( $conf['global'], 'send_emails', false))
     {
-        echo printInfo( "Email service has not been configured." );
+        echo printInfo( "Email service has not been configured or sending email is not allowed." );
         error_log( "Mail service is not configured" );
         return false;
     }
-
-    if( $conf['global']['send_emails' ] == false )
-    {
-        echo printInfo( "<br>Sending emails has been disabled in this installation" );
-        return false;
-    }
-
 
     // Check if this email has already been sent.
     $archivefile = $maildir . '/' . md5($sub . $msg) . '.email';
@@ -151,37 +158,31 @@ function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $ccli
     $timestamp = date( 'r', strtotime( 'now' ) );
 
     $msg .= mailFooter( );
-    $textMail = $msg;
 
     $msgfile = tempnam( '/tmp', 'hippo_msg' );
-    file_put_contents( $msgfile, $textMail );
+    file_put_contents( $msgfile, $msg );
 
-    $to =  implode( ' -t ', explode( ',', trim( $to ) ) );
+    foreach(explode(',', $to) as $toaddr)
+        if(trim($toaddr))
+            $mail->addAddress($toaddr);
 
-    // Use \" whenever possible. ' don't escape especial characters in bash.
-    $cmd= FCPATH . "scripts/sendmail.py -t $to -s \"$sub\" -i \"$msgfile\" ";
-    if($background)
-        $cmd .= " &";
+    foreach(explode(',', $cclist) as $cc)
+        if(trim($cc))
+            $mail->addCC($cc);
 
-    if( $cclist )
-    {
-        $cclist =  implode( ' -c ', explode( ',', trim( $cclist ) ) );
-        $cmd .= " -c $cclist";
-    }
+    $mail->addBCC('hippologs@lists.ncbs.res.in');
+    $mail->isHTML(true);
 
     if( $attachment )
     {
-        foreach( explode( ',', $attachment ) as $f )
-            $cmd .= " -a \"$f\" ";
+        foreach(explode( ',', $attachment ) as $f)
+            $mail->addAttachment($f);
     }
 
-    hippo_shell_exec( $cmd, $out, $stderr );
-    if(  $stderr )
-        return false;
-
-    error_log( "<pre> $cmd </pre>" );
-    error_log( '... $out' );
-    error_log( "Saving the mail in archive" . $archivefile );
+    // Send email.
+    $mail->Subject = $subject;
+    $mail->Body = $msg;
+    $mail->send();
 
     // generate md5 of email. And store it in archive.
     file_put_contents( $archivefile, "SENT" );

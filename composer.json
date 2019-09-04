@@ -14,13 +14,12 @@
 		"php": ">=5.3.7",
 		"google/apiclient": "^2.2",
 		"renanbr/bibtex-parser": "^2",
-		"chriskacerguis/codeigniter-restserver": "^3.0"
+		"chriskacerguis/codeigniter-restserver": "^3.0",
+                "phpmailer/phpmailer": "^6.0"
 	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
 	},
 	"require-dev": {
-		"mikey179/vfsStream": "1.1.*",
-		"phpunit/phpunit": "4.* || 5.*"
 	}
 }
