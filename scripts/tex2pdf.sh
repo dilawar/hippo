@@ -51,10 +51,10 @@ OUTFILENAME=${TEXFILENAME%.tex}.pdf
     # LuaLaTex suffers from 'writable cache path' problem. See here
     # https://github.com/sharelatex/sharelatex/issues/450
     # NOTE: Works well in docker.
-    lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
+    # lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
 
     #pdflatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
-    # xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE" &
+    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE" &
     # echo "$TEXFILENAME" > $MD5
     # xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
 )
