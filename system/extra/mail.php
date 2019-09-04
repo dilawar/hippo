@@ -115,24 +115,13 @@ function mailFooter( ) {
     ";
 }
 
-function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $cclist='', $attachment=null, bool $backgorund=false)
+function sendHTMLEmailUnsafe(string $msg, string $subject
+    , string $to, string $cclist='', string $attachment='' )
 {
     global $maildir;
     $mail = new PHPMailer(true);
+    $conf = getConf();
 
-    $mail->isSMTP();                                          
-    $mail->Host       = 'mail.ncbs.res.in';                    
-    $mail->Username   = 'noreply@ncbs.res.in';
-    $mail->Password   = '';       
-    $mail->SMTPSecure = 'tls';   
-    $mail->Port       = 587; 
-
-    $mail->setFrom('noreply@ncbs.res.in', "NCBS Hippo");
-
-
-    $conf = getConf( );
-
-    //echo printInfo( "Trying to send email to $to, $cclist with subject $sub" );
     if( strlen( trim( $msg ) ) < 1 )
     {
         echo printInfo( "Message is too small" );
@@ -146,9 +135,18 @@ function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $ccli
         return false;
     }
 
+    $mail->isSMTP();                                          
+    $mail->Host       = $conf['email']['smtp_server'];
+    $mail->Port       = intval($conf['email']['smtp_port']);
+    $mail->Username   = 'noreply@ncbs.res.in';
+    $mail->Password   = '';       
+    $mail->SMTPSecure = 'tls';   
+
+    $mail->setFrom('noreply@ncbs.res.in', "NCBS Hippo");
+
     // Check if this email has already been sent.
-    $archivefile = $maildir . '/' . md5($sub . $msg) . '.email';
-    if( file_exists( $archivefile ) )
+    $archivefile = $maildir . '/' . md5($subject . $msg) . '.email';
+    if(file_exists($archivefile))
     {
         echo printWarning( "This email has already been sent. Doing nothing" );
         echo printWarning( "-> archive file $archivefile " );
@@ -173,11 +171,9 @@ function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $ccli
     $mail->addBCC('hippologs@lists.ncbs.res.in');
     $mail->isHTML(true);
 
-    if( $attachment )
-    {
-        foreach(explode( ',', $attachment ) as $f)
+    foreach(explode( ',', $attachment ) as $f)
+        if(trim($f))
             $mail->addAttachment($f);
-    }
 
     // Send email.
     $mail->Subject = $subject;
@@ -191,20 +187,18 @@ function sendHTMLEmailUnsafe( string $msg, string $sub, string $to, string $ccli
 }
 
 function sendHTMLEmail( string $msg, string $sub, string $to
-    , string $cclist = '', $attachment = null, bool $background=false)
+    , string $cclist = '', string $attachment='')
 {
     try 
     {
-        return sendHTMLEmailUnsafe( $msg, $sub, $to, $cclist, $attachment, $background);
+        return sendHTMLEmailUnsafe( $msg, $sub, $to, $cclist, $attachment);
     } 
     catch (Exception $e)
     {
         $body = p( "Hippo failed to send an email. Fix it soon. Error was <br/>" );
-        $body .= $e->getMessage();
+        $body .= json_encode($e);
         error_log( $body );
-        return sendHTMLEmailUnsafe( $body, "WARN | Hippo could not send an email"
-            , "hippo@lists.ncbs.res.in", $background
-            );
+        return sendHTMLEmailUnsafe( $body, "WARN | Hippo could not send an email", "hippo@lists.ncbs.res.in");
     }
 }
 

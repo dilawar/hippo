@@ -3774,9 +3774,11 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
     $data['registered_on'] = dbDateTime('now');
 
     // This is not very clean solution. 
-    $what = $data['type'] . 'ED';
     if($data['status'] !== 'DROPPED')
+    {
         $data['status'] = 'VALID';
+        $what = $data['type'] . 'ed';
+    }
     else
         $what = 'DROPPed';
 
@@ -3861,9 +3863,7 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
             $msg .= p("You are registered for no course this semester.");
 
         $to = $login['email'];
-
-        // Send in background. Its faster this way. App will hand otherwise.
-        sendHTMLEmail($msg, "Successfully ".$type."ED the course $cid", $to, '', true);
+        sendHTMLEmail($msg, "Successfully $what the course $cid", $to);
     }
     return $res;
 }
