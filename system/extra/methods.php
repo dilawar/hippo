@@ -793,7 +793,8 @@ function getThumbnail( $originalImage )
     $img = $img->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
 
     // Create thumbnain in temp dir.
-    $outputImage = tempnam("/tmp", "thumb") . '.png';
+    $outputImage = sys_get_temp_dir() . '/thumb.png';
+    echo "Creating $outputImage ";
     $img->writeImage( $outputImage );
     $img->clear( );
     $img->destroy( );

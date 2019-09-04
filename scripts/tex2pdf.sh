@@ -43,10 +43,10 @@ OUTFILENAME=${TEXFILENAME%.tex}.pdf
     fi
 
     # Run the command two times. Sometimes it does not add images.
-    kpsewhich --var-value=TEXMFVAR
-    if [ -d /var/www/.texlive2016/texmf-var ];then 
-        export TEXMFVAR=/var/www/.texlive2016/texmf-var/
-    fi
+    # kpsewhich --var-value=TEXMFVAR
+    # if [ -d /var/www/.texlive2016/texmf-var ];then
+        # export TEXMFVAR=/var/www/.texlive2016/texmf-var/
+    # fi
 
     # LuaLaTex suffers from 'writable cache path' problem. See here
     # https://github.com/sharelatex/sharelatex/issues/450
@@ -54,7 +54,7 @@ OUTFILENAME=${TEXFILENAME%.tex}.pdf
     # lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
 
     #pdflatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
-    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE" &
+    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
     # echo "$TEXFILENAME" > $MD5
     # xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
 )
