@@ -46,6 +46,16 @@ class Google_Service_ServiceManagement_Resource_ServicesRollouts extends Google_
    * `example.googleapis.com`.
    * @param Google_Service_ServiceManagement_Rollout $postBody
    * @param array $optParams Optional parameters.
+   *
+   * @opt_param string baseRolloutId Unimplemented. Do not use this feature until
+   * this comment is removed.
+   *
+   * The rollout id that rollout to be created based on.
+   *
+   * Rollout should be constructed based on current successful rollout, this field
+   * indicates the current successful rollout id that new rollout based on to
+   * construct, if current successful rollout changed when server receives the
+   * request, request will be rejected for safety.
    * @return Google_Service_ServiceManagement_Operation
    */
   public function create($serviceName, Google_Service_ServiceManagement_Rollout $postBody, $optParams = array())
@@ -79,15 +89,15 @@ class Google_Service_ServiceManagement_Resource_ServicesRollouts extends Google_
    * `example.googleapis.com`.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string pageToken The token of the page to retrieve.
+   * @opt_param int pageSize The max number of items to include in the response
+   * list. Page size is 50 if not specified. Maximum value is 100.
    * @opt_param string filter Use `filter` to return subset of rollouts. The
    * following filters are supported:   -- To limit the results to only those in
    * [status](google.api.servicemanagement.v1.RolloutStatus) 'SUCCESS',      use
    * filter='status=SUCCESS'   -- To limit the results to those in
    * [status](google.api.servicemanagement.v1.RolloutStatus) 'CANCELLED'      or
    * 'FAILED', use filter='status=CANCELLED OR status=FAILED'
-   * @opt_param string pageToken The token of the page to retrieve.
-   * @opt_param int pageSize The max number of items to include in the response
-   * list.
    * @return Google_Service_ServiceManagement_ListServiceRolloutsResponse
    */
   public function listServicesRollouts($serviceName, $optParams = array())

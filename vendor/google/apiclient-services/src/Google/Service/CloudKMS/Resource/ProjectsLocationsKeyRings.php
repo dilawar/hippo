@@ -64,6 +64,10 @@ class Google_Service_CloudKMS_Resource_ProjectsLocationsKeyRings extends Google_
    * requested. See the operation documentation for the appropriate value for this
    * field.
    * @param array $optParams Optional parameters.
+   *
+   * @opt_param int options.requestedPolicyVersion Optional. The policy format
+   * version to be returned. Acceptable values are 0 and 1. If the value is 0, or
+   * the field is omitted, policy format version 1 will be returned.
    * @return Google_Service_CloudKMS_Policy
    */
   public function getIamPolicy($resource, $optParams = array())
@@ -79,8 +83,15 @@ class Google_Service_CloudKMS_Resource_ProjectsLocationsKeyRings extends Google_
    * with the KeyRings, in the format `projects/locations`.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string filter Optional. Only include resources that match the
+   * filter in the response. For more information, see [Sorting and filtering list
+   * results](https://cloud.google.com/kms/docs/sorting-and-filtering).
    * @opt_param string pageToken Optional pagination token, returned earlier via
    * ListKeyRingsResponse.next_page_token.
+   * @opt_param string orderBy Optional. Specify how the results should be sorted.
+   * If not specified, the results will be sorted in the default order.  For more
+   * information, see [Sorting and filtering list
+   * results](https://cloud.google.com/kms/docs/sorting-and-filtering).
    * @opt_param int pageSize Optional limit on the number of KeyRings to include
    * in the response.  Further KeyRings can subsequently be obtained by including
    * the ListKeyRingsResponse.next_page_token in a subsequent request.  If

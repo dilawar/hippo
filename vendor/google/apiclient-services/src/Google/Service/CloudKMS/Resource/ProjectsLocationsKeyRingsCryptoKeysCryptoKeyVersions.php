@@ -26,6 +26,40 @@
 class Google_Service_CloudKMS_Resource_ProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersions extends Google_Service_Resource
 {
   /**
+   * Decrypts data that was encrypted with a public key retrieved from
+   * GetPublicKey corresponding to a CryptoKeyVersion with CryptoKey.purpose
+   * ASYMMETRIC_DECRYPT. (cryptoKeyVersions.asymmetricDecrypt)
+   *
+   * @param string $name Required. The resource name of the CryptoKeyVersion to
+   * use for decryption.
+   * @param Google_Service_CloudKMS_AsymmetricDecryptRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_CloudKMS_AsymmetricDecryptResponse
+   */
+  public function asymmetricDecrypt($name, Google_Service_CloudKMS_AsymmetricDecryptRequest $postBody, $optParams = array())
+  {
+    $params = array('name' => $name, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('asymmetricDecrypt', array($params), "Google_Service_CloudKMS_AsymmetricDecryptResponse");
+  }
+  /**
+   * Signs data using a CryptoKeyVersion with CryptoKey.purpose ASYMMETRIC_SIGN,
+   * producing a signature that can be verified with the public key retrieved from
+   * GetPublicKey. (cryptoKeyVersions.asymmetricSign)
+   *
+   * @param string $name Required. The resource name of the CryptoKeyVersion to
+   * use for signing.
+   * @param Google_Service_CloudKMS_AsymmetricSignRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_CloudKMS_AsymmetricSignResponse
+   */
+  public function asymmetricSign($name, Google_Service_CloudKMS_AsymmetricSignRequest $postBody, $optParams = array())
+  {
+    $params = array('name' => $name, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('asymmetricSign', array($params), "Google_Service_CloudKMS_AsymmetricSignResponse");
+  }
+  /**
    * Create a new CryptoKeyVersion in a CryptoKey.
    *
    * The server will assign the next sequential id. If unset, state will be set to
@@ -79,6 +113,40 @@ class Google_Service_CloudKMS_Resource_ProjectsLocationsKeyRingsCryptoKeysCrypto
     return $this->call('get', array($params), "Google_Service_CloudKMS_CryptoKeyVersion");
   }
   /**
+   * Returns the public key for the given CryptoKeyVersion. The CryptoKey.purpose
+   * must be ASYMMETRIC_SIGN or ASYMMETRIC_DECRYPT.
+   * (cryptoKeyVersions.getPublicKey)
+   *
+   * @param string $name The name of the CryptoKeyVersion public key to get.
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_CloudKMS_PublicKey
+   */
+  public function getPublicKey($name, $optParams = array())
+  {
+    $params = array('name' => $name);
+    $params = array_merge($params, $optParams);
+    return $this->call('getPublicKey', array($params), "Google_Service_CloudKMS_PublicKey");
+  }
+  /**
+   * Imports a new CryptoKeyVersion into an existing CryptoKey using the wrapped
+   * key material provided in the request.
+   *
+   * The version ID will be assigned the next sequential id within the CryptoKey.
+   * (cryptoKeyVersions.import)
+   *
+   * @param string $parent Required. The name of the CryptoKey to be imported
+   * into.
+   * @param Google_Service_CloudKMS_ImportCryptoKeyVersionRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_CloudKMS_CryptoKeyVersion
+   */
+  public function import($parent, Google_Service_CloudKMS_ImportCryptoKeyVersionRequest $postBody, $optParams = array())
+  {
+    $params = array('parent' => $parent, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('import', array($params), "Google_Service_CloudKMS_CryptoKeyVersion");
+  }
+  /**
    * Lists CryptoKeyVersions.
    * (cryptoKeyVersions.listProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersions)
    *
@@ -86,6 +154,13 @@ class Google_Service_CloudKMS_Resource_ProjectsLocationsKeyRingsCryptoKeysCrypto
    * in the format `projects/locations/keyRings/cryptoKeys`.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string orderBy Optional. Specify how the results should be sorted.
+   * If not specified, the results will be sorted in the default order. For more
+   * information, see [Sorting and filtering list
+   * results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+   * @opt_param string filter Optional. Only include resources that match the
+   * filter in the response. For more information, see [Sorting and filtering list
+   * results](https://cloud.google.com/kms/docs/sorting-and-filtering).
    * @opt_param string pageToken Optional pagination token, returned earlier via
    * ListCryptoKeyVersionsResponse.next_page_token.
    * @opt_param int pageSize Optional limit on the number of CryptoKeyVersions to
@@ -93,6 +168,7 @@ class Google_Service_CloudKMS_Resource_ProjectsLocationsKeyRingsCryptoKeysCrypto
    * obtained by including the ListCryptoKeyVersionsResponse.next_page_token in a
    * subsequent request. If unspecified, the server will pick an appropriate
    * default.
+   * @opt_param string view The fields to include in the response.
    * @return Google_Service_CloudKMS_ListCryptoKeyVersionsResponse
    */
   public function listProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersions($parent, $optParams = array())

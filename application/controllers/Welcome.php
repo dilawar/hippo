@@ -46,9 +46,9 @@ class Welcome extends CI_Controller
         if(! $auth)
         {
             $this->session->set_flashdata( 'error', "Loging unsucessful. Try again!" );
-            redirect( "welcome" );
+            //redirect( "welcome" );
         }
-        if( $auth )
+        else
         {
             $this->session->set_userdata( 'AUTHENTICATED', true);
             $this->session->set_userdata( 'WHOAMI', $login );
@@ -66,7 +66,6 @@ class Welcome extends CI_Controller
             // In any case, create a entry in database.
             $this->createUserOrUpdateLogin( $ldap, $ldapInfo, $type );
 
-
             // Update email id.
             $res = updateTable( 'logins', 'login', 'email'
                 , array( 'login' => $ldap, 'email' => $email )
@@ -74,11 +73,6 @@ class Welcome extends CI_Controller
 
             $this->session->set_flashdata( 'success', "Loging sucessful.!" );
             redirect( "user/home" );
-        }
-        else 
-        {
-            $this->session->set_flashdata( 'error', "Loging unsucessful. Try again!" );
-            redirect( "welcome" );
         }
     }
 

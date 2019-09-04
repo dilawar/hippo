@@ -62,11 +62,14 @@ function extract_emails_from( $text )
 
 function authenticateUser(string $ldap, string $pass )
 {
-    if( ldapAlive( 'ldap.ncbs.res.in' ) )
+    if(true) //ldapAlive( 'ldap.ncbs.res.in'))
+    {
         $auth = authenticateUsingLDAP( $ldap, $pass );
+    }
     else
     {
         // Try login using IMAP.
+        flashMessage("LDAP is not alive. Using EMAIL services ...");
         $auth = authenticateUsingIMAP( $ldap, $pass );
     }
     return $auth;

@@ -1,0 +1,32 @@
+language: php
+
+sudo: false
+
+cache:
+    directories:
+        - $HOME/.composer/cache
+
+addons:
+    apt:
+        packages:
+            - pandoc
+
+php:
+    - 5.6
+    - 7.0
+    - 7.1
+    - 7.2
+    - nightly
+
+matrix:
+    allow_failures:
+        - php: nightly
+
+before_script:
+    - composer install --no-interaction
+
+script:
+    - ./vendor/bin/phpunit --coverage-clover=coverage.xml
+
+after_success:
+    - bash <(curl -s https://codecov.io/bash)

@@ -198,7 +198,7 @@ class Google_Service_Spanner_Resource_ProjectsInstances extends Google_Service_R
    * @param string $name Required. A unique identifier for the instance, which
    * cannot be changed after the instance is created. Values are of the form
    * `projects//instances/a-z*[a-z0-9]`. The final segment of the name must be
-   * between 6 and 30 characters in length.
+   * between 2 and 64 characters in length.
    * @param Google_Service_Spanner_UpdateInstanceRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Spanner_Operation

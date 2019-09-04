@@ -19,10 +19,13 @@ class Google_Service_Dataflow_RuntimeEnvironment extends Google_Collection
 {
   protected $collection_key = 'additionalExperiments';
   public $additionalExperiments;
+  public $additionalUserLabels;
   public $bypassTempDirValidation;
+  public $kmsKeyName;
   public $machineType;
   public $maxWorkers;
   public $network;
+  public $numWorkers;
   public $serviceAccountEmail;
   public $subnetwork;
   public $tempLocation;
@@ -36,6 +39,14 @@ class Google_Service_Dataflow_RuntimeEnvironment extends Google_Collection
   {
     return $this->additionalExperiments;
   }
+  public function setAdditionalUserLabels($additionalUserLabels)
+  {
+    $this->additionalUserLabels = $additionalUserLabels;
+  }
+  public function getAdditionalUserLabels()
+  {
+    return $this->additionalUserLabels;
+  }
   public function setBypassTempDirValidation($bypassTempDirValidation)
   {
     $this->bypassTempDirValidation = $bypassTempDirValidation;
@@ -43,6 +54,14 @@ class Google_Service_Dataflow_RuntimeEnvironment extends Google_Collection
   public function getBypassTempDirValidation()
   {
     return $this->bypassTempDirValidation;
+  }
+  public function setKmsKeyName($kmsKeyName)
+  {
+    $this->kmsKeyName = $kmsKeyName;
+  }
+  public function getKmsKeyName()
+  {
+    return $this->kmsKeyName;
   }
   public function setMachineType($machineType)
   {
@@ -67,6 +86,14 @@ class Google_Service_Dataflow_RuntimeEnvironment extends Google_Collection
   public function getNetwork()
   {
     return $this->network;
+  }
+  public function setNumWorkers($numWorkers)
+  {
+    $this->numWorkers = $numWorkers;
+  }
+  public function getNumWorkers()
+  {
+    return $this->numWorkers;
   }
   public function setServiceAccountEmail($serviceAccountEmail)
   {

@@ -19,8 +19,8 @@
  * Service definition for SQLAdmin (v1beta4).
  *
  * <p>
- * Creates and configures Cloud SQL instances, which provide fully-managed MySQL
- * databases.</p>
+ * Creates and manages Cloud SQL instances, which provide fully managed MySQL or
+ * PostgreSQL databases.</p>
  *
  * <p>
  * For more information about this service, see the API
@@ -50,13 +50,15 @@ class Google_Service_SQLAdmin extends Google_Service
   /**
    * Constructs the internal representation of the SQLAdmin service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://www.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://www.googleapis.com/';
     $this->servicePath = 'sql/v1beta4/';
+    $this->batchPath = 'batch/sqladmin/v1beta4';
     $this->version = 'v1beta4';
     $this->serviceName = 'sqladmin';
 
@@ -852,15 +854,14 @@ class Google_Service_SQLAdmin extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'host' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                  'required' => true,
-                ),
                 'name' => array(
                   'location' => 'query',
                   'type' => 'string',
                   'required' => true,
+                ),
+                'host' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),

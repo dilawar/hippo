@@ -261,3 +261,8 @@ This section deals with migrating Hippo to a temporary server.
 
 Since it is a temporary migration, we are not setting up the cron jobs. I.e.,
 this server will not send out automatic emails and notifications.
+
+7. Make sure that SELinux does not restrict ports (see
+   https://stackoverflow.com/a/39468939/1805129)
+
+    setsebool -P httpd_can_network_connect 1

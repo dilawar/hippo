@@ -30,18 +30,6 @@ class Google_Service_YouTubeAnalytics_Resource_Reports extends Google_Service_Re
    *
    * @param array $optParams Optional parameters.
    *
-   * @opt_param int startIndex An index of the first entity to retrieve. Use this
-   * parameter as a pagination mechanism along with the max-results parameter
-   * (one-based, inclusive).", minValue: 1
-   * @opt_param string dimensions A comma-separated list of YouTube Analytics
-   * dimensions, such as `views` or `ageGroup,gender`. See the [Available
-   * Reports](/youtube/analytics/v2/available_reports) document for a list of the
-   * reports that you can retrieve and the dimensions used for those reports. Also
-   * see the [Dimensions](/youtube/analytics/v2/dimsmets/dims) document for
-   * definitions of those dimensions." pattern: [0-9a-zA-Z,]+
-   * @opt_param string endDate The end date for fetching YouTube Analytics data.
-   * The value should be in `YYYY-MM-DD` format. required: true, pattern:
-   * [0-9]{4}-[0-9]{2}-[0-9]{2}
    * @opt_param int maxResults The maximum number of rows to include in the
    * response.", minValue: 1
    * @opt_param string filters A list of filters that should be applied when
@@ -66,6 +54,9 @@ class Google_Service_YouTubeAnalytics_Resource_Reports extends Google_Service_Re
    * reports that you can retrieve and the metrics available in each report, and
    * see the [Metrics](/youtube/analytics/v2/dimsmets/mets) document for
    * definitions of those metrics. required: true, pattern: [0-9a-zA-Z,]+
+   * @opt_param bool includeHistoricalChannelData If set to true historical data
+   * (i.e. channel data from before the linking of the channel to the content
+   * owner) will be retrieved.",
    * @opt_param string ids Identifies the YouTube channel or content owner for
    * which you are retrieving YouTube Analytics data.
    *
@@ -75,13 +66,22 @@ class Google_Service_YouTubeAnalytics_Resource_Reports extends Google_Service_Re
    * parameter   value to `contentOwner==OWNER_NAME`, where `OWNER_NAME` is the
    * CMS name   of the content owner. required: true, pattern:
    * [a-zA-Z]+==[a-zA-Z0-9_+-]+
-   * @opt_param bool includeHistoricalChannelData If set to true historical data
-   * (i.e. channel data from before the linking of the channel to the content
-   * owner) will be retrieved.",
    * @opt_param string currency The currency to which financial metrics should be
    * converted. The default is US Dollar (USD). If the result contains no
    * financial metrics, this flag will be ignored. Responds with an error if the
    * specified currency is not recognized.", pattern: [A-Z]{3}
+   * @opt_param int startIndex An index of the first entity to retrieve. Use this
+   * parameter as a pagination mechanism along with the max-results parameter
+   * (one-based, inclusive).", minValue: 1
+   * @opt_param string dimensions A comma-separated list of YouTube Analytics
+   * dimensions, such as `views` or `ageGroup,gender`. See the [Available
+   * Reports](/youtube/analytics/v2/available_reports) document for a list of the
+   * reports that you can retrieve and the dimensions used for those reports. Also
+   * see the [Dimensions](/youtube/analytics/v2/dimsmets/dims) document for
+   * definitions of those dimensions." pattern: [0-9a-zA-Z,]+
+   * @opt_param string endDate The end date for fetching YouTube Analytics data.
+   * The value should be in `YYYY-MM-DD` format. required: true, pattern:
+   * [0-9]{4}-[0-9]{2}-[0-9]{2}
    * @return Google_Service_YouTubeAnalytics_QueryResponse
    */
   public function query($optParams = array())

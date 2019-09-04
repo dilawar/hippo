@@ -19,6 +19,8 @@ class Google_Service_Testing_TestEnvironmentCatalog extends Google_Model
 {
   protected $androidDeviceCatalogType = 'Google_Service_Testing_AndroidDeviceCatalog';
   protected $androidDeviceCatalogDataType = '';
+  protected $iosDeviceCatalogType = 'Google_Service_Testing_IosDeviceCatalog';
+  protected $iosDeviceCatalogDataType = '';
   protected $networkConfigurationCatalogType = 'Google_Service_Testing_NetworkConfigurationCatalog';
   protected $networkConfigurationCatalogDataType = '';
   protected $softwareCatalogType = 'Google_Service_Testing_ProvidedSoftwareCatalog';
@@ -37,6 +39,20 @@ class Google_Service_Testing_TestEnvironmentCatalog extends Google_Model
   public function getAndroidDeviceCatalog()
   {
     return $this->androidDeviceCatalog;
+  }
+  /**
+   * @param Google_Service_Testing_IosDeviceCatalog
+   */
+  public function setIosDeviceCatalog(Google_Service_Testing_IosDeviceCatalog $iosDeviceCatalog)
+  {
+    $this->iosDeviceCatalog = $iosDeviceCatalog;
+  }
+  /**
+   * @return Google_Service_Testing_IosDeviceCatalog
+   */
+  public function getIosDeviceCatalog()
+  {
+    return $this->iosDeviceCatalog;
   }
   /**
    * @param Google_Service_Testing_NetworkConfigurationCatalog

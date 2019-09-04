@@ -27,6 +27,7 @@ class Google_Service_CloudShell_Environment extends Google_Collection
   public $sshPort;
   public $sshUsername;
   public $state;
+  public $webHost;
 
   public function setDockerImage($dockerImage)
   {
@@ -97,5 +98,13 @@ class Google_Service_CloudShell_Environment extends Google_Collection
   public function getState()
   {
     return $this->state;
+  }
+  public function setWebHost($webHost)
+  {
+    $this->webHost = $webHost;
+  }
+  public function getWebHost()
+  {
+    return $this->webHost;
   }
 }

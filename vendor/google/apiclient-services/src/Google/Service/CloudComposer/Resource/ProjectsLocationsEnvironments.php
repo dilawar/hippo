@@ -98,16 +98,16 @@ class Google_Service_CloudComposer_Resource_ProjectsLocationsEnvironments extend
    * @opt_param string updateMask Required. A comma-separated list of paths,
    * relative to `Environment`, of fields to update. For example, to set the
    * version of scikit-learn to install in the environment to 0.19.0 and to remove
-   * an existing installation of argparse, the `updateMask` parameter would
-   * include the following two `paths` values: "config.softwareConfig.pypiPackages
-   * .scikit-learn" and "config.softwareConfig.pypiPackages.argparse". The
-   * included patch environment would specify the scikit-learn version as follows:
+   * an existing installation of numpy, the `updateMask` parameter would include
+   * the following two `paths` values: "config.softwareConfig.pypiPackages.scikit-
+   * learn" and "config.softwareConfig.pypiPackages.numpy". The included patch
+   * environment would specify the scikit-learn version as follows:
    *
    *     {       "config":{         "softwareConfig":{           "pypiPackages":{
    * "scikit-learn":"==0.19.0"           }         }       }     }
    *
    * Note that in the above example, any existing PyPI packages other than scikit-
-   * learn and argparse will be unaffected.
+   * learn and numpy will be unaffected.
    *
    * Only one update type may be included in a single request's `updateMask`. For
    * example, one cannot update both the PyPI packages and labels in the same
@@ -133,7 +133,7 @@ class Google_Service_CloudComposer_Resource_ProjectsLocationsEnvironments extend
    *     {       "config":{         "softwareConfig":{           "pypiPackages":{
    * "botocore":"==1.7.14"           }         }       }     }
    *
-   * Note: Only the following fields can be updated:
+   * **Note:** Only the following fields can be updated:
    *
    *        Mask  Purpose      config.softwareConfig.pypiPackages    Replace all
    * custom custom PyPI packages. If a replacement  package map is not included in
@@ -152,17 +152,18 @@ class Google_Service_CloudComposer_Resource_ProjectsLocationsEnvironments extend
    * in `environment.labels`. It is an error to provide both a  mask of this form
    * and the "labels" mask.      config.nodeCount  Horizontally scale the number
    * of nodes in the environment. An integer  greater than or equal to 3 must be
-   * provided in the `config.nodeCount` field.
+   * provided in the `config.nodeCount`  field.
    * config.softwareConfig.airflowConfigOverrides  Replace all Apache Airflow
    * config overrides. If a replacement config  overrides map is not included in
    * `environment`, all config overrides  are cleared.  It is an error to provide
    * both this mask and a mask specifying one or  more individual config
-   * overrides.      config.softwareConfig.properties.section-name    Override the
-   * Apache Airflow property name in the section  named section, preserving other
-   * properties. To delete the  property override, include it in `updateMask` and
-   * omit its mapping  in `environment.config.softwareConfig.properties`.  It is
-   * an error to provide both a mask of this form and the
-   * "config.softwareConfig.properties" mask.
+   * overrides.      config.softwareConfig.airflowConfigOverrides.section-name
+   * Override the Apache Airflow config property name in the  section named
+   * section, preserving other properties. To delete  the property override,
+   * include it in `updateMask` and omit its mapping  in
+   * `environment.config.softwareConfig.airflowConfigOverrides`.  It is an error
+   * to provide both a mask of this form and the
+   * "config.softwareConfig.airflowConfigOverrides" mask.
    * config.softwareConfig.envVariables  Replace all environment variables. If a
    * replacement environment  variable map is not included in `environment`, all
    * custom environment  variables  are cleared.  It is an error to provide both

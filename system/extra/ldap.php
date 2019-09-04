@@ -145,22 +145,22 @@ function authenticateUsingLDAP( string $user, string $pass ) : bool
     $ports = array( "ncbs" => 389, "ext" => 27206, "instem" => 18288, "ccamp" => 19554 );
     foreach(  $ports as $dc => $port )
     {
-        $res = @ldap_connect( "ldap.ncbs.res.in", $port );
+        $res = ldap_connect( "ldap.ncbs.res.in", $port );
         if($dc === 'ext')
             $dc = 'ext,dc=ncbs';
         $ldapQuery = "uid=$user,ou=People,dc=$dc,dc=res,dc=in";
         if( $res )
         {
-            $bind = @ldap_bind( $res, $ldapQuery, $pass );
+            $bind = ldap_bind( $res, $ldapQuery, $pass );
 
             if( $bind )
             {
                 $auth = true;
-                @ldap_unbind( $res );
+                ldap_unbind( $res );
                 break;
             }
-            @ldap_close( $res );
-        }
+            ldap_close( $res );
+            }
     }
 
     return $auth;
@@ -184,7 +184,7 @@ function pingLDAP( $server, $port )
 
 function ldapAlive( $server )
 {
-    $res = @pingLDAP( $server, 389 );
+    $res = pingLDAP( $server, 389 );
     if( $res )
         return true;
     return false;

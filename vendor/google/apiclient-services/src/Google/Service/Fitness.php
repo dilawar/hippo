@@ -94,13 +94,15 @@ class Google_Service_Fitness extends Google_Service
   /**
    * Constructs the internal representation of the Fitness service.
    *
-   * @param Google_Client $client
+   * @param Google_Client $client The client used to deliver requests.
+   * @param string $rootUrl The root URL used for requests to the service.
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Google_Client $client, $rootUrl = null)
   {
     parent::__construct($client);
-    $this->rootUrl = 'https://www.googleapis.com/';
+    $this->rootUrl = $rootUrl ?: 'https://www.googleapis.com/';
     $this->servicePath = 'fitness/v1/users/';
+    $this->batchPath = 'batch/fitness/v1';
     $this->version = 'v1';
     $this->serviceName = 'fitness';
 
@@ -163,21 +165,6 @@ class Google_Service_Fitness extends Google_Service
                   'location' => 'query',
                   'type' => 'string',
                   'repeated' => true,
-                ),
-              ),
-            ),'patch' => array(
-              'path' => '{userId}/dataSources/{dataSourceId}',
-              'httpMethod' => 'PATCH',
-              'parameters' => array(
-                'userId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'dataSourceId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
                 ),
               ),
             ),'update' => array(
