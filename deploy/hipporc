@@ -2,9 +2,9 @@
 ldap_ip = ldap.example.in
 ldap_port = 8862
 log_file = /var/log/hippo.log
+send_emails = true
 
 [email]
-send_emails = true
 smtp_server = mail.example.in
 smtp_port = 581
 
