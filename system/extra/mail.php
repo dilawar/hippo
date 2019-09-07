@@ -197,8 +197,10 @@ function sendHTMLEmail( string $msg, string $sub, string $to
     {
         $body = p( "Hippo failed to send an email. Fix it soon. Error was <br/>" );
         $body .= json_encode($e);
+        $body .= p("Content of message:");
+        $body .= "Subject: $sub <br/> MSG: $msg";
         error_log( $body );
-        return sendHTMLEmailUnsafe( $body, "WARN | Hippo could not send an email", "hippo@lists.ncbs.res.in");
+        return sendHTMLEmailUnsafe($body, "WARN: Hippo could not send an email", "hippo@lists.ncbs.res.in");
     }
 }
 
