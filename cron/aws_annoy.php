@@ -62,13 +62,12 @@ function aws_annoy_cron( )
 
             foreach( $nonConfirmedUpcomingAws as $aws )
             {
-                if( $aws[ 'acknowledged' ] == 'YES' )
+                if($aws['acknowledged'] === 'YES' )
                 {
                     echo printInfo( $aws[ 'speaker' ] . " has already confirmed " );
                     continue;
                 }
 
-                //var_dump( $aws );
                 $speaker = $aws[ 'speaker' ];
                 $table = arrayToVerticalTableHTML( $aws, 'aws' );
                 $to = getLoginEmail( $speaker );
