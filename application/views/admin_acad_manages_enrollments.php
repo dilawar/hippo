@@ -110,14 +110,16 @@ foreach( $courseMap as $cid => $enrolls )
     echo '<div style="border:1px dotted lightblue">';
 
     $cname = getCourseName( $cid );
+
     echo "<h2>($cid) $cname </h2>";
     // Create a form to add new registration.
     $table = ' <table border="0">';
     $table .= '<tr>
             <td> <textarea cols="30" rows="2" name="enrollments"
                 placeholder="gabbar@ncbs.res.in:CREDIT&#10kalia@instem.res.in:AUDIT"></textarea> </td>
-            <td> <button name="response" value="quickenroll"
-                title=\'Use "email:CREDIT" or "email:AUDIT" or "email:DROPPED" format.\' 
+            <td> <button class="btn btn-primary"
+                    name="response" value="quickenroll"
+                    title=\'Use "email:CREDIT" or "email:AUDIT" or "email:DROPPED" format.\' 
                 >Quick Enroll</button> </td>
         </tr>';
     $table .= '</table>';

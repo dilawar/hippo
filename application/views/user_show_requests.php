@@ -1,11 +1,13 @@
 <?php
 require_once BASEPATH.'autoload.php';
 require_once BASEPATH.'extra/booking_methods.php';
-
 echo userHTML( );
 $requests = getRequestOfUserGroupedAndWithCount(whoAmI(), $status = 'PENDING');
+?>
 
-echo '<h1>Pending requests</h1>';
+<div class="h1">Pending requests</div>
+
+<?php
 if( count( $requests ) < 1 )
     echo alertUser( "No pending request found.", false );
 else
@@ -24,15 +26,22 @@ else
         $repeatPat = getRecurrentPatternOfThisRequest( $gid );
         $subReqRes = generateSubRequestsTable( $gid, $repeatPat );
 
-        $form =  "<table class=\"info\" >";
+        $form =  '<table class="info" >';
         $form .=  "<tr>";
         $form .=  "<td>" . arrayToTableHTML( $request, "info", NULL, $tobefiltered );
         $form .=  '<form method="post" action="'.site_url("user/private_request_edit") .'">';
         $form .=  "</td></tr><tr>";
-        $form .=  "</td><td><button name=\"response\" title=\"Cancel this request\"
-                onclick=\"AreYouSure( this )\" > <i class=\"fa fa-trash\"></i> </button>";
-        $form .=  "<td><button name=\"response\" title=\"Edit this request\"
-            value=\"edit\"> <i class=\"fa fa-pencil\"></i> </button>";
+        $form .=  "</td><td>
+                    <button class='btn btn-warning' 
+                            name=\"response\" title=\"Cancel this request\"
+                            onclick=\"AreYouSure( this )\"> 
+                        <i class=\"fa fa-trash\"></i>
+                    </button>";
+        $form .=  "<td>
+                    <button class='btn btn-primary' 
+                            name=\"response\" title=\"Edit this request\"
+                            value=\"edit\"> <i class=\"fa fa-pencil\"></i>
+                    </button>";
         $form .=  "</td></tr>";
         $form .=  "<input type=\"hidden\" name=\"gid\" value=\"$gid\">";
         $form .=  '</form>';

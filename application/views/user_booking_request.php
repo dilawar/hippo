@@ -9,7 +9,11 @@ if(isset($controller))
 if(!isset($goback))
     $goback = "$ref/home";
 
-echo '<div class="important">
+$venues = getVenues( $sortby = 'total_events' );
+
+?>
+
+<div class="card-body">
     <ul>
         <li> Set <tt>IS PUBLIC EVENT</tt>  to <tt>YES</tt> if you want your event to appear 
         on NCBS\' google-calendar. <br />
@@ -19,10 +23,9 @@ echo '<div class="important">
                filed under wrong <tt>CLASS</tt>.
         </li>
     </ul>
-    </div>
-    ';
+</div>
 
-$venues = getVenues( $sortby = 'total_events' );
+<?php
 
 if(! isset($date))
 {
@@ -112,7 +115,8 @@ echo '<h3>Recurrent Event? (optional)</h3>';
 echo printNote( "Leave me alone if your booking is for a single event.");
 echo repeatPatternTable( );
 echo '<br />';
-echo '<button name="response" value="submit" style="float:right">Submit</button>';
+echo '<button class="btn btn-primary pull-right" 
+            name="response" value="submit">Submit</button>';
 echo '</form>';
 echo '<br /><br />';
 

@@ -24,14 +24,14 @@ class User extends CI_Controller
     use JCAdmin;
     use Lab;
 
-    public function load_user_view( $view, $data = array() )
+    public function load_user_view(string $view, array $data=[])
     {
         $data['controller'] = 'user';
         $this->template->set( 'header', 'header.php' );
 
         // Fill data before sending to view.
         // Only show this section if user is eligible for AWS.
-        $data['cUserInfo'] = getLoginInfo( whoAmI() );
+        $data['cUserInfo'] = getLoginInfo(whoAmI());
         $this->template->load( $view, $data );
     }
 

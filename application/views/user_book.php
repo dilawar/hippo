@@ -35,7 +35,7 @@ $defaults = array(
 /*
  * If external_id is set by controller then we are here to book a  talk.
  */
-if( isset( $external_id ) )
+if(isset($external_id))
 {
     $expr = explode( ".", $external_id );
     $tableName = $expr[ 0 ];
@@ -64,11 +64,11 @@ if( isset( $external_id ) )
 }
 else
 {
-    echo alertUser( 'If an email is be sent out to academic community (e.g. 
+    echo alertUser( 'If emails are be sent out to academic community (e.g. 
         <strong><tt>TALK</tt>s, <tt>SEMINAR</tt>, <tt>THESIS SEMINAR</tt>s, <tt>LECTURE</tt>s</strong> ),
-        for this booking, please 
+        for your booking, please 
         <a href="' . site_url( "$ref/register_talk") . '"> 
-            <i class="fa fa-spinner fa-spin fa-2w"></i>click here</a> to proceed.'
+            <i class="fa fa-spinner fa-spin fa-2w"></i>use this interface</a> to proceed.'
             , false
         );
 }
@@ -97,64 +97,60 @@ if( $defaults[ 'openair' ] == 'YES' )
 else
     $openAirNo = 'checked';
 
+?>
 
-/* PAGE */
-echo '<br />';
-echo '
-    <form action="" method="post" >
-    <table class="table-responsive table-condensed">
-    <tr>
-        <td>Date</td>
-        <td><input  class="datepicker" name="date"
-            value="' . $defaults[ 'date' ] . '" /> </td>
-    </tr>
-    <tr>
-        <td>Start time </td>
-        <td><input  class="timepicker" name="start_time"
-            value="' . $defaults[ 'start_time'] . '" /> </td>
-    </tr>
-    <tr>
-        <td>End time </td>
-        <td><input  class="timepicker" name="end_time"
-            value="' . $defaults[ 'end_time'] . '" /> </td>
-    </tr>
-    <tr>
-        <td>Mininum seatings required? </td>
-        <td><input type="text" name="strength"
-            value="' . $defaults[ 'strength' ] . '" /> </td>
-    </tr>
-    <tr>
-        <td>Do you need video-conference facility?</td>
-        <td>
-            <input type="radio" name="has_skype" value="NO" ' . $skypeNo . ' /> No
-            <input type="radio" name="has_skype" value="YES" ' .$skypeYes . ' /> Yes
-        </td>
-    </tr>
-    <tr>
-        <td>Do you need a projector?</td>
-        <td>
-        <input type="radio" name="has_projector"
-            value="NO" ' . $projectorNo . ' /> No
-        <input type="radio" name="has_projector"
-                value="YES" ' .$projectorYes . ' /> Yes
-        </td>
-    </tr>
-    <tr>
-        <td>Prefer open-air location?</td>
-        <td>
-            <input type="radio" name="openair" value="NO"' . $openAirNo . ' $/> No
-            <input type="radio" name="openair" value="YES"' . $openAirYes . ' /> Yes
-        </td>
-    </tr>
-    </table>
-    <div class="d-flex justify-content-end">
-    <button title="Scan for venues" 
-        class="btn btn-success btn-lg" 
-        name="Response" value="scan"> Show Available Venues </button>
-    </div>
-    </form>
-    ';
+<form action="" method="post" >
+<table class="table-responsive table-condensed">
+<tr>
+    <td>Date</td>
+    <td><input  class="datepicker" name="date"
+    value=" <?= $defaults['date'] ?>" /> </td>
+</tr>
+<tr>
+    <td>Start time </td>
+    <td><input  class="timepicker" name="start_time"
+    value="<?= $defaults['start_time'] ?>" /> </td>
+</tr>
+<tr>
+    <td>End time </td>
+    <td><input  class="timepicker" name="end_time"
+    value="<?= $defaults['end_time'] ?>" /> </td>
+</tr>
+<tr>
+    <td>Mininum seatings required? </td>
+    <td><input type="text" name="strength"
+    value=" <?= $defaults['strength'] ?>" /> </td>
+</tr>
+<tr>
+    <td>Do you need video-conference facility?</td>
+    <td>
+        <input type="radio" name="has_skype" value="NO" <?= $skypeNo ?> /> No
+        <input type="radio" name="has_skype" value="YES" <?= $skypeYes ?> /> Yes
+    </td>
+</tr>
+<tr>
+    <td>Do you need a projector?</td>
+    <td>
+    <input type="radio" name="has_projector" value="NO" <?= $projectorNo ?> /> No
+    <input type="radio" name="has_projector" value="YES" <?= $projectorYes?> /> Yes
+    </td>
+</tr>
+<tr>
+    <td>Prefer open-air location?</td>
+    <td>
+        <input type="radio" name="openair" value="NO" <?= $openAirNo ?> /> No
+        <input type="radio" name="openair" value="YES" <?= $openAirYes ?> /> Yes
+    </td>
+</tr>
+</table>
+<div class="d-flex justify-content-end">
+<button title="Scan for venues" 
+    class="btn btn-success btn-lg" 
+    name="Response" value="scan"> Show Available Venues </button>
+</div>
+</form>
 
+<?php
 $date = __get__( $_POST, 'date', dbDate(strtotime( 'today' )) );
 
 // Get list of public events on user request day and show them to him. So he can

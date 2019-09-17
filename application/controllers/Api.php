@@ -1240,9 +1240,9 @@ class Api extends CI_Controller
         }
         else if( $args[0] === 'latest')
         {
-            $limit = intval(__get__($args, 1, 100));
+            $limit = intval(__get__($args, 1, 500));
 
-            // Get last 30 points (doen't matter when)
+            // Get last 100 points (doen't matter when)
             $res = getTableEntries('geolocation', 'timestamp DESC', "", '*', $limit); 
 
             // crypt_id is the key. Since we don't know the route. Each crypt id 
