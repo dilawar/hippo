@@ -1335,15 +1335,12 @@ function getLoginInfo( string $login_name, bool $query_ldap = false
     return getUserInfo( $login_name, $query_ldap, $search_everywhere );
 }
 
-function getLoginByEmail( $email )
+function getLoginByEmail(string $email) : string
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "SELECT login FROM logins WHERE email=:email" );
-    $stmt->bindValue( ":email", $email );
-    $stmt->execute( );
-    $res = $stmt->fetch( PDO::FETCH_ASSOC );
-    if( $res )
-        return $res['login'];
+    $res = executeQuery( "SELECT login FROM logins WHERE email='$email' AND login >''"
+                        , true);  // only 1
+    if(count($res) > 0)
+        return $res[0]['login'];
     return '';
 }
 

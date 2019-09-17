@@ -193,7 +193,7 @@ function coursesToHTMLTable(array $courses, array $runningCourses=null
         {
             // This course is not in running courses. So sad//
             $cstartDate = $runningCourses[$cid]['start_date'];
-            if(strtotime('today') > (strtotime($cstartDate)+21*24*3600))
+            if(strtotime('today') > (strtotime($cstartDate)+30*24*3600))
                 $action = '';
         }
 

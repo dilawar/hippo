@@ -462,7 +462,7 @@ class Adminacad extends CI_Controller
 
             // By default, its credit.
             $etype = 'CREDIT';
-            if( count( $l ) == 2 )
+            if( count($l) == 2 )
                 $etype = $l[1];
 
             if( ! in_array( $etype, array( 'AUDIT', 'CREDIT' ) ) )
@@ -472,20 +472,20 @@ class Adminacad extends CI_Controller
             }
 
             $login = getLoginByEmail( $email );
-            if( ! $login )
+            if(! $login)
             {
-                echo printWarning( "No valid login found for $email. Ignoring ... " );
+                echo printWarning( "No valid login found for '$email'. Ignoring ... " );
                 continue;
             }
 
-            $data = array( );
-            $data[ 'registered_on' ] = dbDateTime( 'now' );
-            $data[ 'last_modified_on' ] = dbDateTime( 'now' );
-            $data[ 'student_id' ] = $login;
-            $data[ 'type' ] = $etype;
-            $data[ 'status' ] = 'VALID';
-            $courseId = $_POST[ 'course_id' ];
-            $data = array_merge( $_POST, $data );
+            $data = [];
+            $data['registered_on'] = dbDateTime( 'now' );
+            $data['last_modified_on'] = dbDateTime( 'now' );
+            $data['student_id'] = $login;
+            $data['type'] = $etype;
+            $data['status'] = 'VALID';
+            $courseId = $_POST['course_id'];
+            $data = array_merge($_POST, $data);
 
             $res = null;
             try {
@@ -499,8 +499,8 @@ class Adminacad extends CI_Controller
                 continue;
             }
 
-            if( $warn )
-                echo printWarning( "System generated following warning: <br /> $warn");
+            if( $warnMsg )
+                echo printWarning( "System generated following warning: <br /> $warnMsg");
 
             if( $res )
                 flashMessage( "Successfully enrolled $login to $courseId with type $etype." );
@@ -508,7 +508,6 @@ class Adminacad extends CI_Controller
             {
                 $msg =  p( "Failed to enroll $email to $courseId with type $etype." );
                 $msg .= p( json_encode( $data ) );
-                printWarning( $msg );
                 if( $warnMsg )
                 {
                     $warnMsg = p( 'Following was reported by system.' );
@@ -517,8 +516,8 @@ class Adminacad extends CI_Controller
             }
         }
 
-        $year = $data['year'];
-        $semester = $data['semester'];
+        $year = $_POST['year'];
+        $semester = $_POST['semester'];
         redirect( "adminacad/enrollments/$year/$semester" );
     }
 

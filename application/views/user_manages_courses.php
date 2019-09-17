@@ -86,11 +86,13 @@ $myCourseTables = coursesToHTMLTable($myCourses, $runningCourses, $withFeedbackF
 <div class="card m-2 p-2">
 <div class="card-header h1">Registration form</div>
 <div class="card-body">
-<small>A course will be visible in registration form 
-upto 21 days from its starting date.
-Some courses may not allowed <tt>AUDIT</tt>. Some courses may put a ceiling on the 
-number of enrollments. See the table at the end of page.
+<ul class="list-group my-1" style="font-size:small">
+    <li> Some courses may not allowed <tt>AUDIT</tt>. </li>
+    <li> Some courses may put a ceiling on the 
+        number of enrollments. See the table at the end of page.
+</ul>
 
+<p>A course will be visible in registration form upto 21 days from its starting date. </p>
 <?php if(count($courseMap)>0): ?>
     <form method="post" action="manage_course/register">
     <?= dbTableToHTMLTable( 'course_registration'
@@ -120,16 +122,17 @@ $action = 'drop';
     <div class="card-body">
         <p class="text text-sm m-2">
             <i class="fa fa-info-circle"></i>
-            Courses with status <tt>WAITLIST</tt> does not count. You are in <tt>WAITLIST</tt> 
-            because this course has an upper limit on number of students allowed. 
+            A registration with status <tt>WAITLIST</tt> does not count.
+            Your registration status is <tt>WAITLIST</tt> because this course has 
+            an upper limit on number of students allowed.
             If enough people drop the course, <tt>WAITLIST</tt> will 
             automatically change to <tt>CREDIT/AUDIT</tt>. You can always write to 
-            Academic Office for clarification/update.
+            Academic Office for any clarification/update.
         </p>
         <div class="m-2">
             <strong>Policy for dropping courses:</strong>
             Upto 30 days from starting of course, you are free to drop a course using 
-            Hippo. After that, you need to contact Academic Office authority.
+            Hippo. After that you need to contact Academic Office.
         </div>
         <!-- table of courses -->
         <?php if(count($myCourses) > 0): ?>
