@@ -154,11 +154,7 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
     }
 
     $timestamp = date( 'r', strtotime( 'now' ) );
-
     $msg .= mailFooter( );
-
-    $msgfile = tempnam( '/tmp', 'hippo_msg' );
-    file_put_contents( $msgfile, $msg );
 
     foreach(explode(',', $to) as $toaddr)
         if(trim($toaddr))
@@ -182,7 +178,6 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
 
     // generate md5 of email. And store it in archive.
     file_put_contents( $archivefile, "SENT" );
-    unlink( $msgfile );
     return true;
 }
 
