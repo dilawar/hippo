@@ -1201,7 +1201,7 @@ function verifyRequest( array $request ) : string
 
     if( strtotime( $request[ 'date' ]. ' ' . $request[ 'start_time'] ) < strtotime( 'now' ) )
     {
-        $error = "You can not create request in past";
+        $error = "You can not create request in the past";
         $error .= ". Got " . $request[ 'date' ] . ' ' . $request[ 'start_time' ];
         $error .=  ", time now is "  . dbDateTime( 'now' );
         return $error;
