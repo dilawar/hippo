@@ -3335,8 +3335,8 @@ function getUpcomingJCPresentations( $jcID = '', $date = 'today' )
     $date = dbDate( $date );
 
     $whereExpr = "date >= '$date'";
-    if( trim($jcID) )
-        $whereExpr .= " AND jc_id='$jcID' ";
+    if(trim($jcID))
+        $whereExpr .= " AND jc_id='$jcID' AND status='VALID'";
 
     $whereExpr .= " AND status='VALID' AND CHAR_LENGTH(presenter) > 1";
     $jcs = getTableEntries( 'jc_presentations' , 'date', $whereExpr );
