@@ -73,9 +73,17 @@ usernames/password associated with both
 
 ??? question "How do I book my thesis seminar?"
 
-    See the item just below. While booking, select the talk `CLASS` to `THESIS
-    SEMINAR`.
+    See the item just below on how to book a public talk. While booking, select 
+    the talk `CLASS` to `THESIS SEMINAR`.
 
+??? question "How do I book my presynposis seminar?"
+
+    Normally you give your presynopsis seminar as normal AWS. While editing your
+    AWS entry, select `IS PRESYNOPSIS SEMINAR` to `YES`.
+    
+    In case, you are giving your presynopsis as a 30 min talk before the AWS, it
+    can be booked similar to a public talk. See below.
+    
 ??? question "How to book a public talk, lecture or seminar?"
 
     !!! info 
