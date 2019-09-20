@@ -47,18 +47,17 @@ function aws_annoy_cron( )
     /* If user has not acknowledged their aws date, send them this reminder on even
      * days; at 10 AM.
      */
-    if( trueOnGivenDayAndTime( 'today', '10:00' ) )
+    if(trueOnGivenDayAndTime('today', '14:15'))
     {
         $dayNo = date( 'N', strtotime( 'today' ) );
         // Send this reminder only on Monday and Friday only.
         // 1. Is monday, 7 is sunday.
         if( ($dayNo + 3) % 4 == 0 ) // Monday and Friday.
         {
-            error_log( "Checking for upcoming aws which has not been acknowleged" );
-            echo printInfo( "Checking for upcoming aws which has not been acknowleged" );
+            echo printInfo( "Checking for upcoming aws which are not ACKNOWLEGED" );
 
             // Get all events which are grouped.
-            $nonConfirmedUpcomingAws = getUpcomingAWS( );
+            $nonConfirmedUpcomingAws = getUpcomingAWS();
 
             foreach( $nonConfirmedUpcomingAws as $aws )
             {
