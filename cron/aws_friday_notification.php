@@ -25,11 +25,7 @@ function aws_friday_notification_cron( )
             $subject = 'Next week Annual Work Seminar (' . humanReadableDate( $nextMonday) . ') by ';
             $subject .= implode( ', ', $res[ 'speakers'] );
             $mail = $res[ 'email' ];
-
-            $pdffile = $res[ 'pdffile' ];
-
-            $res = sendHTMLEmail( $mail[ 'email_body'], $subject, $to, $cclist, null );
-            ob_flush( );
+            $res = sendHTMLEmail( $mail, $subject, $to, $cclist );
         }
         else
         {
@@ -38,7 +34,6 @@ function aws_friday_notification_cron( )
 
             $mail = $res[ 'email' ];
             echo( "Sending to $to, $cclist with subject $subject" );
-            echo( "$mail" );
             sendHTMLEmail( $mail, $subject, $to, $cclist );
         }
     }
