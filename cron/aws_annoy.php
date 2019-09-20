@@ -34,9 +34,10 @@ function aws_annoy_cron( )
                 $templ = emailFromTemplate( 'hippo_annoys_aws_speaker', $macros );
 
                 // Log it.
-                error_log( "AWS entry incomplete. Annoy " . $to  );
+                error_log( "AWS entry is incomplete. Annoy " . $to  );
+
                 sendHTMLEmail(
-                    $templ[ 'email_body' ], $subject, $to, $templ[ 'cc' ]
+                   $templ[ 'email_body' ], $subject, $to, $templ[ 'cc' ]
                 );
             }
 
@@ -47,7 +48,7 @@ function aws_annoy_cron( )
     /* If user has not acknowledged their aws date, send them this reminder on even
      * days; at 10 AM.
      */
-    if(trueOnGivenDayAndTime('today', '14:15'))
+    if(trueOnGivenDayAndTime('today', '10:00'))
     {
         $dayNo = date( 'N', strtotime( 'today' ) );
         // Send this reminder only on Monday and Friday only.
@@ -69,7 +70,7 @@ function aws_annoy_cron( )
 
                 $speaker = $aws[ 'speaker' ];
                 $table = arrayToVerticalTableHTML( $aws, 'aws' );
-                $to = getLoginEmail( $speaker );
+                $to = getLoginEmail($speaker);
 
                 $email = emailFromTemplate( 'REMIND_SPEAKER_TO_CONFIRM_AWS_DATE'
                     , array( 'USER' => loginToHTML( $speaker )
@@ -84,7 +85,7 @@ function aws_annoy_cron( )
                 if( $queryID > -1 )
                 {
                     $clickableURL = queryToClickableURL( $queryID, 'Click here to acknowlege' );
-                    $body = addClickabelURLToMail( $body, $clickableURL );
+                    $body = addClickabelURLToMail($body, $clickableURL);
                 }
 
                 $body .= "<p> This email was automatically generated and sent on " .
@@ -96,8 +97,6 @@ function aws_annoy_cron( )
                 $pi = getPIOrHost( $speaker );
                 if( $pi )
                     $cclist .= ",$pi";
-
-                echo printInfo( "Sending reminder to $to " );
                 sendHTMLEmail( $body, $subject, $to, $cclist );
             }
         }
