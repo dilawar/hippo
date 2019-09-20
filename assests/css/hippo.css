@@ -606,7 +606,7 @@ table.condensed tr td:nth-child(odd)
 table.input {
     /* text-align : left; */
     min-width : 400px;
-    max-width : var(--maxwidth);
+    width : 100%;
 }
 
 table.input tr td:nth-child(odd) {
