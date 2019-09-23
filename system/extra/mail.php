@@ -100,6 +100,7 @@ function generateAWSEmail( $monday )
 //
     // $res[ 'pdffile' ] = $pdffile;
     $res[ 'email' ] = $mail['email_body'];
+    $res[ 'mail' ] = $mail;
     return $res;
 }
 
