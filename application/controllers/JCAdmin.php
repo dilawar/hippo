@@ -17,7 +17,21 @@ trait JCAdmin
 
     public function jcadmin( string $arg='' )
     {
-        $this->load_user_view( 'user_jc_admin' );
+        if(! isJCAdmin(whoAmI()))
+        {
+            printWarning( "You don't have permission to access this page" );
+            redirect('user/home');
+            return;
+        }
+
+        $jcs = getJCForWhichUserIsAdmin(whoAmI());
+        if(! $jcs )
+        {
+            flashMessage("You are not subscribed to any JC.");
+            redirect('user/home');
+            return;
+        }
+        $this->load_user_view( 'user_jc_admin', ['cJCs'=>$jcs]);
     }
 
     public function jc_admin_reschedule_request( )
@@ -196,31 +210,24 @@ trait JCAdmin
 
         if( strtotime( $_POST[ 'date' ]) < strtotime( 'today' ) )
         {
-            $msg .= p("You cannot assign JC presentation in the past. Trying to do so again 
-                would be lame!");
+            $msg .= p("You cannot assign JC presentation in the past.");
             $msg .= p( " Assignment date: " . humanReadableDate( $_POST[ 'date' ] ) );
             $anyError = true;
             echo printWarning( $msg );
             redirect( "user/jcadmin" );
         }
 
-        $login = getLoginID( $_POST[ 'presenter' ] );
-        $loginInfo = getLoginInfo( $login );
-
+        // Check if login is valid.
+        $login = $_POST['presenter'];
+        $loginInfo = findAnyoneWithLoginOrEmail($login);
         if( ! $loginInfo )
         {
-            $msg .= p( "I could not find $login in database. Searching for speaker database." );
-
-            // Probably a special speaker.
-            $presenter = $_POST[ 'presenter' ];
-            $someone = findAnyoneWithEmail( $presenter );
-            if( ! $someone )
-            {
-                $msg .= p( " Could not find <tt>$login ($someone)</tt> anywhere. Lame!" );
-                printWarning( $msg );
-                $anyError = true;
-                redirect( "user/jcadmin" );
-            }
+            $msg .= p( "I could not find '$login' in database. Searching for speaker database." );
+            $msg .= p( "Lame! I could not find <tt>$login</tt> anywhere. Typo?" );
+            printWarning($msg);
+            $anyError = true;
+            redirect( "user/jcadmin" );
+            return;
         }
 
         $jcInfo = getJCInfo( $_POST['jc_id'] );
@@ -315,15 +322,15 @@ trait JCAdmin
             if( $res )
             {
                 $data = getTableEntry( 'jc_presentations', 'id', $_POST );
-                $to = getLoginEmail( $data[ 'presenter' ] );
+                $to = getLoginEmail($data['presenter']);
                 $cclist = 'hippo@ncbs.res.in,jccoords@ncbs.res.in';
 
                 $subject = $data[ 'jc_id' ] . ' | Your presentation date has been removed';
                 $msg = p(' Your presentation scheduled on ' . humanReadableDate( $data['date'] )
-                    . ' has been removed by JC coordinator ' . $_SESSION[ 'user' ] );
+                    . ' has been removed by JC coordinator ' . whoAmI() );
 
                 $msg .= p('If it is a mistake, please contant your JC coordinator.');
-                $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
+                $res = sendHTMLEmail($msg, $subject, $to, $cclist);
                 if( $res )
                 {
                     flashMessage( "Successfully invalidated entry." );

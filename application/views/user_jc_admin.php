@@ -7,16 +7,10 @@ global $symbEdit;
 
 // If current user does not have the privileges, send her back to  home
 // page.
-if( ! isJCAdmin( whoAmI() ) )
-{
-    echo printWarning( "You don't have permission to access this page" );
-    echo goBackToPageLink( "user/home", "Go back" );
-    exit;
-}
 
-// Otherwise continue.
-$jcs = getJCForWhichUserIsAdmin( whoAmI( ) );
-$jcIds = array_map( function( $x ) { return $x['jc_id']; }, $jcs );
+$jcs = $cJCs;  // Coming from controller.
+
+$jcIds = array_map(function( $x ) { return $x['jc_id']; }, $jcs);
 $jcSelect = arrayToSelectList( 'jc_id', $jcIds, array(), false, $jcIds[0] );
 $allPresentations = getAllPresentationsBefore( 'today' );
 
