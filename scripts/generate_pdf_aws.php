@@ -112,8 +112,8 @@ function awsToTex( $aws )
         $abstract = $texAbstract;
 
     // Title and abstract
-    $extra = '\begin{tabular}{p{0.3\linewidth} p{0.7\linewidth}}';
-    $extra .= '\textbf{Supervisor(s)} & ' . implode( ",", $supervisors) . '\\\\';
+    $extra = '\begin{tabular}{p{0.4\linewidth} p{0.6\linewidth}}';
+    $extra .= '\textbf{Supervisor(s)/Host} & ' . implode( ",", $supervisors) . '\\\\';
     $extra .= '\textbf{Thesis Committee Member(s)} & ' . implode( ", ", $tcm ) . '\\\\';
     $extra .= '\end{tabular}';
 
@@ -121,7 +121,7 @@ function awsToTex( $aws )
     if( $autoscale )
     {
         $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-            , fit to height=17.5cm, fit basedim=14pt] \fontfamily{pnc}\selectfont ' 
+            , fit to height=17.5cm, fit basedim=14pt] ' 
             . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
     }
     else
@@ -149,21 +149,22 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
 
     // Intialize pdf template.
     $tex = array( "\documentclass[12pt]{article}"
-        , "\usepackage[margin=25mm,top=20mm,a4paper]{geometry}"
+        , "\usepackage[margin=15mm,top=15mm,a4paper]{geometry}"
         , "\usepackage[]{graphicx}"
         , "\usepackage[]{grffile}"
         , "\usepackage[]{amsmath,amssymb}"
         , "\usepackage[]{color}"
         , "\usepackage{tikz}"
+        , "\usepackage[hidelinks=true]{hyperref}"
         , "\usepackage{wrapfig}"
         , '\pagenumbering{gobble}'
         , '\usepackage{booktabs}'
         , '\usepackage{fontspec}'
         , '\renewcommand{\familydefault}{\sfdefault}'
-        //, '\linespread{1.2}'
+        , '\linespread{1.15}'
         , '\usetikzlibrary{calc,positioning,arrows,fit}'
         // , '\usepackage{ebgaramond}'
-        //, '\usepackage[sfdefault,light]{FiraSans}'
+        // , '\usepackage[sfdefault,light]{FiraSans}'
         , '\usepackage{tcolorbox}'
         //, '\tcbuselibrary{fitting}'
         , '\begin{document}'
