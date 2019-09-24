@@ -8,10 +8,10 @@ function events_everyday_morning_cron()
     if( trueOnGivenDayAndTime( 'today', '8:00' ) )
     {
         $today = dbDate( 'today' );
-        error_log( "8am. Event for today" );
+        echo printInfo( "8am. Event for today" );
         $todaysEvents = getPublicEventsOnThisDay( $today );
         $nTalks = 0;
-        if( count( $todaysEvents ) > 0 )
+        if(count( $todaysEvents ) > 0)
         {
             foreach( $todaysEvents as $event )
             {
@@ -51,7 +51,7 @@ function events_everyday_morning_cron()
             }
         }
         else
-            error_log( "No event found on day " . $today );
+            echo printInfo( "No event found on day " . $today );
     }
 }
 
