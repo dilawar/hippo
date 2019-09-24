@@ -2,6 +2,8 @@
 require_once BASEPATH. 'autoload.php';
 echo userHTML( );
 $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
+$nAWS = count(getMyAws($cUserInfo['login']));
+$eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
 ?>
 
 <div class="row">
@@ -12,13 +14,13 @@ $thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
         <br />
         Register/deregister courses for <?=$thisSem?> semster.
     </div>
-<?php if( __get__($cUserInfo, 'eligible_for_aws', 'NO' ) == 'YES'): ?>
+
+<?php if($nAWS > 0 || $eligibleForAWS): ?>
     <div class="col rounded menu-item m-3 p-2 text-left">
         <a class="fa fa-2x fa-graduation-cap" 
             href="<?=site_url("/user/aws")?>"> My AWS</a> 
         <br />
-        See your previous AWSs and update them. Check
-        the details about upcoming AWS and provide preferred dates.
+        See your previous AWSs. Check details of upcoming AWS. Provide preferred dates.
         <br />
         <a class="btn btn-secondary"
              href="<?=site_url("/user/update_supervisors") ?>">

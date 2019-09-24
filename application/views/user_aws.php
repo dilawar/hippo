@@ -7,9 +7,10 @@ $scheduledAWS = $cScheduledAWS;
 $tempScheduleAWS = $cTempScheduleAWS;
 $awsRequests = getAwsRequestsByUser( $user );
 $awses = getMyAws( $user );
+$eligible = isEligibleForAWS($user);
 
 // AWS schedule.
-if( $scheduledAWS )
+if($scheduledAWS && $eligible)
 {
     alertUser( "<i class='fa fa-bell'></i>
             Your AWS date has been confirmed. It is on " .
@@ -34,7 +35,7 @@ if( $scheduledAWS )
             ";
     }
 }
-else
+else if($eligible)
 {
 
     // Here user can submit preferences.
@@ -99,6 +100,14 @@ else
 }
 ?>
 
+<?php if(! $eligible): ?>
+    <div class="alert alert-warning">
+    You are no longer on AWS roster. Usually a name is removed from the roster
+     after one's <tt>PRESYNOPSIS SEMINARY</tt> or <tt>THESIS SEMINAR</tt>. If this is 
+    mistake, please write to Academic Office.
+    </div>
+<?php endif;?>
+
 <?php if($scheduledAWS): ?>
     <?php $editableTill = strtotime( '-1 day', strtotime( $scheduledAWS[ 'date' ]));?>
     <div class="card">
@@ -108,7 +117,8 @@ else
          and document. You can change it as many times as you like upto
          23:59 Hrs, <?=humanReadableDate($editableTill)?> 
          <small> (Note: We will not store the old version).</small>
-        </div>
+            </div>
+    </div>
     <?php $id = $scheduledAWS[ 'id' ]; ?>
     <div class="card-body p-2 m-3">
     <form method="post" action="<?=site_url('user/aws/update_upcoming_aws')?>">
@@ -117,7 +127,6 @@ else
         title="Update this entry" value="update">Edit</button>
         <input type="hidden" name="id" value="<?=$id?>" />
     </form>
-    </div>
     </div>
 <?php endif; ?>
 
