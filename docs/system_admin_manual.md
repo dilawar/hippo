@@ -161,9 +161,8 @@ install it.
 This repository is a `git subtree` prefixed to `hippo-ai` folder. That is, a
 snapshot of `hippo-ai` repository is kept in this repository as `hippo-ai`. 
 
-To train the NN with AWS abstract.
-
-- torch-rnn 
+We use docker image available
+[here](https://github.com/crisbal/docker-torch-rnn) to run the AI module.
 
 
 ## Notes
