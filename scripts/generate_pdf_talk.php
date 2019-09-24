@@ -125,8 +125,10 @@ function eventToTex( $event, $talk = null )
     $tex[] = '\par';
     file_put_contents( '/tmp/desc.html', $desc );
     $texDesc = html2Tex( $desc ); 
-    if( strlen(trim($texDesc)) > 10 )
+    if(strlen(trim($texDesc)) > 10 )
         $desc = $texDesc;
+    else
+        $desc = "Failed to fetch talk details.";
 
     $extra = '';
     if( $talk )
@@ -163,12 +165,12 @@ function generatePdfForTalk( string $date, string $id = '' ) : string
     // Institute 
     $tex = array( 
         "\documentclass[12pt]{article}"
-        , "\usepackage[margin=25mm,top=3cm,a4paper]{geometry}"
+        , "\usepackage[margin=15mm,top=3cm,a4paper]{geometry}"
         , "\usepackage[]{graphicx}"
         , "\usepackage[]{wrapfig}"
         , "\usepackage[]{grffile}"
         , "\usepackage[]{amsmath,amssymb}"
-        , "\usepackage[colorlinks=true]{hyperref}"
+        , "\usepackage[hidelinks]{hyperref}"
         , "\usepackage[]{color}"
         , "\usepackage{tikz}"
         , '\linespread{1.15}'
@@ -176,7 +178,8 @@ function generatePdfForTalk( string $date, string $id = '' ) : string
         , '\usetikzlibrary{fit,calc,positioning,arrows,backgrounds}'
         , '%\usepackage[sfdefault,light]{FiraSans}'
         , '\usepackage{fontspec}'
-        , '\setmainfont{Nimbus Sans L}' // available on centos7
+        , '\renewcommand\familydefault{\sfdefault}'
+        // , '\setmainfont{Nimbus Sans L}' // available on centos7
         , '\usepackage{tcolorbox}'          // Fit text in one page.
         , '%\tcbuselibrary{fitting}' // not available on centos
         , '\begin{document}'
