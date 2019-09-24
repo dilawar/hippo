@@ -165,7 +165,7 @@ below (puny human)!
 </form>
 
 <?php if( __get__( $_POST, 'response', '' ) === 'write_my_aws'): ?>
-    <?php $cmd = FCPATH . '/scripts/write_aws_using_ai.py'; ?>
+    <?php $cmd = FCPATH . '/scripts/write_aws.sh'; ?>
     <?=hippo_shell_exec($cmd, $awsText, $stderr)?>
     <?=$awsText?>
     <br>

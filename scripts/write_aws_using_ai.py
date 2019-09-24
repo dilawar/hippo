@@ -7,7 +7,7 @@ import subprocess
 os.environ[ 'TERM' ] = 'xterm'
 
 def main( ):
-    cmd = 'make --quiet generate_sample'.split( )
+    cmd = 'make sample'.split( )
     res = subprocess.run( cmd, stdout = subprocess.PIPE, cwd = 'hippo-ai')
     if res:
         text = res.stdout.decode( 'utf-8' )

@@ -22,7 +22,8 @@ generate_sample :
 	    -v /tmp:/tmp:rw \
 	    -v $(PWD):/home/torch:rw \
 	    -w /home/torch \
-	    --rm -ti crisbal/torch-rnn:base \
+	    -e TERM=xterm \
+	    --rm crisbal/torch-rnn:base \
 	    th ./sample.lua -gpu -1 -checkpoint $(LAST_CP) 
 
 
