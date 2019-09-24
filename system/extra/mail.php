@@ -164,8 +164,8 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
     foreach(explode(',', $cclist) as $cc)
         if(trim($cc))
             $mail->addCC($cc);
+    $mail->addCC('hippologs@lists.ncbs.res.in');
 
-    $mail->addBCC('hippologs@lists.ncbs.res.in');
     $mail->isHTML(true);
 
     foreach(explode( ',', $attachment ) as $f)
