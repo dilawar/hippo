@@ -95,7 +95,6 @@ foreach( $requests as $r )
     // If request date has passed, ignore it.
     if( strtotime( $r[ 'date' ] ) < strtotime( '-2 day' ) )
     {
-        echo $r['gid'] . ',';
         // TODO: Do not show requests which are more than 1 days old. Their status
         // remains PENDING all the time. Dont know what to do such
         // unapproved/expired requests.
@@ -106,7 +105,7 @@ foreach( $requests as $r )
             $msg = p("Following request is expired because no one acted on it." );
             $msg .= arrayToTableHTML( $r, 'info' );
             $subject = "Request id  $rid is expired.";
-            $to = mailto( $r['created_by'] );
+            $to = getLoginEmail($r['created_by']);
             $cclist = 'hippo@lists.ncbs.res.in';
             sendHTMLEmail( $msg, $subject, $to, $cclist );
         }
