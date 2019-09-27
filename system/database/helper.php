@@ -3333,7 +3333,6 @@ function getMyJCs( )
 function getUpcomingJCPresentations( $jcID = '', $date = 'today' )
 {
     $date = dbDate( $date );
-
     $whereExpr = "date >= '$date'";
     if(trim($jcID))
         $whereExpr .= " AND jc_id='$jcID' AND status='VALID'";

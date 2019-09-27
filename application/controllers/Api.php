@@ -768,6 +768,7 @@ class Api extends CI_Controller
             $remove = ['fname', 'lname', 'uid', 'is_active', 'honorific', 'roles'
                 , 'valid_until', 'created_on'
                 ];
+            $data['jc'] = getUserJCs($user);
             $data = array_diff_key($ldap, array_flip($remove));
         }
         else if( $args[0] === 'aws')
@@ -782,13 +783,10 @@ class Api extends CI_Controller
             $data = getMyAllCourses($user);
             ksort($data);
         }
-        //else if( $args[0] === 'jc')
-        //{
-        //    $upcoming = getJCPresentations($login);
-        //    if($upcoming)
-        //        $data[] = $upcoming;
-        //    $data = getAwsOfSpeaker($login);
-        //}
+        else if( $args[0] === 'jc')
+        {
+            $data = getUpcomingJCPresentations();
+        }
         else
             $data = ['Unknown query'];
 
