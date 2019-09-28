@@ -318,13 +318,18 @@ trait JCAdmin
         {
             $_POST[ 'status' ] = 'INVALID';
             $res = updateTable( 'jc_presentations', 'id', 'status', $_POST );
-
-            if( $res )
+            if($res)
             {
-                $data = getTableEntry( 'jc_presentations', 'id', $_POST );
+                $data = getTableEntry('jc_presentations', 'id', $_POST);
                 $to = getLoginEmail($data['presenter']);
-                $cclist = 'hippo@ncbs.res.in,jccoords@ncbs.res.in';
+                if(! $to)
+                {
+                    flashMessage("No valid email found for presenter " . $data['presenter']);
+                    redirect( 'user/jcadmin' );
+                    return;
+                }
 
+                $cclist = 'jccoords@ncbs.res.in';
                 $subject = $data[ 'jc_id' ] . ' | Your presentation date has been removed';
                 $msg = p(' Your presentation scheduled on ' . humanReadableDate( $data['date'] )
                     . ' has been removed by JC coordinator ' . whoAmI() );

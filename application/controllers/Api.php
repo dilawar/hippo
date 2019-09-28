@@ -768,8 +768,11 @@ class Api extends CI_Controller
             $remove = ['fname', 'lname', 'uid', 'is_active', 'honorific', 'roles'
                 , 'valid_until', 'created_on'
                 ];
-            $data['jc'] = getUserJCs($user);
             $data = array_diff_key($ldap, array_flip($remove));
+            $jcs = [];
+            foreach(getUserJCs($user) as $jc)
+                $jcs[$jc['jc_id']] = $jc;
+            $data['jcs'] = $jcs;
         }
         else if( $args[0] === 'aws')
         {
