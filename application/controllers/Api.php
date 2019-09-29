@@ -251,6 +251,53 @@ class Api extends CI_Controller
 
     /* --------------------------------------------------------------------------*/
     /**
+        * @Synopsis  Journal club endpoint.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function jc()
+    {
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $args = func_get_args();
+        if($args[0] === 'update')
+        {
+            $res = updateTable('jc_presentations', 'id'
+                , 'title,description,url,presentation_url', $_POST);
+            $this->send_data([$res?'Success':'Failed'], 'ok');
+            return;
+        }
+        if($args[0] === 'acknowledge')
+        {
+            $_POST['acknowledged'] = 'YES';
+            $_POST['id'] = $args[1];
+            $res = updateTable('jc_presentations', 'id','acknowledged', $_POST);
+            $this->send_data([$res?'Success':'Failed'], 'ok');
+            return;
+        }
+        if($args[0] === 'remove')
+        {
+            $_POST['status'] = 'INVALID';
+            $_POST['id'] = $args[1];
+            $res = updateTable('jc_presentations', 'id','status', $_POST);
+            $this->send_data([$res?'Success':'Failed'], 'ok');
+            return;
+        }
+        else
+        {
+            $this->send_data(["Unknown request"], "ok");
+            return;
+        }
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
         * @Synopsis  Return events based on GET query.
         * Examples of endpoints,
         *     - events/latest                       Latest 20 events.

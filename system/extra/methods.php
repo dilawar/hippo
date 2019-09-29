@@ -2120,3 +2120,26 @@ function getBase64JPEG(string $filepath, int $width=0, int $height = 0) : string
     $bytes = $i->getImageBlob();
     return 'data:image/jpeg;base64, '.base64_encode($bytes);
 }
+
+function cancelThisJCRequest($data)
+{
+    $data[ 'status' ] = 'CANCELLED';
+    $res = updateTable( 'jc_requests', 'id', 'status', $data);
+    if( $res )
+    {
+        $entry = getTableEntry( 'jc_requests', 'id', $_POST );
+        $presenter = getLoginInfo( $entry[ 'presenter' ] );
+        $entryHTML = arrayToVerticalTableHTML($entry, 'info');
+        $msg = "<p>Dear " . arrayToName( $presenter ) . "</p>";
+        $msg .= "<p>Your presentation request has been cancelled by admin.
+            the latest entry is following. </p>";
+        $msg .= $entryHTML;
+
+        $subject = 'Your presentation request is CANCELLED by JC admin';
+        $to = $presenter['email'];
+        $cclist = 'jccoords@ncbs.res.in,hippo@lists.ncbs.res.in';
+        $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
+    }
+    return $res;
+}
+

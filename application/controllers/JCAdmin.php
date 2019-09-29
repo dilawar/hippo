@@ -64,7 +64,6 @@ trait JCAdmin
             redirect( "user/jcadmin");
             return;
         }
-        
         else if( $action == 'reschedule' )
         {
             $this->jc_admin_reschedule_request( );
@@ -72,29 +71,13 @@ trait JCAdmin
         }
         else if($action == 'delete')
         {
-            $_POST[ 'status' ] = 'CANCELLED';
-            $res = updateTable( 'jc_requests', 'id', 'status', $_POST);
+            $res = cancelThisJCRequest($_POST);
             if( $res )
-            {
-                $entry = getTableEntry( 'jc_requests', 'id', $_POST );
-                $presenter = getLoginInfo( $entry[ 'presenter' ] );
-                $entryHTML = arrayToVerticalTableHTML($entry, 'info');
-                $msg = "<p>Dear " . arrayToName( $presenter ) . "</p>";
-                $msg .= "<p>Your presentation request has been cancelled by admin.
-                    the latest entry is following. </p>";
-                $msg .= $entryHTML;
-
-                $subject = 'Your presentation request is CANCELLED by JC admin';
-                $to = $presenter['email'];
-                $cclist = 'jccoords@ncbs.res.in,hippo@lists.ncbs.res.in';
-                $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
-                if( $res )
-                {
-                    flashMessage( 'Successfully updated presentation entry.' );
-                    goToPage( 'user/jcadmin' );
-                    return;
-                }
-            }
+                flashMessage('Successfully updated presentation entry.');
+            else
+                flashMessage('Something went wrong.');
+            goToPage( 'user/jcadmin' );
+            return;
         }
         else if( $action == 'DO_NOTHING' )
         {
