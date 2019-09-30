@@ -289,6 +289,14 @@ class Api extends CI_Controller
             $this->send_data([$res?'Success':'Failed'], 'ok');
             return;
         }
+        if($args[0] === 'subscriptions')
+        {
+            $jcID = $args[1];
+            $data = getTableEntries('jc_subscriptions', 'login'
+                , "jc_id='$jcID' AND status='VALID'");
+            $this->send_data($data, 'ok');
+            return;
+        }
         else
         {
             $this->send_data(["Unknown request"], "ok");
