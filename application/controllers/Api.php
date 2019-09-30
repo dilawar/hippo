@@ -297,6 +297,19 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
             return;
         }
+        if($args[0] === 'info')
+        {
+            $jcID = $args[1];
+            $data = getTableEntry('journal_clubs', 'id,status', ["id"=>$jcID, 'status'=>'ACTIVE']);
+            $this->send_data($data, 'ok');
+            return;
+        }
+        if($args[0] === 'assign')
+        {
+            $res = assignJCPresentationToLogin($_POST['presenter'], $_POST );
+            $this->send_data($res, 'ok');
+            return;
+        }
         else
         {
             $this->send_data(["Unknown request"], "ok");
