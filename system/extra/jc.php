@@ -135,4 +135,31 @@ function removeJCPresentation(array $data): array
     return $final;
 }
 
+function unsubscribeJC(array $data): array
+{
+    $data[ 'status' ] = 'UNSUBSCRIBED';
+    $res = updateTable( 'jc_subscriptions', 'login,jc_id', 'status', $data);
+    return [ 'msg' => 'OK', 'success' => $res];
+}
+
+function subscribeJC(array $data): array
+{
+    $final = ['msg'=>'', 'success'=>false];
+    $data[ 'status' ] = 'VALID';
+    $emailOrLogin = $data['login'];
+    $login = explode( '@', $emailOrLogin )[0];
+
+    if( ! getLoginInfo( $login ) )
+    {
+        $final['msg']= printWarning( "$login is not a valid Hippo id. Searching for others... " );
+        return $final;
+    }
+
+    $data[ 'status' ] = 'VALID';
+    $data[ 'login' ] = $login;
+    $res = insertOrUpdateTable( 'jc_subscriptions', 'jc_id,login', 'status', $data);
+    return [ 'msg' => 'OK', 'success' => $res];
+}
+
+
 ?>

@@ -255,13 +255,8 @@ trait JCAdmin
                     $anyWarning = true;
                     continue;
                 }
-
-                $_POST[ 'status' ] = 'VALID';
-                $_POST[ 'login' ] = $login;
-                $res = insertOrUpdateTable( 'jc_subscriptions'
-                    , 'jc_id,login', 'status', $_POST );
-
-                if( ! $res )
+                $res = subscribeJC($_POST);
+                if( ! $res['success'] )
                     $anyWarning = true;
                 else
                     flashMessage( "$login is successfully added to JC" );
@@ -281,9 +276,8 @@ trait JCAdmin
         }
         else if( $_POST['response'] == 'delete' )
         {
-            $_POST[ 'status' ] = 'UNSUBSCRIBED';
-            $res = updateTable( 'jc_subscriptions', 'login,jc_id', 'status', $_POST );
-            if( $res )
+            $res = unsubscribeJC($_POST);
+            if( $res['success'] )
             {
                 flashMessage( ' ... successfully removed ' . $_POST[ 'login' ] );
                 redirect( 'user/jcadmin' );

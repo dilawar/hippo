@@ -312,6 +312,22 @@ class Api extends CI_Controller
             $this->send_data($res, 'ok');
             return;
         }
+        if($args[0] === 'unsubscribe')
+        {
+            $jcid = $args[1];
+            $login = $args[2];
+            $res = unsubscribeJC( ['jc_id'=>$jcid,  'login'=>$login]);
+            $this->send_data($res, 'ok');
+            return;
+        }
+        if($args[0] === 'subscribe')
+        {
+            $jcid = $args[1];
+            $login = $args[2];
+            $res = subscribeJC( ['jc_id'=>$jcid,  'login'=>$login]);
+            $this->send_data($res, 'ok');
+            return;
+        }
         else
         {
             $this->send_data(["Unknown request"], "ok");
