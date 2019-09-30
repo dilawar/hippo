@@ -44,11 +44,10 @@ function jc_assign_n_weeks_in_advance_cron( )
                     if( $presenter )
                     {
                         $res = fixJCSchedule( $presenter
-                            , array( 'date' => dbDate( $nWeeksFromjcDay )
+                            , ['date' => dbDate( $nWeeksFromjcDay )
                                     , 'time' => dbTime( $jc['time'] )
                                     , 'jc_id' => $jcID 
-                                    , 'venue' => $jc['venue']
-                                )
+                                    , 'venue' => $jc['venue']]
                             );
                         if( $res )
                             echo printInfo( "Success! " );

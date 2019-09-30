@@ -11,10 +11,9 @@ require_once BASEPATH . 'autoload.php';
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function fixJCSchedule( string $loginOrEmail, array $data ) : array
+function fixJCSchedule(string $loginOrEmail, array $data):array
 {
     $login = explode( '@', $loginOrEmail)[0];
-
     $data[ 'status' ] = 'VALID';
     $data[ 'presenter' ] = $loginOrEmail;
     $msg = json_encode( $data );
@@ -22,11 +21,9 @@ function fixJCSchedule( string $loginOrEmail, array $data ) : array
     if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
     {
         $res = updateTable( 'jc_presentations', 'presenter,jc_id,date,time,venue', 'status', $data );
-        $msg .= 'X';
     }
     else
     {
-        $msg .= 'Y';
         $data[ 'id' ] = getUniqueID( 'jc_presentations' );
         $data[ 'title' ] = 'Not yet available';
         $res = insertIntoTable( 'jc_presentations'
