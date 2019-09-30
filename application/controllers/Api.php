@@ -285,8 +285,8 @@ class Api extends CI_Controller
         {
             $_POST['status'] = 'INVALID';
             $_POST['id'] = $args[1];
-            $res = updateTable('jc_presentations', 'id','status', $_POST);
-            $this->send_data([$res?'Success':'Failed'], 'ok');
+            $res = removeJCPresentation($_POST);
+            $this->send_data($res, 'ok');
             return;
         }
         if($args[0] === 'subscriptions')
@@ -306,6 +306,8 @@ class Api extends CI_Controller
         }
         if($args[0] === 'assign')
         {
+            $_POST['date'] = dbDate($_POST['date']);
+            $_POST['time'] = dbTime($_POST['time']);
             $res = assignJCPresentationToLogin($_POST['presenter'], $_POST );
             $this->send_data($res, 'ok');
             return;

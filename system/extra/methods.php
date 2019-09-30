@@ -6,6 +6,7 @@ require_once __DIR__.'/html2text.php';
 require_once __DIR__.'/helper/imap.php';
 require_once __DIR__.'/ldap.php';
 require_once __DIR__.'/mail.php';
+require_once __DIR__.'/jc.php';
 
 global $symbClock;
 

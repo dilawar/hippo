@@ -299,33 +299,11 @@ trait JCAdmin
         }
         else if( $_POST[ 'response' ] == 'Remove Presentation' )
         {
-            $_POST[ 'status' ] = 'INVALID';
-            $res = updateTable( 'jc_presentations', 'id', 'status', $_POST );
-            if($res)
-            {
-                $data = getTableEntry('jc_presentations', 'id', $_POST);
-                $to = getLoginEmail($data['presenter']);
-                if(! $to)
-                {
-                    flashMessage("No valid email found for presenter " . $data['presenter']);
-                    redirect( 'user/jcadmin' );
-                    return;
-                }
-
-                $cclist = 'jccoords@ncbs.res.in';
-                $subject = $data[ 'jc_id' ] . ' | Your presentation date has been removed';
-                $msg = p(' Your presentation scheduled on ' . humanReadableDate( $data['date'] )
-                    . ' has been removed by JC coordinator ' . whoAmI() );
-
-                $msg .= p('If it is a mistake, please contant your JC coordinator.');
-                $res = sendHTMLEmail($msg, $subject, $to, $cclist);
-                if( $res )
-                {
-                    flashMessage( "Successfully invalidated entry." );
-                    redirect( 'user/jcadmin' );
-                    return;
-                }
-            }
+            $res = removeJCPresentation($_POST);
+            if(! $res['success'])
+                flashMessage($res['msg']);
+            redirect( 'user/jcadmin' );
+            return;
         }
         else if( $_POST[ 'response' ] == 'Remove Incomplete Presentation' )
         {
