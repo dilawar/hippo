@@ -455,6 +455,8 @@ class Adminacad extends CI_Controller
         $enrolls = explode( PHP_EOL, $_POST[ 'enrollments' ] );
 
         $warnMsg = '';
+        $courseId = $_POST['course_id'];
+
         foreach( $enrolls as $i => $en )
         {
             $l = splitAt( $en, ':' );
@@ -484,7 +486,6 @@ class Adminacad extends CI_Controller
             $data['student_id'] = $login;
             $data['type'] = $etype;
             $data['status'] = 'VALID';
-            $courseId = $_POST['course_id'];
             $data = array_merge($_POST, $data);
 
             $res = null;
@@ -518,7 +519,7 @@ class Adminacad extends CI_Controller
 
         $year = $_POST['year'];
         $semester = $_POST['semester'];
-        redirect( "adminacad/enrollments/$year/$semester" );
+        redirect( "adminacad/enrollments/$year/$semester#$courseId" );
     }
 
     // Scheduling request.

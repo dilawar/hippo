@@ -1341,8 +1341,7 @@ function getLoginInfo( string $login_name, bool $query_ldap = false
 
 function getLoginByEmail(string $email) : string
 {
-    $res = executeQuery( "SELECT login FROM logins WHERE email='$email' AND login >''"
-                        , true);  // only 1
+    $res = executeQuery("SELECT login FROM logins WHERE email='$email' AND login >''");
     if(count($res) > 0)
         return $res[0]['login'];
     return '';

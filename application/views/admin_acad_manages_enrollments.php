@@ -108,10 +108,10 @@ foreach( $courseMap as $cid => $enrolls )
         continue;
 
     echo '<div style="border:1px dotted lightblue">';
-
     $cname = getCourseName( $cid );
 
-    echo "<h2>($cid) $cname </h2>";
+    echo "<h2 id='$cid'>($cid) $cname </h2>";
+
     // Create a form to add new registration.
     $table = ' <table border="0">';
     $table .= '<tr>
