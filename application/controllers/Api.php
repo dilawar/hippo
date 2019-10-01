@@ -281,6 +281,25 @@ class Api extends CI_Controller
             $this->send_data([$res?'Success':'Failed'], 'ok');
             return;
         }
+        if($args[0] === 'info')
+        {
+            $jcID = $args[1];
+            $data = getTableEntry('journal_clubs', 'id,status', ["id"=>$jcID, 'status'=>'ACTIVE']);
+            $this->send_data($data, 'ok');
+            return;
+        }
+        else
+        {
+            $this->send_data(["Unknown request"], "ok");
+            return;
+        }
+
+        // These requires JC ADMIN privileges.
+        if(! isJCAdmin(getLogin()) )
+        {
+            $this->send_data(["You are not an admin"], 'ok');
+            return;
+        }
         if($args[0] === 'remove')
         {
             $_POST['status'] = 'INVALID';
@@ -289,7 +308,7 @@ class Api extends CI_Controller
             $this->send_data($res, 'ok');
             return;
         }
-        if($args[0] === 'subscriptions')
+        else if($args[0] === 'subscriptions')
         {
             $jcID = $args[1];
             $data = getTableEntries('jc_subscriptions', 'login'
@@ -297,14 +316,7 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
             return;
         }
-        if($args[0] === 'info')
-        {
-            $jcID = $args[1];
-            $data = getTableEntry('journal_clubs', 'id,status', ["id"=>$jcID, 'status'=>'ACTIVE']);
-            $this->send_data($data, 'ok');
-            return;
-        }
-        if($args[0] === 'assign')
+        else if($args[0] === 'assign')
         {
             $_POST['date'] = dbDate($_POST['date']);
             $_POST['time'] = dbTime($_POST['time']);
@@ -312,7 +324,7 @@ class Api extends CI_Controller
             $this->send_data($res, 'ok');
             return;
         }
-        if($args[0] === 'unsubscribe')
+        else if($args[0] === 'unsubscribe')
         {
             $jcid = urldecode($args[1]);
             $login = urldecode($args[2]);
@@ -321,17 +333,12 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
             return;
         }
-        if($args[0] === 'subscribe')
+        else if($args[0] === 'subscribe')
         {
             $jcid = $args[1];
             $login = $args[2];
             $res = subscribeJC( ['jc_id'=>$jcid,  'login'=>$login]);
             $this->send_data($res, 'ok');
-            return;
-        }
-        else
-        {
-            $this->send_data(["Unknown request"], "ok");
             return;
         }
     }

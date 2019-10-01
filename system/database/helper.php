@@ -3409,8 +3409,8 @@ function getJCPresentations( $jc, $date = '', $presenter = '' )
 
 function isJCAdmin( $user )
 {
-    $res = getTableEntry( 'jc_subscriptions', 'login,subscription_type'
-        , array( 'login' => $user, 'subscription_type' => 'ADMIN' )
+    $res = getTableEntry( 'jc_subscriptions', 'status,login,subscription_type'
+        ,   ['login' => $user, 'subscription_type'=>'ADMIN','status'=>'VALID']
     );
     if( $res )
         return true;
