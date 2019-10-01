@@ -288,18 +288,40 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
             return;
         }
+        else if($args[0] === 'subscriptions')
+        {
+            $jcID = $args[1];
+            $data = getTableEntries('jc_subscriptions', 'login'
+                , "jc_id='$jcID' AND status='VALID'");
+            $this->send_data($data, 'ok');
+            return;
+        }
         else
         {
-            $this->send_data(["Unknown request"], "ok");
+            $this->send_data(['msg'=>"Unknown request", 'success'=>false], "ok");
+            return;
+        }
+
+    }
+
+    public function jcadmin()
+    {
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
             return;
         }
 
         // These requires JC ADMIN privileges.
         if(! isJCAdmin(getLogin()) )
         {
-            $this->send_data(["You are not an admin"], 'ok');
+            $this->send_data([msg=>"You are not an admin", 'success'=>false], 'ok');
             return;
         }
+
+        // JC ADMIN tasks.
+        $args = func_get_args();
         if($args[0] === 'remove')
         {
             $_POST['status'] = 'INVALID';
@@ -308,12 +330,11 @@ class Api extends CI_Controller
             $this->send_data($res, 'ok');
             return;
         }
-        else if($args[0] === 'subscriptions')
+        else if($args[0] === 'update')
         {
-            $jcID = $args[1];
-            $data = getTableEntries('jc_subscriptions', 'login'
-                , "jc_id='$jcID' AND status='VALID'");
-            $this->send_data($data, 'ok');
+            $res = updateTable('jc_presentations', 'id'
+                , 'title,description,url,presentation_url', $_POST);
+            $this->send_data([$res?'Success':'Failed'], 'ok');
             return;
         }
         else if($args[0] === 'assign')
