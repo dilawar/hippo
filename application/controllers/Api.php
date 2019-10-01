@@ -314,10 +314,11 @@ class Api extends CI_Controller
         }
         if($args[0] === 'unsubscribe')
         {
-            $jcid = $args[1];
-            $login = $args[2];
-            $res = unsubscribeJC( ['jc_id'=>$jcid,  'login'=>$login]);
-            $this->send_data($res, 'ok');
+            $jcid = urldecode($args[1]);
+            $login = urldecode($args[2]);
+            $data = ['jc_id' => $jcid, 'login'=>$login];
+            $res = unsubscribeJC($data);
+            $this->send_data($data, 'ok');
             return;
         }
         if($args[0] === 'subscribe')

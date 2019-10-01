@@ -149,16 +149,17 @@ function subscribeJC(array $data): array
     $emailOrLogin = $data['login'];
     $login = explode( '@', $emailOrLogin )[0];
 
-    if( ! getLoginInfo( $login ) )
+    $info = getLoginInfo($login);
+    if(! __get__($info, 'email', '') )
     {
-        $final['msg']= printWarning( "$login is not a valid Hippo id. Searching for others... " );
+        $final['msg']= "'$login' is not found as a valid person.  Can't subscribe. ";
         return $final;
     }
 
     $data[ 'status' ] = 'VALID';
     $data[ 'login' ] = $login;
     $res = insertOrUpdateTable( 'jc_subscriptions', 'jc_id,login', 'status', $data);
-    return [ 'msg' => 'OK', 'success' => $res];
+    return [ 'msg' => "Successfully subscribed '$login'. No email was sent." , 'success' => $res];
 }
 
 
