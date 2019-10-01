@@ -673,6 +673,7 @@ class BMVPDO extends PDO
                 , status ENUM( 'VALID', 'INVALID', 'CANCELLED' ) default 'VALID'
                 , url VARCHAR(500) -- URL of paper
                 , presentation_url VARCHAR(500) -- URL of presentation
+                , acknowledged  ENUM('YES','NO') default 'NO' -- acknowledged
                 , UNIQUE KEY(presenter,jc_id,date)
                 )"
             );

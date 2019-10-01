@@ -64,7 +64,6 @@ trait JCAdmin
             redirect( "user/jcadmin");
             return;
         }
-        
         else if( $action == 'reschedule' )
         {
             $this->jc_admin_reschedule_request( );
@@ -72,29 +71,13 @@ trait JCAdmin
         }
         else if($action == 'delete')
         {
-            $_POST[ 'status' ] = 'CANCELLED';
-            $res = updateTable( 'jc_requests', 'id', 'status', $_POST);
+            $res = cancelThisJCRequest($_POST);
             if( $res )
-            {
-                $entry = getTableEntry( 'jc_requests', 'id', $_POST );
-                $presenter = getLoginInfo( $entry[ 'presenter' ] );
-                $entryHTML = arrayToVerticalTableHTML($entry, 'info');
-                $msg = "<p>Dear " . arrayToName( $presenter ) . "</p>";
-                $msg .= "<p>Your presentation request has been cancelled by admin.
-                    the latest entry is following. </p>";
-                $msg .= $entryHTML;
-
-                $subject = 'Your presentation request is CANCELLED by JC admin';
-                $to = $presenter['email'];
-                $cclist = 'jccoords@ncbs.res.in,hippo@lists.ncbs.res.in';
-                $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
-                if( $res )
-                {
-                    flashMessage( 'Successfully updated presentation entry.' );
-                    goToPage( 'user/jcadmin' );
-                    return;
-                }
-            }
+                flashMessage('Successfully updated presentation entry.');
+            else
+                flashMessage('Something went wrong.');
+            goToPage( 'user/jcadmin' );
+            return;
         }
         else if( $action == 'DO_NOTHING' )
         {
@@ -272,13 +255,8 @@ trait JCAdmin
                     $anyWarning = true;
                     continue;
                 }
-
-                $_POST[ 'status' ] = 'VALID';
-                $_POST[ 'login' ] = $login;
-                $res = insertOrUpdateTable( 'jc_subscriptions'
-                    , 'jc_id,login', 'status', $_POST );
-
-                if( ! $res )
+                $res = subscribeJC($_POST);
+                if( ! $res['success'] )
                     $anyWarning = true;
                 else
                     flashMessage( "$login is successfully added to JC" );
@@ -298,9 +276,8 @@ trait JCAdmin
         }
         else if( $_POST['response'] == 'delete' )
         {
-            $_POST[ 'status' ] = 'UNSUBSCRIBED';
-            $res = updateTable( 'jc_subscriptions', 'login,jc_id', 'status', $_POST );
-            if( $res )
+            $res = unsubscribeJC($_POST);
+            if( $res['success'] )
             {
                 flashMessage( ' ... successfully removed ' . $_POST[ 'login' ] );
                 redirect( 'user/jcadmin' );
@@ -316,28 +293,11 @@ trait JCAdmin
         }
         else if( $_POST[ 'response' ] == 'Remove Presentation' )
         {
-            $_POST[ 'status' ] = 'INVALID';
-            $res = updateTable( 'jc_presentations', 'id', 'status', $_POST );
-
-            if( $res )
-            {
-                $data = getTableEntry( 'jc_presentations', 'id', $_POST );
-                $to = getLoginEmail($data['presenter']);
-                $cclist = 'hippo@ncbs.res.in,jccoords@ncbs.res.in';
-
-                $subject = $data[ 'jc_id' ] . ' | Your presentation date has been removed';
-                $msg = p(' Your presentation scheduled on ' . humanReadableDate( $data['date'] )
-                    . ' has been removed by JC coordinator ' . whoAmI() );
-
-                $msg .= p('If it is a mistake, please contant your JC coordinator.');
-                $res = sendHTMLEmail($msg, $subject, $to, $cclist);
-                if( $res )
-                {
-                    flashMessage( "Successfully invalidated entry." );
-                    redirect( 'user/jcadmin' );
-                    return;
-                }
-            }
+            $res = removeJCPresentation($_POST);
+            if(! $res['success'])
+                flashMessage($res['msg']);
+            redirect( 'user/jcadmin' );
+            return;
         }
         else if( $_POST[ 'response' ] == 'Remove Incomplete Presentation' )
         {

@@ -85,4 +85,79 @@ function assignJCPresentationToLogin( string $loginOrEmail, array $data ) : arra
     return fixJCSchedule( $loginOrEmail, $data );
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Remove presentation.
+    *
+    * @Param array
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function removeJCPresentation(array $data): array
+{
+    $_POST[ 'status' ] = 'INVALID';
+    $final = [ 'msg' => 'Nothing', 'success' => false ];
+    $res = updateTable( 'jc_presentations', 'id', 'status', $_POST );
+    if($res)
+    {
+        $data = getTableEntry('jc_presentations', 'id', $_POST);
+        $to = getLoginEmail($data['presenter']);
+        if(! $to)
+        {
+            $final['msg'] = "No valid email found for presenter " . $data['presenter'];
+            return $final;
+        }
+
+        $cclist = 'jccoords@ncbs.res.in';
+        $subject = $data[ 'jc_id' ] . ' | Your presentation date has been removed';
+        $msg = p(' Your presentation scheduled on ' . humanReadableDate( $data['date'] )
+            . ' has been removed by JC coordinator ' . whoAmI() );
+
+        $msg .= p('If it is a mistake, please contant your JC coordinator.');
+        $res = sendHTMLEmail($msg, $subject, $to, $cclist);
+        if( $res )
+        {
+            $final['msg'] = "Successfully invalidated entry. Email sent.";
+            $final['success'] = true;
+            return $final;
+        }
+        else
+        {
+            $final['msg'] = "Successfully invalidated entry. Email could not be sent.";
+            $final['success'] = true;
+            return $final;
+        }
+    }
+    return $final;
+}
+
+function unsubscribeJC(array $data): array
+{
+    $data[ 'status' ] = 'UNSUBSCRIBED';
+    $res = updateTable( 'jc_subscriptions', 'login,jc_id', 'status', $data);
+    return [ 'msg' => 'OK', 'success' => $res];
+}
+
+function subscribeJC(array $data): array
+{
+    $final = ['msg'=>'', 'success'=>false];
+    $data[ 'status' ] = 'VALID';
+    $emailOrLogin = $data['login'];
+    $login = explode( '@', $emailOrLogin )[0];
+
+    $info = getLoginInfo($login);
+    if(! __get__($info, 'email', '') )
+    {
+        $final['msg']= "'$login' is not found as a valid person.  Can't subscribe. ";
+        return $final;
+    }
+
+    $data[ 'status' ] = 'VALID';
+    $data[ 'login' ] = $login;
+    $res = insertOrUpdateTable( 'jc_subscriptions', 'jc_id,login', 'status', $data);
+    return [ 'msg' => "Successfully subscribed '$login'. No email was sent." , 'success' => $res];
+}
+
+
 ?>

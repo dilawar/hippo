@@ -251,6 +251,93 @@ class Api extends CI_Controller
 
     /* --------------------------------------------------------------------------*/
     /**
+        * @Synopsis  Journal club endpoint.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function jc()
+    {
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $args = func_get_args();
+        if($args[0] === 'update')
+        {
+            $res = updateTable('jc_presentations', 'id'
+                , 'title,description,url,presentation_url', $_POST);
+            $this->send_data([$res?'Success':'Failed'], 'ok');
+            return;
+        }
+        if($args[0] === 'acknowledge')
+        {
+            $_POST['acknowledged'] = 'YES';
+            $_POST['id'] = $args[1];
+            $res = updateTable('jc_presentations', 'id','acknowledged', $_POST);
+            $this->send_data([$res?'Success':'Failed'], 'ok');
+            return;
+        }
+        if($args[0] === 'remove')
+        {
+            $_POST['status'] = 'INVALID';
+            $_POST['id'] = $args[1];
+            $res = removeJCPresentation($_POST);
+            $this->send_data($res, 'ok');
+            return;
+        }
+        if($args[0] === 'subscriptions')
+        {
+            $jcID = $args[1];
+            $data = getTableEntries('jc_subscriptions', 'login'
+                , "jc_id='$jcID' AND status='VALID'");
+            $this->send_data($data, 'ok');
+            return;
+        }
+        if($args[0] === 'info')
+        {
+            $jcID = $args[1];
+            $data = getTableEntry('journal_clubs', 'id,status', ["id"=>$jcID, 'status'=>'ACTIVE']);
+            $this->send_data($data, 'ok');
+            return;
+        }
+        if($args[0] === 'assign')
+        {
+            $_POST['date'] = dbDate($_POST['date']);
+            $_POST['time'] = dbTime($_POST['time']);
+            $res = assignJCPresentationToLogin($_POST['presenter'], $_POST );
+            $this->send_data($res, 'ok');
+            return;
+        }
+        if($args[0] === 'unsubscribe')
+        {
+            $jcid = urldecode($args[1]);
+            $login = urldecode($args[2]);
+            $data = ['jc_id' => $jcid, 'login'=>$login];
+            $res = unsubscribeJC($data);
+            $this->send_data($data, 'ok');
+            return;
+        }
+        if($args[0] === 'subscribe')
+        {
+            $jcid = $args[1];
+            $login = $args[2];
+            $res = subscribeJC( ['jc_id'=>$jcid,  'login'=>$login]);
+            $this->send_data($res, 'ok');
+            return;
+        }
+        else
+        {
+            $this->send_data(["Unknown request"], "ok");
+            return;
+        }
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
         * @Synopsis  Return events based on GET query.
         * Examples of endpoints,
         *     - events/latest                       Latest 20 events.
@@ -769,6 +856,10 @@ class Api extends CI_Controller
                 , 'valid_until', 'created_on'
                 ];
             $data = array_diff_key($ldap, array_flip($remove));
+            $jcs = [];
+            foreach(getUserJCs($user) as $jc)
+                $jcs[$jc['jc_id']] = $jc;
+            $data['jcs'] = $jcs;
         }
         else if( $args[0] === 'aws')
         {
@@ -782,13 +873,10 @@ class Api extends CI_Controller
             $data = getMyAllCourses($user);
             ksort($data);
         }
-        //else if( $args[0] === 'jc')
-        //{
-        //    $upcoming = getJCPresentations($login);
-        //    if($upcoming)
-        //        $data[] = $upcoming;
-        //    $data = getAwsOfSpeaker($login);
-        //}
+        else if( $args[0] === 'jc')
+        {
+            $data = getUpcomingJCPresentations();
+        }
         else
             $data = ['Unknown query'];
 

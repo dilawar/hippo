@@ -1317,6 +1317,10 @@ function getUserInfo( string $user, bool $query_ldap = false, bool $search_every
 
     $res['login'] = $user;
 
+    // If no email found, then it is not a valid userid. What a computer system
+    // account without an email.
+    if(! __get__($res,'email', ''))
+        $res = [];
     return $res;
 }
 
@@ -3333,7 +3337,6 @@ function getMyJCs( )
 function getUpcomingJCPresentations( $jcID = '', $date = 'today' )
 {
     $date = dbDate( $date );
-
     $whereExpr = "date >= '$date'";
     if(trim($jcID))
         $whereExpr .= " AND jc_id='$jcID' AND status='VALID'";

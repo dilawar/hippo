@@ -131,8 +131,7 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
 
     if(! __get__( $conf['global'], 'send_emails', false))
     {
-        echo printInfo( "Email service has not been configured or sending email is not allowed." );
-        error_log( "Mail service is not configured" );
+        printInfo( "Email service has not been configured or sending email is not allowed." );
         return false;
     }
 
@@ -149,8 +148,8 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
     $archivefile = $maildir . '/' . md5($subject . $msg) . '.email';
     if(file_exists($archivefile))
     {
-        echo printWarning( "This email has already been sent. Doing nothing" );
-        echo printWarning( "-> archive file $archivefile " );
+        printWarning( "This email has already been sent. Doing nothing" );
+        printWarning( "-> archive file $archivefile " );
         return false;
     }
 
