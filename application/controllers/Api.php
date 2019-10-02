@@ -115,7 +115,6 @@ class Api extends CI_Controller
             $to = intval(__get__($args, 2, strtotime("+1 day", $from)));
             $from = dbDate($from);
             $to = dbDate($to);
-
             $events = getAllBookingsBetweenTheseDays( $from, $to );
         }
         else if( $args[0] === 'latest')
@@ -137,6 +136,19 @@ class Api extends CI_Controller
         }
 
         $this->send_data($events, $status);
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Get various info.
+        *    - /info/news/latest
+        *    - /info/news
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function info()
+    {
+
     }
 
     /* --------------------------------------------------------------------------*/
