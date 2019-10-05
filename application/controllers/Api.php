@@ -892,9 +892,7 @@ class Api extends CI_Controller
         if( $args[0] === 'profile')
         {
             $ldap = getUserInfo($user, true);
-            $remove = ['fname', 'lname', 'uid', 'is_active', 'honorific', 'roles'
-                , 'valid_until', 'created_on'
-                ];
+            $remove = ['fname', 'lname'];
             $data = array_diff_key($ldap, array_flip($remove));
             $jcs = [];
             foreach(getUserJCs($user) as $jc)
@@ -1829,6 +1827,62 @@ class Api extends CI_Controller
 
         $this->send_data($data, 'ok');
     }
+
+    // BMV ADMIN
+    public function bmvadmin()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        if(! in_array('BOOKMYVENUE_ADMIN', getRoles($login)))
+        {
+            $this->send_data([], "Forbidden");
+            return;
+        }
+
+        $args = func_get_args();
+        if($args[0] === 'requests')
+        {
+            $data = [];
+            $subtask = __get__($args, 1, 'pending');
+            if($subtask === 'pending')
+                $data = getPendingRequestsGroupedByGID();
+            else if($subtask === 'date')
+                $data = getPendingRequestsOnThisDay($args[2]);
+            else
+                $data = ['flash' => 'Unknown request'];
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'request')
+        {
+            $data = [];
+            $subtask = __get__($args, 1, 'status');
+            if($subtask === 'clash')
+            {
+                $jcLabmeets = getLabmeetAndJC();
+                $jcOrLab = clashesOnThisVenueSlot($_POST['date'], $_POST['start_time']
+                    , $_POST['end_time'], $_POST['venue']
+                    , $jcLabmeets);
+                $data['clashes'] = $jcOrLab;
+            }
+            else
+                $data = ['flash' => 'Unknown request'];
+            $this->send_data($data, "ok");
+            return;
+        }
+        else
+        {
+            $this->send_data(['flash' => 'Unknown Request'], "ok");
+            return;
+        }
+    }
+
+
 }
 
 ?>
