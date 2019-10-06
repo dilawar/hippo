@@ -944,9 +944,10 @@ function checkCollision( $request )
 function approveRequest( string $gid, string $rid ): array
 {
     $request = getRequestById( $gid, $rid );
+    $msg = '';
     if(! $request )
     {
-        $msg = printWarning( "No request $gid.$rid found in my database." );
+        $msg .= printWarning( "No request $gid.$rid found in my database." );
         return ['msg'=>$msg, 'success' => false];
     }
 
@@ -954,7 +955,7 @@ function approveRequest( string $gid, string $rid ): array
     $collideWith = checkCollision( $request );
     if(count($collideWith) > 0)
     {
-        $msg = "Following request is colliding with another event or request. Rejecting it..";
+        $msg .= "Following request is colliding with another event or request. Rejecting it..";
         $msg .= arrayToTableHTML( $collideWith, 'request' );
         printWarning( $msg );
         rejectRequest( $gid, $rid );

@@ -1872,18 +1872,18 @@ class Api extends CI_Controller
             }
             else if($subtask === 'approve')
             {
-                $data = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true);
-                $this->send_data($data, "ok");
-                return;
+                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true);
+                $data['msg'] = 'APPROVED';
             }
             else if($subtask === 'reject')
             {
-                $data = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true);
-                $this->send_data($data, "ok");
-                return;
+                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true);
+                $data['msg'] = 'REJECTED';
             }
             else
                 $data = ['flash' => 'Unknown request'];
+
+            // Send final data.
             $this->send_data($data, "ok");
             return;
         }
