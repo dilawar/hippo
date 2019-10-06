@@ -914,6 +914,7 @@ function checkCollision( $request )
         $request[ 'venue' ] , $request[ 'date' ]
         , $request[ 'start_time' ], $request[ 'end_time' ]
         );
+
     $reqs = getRequestsOnThisVenueBetweenTime(
         $request[ 'venue' ] , $request[ 'date' ]
         , $request[ 'start_time' ], $request[ 'end_time' ]
@@ -926,10 +927,7 @@ function checkCollision( $request )
     if( $reqs )
         $all = array_merge( $all, $reqs );
 
-    if( count( $all ) > 0 )
-        return $all;
-
-    return false;
+    return $all;
 }
 
 /**
@@ -943,24 +941,24 @@ function checkCollision( $request )
     *
     * @return
  */
-function approveRequest( string $gid, string $rid ) : bool
+function approveRequest( string $gid, string $rid ): array
 {
     $request = getRequestById( $gid, $rid );
     if(! $request )
     {
-        printWarning( "No request $gid.$rid found in my database." );
-        return false;
+        $msg = printWarning( "No request $gid.$rid found in my database." );
+        return ['msg'=>$msg, 'success' => false];
     }
 
     global $hippoDB;
     $collideWith = checkCollision( $request );
-    if( ! $collideWith )
+    if(count($collideWith) > 0)
     {
         $msg = "Following request is colliding with another event or request. Rejecting it..";
         $msg .= arrayToTableHTML( $collideWith, 'request' );
         printWarning( $msg );
         rejectRequest( $gid, $rid );
-        return true;
+        return ['msg'=>$msg, 'success' => true];
     }
 
     $stmt = $hippoDB->prepare( 'INSERT INTO events (
@@ -982,15 +980,15 @@ function approveRequest( string $gid, string $rid ) : bool
     $stmt->bindValue( ':end_time', $request['end_time'] );
     $stmt->bindValue( ':created_by', $request['created_by'] );
     $res = $stmt->execute();
-    if( $res )
+
+    if($res)
     {
-        changeRequestStatus( $gid, $rid, 'APPROVED' );
+        $res = changeRequestStatus( $gid, $rid, 'APPROVED' );
         // And update the count of number of events hosted by this venue.
         increaseEventHostedByVenueByOne( $request['venue'] );
-        return true;
+        return ['msg'=>$msg, 'success' => true];
     }
-
-    return false;
+    return ['msg'=>$msg, 'success'=>false];
 }
 
 function rejectRequest( $gid, $rid )
@@ -999,13 +997,29 @@ function rejectRequest( $gid, $rid )
 }
 
 
-function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify = false ) : bool
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Act on a  given request.
+    *
+    * @Param $gid       GID
+    * @Param $rid       RID
+    * @Param $whatToDo  APPPROVE/REJECT.
+    * @Param $notify    SEND EMAIL.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=false, string $byWhom='') : bool
 {
     $status = "";
+    if(! $byWhom)
+        $byWhom = whoAmI();
+
     $success = false;
     if( $whatToDo == 'APPROVE' )
     {
-        $success = approveRequest( $gid, $rid );
+        $res = approveRequest( $gid, $rid );
+        $success = $res['success'];
         $status = 'APPROVED';
     }
     elseif( $whatToDo == 'REJECT' )
@@ -1024,13 +1038,13 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify 
         $req = getRequestById( $gid, $rid );
         $title = $req['title'];
         $subject = "Your booking request '$title' has been $status.";
-        $msg  = '<p>The status of your booking request is following.</p>';
+        $msg  = '<p>The current status of your booking request is following.</p>';
         $msg .=  arrayToVerticalTableHTML( $req, 'info' );
-        $msg .= "<p>If there is any mistake, please contact Dean's Office.</p>";
+        $msg .= "<p>If there is any mistake, please contact Dean's Office. 
+            This request was acted upon by '$byWhom'</p>";
         $userEmail = getLoginEmail(  $req[ 'created_by' ] );
-        $res = sendHTMLEmail( $msg, $subject, $userEmail, 'hippo@lists.ncbs.res.in');
+        $res = sendHTMLEmail( $msg, $subject, $userEmail); 
     }
-
     return $success;
 }
 
@@ -2596,7 +2610,7 @@ function addCourseBookings( $runningCourseId )
             // prohibited because then gid and eid are not synched.
             $res = insertIntoTable( 'bookmyvenue_requests', array_keys( $data ), $data );
             $res = approveRequest( $gid, $rid );
-            if( ! $res )
+            if(! $res['success'])
                 echo printWarning( "Could not book: $msg" );
         }
 

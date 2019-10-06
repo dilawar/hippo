@@ -1870,6 +1870,18 @@ class Api extends CI_Controller
                     , $jcLabmeets);
                 $data['clashes'] = $jcOrLab;
             }
+            else if($subtask === 'approve')
+            {
+                $data = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true);
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($subtask === 'reject')
+            {
+                $data = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true);
+                $this->send_data($data, "ok");
+                return;
+            }
             else
                 $data = ['flash' => 'Unknown request'];
             $this->send_data($data, "ok");

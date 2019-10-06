@@ -298,9 +298,6 @@ class Adminbmv extends CI_Controller
             }
         }
 
-        // Else start prepare email.
-        $msg = p("Your booking request has been acted upon by '" . whoAmI() . "'." );
-        $msg .= '<table border="0">';
 
         $events = $_POST['events'];
         $userEmail = '';
@@ -313,6 +310,9 @@ class Adminbmv extends CI_Controller
             return;
         }
 
+        // Else start prepare email.
+        $msg = p("Your booking request has been acted upon by '" . whoAmI() . "'." );
+        $msg .= '<table border="0">';
         $group = array( );
         $err = '';
         foreach( $events as $event )
