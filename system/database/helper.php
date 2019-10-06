@@ -1017,13 +1017,13 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=
         $byWhom = whoAmI();
 
     $success = false;
-    if( $whatToDo == 'APPROVE' )
+    if( $whatToDo === 'APPROVE' )
     {
         $res = approveRequest( $gid, $rid );
         $success = $res['success'];
         $status = 'APPROVED';
     }
-    elseif( $whatToDo == 'REJECT' )
+    elseif( $whatToDo === 'REJECT' )
     {
         $success = rejectRequest( $gid, $rid );
         $status = 'REJECTED';
@@ -1043,7 +1043,13 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=
         $msg .=  arrayToVerticalTableHTML( $req, 'info' );
         $msg .= "<p>If there is any mistake, please contact Dean's Office. 
             This request was acted upon by '$byWhom'</p>";
-        $userEmail = getLoginEmail(  $req[ 'created_by' ] );
+
+        $userEmail = getLoginEmail($req['created_by']);
+        if(! $userEmail)
+        {
+            $userEmail = 'hippo@lists.ncbs.res.in';
+            $msg .=  p("Alert! Could not find any email for " . $req['created_by']);
+        }
         $res = sendHTMLEmail( $msg, $subject, $userEmail); 
     }
     return $success;

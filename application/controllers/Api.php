@@ -1872,12 +1872,12 @@ class Api extends CI_Controller
             }
             else if($subtask === 'approve')
             {
-                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true);
+                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, getLogin());
                 $data['msg'] = 'APPROVED';
             }
             else if($subtask === 'reject')
             {
-                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true);
+                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, getLogin());
                 $data['msg'] = 'REJECTED';
             }
             else
