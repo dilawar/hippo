@@ -302,17 +302,22 @@ function getRequestsGroupedByGID( $status = 'PENDING'  )
 }
 
 // Get all events with given status.
-function getEventsByGroupId( $gid, $status = NULL  )
+function getEventsByGroupId( $gid, $status = NULL, $from='')
 {
     $hippoDB = initDB();;
     $query = "SELECT * FROM events WHERE gid=:gid";
     if( $status )
         $query .= " AND status=:status ";
+    if( $from )
+        $query .= " AND date>=:date ";
+    $query .= " ORDER BY date, start_time ";
 
     $stmt = $hippoDB->prepare( $query );
     $stmt->bindValue( ':gid', $gid );
     if( $status )
         $stmt->bindValue( ':status', $status );
+    if($from)
+        $stmt->bindValue( ':date', dbDate($from) );
     $stmt->execute( );
     return fetchEntries( $stmt );
 }
@@ -518,16 +523,13 @@ function changeStatusOfEvent( $gid, $eid, $user, $status )
 /**
     * @brief Get the list of upcoming events.
  */
-function getEvents( $from = 'today', $status = 'VALID' )
+function getEvents($from = 'today', $status = 'VALID', int $limit=-1, int $offset=-1)
 {
-    $hippoDB = initDB();;
-    $from = dbDate( $from );
-    $stmt = $hippoDB->prepare( "SELECT * FROM events WHERE date >= :date AND
-        status=:status ORDER BY date,start_time " );
-    $stmt->bindValue( ':date', $from );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $date = dbDate($from);
+    return getTableEntries('events', 'date,start_time'
+        , "date >= '$date' AND status='$status'"
+        , '*', $limit, $offset
+    );
 }
 
 
@@ -1010,7 +1012,7 @@ function rejectRequest( $gid, $rid )
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=false, string $byWhom='') : bool
+function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=false, array $request=[]) : bool
 {
     $status = "";
     if(! $byWhom)
@@ -1036,7 +1038,8 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=
 
     if( $notify && $success )
     {
-        $req = getRequestById( $gid, $rid );
+        if(! $request )
+            $request = getRequestById( $gid, $rid );
         $title = $req['title'];
         $subject = "Your booking request '$title' has been $status.";
         $msg  = '<p>The current status of your booking request is following.</p>';
@@ -1044,7 +1047,7 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=
         $msg .= "<p>If there is any mistake, please contact Dean's Office. 
             This request was acted upon by '$byWhom'</p>";
 
-        $userEmail = getLoginEmail($req['created_by']);
+        $userEmail = getLoginEmail($request['created_by']);
         if(! $userEmail)
         {
             $userEmail = 'hippo@lists.ncbs.res.in';

@@ -1872,18 +1872,61 @@ class Api extends CI_Controller
             }
             else if($subtask === 'approve')
             {
-                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, getLogin());
+                // Mark is a public event, if admin says so.
+                if($_POST['is_public_event'] === "YES")
+                    updateTable('bookmyvenue_requests', 'gid,rid', 'is_public_event', $_POST);
+
+                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
                 $data['msg'] = 'APPROVED';
             }
             else if($subtask === 'reject')
             {
-                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, getLogin());
+                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST);
                 $data['msg'] = 'REJECTED';
             }
             else
                 $data = ['flash' => 'Unknown request'];
 
             // Send final data.
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'events')
+        {
+            $data = [];
+            $subtask = __get__($args, 1, 'upcoming');
+            if($subtask === 'upcoming')
+            {
+                $from = intval(__get__($args, 2, 0));
+                $to = intval(__get__($args, 3, 200));
+                $limit = $to - $from;
+                $events = getEvents('today', 'VALID', $limit, $from);
+                foreach($events as $ev)
+                    $data[$ev['gid']][] = $ev;
+            }
+            if($subtask === 'gid')
+            {
+                $gid = $args[2];
+                $data = getEventsByGroupId($gid, 'VALID');
+            }
+            else
+                $data['flash'] = "Unknown request " . $subtask;
+
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'event')
+        {
+            $data = [];
+            $subtask = __get__($args, 1, 'update');
+            if($subtask === 'update')
+            {
+                $res = updateEvent($_POST['gid'], $_POST['eid'], $_POST);
+                $data['flash'] = 'successfully updated';
+            }
+            else
+                $data['flash'] = "Unknown request " . $subtask;
+
             $this->send_data($data, "ok");
             return;
         }
