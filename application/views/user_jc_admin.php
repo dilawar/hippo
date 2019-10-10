@@ -201,7 +201,11 @@ foreach( $jcIds as $currentJC )
         $info = getLoginInfo( $login, true );
         if( ! $info )
         {
-            echo printWarning( "No info found for $login. Is it a valid/active id?" );
+            echo printWarning( "No info found for $login. Invalidating subscription...");
+            // Rmeove him from the list.
+            updateTable('jc_subscriptions', 'login', 'status'
+                , ['login'=>$login, 'status'=>'INVALID']
+            );
             continue;
         }
 
