@@ -1898,16 +1898,16 @@ class Api extends CI_Controller
             if($subtask === 'upcoming')
             {
                 $from = intval(__get__($args, 2, 0));
-                $to = intval(__get__($args, 3, 200));
+                $to = intval(__get__($args, 3, 30));
                 $limit = $to - $from;
                 $events = getEvents('today', 'VALID', $limit, $from);
                 foreach($events as $ev)
                     $data[$ev['gid']][] = $ev;
             }
-            if($subtask === 'gid')
+            else if($subtask === 'gid')
             {
                 $gid = $args[2];
-                $data = getEventsByGroupId($gid, 'VALID');
+                $data = getEventsByGroupId($gid, 'VALID', 'today');
             }
             else
                 $data['flash'] = "Unknown request " . $subtask;
