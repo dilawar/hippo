@@ -2004,11 +2004,15 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
                 return;
             }
-            if($args[1] === 'assign')
+            else if($args[1] === 'assign')
             {
                 $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
                 $this->send_data($data, 'ok');
                 return;
+            }
+            else if($args[1] === 'cancel')
+            {
+
             }
             else
             {
