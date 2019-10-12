@@ -86,9 +86,9 @@ class Api extends CI_Controller
         $this->send_data($what);
     }
 
-    private function send_data(array $events, string $status='ok')
+    private function send_data(array $data, string $status='ok')
     {
-        $this->send_data_helper(['status'=>$status, 'data'=>$events]);
+        $this->send_data_helper(['status'=>$status, 'data'=>$data]);
     }
 
     /* --------------------------------------------------------------------------*/
@@ -149,6 +149,42 @@ class Api extends CI_Controller
     public function info()
     {
 
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Search API.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function search()
+    {
+        $args = func_get_args();
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        if($args[0] === 'awsspeaker')
+        {
+            $q = $args[1];
+            $logins = executeQuery("
+                SELECT login,email,last_name,first_name
+                FROM logins WHERE 
+                eligible_for_aws='YES' AND status='ACTIVE'
+                AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
+                ");
+            $this->send_data($logins);
+            return;
+        }
+        else
+        {
+            $this->send_data(['Unsupported query']);
+            return;
+        }
     }
 
     /* --------------------------------------------------------------------------*/
@@ -1933,6 +1969,56 @@ class Api extends CI_Controller
         else
         {
             $this->send_data(['flash' => 'Unknown Request'], "ok");
+            return;
+        }
+    }
+
+    // Admin acad
+    public function acadadmin()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        if(! in_array('ACAD_ADMIN', getRoles($login)))
+        {
+            $this->send_data([], "Forbidden");
+            return;
+        }
+
+        $args = func_get_args();
+        $data = [];
+        if($args[0] === 'aws')
+        {
+            if($args[1] === 'upcoming')
+            {
+                $awses = getUpcomingAWS();
+                foreach($awses as &$aws)
+                {
+                    $aws['by'] = loginToHTML($aws['speaker']);
+                    $data[$aws['date']][]=$aws;
+                }
+                $this->send_data($data, 'ok');
+                return;
+            }
+            if($args[1] === 'assign')
+            {
+                $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown request"], "ok");
+                return;
+            }
+        }
+        else
+        {
+            $this->send_data(["Unknown request"], "ok");
             return;
         }
     }
