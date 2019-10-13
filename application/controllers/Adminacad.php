@@ -2,9 +2,12 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
+
 require_once __DIR__.'/AdminacadCourses.php';
 require_once __DIR__.'/AdminacadJC.php';
 require_once __DIR__.'/AdminSharedFunc.php';
+
+require_once BASEPATH . '/extra/aws.php';
 
 class Adminacad extends CI_Controller
 {
@@ -264,13 +267,8 @@ class Adminacad extends CI_Controller
 
     public function update_aws_entry( )
     {
-        $res = updateTable( 'upcoming_aws', 'id'
-            , 'abstract,title,is_presynopsis_seminar,supervisor_1', $_POST );
-        if( $res )
-            flashMessage( "Successfully updated abstract of upcoming AWS entry" );
-        else
-            flashMessage( "I could not update title/abstract.", 'warning' );
-
+        $res = updateAWS($_POST);
+        flashMessage($res['msg']);
         redirect( 'adminacad/upcoming_aws');
     }
 
@@ -282,35 +280,8 @@ class Adminacad extends CI_Controller
             $date = $_POST[ 'date' ];
         if( ! $venue )
             $venue = __get__($_POST,'venue', getDefaultAWSVenue($date));
-
-        if(  $speaker && getLoginInfo( $speaker ) && strtotime( $date ) > strtotime( '-7 day' ) )
-        {
-            $aws = getUpcomingAWSOfSpeaker( $speaker );
-            if( $aws )
-                flashMessage( "$speaker already has AWS scheduled. Doing nothing." );
-            else
-            {
-                $awsID = acceptScheduleOfAWS( $speaker, $date, $venue );
-                if( $awsID > 0 )
-                {
-                    flashMessage( "Successfully assigned" );
-                    // Don't rescheduleAWS. It will change the rest of the 
-                    // entries for the week.
-                    // rescheduleAWS( );
-
-                    // Send email to user.
-                    $res = notifyUserAboutUpcomingAWS( $speaker, $date, $awsID );
-                    if(! $res )
-                        flashMessage( "Failed to send email to user" );
-                }
-                else
-                    flashMessage( "Invalid entry. Probably date ('$date') is in past." );
-            }
-        }
-        else
-            printWarning( "Invalid speaker '$speaker' or date '$date' 
-                is in past.  Could not assign AWS.");
-
+        $res = assignAWS($speaker, $date, $venue);
+        flashMessage($res['msg']);
         redirect( "adminacad/upcoming_aws" );
     }
 
@@ -324,16 +295,10 @@ class Adminacad extends CI_Controller
         else if( $response == 'removespeaker' )
         {
             $speaker = $_POST['speaker'];
-            assert( $speaker );
             $res = removeAWSSpeakerFromList($speaker);
-            if( $res )
-            {
+            if($res['success'])
                 rescheduleAWS( );
-                flashMessage( "Successfully removed $speaker" );
-            }
-            else
-                flashMessage( "Could not remove $speaker.", "warning");
-
+            flashMessage($res['msg']);
             redirect( "adminacad/$ref" );
             return;
         }
@@ -347,8 +312,7 @@ class Adminacad extends CI_Controller
                 redirect( "adminacad/upcoming_aws" );
                 return;
             }
-
-            $res = removeAWS($_POST);
+            $res = cancelAWS($_POST);
             flashMessage($res['msg']);
             redirect( "adminacad/$ref");
             return;

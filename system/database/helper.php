@@ -533,6 +533,35 @@ function getEvents($from = 'today', $status = 'VALID', int $limit=-1, int $offse
 }
 
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Find events by GID.
+    *
+    * @Param $from
+    * @Param $status
+    * @Param $limit
+    * @Param $offset
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getEventsGID(string $from='today', string $status='VALID'
+    , int $limit=-1, int $offset=-1)
+{
+    $date = dbDate($from);
+    $query = "SELECT *,count(eid) as total
+        FROM events 
+        WHERE status='$status' AND date>='$date' 
+            GROUP BY gid
+            ORDER BY date,start_time
+        ";
+    if($limit > 0)
+        $query .= " LIMIT $limit";
+    if($offset >= 0)
+        $query .= " OFFSET $offset";
+    return executeQuery($query);
+}
+
 /**
   * @brief Get the list of upcoming events grouped by gid.
  */
@@ -547,7 +576,7 @@ function getEventsGrouped( $sortby = '', $from = 'today', $status = 'VALID' )
 
     $nowTime = dbTime( $from );
     $stmt = $hippoDB->prepare(
-        "SELECT * FROM events WHERE date >= :date
+        "SELECT * COUNT(eid) as TOTAL FROM events WHERE date >= :date
             AND status=:status GROUP BY gid $sortExpr"
         );
     $stmt->bindValue( ':date', $nowTime );
@@ -2068,6 +2097,24 @@ function getAWSSpeakers( $sortby = '', $where_extra = '' )
     $stmt = $hippoDB->query( "SELECT * FROM logins WHERE $whereExpr $sortExpr " );
     $stmt->execute( );
     return fetchEntries( $stmt );
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Final the total number of AWS given by user.
+    *
+    * @Param int Number of AWS.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function numberOfAWSGivenBySpeaker($speaker): int
+{
+    $res = executeQuery(
+        "SELECT count(*) as total FROM annual_work_seminars
+        WHERE speaker='$speaker'"
+    );
+    return $res[0]['total'];
 }
 
 /**

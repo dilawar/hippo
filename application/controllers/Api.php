@@ -5,6 +5,8 @@ require_once __DIR__.'/ApiHelper.php';
 require_once __DIR__.'/Adminservices.php';
 require_once __DIR__.'/User.php';
 
+require_once BASEPATH . '/extra/bmv.php';
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Authenticate a given user with given key.
@@ -175,6 +177,18 @@ class Api extends CI_Controller
                 SELECT login,email,last_name,first_name
                 FROM logins WHERE 
                 eligible_for_aws='YES' AND status='ACTIVE'
+                AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
+                ");
+            $this->send_data($logins);
+            return;
+        }
+        else if($args[0] === 'login')
+        {
+            $q = $args[1];
+            $logins = executeQuery("
+                SELECT login,email,last_name,first_name
+                FROM logins WHERE 
+                status='ACTIVE'
                 AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
                 ");
             $this->send_data($logins);
@@ -1930,23 +1944,38 @@ class Api extends CI_Controller
         else if($args[0] === 'events')
         {
             $data = [];
-            $subtask = __get__($args, 1, 'upcoming');
+            $subtask = $args[1];
             if($subtask === 'upcoming')
             {
                 $from = intval(__get__($args, 2, 0));
                 $to = intval(__get__($args, 3, 30));
-                $limit = $to - $from;
-                $events = getEvents('today', 'VALID', $limit, $from);
-                foreach($events as $ev)
-                    $data[$ev['gid']][] = $ev;
+                $limit = $to - $from; // these many groups
+                $data = getEventsGID('today', 'VALID', $limit, $from);
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($subtask === 'cancel')
+            {
+                $gid = $args[2];
+                $eid = __get__($args, 3, '');  // csv of eid
+                $data = cancelEvents($gid, $eid, getLogin(), __get__($_POST,'reason',''));
+                $this->send_data($data, "ok");
+                return;
             }
             else if($subtask === 'gid')
             {
                 $gid = $args[2];
+                // All events by gid.
                 $data = getEventsByGroupId($gid, 'VALID', 'today');
+                $this->send_data($data, "ok");
+                return;
             }
             else
+            {
                 $data['flash'] = "Unknown request " . $subtask;
+                $this->send_data($data, "ok");
+                return;
+            }
 
             $this->send_data($data, "ok");
             return;
@@ -2012,7 +2041,46 @@ class Api extends CI_Controller
             }
             else if($args[1] === 'cancel')
             {
-
+                $data = cancelAWS($_POST, getLogin());
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'update')
+            {
+                $data = update_aws_entry($_POST, getLogin());
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown request"], "ok");
+                return;
+            }
+        }
+        else if($args[0] === 'awsroster')
+        {
+            if($args[1] === 'fetch')
+            {
+                $speakers = getAWSSpeakers('pi_or_host');
+                foreach($speakers as &$speaker)
+                    $speaker['total'] = numberOfAWSGivenBySpeaker($speaker['login']);
+                $this->send_data($speakers, 'ok');
+                return;
+            }
+            else if($args[1] === 'remove')
+            {
+                $whom = urldecode($args[2]);
+                assert($whom);
+                $res = removeAWSSpeakerFromList($whom, __get__($_POST, 'reason',''));
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else if($args[1] === 'add')
+            {
+                $whom = urldecode($args[2]);
+                $res = addSpeakerToList($whom);
+                $this->send_data($res, 'ok');
+                return;
             }
             else
             {
