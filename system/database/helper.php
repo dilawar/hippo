@@ -302,17 +302,22 @@ function getRequestsGroupedByGID( $status = 'PENDING'  )
 }
 
 // Get all events with given status.
-function getEventsByGroupId( $gid, $status = NULL  )
+function getEventsByGroupId( $gid, $status = NULL, $from='')
 {
     $hippoDB = initDB();;
     $query = "SELECT * FROM events WHERE gid=:gid";
     if( $status )
         $query .= " AND status=:status ";
+    if( $from )
+        $query .= " AND date>=:date ";
+    $query .= " ORDER BY date, start_time ";
 
     $stmt = $hippoDB->prepare( $query );
     $stmt->bindValue( ':gid', $gid );
     if( $status )
         $stmt->bindValue( ':status', $status );
+    if($from)
+        $stmt->bindValue( ':date', dbDate($from) );
     $stmt->execute( );
     return fetchEntries( $stmt );
 }
@@ -518,18 +523,44 @@ function changeStatusOfEvent( $gid, $eid, $user, $status )
 /**
     * @brief Get the list of upcoming events.
  */
-function getEvents( $from = 'today', $status = 'VALID' )
+function getEvents($from = 'today', $status = 'VALID', int $limit=-1, int $offset=-1)
 {
-    $hippoDB = initDB();;
-    $from = dbDate( $from );
-    $stmt = $hippoDB->prepare( "SELECT * FROM events WHERE date >= :date AND
-        status=:status ORDER BY date,start_time " );
-    $stmt->bindValue( ':date', $from );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $date = dbDate($from);
+    return getTableEntries('events', 'date,start_time'
+        , "date >= '$date' AND status='$status'"
+        , '*', $limit, $offset
+    );
 }
 
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Find events by GID.
+    *
+    * @Param $from
+    * @Param $status
+    * @Param $limit
+    * @Param $offset
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getEventsGID(string $from='today', string $status='VALID'
+    , int $limit=-1, int $offset=-1)
+{
+    $date = dbDate($from);
+    $query = "SELECT *,count(eid) as total
+        FROM events 
+        WHERE status='$status' AND date>='$date' 
+            GROUP BY gid
+            ORDER BY date,start_time
+        ";
+    if($limit > 0)
+        $query .= " LIMIT $limit";
+    if($offset >= 0)
+        $query .= " OFFSET $offset";
+    return executeQuery($query);
+}
 
 /**
   * @brief Get the list of upcoming events grouped by gid.
@@ -545,7 +576,7 @@ function getEventsGrouped( $sortby = '', $from = 'today', $status = 'VALID' )
 
     $nowTime = dbTime( $from );
     $stmt = $hippoDB->prepare(
-        "SELECT * FROM events WHERE date >= :date
+        "SELECT * COUNT(eid) as TOTAL FROM events WHERE date >= :date
             AND status=:status GROUP BY gid $sortExpr"
         );
     $stmt->bindValue( ':date', $nowTime );
@@ -737,14 +768,14 @@ function getNumBookings(int $num, int $limit )
     $from = dbDate('today');
     $now = dbTime(strtotime('now'));
     $events = getTableEntries( 'events'
-        , 'date,start_time,end_time'
+        , 'date' // we gonna usort is later
         , "status='VALID' AND TIMESTAMP(date, end_time) >= NOW()"
         , "class,title,status,description,date,venue,created_by,start_time,end_time,url"
         , $num
         , $limit
     );
     $requests = getTableEntries( 'bookmyvenue_requests'
-        , 'date,start_time,end_time'
+        , 'date' // we gonna usort it later.
         , "status='PENDING' AND TIMESTAMP(date, end_time) >= NOW()"
         , "class,title,status,description,date,venue,created_by,start_time,end_time,url"
         , $num 
@@ -914,6 +945,7 @@ function checkCollision( $request )
         $request[ 'venue' ] , $request[ 'date' ]
         , $request[ 'start_time' ], $request[ 'end_time' ]
         );
+
     $reqs = getRequestsOnThisVenueBetweenTime(
         $request[ 'venue' ] , $request[ 'date' ]
         , $request[ 'start_time' ], $request[ 'end_time' ]
@@ -926,10 +958,7 @@ function checkCollision( $request )
     if( $reqs )
         $all = array_merge( $all, $reqs );
 
-    if( count( $all ) > 0 )
-        return $all;
-
-    return false;
+    return $all;
 }
 
 /**
@@ -943,24 +972,25 @@ function checkCollision( $request )
     *
     * @return
  */
-function approveRequest( string $gid, string $rid ) : bool
+function approveRequest( string $gid, string $rid ): array
 {
     $request = getRequestById( $gid, $rid );
+    $msg = '';
     if(! $request )
     {
-        printWarning( "No request $gid.$rid found in my database." );
-        return false;
+        $msg .= printWarning( "No request $gid.$rid found in my database." );
+        return ['msg'=>$msg, 'success' => false];
     }
 
     global $hippoDB;
     $collideWith = checkCollision( $request );
-    if( ! $collideWith )
+    if(count($collideWith) > 0)
     {
-        $msg = "Following request is colliding with another event or request. Rejecting it..";
+        $msg .= "Following request is colliding with another event or request. Rejecting it..";
         $msg .= arrayToTableHTML( $collideWith, 'request' );
         printWarning( $msg );
         rejectRequest( $gid, $rid );
-        return true;
+        return ['msg'=>$msg, 'success' => true];
     }
 
     $stmt = $hippoDB->prepare( 'INSERT INTO events (
@@ -982,15 +1012,15 @@ function approveRequest( string $gid, string $rid ) : bool
     $stmt->bindValue( ':end_time', $request['end_time'] );
     $stmt->bindValue( ':created_by', $request['created_by'] );
     $res = $stmt->execute();
-    if( $res )
+
+    if($res)
     {
-        changeRequestStatus( $gid, $rid, 'APPROVED' );
+        $res = changeRequestStatus( $gid, $rid, 'APPROVED' );
         // And update the count of number of events hosted by this venue.
         increaseEventHostedByVenueByOne( $request['venue'] );
-        return true;
+        return ['msg'=>$msg, 'success' => true];
     }
-
-    return false;
+    return ['msg'=>$msg, 'success'=>false];
 }
 
 function rejectRequest( $gid, $rid )
@@ -999,16 +1029,32 @@ function rejectRequest( $gid, $rid )
 }
 
 
-function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify = false ) : bool
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Act on a  given request.
+    *
+    * @Param $gid       GID
+    * @Param $rid       RID
+    * @Param $whatToDo  APPPROVE/REJECT.
+    * @Param $notify    SEND EMAIL.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=false, array $request=[]) : bool
 {
     $status = "";
+    if(! $byWhom)
+        $byWhom = whoAmI();
+
     $success = false;
-    if( $whatToDo == 'APPROVE' )
+    if( $whatToDo === 'APPROVE' )
     {
-        $success = approveRequest( $gid, $rid );
+        $res = approveRequest( $gid, $rid );
+        $success = $res['success'];
         $status = 'APPROVED';
     }
-    elseif( $whatToDo == 'REJECT' )
+    elseif( $whatToDo === 'REJECT' )
     {
         $success = rejectRequest( $gid, $rid );
         $status = 'REJECTED';
@@ -1021,16 +1067,23 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify 
 
     if( $notify && $success )
     {
-        $req = getRequestById( $gid, $rid );
+        if(! $request )
+            $request = getRequestById( $gid, $rid );
         $title = $req['title'];
         $subject = "Your booking request '$title' has been $status.";
-        $msg  = '<p>The status of your booking request is following.</p>';
+        $msg  = '<p>The current status of your booking request is following.</p>';
         $msg .=  arrayToVerticalTableHTML( $req, 'info' );
-        $msg .= "<p>If there is any mistake, please contact Dean's Office.</p>";
-        $userEmail = getLoginEmail(  $req[ 'created_by' ] );
-        $res = sendHTMLEmail( $msg, $subject, $userEmail, 'hippo@lists.ncbs.res.in');
-    }
+        $msg .= "<p>If there is any mistake, please contact Dean's Office. 
+            This request was acted upon by '$byWhom'</p>";
 
+        $userEmail = getLoginEmail($request['created_by']);
+        if(! $userEmail)
+        {
+            $userEmail = 'hippo@lists.ncbs.res.in';
+            $msg .=  p("Alert! Could not find any email for " . $req['created_by']);
+        }
+        $res = sendHTMLEmail( $msg, $subject, $userEmail); 
+    }
     return $success;
 }
 
@@ -2046,6 +2099,24 @@ function getAWSSpeakers( $sortby = '', $where_extra = '' )
     return fetchEntries( $stmt );
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Final the total number of AWS given by user.
+    *
+    * @Param int Number of AWS.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function numberOfAWSGivenBySpeaker($speaker): int
+{
+    $res = executeQuery(
+        "SELECT count(*) as total FROM annual_work_seminars
+        WHERE speaker='$speaker'"
+    );
+    return $res[0]['total'];
+}
+
 /**
     * @brief Return AWS entries schedules by my minion..
     *
@@ -2596,7 +2667,7 @@ function addCourseBookings( $runningCourseId )
             // prohibited because then gid and eid are not synched.
             $res = insertIntoTable( 'bookmyvenue_requests', array_keys( $data ), $data );
             $res = approveRequest( $gid, $rid );
-            if( ! $res )
+            if(! $res['success'])
                 echo printWarning( "Could not book: $msg" );
         }
 

@@ -16,8 +16,8 @@ function cleanup_database_cron( )
         foreach( $presynAWS as $aws )
         {
             $speaker = $aws[ 'speaker' ];
-            if( isEligibleForAWS( $speaker ) )
-                removeAWSSpeakerFromList( $speaker );
+            if(isEligibleForAWS($speaker))
+                removeAWSSpeakerFromList($speaker);
         }
 
         /* Now removing students with THESIS SEMINAR */

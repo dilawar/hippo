@@ -1727,28 +1727,58 @@ function splitAt( string $text, string $delim ) : array
     return explode( $delim, $text );
 }
 
-function removeAWSSpeakerFromList( string $speaker )
+function removeAWSSpeakerFromList(string $speaker, $reason=''): array
 {
-    $data = array( 'eligible_for_aws' => 'NO', 'login' => $speaker );
+    $ret = ['success'=>false, 'msg'=>''];
+
+    if(! $reason)
+        $reason = p("No reason is given. So rude!");
+
+    $data = ['eligible_for_aws' => 'NO', 'login' => $speaker];
     $res = updateTable( 'logins', 'login', 'eligible_for_aws', $data );
     if( $res )
     {
-        echo printInfo( "Successfully removed user $speaker from AWS list." );
+        $ret['success'] = true;
+        $ret['msg'] .= "Successfully removed user $speaker from AWS list.";
 
         // Send email to speaker.
         $subject = "Your name has been removed from AWS list";
         $msg = "<p>Dear " . loginToText( $speaker ) . " </p>";
-        $msg .= "<p>
-            Your name has been removed from the Annual Work Seminar (AWS) roster.  
-            If this is a mistake, please inform Academic Office.
-            </p>";
+        $msg .= p("Your name has been removed from the Annual Work Seminar (AWS) 
+            roster. $reason. If this is a mistake, please inform Academic 
+            Office.");
 
-        $to = getLoginEmail( $speaker );
-        $emailRes = sendHTMLEmail( $msg, $subject, $to, 'hippo@lists.ncbs.res.in' );
-        if( ! $emailRes )
-            echo printWarning( "Could not notify user" );
+        $to = getLoginEmail($speaker);
+        $emailRes = sendHTMLEmail($msg, $subject, $to);
+        if(! $emailRes)
+            $ret['msg'] .=  p( "Could not notify user" );
     }
-    return $res;
+    return $ret;
+}
+
+function addSpeakerToList(string $speaker): array
+{
+    $ret = ['success'=>false, 'msg'=>''];
+    $data = ['eligible_for_aws' => 'YES', 'login' => $speaker];
+    $res = updateTable( 'logins', 'login', 'eligible_for_aws', $data );
+    if( $res )
+    {
+        $ret['success'] = true;
+        $ret['msg'] .= "Successfully added user $speaker to AWS list.";
+
+        // Send email to speaker.
+        $subject = "Your name has been added to AWS roster";
+        $msg = "<p>Dear " . loginToText( $speaker ) . " </p>";
+        $msg .= p("Your name has been added to Annual Work Seminar (AWS) 
+            roster. If this is a mistake, please inform Academic 
+            Office.");
+
+        $to = getLoginEmail($speaker);
+        $emailRes = sendHTMLEmail($msg, $subject, $to);
+        if(! $emailRes)
+            $ret['msg'] .=  p( "Could not notify user" );
+    }
+    return $ret;
 }
 
 

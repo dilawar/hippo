@@ -5,6 +5,8 @@ require_once __DIR__.'/ApiHelper.php';
 require_once __DIR__.'/Adminservices.php';
 require_once __DIR__.'/User.php';
 
+require_once BASEPATH . '/extra/bmv.php';
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Authenticate a given user with given key.
@@ -86,9 +88,9 @@ class Api extends CI_Controller
         $this->send_data($what);
     }
 
-    private function send_data(array $events, string $status='ok')
+    private function send_data(array $data, string $status='ok')
     {
-        $this->send_data_helper(['status'=>$status, 'data'=>$events]);
+        $this->send_data_helper(['status'=>$status, 'data'=>$data]);
     }
 
     /* --------------------------------------------------------------------------*/
@@ -115,7 +117,6 @@ class Api extends CI_Controller
             $to = intval(__get__($args, 2, strtotime("+1 day", $from)));
             $from = dbDate($from);
             $to = dbDate($to);
-
             $events = getAllBookingsBetweenTheseDays( $from, $to );
         }
         else if( $args[0] === 'latest')
@@ -137,6 +138,67 @@ class Api extends CI_Controller
         }
 
         $this->send_data($events, $status);
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Get various info.
+        *    - /info/news/latest
+        *    - /info/news
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function info()
+    {
+
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Search API.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function search()
+    {
+        $args = func_get_args();
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        if($args[0] === 'awsspeaker')
+        {
+            $q = $args[1];
+            $logins = executeQuery("
+                SELECT login,email,last_name,first_name
+                FROM logins WHERE 
+                eligible_for_aws='YES' AND status='ACTIVE'
+                AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
+                ");
+            $this->send_data($logins);
+            return;
+        }
+        else if($args[0] === 'login')
+        {
+            $q = $args[1];
+            $logins = executeQuery("
+                SELECT login,email,last_name,first_name
+                FROM logins WHERE 
+                status='ACTIVE'
+                AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
+                ");
+            $this->send_data($logins);
+            return;
+        }
+        else
+        {
+            $this->send_data(['Unsupported query']);
+            return;
+        }
     }
 
     /* --------------------------------------------------------------------------*/
@@ -880,9 +942,7 @@ class Api extends CI_Controller
         if( $args[0] === 'profile')
         {
             $ldap = getUserInfo($user, true);
-            $remove = ['fname', 'lname', 'uid', 'is_active', 'honorific', 'roles'
-                , 'valid_until', 'created_on'
-                ];
+            $remove = ['fname', 'lname'];
             $data = array_diff_key($ldap, array_flip($remove));
             $jcs = [];
             foreach(getUserJCs($user) as $jc)
@@ -1817,6 +1877,225 @@ class Api extends CI_Controller
 
         $this->send_data($data, 'ok');
     }
+
+    // BMV ADMIN
+    public function bmvadmin()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        if(! in_array('BOOKMYVENUE_ADMIN', getRoles($login)))
+        {
+            $this->send_data([], "Forbidden");
+            return;
+        }
+
+        $args = func_get_args();
+        if($args[0] === 'requests')
+        {
+            $data = [];
+            $subtask = __get__($args, 1, 'pending');
+            if($subtask === 'pending')
+                $data = getPendingRequestsGroupedByGID();
+            else if($subtask === 'date')
+                $data = getPendingRequestsOnThisDay($args[2]);
+            else
+                $data = ['flash' => 'Unknown request'];
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'request')
+        {
+            $data = [];
+            $subtask = __get__($args, 1, 'status');
+            if($subtask === 'clash')
+            {
+                $jcLabmeets = getLabmeetAndJC();
+                $jcOrLab = clashesOnThisVenueSlot($_POST['date'], $_POST['start_time']
+                    , $_POST['end_time'], $_POST['venue']
+                    , $jcLabmeets);
+                $data['clashes'] = $jcOrLab;
+            }
+            else if($subtask === 'approve')
+            {
+                // Mark is a public event, if admin says so.
+                if($_POST['is_public_event'] === "YES")
+                    updateTable('bookmyvenue_requests', 'gid,rid', 'is_public_event', $_POST);
+
+                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
+                $data['msg'] = 'APPROVED';
+            }
+            else if($subtask === 'reject')
+            {
+                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST);
+                $data['msg'] = 'REJECTED';
+            }
+            else
+                $data = ['flash' => 'Unknown request'];
+
+            // Send final data.
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'events')
+        {
+            $data = [];
+            $subtask = $args[1];
+            if($subtask === 'upcoming')
+            {
+                $from = intval(__get__($args, 2, 0));
+                $to = intval(__get__($args, 3, 30));
+                $limit = $to - $from; // these many groups
+                $data = getEventsGID('today', 'VALID', $limit, $from);
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($subtask === 'cancel')
+            {
+                $gid = $args[2];
+                $eid = __get__($args, 3, '');  // csv of eid
+                $data = cancelEvents($gid, $eid, getLogin(), __get__($_POST,'reason',''));
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($subtask === 'gid')
+            {
+                $gid = $args[2];
+                // All events by gid.
+                $data = getEventsByGroupId($gid, 'VALID', 'today');
+                $this->send_data($data, "ok");
+                return;
+            }
+            else
+            {
+                $data['flash'] = "Unknown request " . $subtask;
+                $this->send_data($data, "ok");
+                return;
+            }
+
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'event')
+        {
+            $data = [];
+            $subtask = __get__($args, 1, 'update');
+            if($subtask === 'update')
+            {
+                $res = updateEvent($_POST['gid'], $_POST['eid'], $_POST);
+                $data['flash'] = 'successfully updated';
+            }
+            else
+                $data['flash'] = "Unknown request " . $subtask;
+
+            $this->send_data($data, "ok");
+            return;
+        }
+        else
+        {
+            $this->send_data(['flash' => 'Unknown Request'], "ok");
+            return;
+        }
+    }
+
+    // Admin acad
+    public function acadadmin()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        if(! in_array('ACAD_ADMIN', getRoles($login)))
+        {
+            $this->send_data([], "Forbidden");
+            return;
+        }
+
+        $args = func_get_args();
+        $data = [];
+        if($args[0] === 'aws')
+        {
+            if($args[1] === 'upcoming')
+            {
+                $awses = getUpcomingAWS();
+                foreach($awses as &$aws)
+                {
+                    $aws['by'] = loginToHTML($aws['speaker']);
+                    $data[$aws['date']][]=$aws;
+                }
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'assign')
+            {
+                $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'cancel')
+            {
+                $data = cancelAWS($_POST, getLogin());
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'update')
+            {
+                $data = update_aws_entry($_POST, getLogin());
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown request"], "ok");
+                return;
+            }
+        }
+        else if($args[0] === 'awsroster')
+        {
+            if($args[1] === 'fetch')
+            {
+                $speakers = getAWSSpeakers('pi_or_host');
+                foreach($speakers as &$speaker)
+                    $speaker['total'] = numberOfAWSGivenBySpeaker($speaker['login']);
+                $this->send_data($speakers, 'ok');
+                return;
+            }
+            else if($args[1] === 'remove')
+            {
+                $whom = urldecode($args[2]);
+                assert($whom);
+                $res = removeAWSSpeakerFromList($whom, __get__($_POST, 'reason',''));
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else if($args[1] === 'add')
+            {
+                $whom = urldecode($args[2]);
+                $res = addSpeakerToList($whom);
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown request"], "ok");
+                return;
+            }
+        }
+        else
+        {
+            $this->send_data(["Unknown request"], "ok");
+            return;
+        }
+    }
+
+
 }
 
 ?>
