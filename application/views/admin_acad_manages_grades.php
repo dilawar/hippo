@@ -20,7 +20,7 @@ else
 
 echo '<div class="important">';
 echo "Selected semester $sem/$year";
-echo selectYearSemesterForm( $year, $sem );
+echo selectYearSemesterForm($year, $sem, "adminacad/grades");
 echo '</div>';
 
 // Select semester and year here.

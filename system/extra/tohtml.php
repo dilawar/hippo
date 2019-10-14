@@ -2860,13 +2860,13 @@ function getEnrollmentTableAndEmails( $cid, $enrollments, $table_class='info' )
     return array( 'html_table' => $table, 'enrolled_emails' => $allEmails );
 }
 
-function selectYearSemesterForm( $defaultYear = '', $defaultSem = '' )
+function selectYearSemesterForm($defaultYear='', $defaultSem='', $endpoint="info/courses")
 {
     global $symbUpdate;
     $years = range(intval(getCurrentYear( )) + 1, 2010);
     $yearSelect = arrayToSelectList('year', $years, array(), false, $defaultYear);
     $semSelect = arrayToSelectList('semester', array( 'SPRING', 'AUTUMN' ), array(), false, $defaultSem);
-    $form = '<form action="'.site_url("info/courses").'" method="get">'; 
+    $form = '<form action="'.site_url("$endpoint").'" method="get">'; 
     $form .= "<table><tr> <td> $yearSelect </td><td> $semSelect </td>";
     $form .= "<td><button class='show_as_link'> Show Courses </button></td>";
     $form .= "</tr></table>";
