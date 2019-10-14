@@ -8,6 +8,7 @@ require_once __DIR__.'/AdminacadJC.php';
 require_once __DIR__.'/AdminSharedFunc.php';
 
 require_once BASEPATH . '/extra/aws.php';
+require_once BASEPATH . '/extra/adminacad.php';
 
 class Adminacad extends CI_Controller
 {
@@ -605,16 +606,8 @@ class Adminacad extends CI_Controller
             // Else assign grade.
             $data = array( 'student_id' => $login, 'grade' => $grade );
             $data = array_merge( $_POST, $data );
-            $res = updateTable( 'course_registration'
-                , 'student_id,semester,year,course_id'
-                , 'grade,grade_is_given_on'
-                , $data
-            );
-
-            if( $res )
-                $msg .= "Successfully assigned $grade for $login. <br /> ";
-            else
-                $msg .= "Could not assign grade for $login. <br /> ";
+            $res = assignGrade($data);
+            $msg .= $res['msg'];
         }
         flashMessage( $msg );
         redirect('adminacad/grades');
@@ -632,22 +625,10 @@ class Adminacad extends CI_Controller
         $semester = $_POST['semester'];
         $courseid = $_POST['course_id'];
 
-
         $_POST[ 'grade_is_given_on' ] = dbdatetime( 'now' );
         $_POST[ 'grade' ] = $_POST[$studentKey];
-
-
-        $res = updatetable( 'course_registration'
-            , 'student_id,semester,year,course_id'
-            , 'grade,grade_is_given_on'
-            , $_POST
-        );
-
-        if( $res )
-            echo flashMessage( "I successfully assigned grade for " . $student );
-        else
-            echo flashMessage( "I could not assign grade for $student", "warning" );
-
+        $res = assignGrade($_POST);
+        flashMessage($res['msg']);
         // Go to view.
         redirect( "adminacad/gradecourse/$year/$semester/$courseid");
     }

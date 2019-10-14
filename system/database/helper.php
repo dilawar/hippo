@@ -937,9 +937,8 @@ function increaseEventHostedByVenueByOne( $venueId )
     *
     * @return
  */
-function checkCollision( $request )
+function checkCollision($request): array
 {
-
     // Make sure this request is not clashing with another event or request.
     $events = getEventsOnThisVenueBetweenTime(
         $request[ 'venue' ] , $request[ 'date' ]
@@ -952,12 +951,15 @@ function checkCollision( $request )
         );
 
     $all = array();
-    if( $events )
-        $all = array_merge( $all, $events );
-
-    if( $reqs )
-        $all = array_merge( $all, $reqs );
-
+    foreach($events as $ev)
+        $all[] = $ev;
+    foreach($reqs as $r)
+    {
+        // Not the our request.
+        if($r['gid'] == $request['gid'] && $r['rid'] == $request['rid'])
+            continue;
+        $all[] = $r;
+    }
     return $all;
 }
 
@@ -983,14 +985,12 @@ function approveRequest( string $gid, string $rid ): array
     }
 
     global $hippoDB;
-    $collideWith = checkCollision( $request );
-    if(count($collideWith) > 0)
+    $collideWith = checkCollision($request);
+    if($collideWith && count($collideWith) > 0)
     {
         $msg .= "Following request is colliding with another event or request. Rejecting it..";
         $msg .= arrayToTableHTML( $collideWith, 'request' );
-        printWarning( $msg );
-        rejectRequest( $gid, $rid );
-        return ['msg'=>$msg, 'success' => true];
+        return ['msg'=>$msg, 'success'=>false, 'data'=>$collideWith];
     }
 
     $stmt = $hippoDB->prepare( 'INSERT INTO events (
@@ -1023,7 +1023,7 @@ function approveRequest( string $gid, string $rid ): array
     return ['msg'=>$msg, 'success'=>false];
 }
 
-function rejectRequest( $gid, $rid )
+function rejectRequest($gid, $rid)
 {
     return changeRequestStatus( $gid, $rid, 'REJECTED' );
 }
@@ -1041,7 +1041,9 @@ function rejectRequest( $gid, $rid )
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=false, array $request=[]) : bool
+function actOnRequest(string $gid, string $rid, string $whatToDo
+    , bool $notify=false, array $request=[], string $byWhom=''
+) : array
 {
     $status = "";
     if(! $byWhom)
@@ -1052,6 +1054,8 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=
     {
         $res = approveRequest( $gid, $rid );
         $success = $res['success'];
+        if(! $success)
+            return $res;
         $status = 'APPROVED';
     }
     elseif( $whatToDo === 'REJECT' )
@@ -1061,8 +1065,8 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=
     }
     else
     {
-        printWarning( "Unknown request " . $gid . '.' . $rid .  " or command: " . $whatToDo );
-        return false;
+        return ['status'=>false
+            , 'msg'=>"Unknown request " . $gid . '.' . $rid .  " or command: " . $whatToDo];
     }
 
     if( $notify && $success )
@@ -1084,7 +1088,7 @@ function actOnRequest( string $gid, string $rid, string $whatToDo, bool $notify=
         }
         $res = sendHTMLEmail( $msg, $subject, $userEmail); 
     }
-    return $success;
+    return ['success'=>$success, 'msg'=>"Successfully $status request $gid.$rid."];
 }
 
 function changeIfEventIsPublic( $gid, $eid, $status )

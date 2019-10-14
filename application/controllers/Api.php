@@ -1926,12 +1926,12 @@ class Api extends CI_Controller
                 if($_POST['is_public_event'] === "YES")
                     updateTable('bookmyvenue_requests', 'gid,rid', 'is_public_event', $_POST);
 
-                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
+                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
                 $data['msg'] = 'APPROVED';
             }
             else if($subtask === 'reject')
             {
-                $res = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST);
+                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST);
                 $data['msg'] = 'REJECTED';
             }
             else

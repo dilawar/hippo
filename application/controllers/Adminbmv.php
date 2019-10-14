@@ -339,10 +339,11 @@ class Adminbmv extends CI_Controller
             else
                 $status = $whatToDo . 'ED';
 
-            $res = actOnRequest( $gid, $rid, $whatToDo );
-            if(! $res)
+            $ret = actOnRequest($gid, $rid, $whatToDo);
+            if(! $ret['success'])
             {
-                $warningMsg .= p("Failed to act on request $event.");
+                $warningMsg .= p("Failed to act on request.");
+                $warningMsg .= p($ret['msg']);
                 continue;
             }
 
@@ -351,7 +352,7 @@ class Adminbmv extends CI_Controller
             $req = getRequestById( $gid, $rid );
             if( $req['status'] != $status )
             {
-                $warningMsg .= p( "Failed to $status of request $gid.$rid", true );
+                $warningMsg .= p( "Failed to $status of request $gid.$rid.", true );
                 continue;
             }
 
@@ -379,8 +380,8 @@ class Adminbmv extends CI_Controller
             $email .= $_POST[ 'reason' ];
         }
 
-        if( $warningMsg )
-            printWarning( $warningMsg );
+        if($warningMsg)
+            printWarning($warningMsg);
         else
         {
             flashMessage( "Successfuly reviewed '$eventGroupTitle'." );
@@ -390,7 +391,7 @@ class Adminbmv extends CI_Controller
                 , 'hippo@lists.ncbs.res.in'
             );
         }
-        redirect( 'adminbmv/home' );
+        redirect('adminbmv/home');
     }
 
     // MANAGES TALK
@@ -486,11 +487,11 @@ class Adminbmv extends CI_Controller
     {
         $gid = $_POST['gid'];
         $rid = $_POST['rid'];
-        $res = actOnRequest( $gid, $rid, 'APPROVE', true );
-        if( $res )
-            flashMessage( "Request $gid.$rid is approved and venue has been blocked." );
+        $ret = actOnRequest($gid, $rid, 'APPROVE', true);
+        if( $ret['success'] )
+            flashMessage("Request $gid.$rid is approved and venue has been blocked.");
         else
-            printErrorSevere("Could not approve request $gid.$rid.");
+            printErrorSevere("Could not approve request $gid.$rid. Because " . $ret['msg']);
 
         redirect( 'adminbmv/home' );
     }
