@@ -2,12 +2,10 @@
 require_once BASEPATH.'autoload.php';
 echo userHTML( );
 
-echo "<h2>Grades for <tt>$course_id</tt> $semester semester $year. </h2>";
+echo "<h2>Grades for <tt>$course_id</tt> for $year/$semester. </h2>";
 
 $enrollments = getCourseRegistrations( $course_id, $year, $semester );
-
 echo showEnrollmenTable( $enrollments, $tdintr = 5 );
-
 
 $hide = 'registered_on,last_modified_on,grade_is_given_on';
 $table = '<table class="info sortable">';
