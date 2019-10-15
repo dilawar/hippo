@@ -3,12 +3,11 @@
 require_once BASEPATH. "extra/methods.php";
 require_once BASEPATH. 'extra/ldap.php';
 require_once BASEPATH. 'database/base.php';
-
+require_once BASEPATH. 'extra/me.php';
 
 // Construct the PDO
 $hippoDB = new BMVPDO( "localhost" );
 $hippoDB->initialize( );
-
 
 /**
  * Replaces any parameter placeholders in a query with the value of that
@@ -2464,32 +2463,6 @@ function getSpeakers( )
     return fetchEntries( $res );
 }
 
-/**
-    * @brief Add a new talk.
-    *
-    * @param $data
-    *
-    * @return Id of talk or empty array.
- */
-function addNewTalk( array $data ) : array
-{
-    $hippoDB = initDB();;
-    // Get the max id
-    $res = $hippoDB->query( 'SELECT MAX(id) AS id FROM talks' );
-    $maxid = $res->fetch( PDO::FETCH_ASSOC);
-    $id = intval( $maxid['id'] ) + 1;
-
-    $data[ 'id' ] = $id;
-    $res = insertIntoTable( 'talks'
-        , 'id,host,class,coordinator,title,speaker,speaker_id,description,created_by,created_on'
-        , $data );
-
-    // Return the id of talk.
-    if( $res )
-        return array( "id" => $id );
-
-    return array();
-}
 
 /**
     * @brief Add or update the speaker and returns the id.

@@ -7,6 +7,7 @@ require_once __DIR__.'/User.php';
 
 require_once BASEPATH . '/extra/bmv.php';
 require_once BASEPATH . '/extra/people.php';
+require_once BASEPATH . '/extra/search.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -47,7 +48,6 @@ function getHeader($key)
 
 function getKey()
 {
-
     return __get__( $_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
 }
 
@@ -194,44 +194,35 @@ class Api extends CI_Controller
             return;
         }
 
+        $q = urldecode($args[1]);
         if($args[0] === 'awsspeaker')
         {
-            $q = $args[1];
-            $logins = executeQuery("
-                SELECT login,email,last_name,first_name
-                FROM logins WHERE 
-                eligible_for_aws='YES' AND status='ACTIVE'
-                AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
-                ");
+            $logins = searchInLogins($q, "AND eligible_for_aws='YES'");
             $this->send_data($logins);
             return;
         }
         else if($args[0] === 'speaker')
         {
-            $q = urldecode($args[1]);
-            $speakers = executeQuery("
-                SELECT * FROM speakers WHERE 
-                (email LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
-                ");
+            $speakers = searchInSpeakers($q);
             foreach($speakers as &$speaker)
             {
                 $speaker['email'] = __get__($speaker, 'email', '');
-                $speaker['name'] = arrayToName($speaker);
                 $speaker['html'] = speakerToHTML($speaker);
             }
             $this->send_data_helper($speakers);
             return;
         }
+        else if($args[0] === 'host')
+        {
+            $speakers = searchInSpeakers($q);
+            $faculty = searchInFaculty($q);
+            $this->send_data_helper(array_merge($speakers, $faculty));
+            return;
+        }
         else if($args[0] === 'login')
         {
-            $q = $args[1];
-            $logins = executeQuery("
-                SELECT login,email,last_name,first_name
-                FROM logins WHERE 
-                status='ACTIVE'
-                AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
-                ");
-            $this->send_data($logins);
+            $logins = searchInLogins($q);
+            $this->send_data_helper($logins);
             return;
         }
         else
@@ -964,6 +955,8 @@ class Api extends CI_Controller
         *   - /me/aws
         *   - /me/jc
         *   - /me/roles
+        *   - /me/talk
+        *             /register
         *
         * @Returns   
      */
@@ -1001,6 +994,32 @@ class Api extends CI_Controller
             if($upcoming)
                 $data[] = $upcoming;
             $data = getAwsOfSpeaker($user);
+        }
+        else if( $args[0] === 'talk')
+        {
+            if($args[1] === 'register' || $args[1] === 'add')
+            {
+                $_POST['created_by'] = getLogin();
+                $_POST['created_on'] = dbDateTime('now');
+                $_POST['speaker'] = speakerName($_POST['speaker_id']);
+                $data = addNewTalk($_POST);
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'unscheduled')
+            {
+                $data = getMyUnscheduledTalks(getLogin());
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'cancel')
+            {
+                $data = cancelTalk($args[2]);
+                $this->send_data($data, 'ok');
+                return;
+            }
+            $this->send_data(["unknown requests"], 'ok');
+            return;
         }
         else if( $args[0] === 'course')
         {

@@ -1756,7 +1756,17 @@ function awsToHTML( $aws, $with_picture = false )
     return $html;
 }
 
-function speakerName( $speaker, $with_email = false ) : string
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Given id or array of speaker, construct speaker name.
+    *
+    * @Param $speaker   Array or integer in spring format.
+    * @Param $with_email  
+    *
+    * @Returns  Speaker name in plain text.
+ */
+/* ----------------------------------------------------------------------------*/
+function speakerName($speaker, bool $with_email=false): string
 {
     // NOTE: Do not use is_int here.
     if( is_numeric( $speaker ) )                        // Got an id.
