@@ -6,6 +6,7 @@ require_once __DIR__.'/Adminservices.php';
 require_once __DIR__.'/User.php';
 
 require_once BASEPATH . '/extra/bmv.php';
+require_once BASEPATH . '/extra/people.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -150,7 +151,30 @@ class Api extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public function info()
     {
+        $args = func_get_args();
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
 
+        if($args[0] === 'bmv')
+        {
+            if($args[1] === 'bookingclasses')
+            {
+                $public = getTableEntry('config', 'id', ["id"=>'BOOKMYVENUE.CLASS']);
+                $public = explode(',', __get__($public, 'value', ''));
+
+                $nopublic = getTableEntry('config', 'id', ["id"=>'BOOKMYVENUE.NOPUBLIC.CLASS']);
+                $nopublic = explode(',', __get__($nopublic, 'value', ''));
+                $all = array_unique(array_merge($public, $nopublic));
+                $this->send_data(['all'=>$all, 'public'=>$public, 'nonpublic'=>$nopublic], "ok");
+                return;
+            }
+        }
+        $this->send_data(['Unknown request' . json_encode($args)], "ok");
+        return;
     }
 
     /* --------------------------------------------------------------------------*/
@@ -180,6 +204,22 @@ class Api extends CI_Controller
                 AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
                 ");
             $this->send_data($logins);
+            return;
+        }
+        else if($args[0] === 'speaker')
+        {
+            $q = urldecode($args[1]);
+            $speakers = executeQuery("
+                SELECT * FROM speakers WHERE 
+                (email LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
+                ");
+            foreach($speakers as &$speaker)
+            {
+                $speaker['email'] = __get__($speaker, 'email', '');
+                $speaker['name'] = arrayToName($speaker);
+                $speaker['html'] = speakerToHTML($speaker);
+            }
+            $this->send_data_helper($speakers);
             return;
         }
         else if($args[0] === 'login')
@@ -687,8 +727,8 @@ class Api extends CI_Controller
         * TODO: I may have to redo this table.
         *
         *   - /api/config/key e.g.
-        *     - /api/config/bookmyvenue.class
-        *     - /api/config/evnet.class 
+        *   - /api/config/bookmyvenue.class
+        *   - /api/config/evnet.class 
         *
         * @Returns   
      */
@@ -923,6 +963,7 @@ class Api extends CI_Controller
         *   - /me/profile
         *   - /me/aws
         *   - /me/jc
+        *   - /me/roles
         *
         * @Returns   
      */
@@ -948,6 +989,11 @@ class Api extends CI_Controller
             foreach(getUserJCs($user) as $jc)
                 $jcs[$jc['jc_id']] = $jc;
             $data['jcs'] = $jcs;
+        }
+        else if( $args[0] === 'roles')
+        {
+            $info = getUserInfo($user, true);
+            $data = explode(',', $info['roles']);
         }
         else if( $args[0] === 'aws')
         {
@@ -2078,7 +2124,7 @@ class Api extends CI_Controller
             else if($args[1] === 'add')
             {
                 $whom = urldecode($args[2]);
-                $res = addSpeakerToList($whom);
+                $res = addAWSSpeakerToList($whom);
                 $this->send_data($res, 'ok');
                 return;
             }
@@ -2088,14 +2134,42 @@ class Api extends CI_Controller
                 return;
             }
         }
-        else
-        {
-            $this->send_data(["Unknown request"], "ok");
-            return;
-        }
+
+        $this->send_data(["Unknown request"], "ok");
+        return;
     }
 
 
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Handles people related queries and post.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function people()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $args = func_get_args();
+        if($args[0] === 'speaker')
+        {
+            if($args[1] === 'add')
+            {
+                $name = splitNameIntoParts($_POST['name']);
+                $_POST = array_merge($_POST, $name);
+                $ret = addUpdateSpeaker($_POST);
+                $this->send_data($ret, 'ok');
+                return;
+            }
+        }
+        $this->send_data(["Unknown request"], "ok");
+        return;
+    }
 }
 
 ?>
