@@ -72,15 +72,11 @@ class Api extends CI_Controller
 
     private function send_data_helper(array $data)
     {
-        try
-        {
-            $json = json_encode($data);
-        } 
-        catch ( Exception $e )
-        {
-            $json = $e->getMessage();
-        }
-        $this->output->set_content_type('application/json' );
+        $json = json_encode($data
+            , JSON_ERROR_SYNTAX | JSON_NUMERIC_CHECK 
+            | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES 
+        );
+        $this->output->set_content_type('application/json', 'utf-8');
         $this->output->set_output($json);
     }
 
@@ -146,6 +142,8 @@ class Api extends CI_Controller
         * @Synopsis  Get various info.
         *    - /info/news/latest
         *    - /info/news
+        *    - /info/venues/available/[all|venueid]
+        *    - /info/bmv/bookingclasses
         * @Returns   
      */
     /* ----------------------------------------------------------------------------*/
@@ -158,8 +156,18 @@ class Api extends CI_Controller
             $this->send_data([], "Not authenticated");
             return;
         }
-
-        if($args[0] === 'bmv')
+        else if($args[0] === 'venues')
+        {
+            if($args[1] === 'availability')
+            {
+                $data = getVenuesWithStatusOnThisDayAndTime($_POST['date']
+                    , $_POST['start_time'], $_POST['end_time']
+                );
+                $this->send_data($data, 'ok');
+                return;
+            }
+        }
+        else if($args[0] === 'bmv')
         {
             if($args[1] === 'bookingclasses')
             {
@@ -173,7 +181,7 @@ class Api extends CI_Controller
                 return;
             }
         }
-        $this->send_data(['Unknown request' . json_encode($args)], "ok");
+        $this->send_data(['Unknown request'], "ok");
         return;
     }
 
@@ -543,7 +551,7 @@ class Api extends CI_Controller
         * @Synopsis  API related to venues. This require authentication.
         *   - /venue/list/{type}|all
         *   - /venue/info/{venue}
-        *   - /venue/book/book/venueid/startDateTime/endDateTime
+        *   - /venue/book/venueid/startDateTime/endDateTime
         *       (rest of the information is in POST request. If POST request
         *       has incomple information. Send back error message.
         *
@@ -694,7 +702,7 @@ class Api extends CI_Controller
             $gmapkey = getConfigValue('GOOGLE_MAP_API_KEY');
         }
 
-        $this->send_data( ['apikey'=>$token, 'gmapapikey'=>$gmapkey
+        $this->send_data(['apikey'=>$token, 'gmapapikey'=>$gmapkey
             , 'authenticated'=>$res?true:false], $token?'ok':'erorr');
         return;
     }

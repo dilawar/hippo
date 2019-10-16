@@ -671,7 +671,7 @@ function getEventsOnThisVenueOnThisday( $venue, $date, $status = 'VALID' )
  */
 function getEventsOnThisVenueBetweenTime( $venue, $date
     , $start_time, $end_time
-   ,  $status = 'VALID' )
+   ,  $status = 'VALID'): array
 {
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare(
@@ -705,8 +705,7 @@ function getRequestsOnThisVenueOnThisday( $venue, $date, $status = 'PENDING' )
 }
 
 function getRequestsOnThisVenueBetweenTime( $venue, $date
-    , $start_time, $end_time
-    , $status = 'PENDING' )
+    , $start_time, $end_time, $status='PENDING'): array
 {
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare(

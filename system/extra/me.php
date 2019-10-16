@@ -69,4 +69,31 @@ function cancelTalk( $talkid )
     return $res;
 }
 
+function getVenuesWithStatusOnThisDayAndTime($date, $startTime, $endTime): array
+{
+    // Fetch all venues allowed for booking.
+    $venues = getVenues('id');
+    foreach($venues as &$venue)
+    {
+        $venue['BOOKING_STATUS'] = 'AVAILABLE';
+        $venue['BOOKING'] = [];
+        $ev = getEventsOnThisVenueBetweenTime($venue['id'], $date, $startTime, $endTime);
+        if($ev && count($ev) > 0)
+        {
+            $venue['BOOKING_STATUS'] = 'BOOKED';
+            $venue['BOOKING'] = @eventToText($ev[0]);
+        }
+        else
+        {
+            $req = getRequestsOnThisVenueBetweenTime($venue['id'], $date, $startTime, $endTime);
+            if($req && count($req) > 0)
+            {
+                $venue['BOOKING_STATUS'] = 'REQUEST PENDING';
+                $venue['BOOKING'] = @eventToText($req[0]);
+            }
+        }
+    }
+    return $venues;
+}
+
 ?>
