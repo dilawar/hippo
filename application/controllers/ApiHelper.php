@@ -24,13 +24,18 @@ function submitBookingRequest( array $request ) : array
         return $res;
     }
 
-    $repeatPat = __get__( $request, 'repeat_pat', '' );
-    if( strlen( $repeatPat ) > 0 )
-        $days = repeatPatToDays( $repeatPat, $request[ 'date' ] );
-    else
-        $days = array($request['date']);
+    // Check if $request contains 'dates'. If not then check 'repeat_pat'
+    $days = __get__($request, 'dates', []);
+    if($days && count($days) == 0)
+    {
+        $repeatPat = __get__( $request, 'repeat_pat', '' );
+        if( strlen( $repeatPat ) > 0 )
+            $days = repeatPatToDays( $repeatPat, $request[ 'date' ] );
+        else
+            $days = array($request['date']);
+    }
 
-    if( count( $days ) < 1 )
+    if(count($days) < 1)
     {
         $ret[ 'msg'] = "I could not generate list of slots for you reuqest";
         $ret['success'] = false;

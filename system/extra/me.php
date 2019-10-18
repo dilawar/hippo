@@ -44,10 +44,16 @@ function getMyUnscheduledTalks($created_by)
     $results = [];
     foreach($talks as &$talk)
     {
+        if(! __get__($talk,'class', ''))
+            continue;
+
         $request = getBookingRequestOfTalkId($talk['id']);
         $ev = getEventsOfTalkId($talk['id']);
-        if(! $request &&  ! $ev)
-            $results[] = $talk;
+        if($request)
+            continue;
+        if($ev)
+            continue;
+        $results[] = $talk;
     }
     return $results;
 }

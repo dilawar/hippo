@@ -20,12 +20,29 @@ function searchInLogins(string $q, $where=''): array
         ");
 }
 
-function searchInSpeakers($q): array
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Search speaker. The 
+    *
+    * @Param q string. Could be id, or search in names, email etc.
+    *
+    * @Returns   
+    */
+/* ----------------------------------------------------------------------------*/
+function searchInSpeakers(string $q): array
 {
+    // This is ID.
+    if(is_numeric($q))
+        return executeQuery("SELECT *, 
+            CONCAT_WS(' ',`first_name`,`last_name`) as name 
+            FROM speakers WHERE id > 0 
+            AND first_name IS NOT NULL AND  first_name != '' AND id='$q'
+            ");
+
     return executeQuery("SELECT *, 
         CONCAT_WS(' ',`first_name`,`last_name`) as name 
-        FROM speakers WHERE 
-        first_name IS NOT NULL AND  first_name != ''
+        FROM speakers WHERE id > 0 
+        AND first_name IS NOT NULL AND  first_name != ''
         AND (email LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
         ");
 }

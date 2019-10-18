@@ -167,6 +167,22 @@ class Api extends CI_Controller
                 return;
             }
         }
+        else if($args[0] === 'externalid')
+        {
+            $externalID = explode('.', $args[1]);
+            if(count($externalID) != 2)
+            {
+                $this->send_data([], 'ok');
+                return;
+            }
+            $tableName = $externalID[0];
+            $id = $externalID[1];
+            $info = getTableEntry($tableName, 'id,status'
+                , ['id'=>$id, 'status'=>'VALID']
+            );
+            $this->send_data($info, 'ok');
+            return;
+        }
         else if($args[0] === 'bmv')
         {
             if($args[1] === 'bookingclasses')
@@ -180,6 +196,13 @@ class Api extends CI_Controller
                 $this->send_data(['all'=>$all, 'public'=>$public, 'nonpublic'=>$nopublic], "ok");
                 return;
             }
+        }
+        else if($args[0] === 'repeatpat')
+        {
+            $pat = base64_decode($args[1]);
+            $data = repeatPatToDays($pat);
+            $this->send_data($data, 'ok');
+            return;
         }
         $this->send_data(['Unknown request'], "ok");
         return;
@@ -593,16 +616,14 @@ class Api extends CI_Controller
             $this->send_data([], "Not authenticated");
             return;
         }
-
-        if($args[0] === 'info')
+        else if($args[0] === 'info')
         {
             $id = __get__($args, 1, 0);
             $data = getVenueById($id);
             $this->send_data($data, 'ok');
             return;
         }
-
-        if($args[0] === 'status')
+        else if($args[0] === 'status')
         {
             $data = [];
             // Get the status of given venus Venues id are send by csv.
@@ -634,10 +655,13 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
             return;
         }
-
-        if($args[0] === 'book')
+        else if($args[0] === 'book')
         {
-            $this->bookVenue($args[1], intval($args[2]), intval($args[3]));
+            $this->bookVenue(base64_decode($args[1])
+                , intval(__get__($args,2,0))
+                , intval(__get__($args,3,0))
+                , $_POST
+            );
             return;
         }
         else
@@ -652,33 +676,45 @@ class Api extends CI_Controller
         * @Synopsis  Helper function to book venue.
         *
         * @Param $venueid
-        * @Param $startDateTime
-        * @Param $endDateTime
+        * @Param $startDateTime 
+        * @Param $endDateTime   
         *
         * @Returns   
      */
     /* ----------------------------------------------------------------------------*/
-    private function bookVenue(string $venueId, int $startDateTime, int $endDateTime)
+    private function bookVenue(string $venueId, int $startDateTime=0
+        , int $endDateTime=0, array $data)
     {
+        if($startDateTime == 0)
+            $startDateTime = __get__($data, 'start_date_time', 0);
+        if($endDateTime == 0)
+            $endDateTime = __get__($data, 'end_date_time', 0);
+
+        $startDateTime = is_numeric($startDateTime)?$startDateTime:intval($startDateTime);
+        $endDateTime = is_numeric($endDateTime)?$endDateTime:intval($endDateTime);
+
         if( (! $venueId) || ($startDateTime >= $endDateTime))
         {
-            $data = ['msg' => "Invalid request: $venueId $startDateTime $endDateTime."];
+            $data = ['msg' => "Could not book for: venue=$venue, startDateTime=$startDateTime
+                and endTime=$endTime"];
             $this->send_data($data, "error" );
             return;
         }
 
-        $request = array_merge($_POST
-            , ['venue'=>$venueId
-            , 'date' => dbDate($startDateTime)
+        // Who is creating.
+        $data['created_by'] = getLogin();
+
+        // Now check if 'dates' or 'repeat_pat is given.
+        $request = array_merge($data
+            , ['venue'=>$venueId, 'date' => dbDate($startDateTime)
             , 'start_time' => dbTime($startDateTime)
             , 'end_time' => dbTime($endDateTime)]
         );
 
         $ret = submitBookingRequest( $request );
-
         $status = $ret['success']?'ok':'error';
-        $ret['payload'] = json_encode($request);
-        $this->send_data( $ret, $status);
+        // $ret['payload'] = json_encode($request);
+        $this->send_data($ret, $status);
         return;
     }
 
