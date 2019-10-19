@@ -410,7 +410,6 @@ function repeatPatToDays( string $pat, string $start_day = 'today' ) : array
             }
         }
     }
-
     sort( $dates );
     return $dates;
 }
@@ -1154,6 +1153,25 @@ function splitName( $name )
 
 /* --------------------------------------------------------------------------*/
 /**
+    * @Synopsis  Tested locally.
+    *
+    * @Param $name
+    *
+    * @Returns   
+    * 
+    * TEST CASES.
+ */
+/* ----------------------------------------------------------------------------*/
+function splitNameIntoParts(string $name) : array
+{
+    $name = trim($name);
+    preg_match( '/^((?P<honorific>(Dr|Prof|Mr|Mrs))\.?\s+)?(?P<first_name>\S+)(\s+(?P<middle_name>\S+))?\s+(?P<last_name>\S+)?$/', $name, $matches);
+    return $matches;
+}
+
+
+/* --------------------------------------------------------------------------*/
+/**
     * @Synopsis  Verify the booking request.
     *
     * @Param $request
@@ -1756,7 +1774,7 @@ function removeAWSSpeakerFromList(string $speaker, $reason=''): array
     return $ret;
 }
 
-function addSpeakerToList(string $speaker): array
+function addAWSSpeakerToList(string $speaker): array
 {
     $ret = ['success'=>false, 'msg'=>''];
     $data = ['eligible_for_aws' => 'YES', 'login' => $speaker];

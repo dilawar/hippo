@@ -6,6 +6,8 @@ require_once __DIR__.'/Adminservices.php';
 require_once __DIR__.'/User.php';
 
 require_once BASEPATH . '/extra/bmv.php';
+require_once BASEPATH . '/extra/people.php';
+require_once BASEPATH . '/extra/search.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -46,7 +48,6 @@ function getHeader($key)
 
 function getKey()
 {
-
     return __get__( $_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
 }
 
@@ -71,15 +72,11 @@ class Api extends CI_Controller
 
     private function send_data_helper(array $data)
     {
-        try
-        {
-            $json = json_encode($data);
-        } 
-        catch ( Exception $e )
-        {
-            $json = $e->getMessage();
-        }
-        $this->output->set_content_type('application/json' );
+        $json = json_encode($data
+            , JSON_ERROR_SYNTAX | JSON_NUMERIC_CHECK 
+            | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES 
+        );
+        $this->output->set_content_type('application/json', 'utf-8');
         $this->output->set_output($json);
     }
 
@@ -145,12 +142,70 @@ class Api extends CI_Controller
         * @Synopsis  Get various info.
         *    - /info/news/latest
         *    - /info/news
+        *    - /info/venues/available/[all|venueid]
+        *    - /info/bmv/bookingclasses
         * @Returns   
      */
     /* ----------------------------------------------------------------------------*/
     public function info()
     {
+        $args = func_get_args();
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+        else if($args[0] === 'venues')
+        {
+            if($args[1] === 'availability')
+            {
+                $data = getVenuesWithStatusOnThisDayAndTime($_POST['date']
+                    , $_POST['start_time'], $_POST['end_time']
+                );
+                $this->send_data($data, 'ok');
+                return;
+            }
+        }
+        else if($args[0] === 'externalid')
+        {
+            $externalID = explode('.', $args[1]);
+            if(count($externalID) != 2)
+            {
+                $this->send_data([], 'ok');
+                return;
+            }
+            $tableName = $externalID[0];
+            $id = $externalID[1];
+            $info = getTableEntry($tableName, 'id,status'
+                , ['id'=>$id, 'status'=>'VALID']
+            );
+            $this->send_data($info, 'ok');
+            return;
+        }
+        else if($args[0] === 'bmv')
+        {
+            if($args[1] === 'bookingclasses')
+            {
+                $public = getTableEntry('config', 'id', ["id"=>'BOOKMYVENUE.CLASS']);
+                $public = explode(',', __get__($public, 'value', ''));
 
+                $nopublic = getTableEntry('config', 'id', ["id"=>'BOOKMYVENUE.NOPUBLIC.CLASS']);
+                $nopublic = explode(',', __get__($nopublic, 'value', ''));
+                $all = array_unique(array_merge($public, $nopublic));
+                $this->send_data(['all'=>$all, 'public'=>$public, 'nonpublic'=>$nopublic], "ok");
+                return;
+            }
+        }
+        else if($args[0] === 'repeatpat')
+        {
+            $pat = base64_decode($args[1]);
+            $data = repeatPatToDays($pat);
+            $this->send_data($data, 'ok');
+            return;
+        }
+        $this->send_data(['Unknown request'], "ok");
+        return;
     }
 
     /* --------------------------------------------------------------------------*/
@@ -170,28 +225,35 @@ class Api extends CI_Controller
             return;
         }
 
+        $q = urldecode($args[1]);
         if($args[0] === 'awsspeaker')
         {
-            $q = $args[1];
-            $logins = executeQuery("
-                SELECT login,email,last_name,first_name
-                FROM logins WHERE 
-                eligible_for_aws='YES' AND status='ACTIVE'
-                AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
-                ");
+            $logins = searchInLogins($q, "AND eligible_for_aws='YES'");
             $this->send_data($logins);
+            return;
+        }
+        else if($args[0] === 'speaker')
+        {
+            $speakers = searchInSpeakers($q);
+            foreach($speakers as &$speaker)
+            {
+                $speaker['email'] = __get__($speaker, 'email', '');
+                $speaker['html'] = speakerToHTML($speaker);
+            }
+            $this->send_data_helper($speakers);
+            return;
+        }
+        else if($args[0] === 'host')
+        {
+            $speakers = searchInSpeakers($q);
+            $faculty = searchInFaculty($q);
+            $this->send_data_helper(array_merge($speakers, $faculty));
             return;
         }
         else if($args[0] === 'login')
         {
-            $q = $args[1];
-            $logins = executeQuery("
-                SELECT login,email,last_name,first_name
-                FROM logins WHERE 
-                status='ACTIVE'
-                AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
-                ");
-            $this->send_data($logins);
+            $logins = searchInLogins($q);
+            $this->send_data_helper($logins);
             return;
         }
         else
@@ -512,7 +574,7 @@ class Api extends CI_Controller
         * @Synopsis  API related to venues. This require authentication.
         *   - /venue/list/{type}|all
         *   - /venue/info/{venue}
-        *   - /venue/book/book/venueid/startDateTime/endDateTime
+        *   - /venue/book/venueid/startDateTime/endDateTime
         *       (rest of the information is in POST request. If POST request
         *       has incomple information. Send back error message.
         *
@@ -554,16 +616,14 @@ class Api extends CI_Controller
             $this->send_data([], "Not authenticated");
             return;
         }
-
-        if($args[0] === 'info')
+        else if($args[0] === 'info')
         {
             $id = __get__($args, 1, 0);
             $data = getVenueById($id);
             $this->send_data($data, 'ok');
             return;
         }
-
-        if($args[0] === 'status')
+        else if($args[0] === 'status')
         {
             $data = [];
             // Get the status of given venus Venues id are send by csv.
@@ -595,10 +655,13 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
             return;
         }
-
-        if($args[0] === 'book')
+        else if($args[0] === 'book')
         {
-            $this->bookVenue($args[1], intval($args[2]), intval($args[3]));
+            $this->bookVenue(base64_decode($args[1])
+                , intval(__get__($args,2,0))
+                , intval(__get__($args,3,0))
+                , $_POST
+            );
             return;
         }
         else
@@ -613,33 +676,45 @@ class Api extends CI_Controller
         * @Synopsis  Helper function to book venue.
         *
         * @Param $venueid
-        * @Param $startDateTime
-        * @Param $endDateTime
+        * @Param $startDateTime 
+        * @Param $endDateTime   
         *
         * @Returns   
      */
     /* ----------------------------------------------------------------------------*/
-    private function bookVenue(string $venueId, int $startDateTime, int $endDateTime)
+    private function bookVenue(string $venueId, int $startDateTime=0
+        , int $endDateTime=0, array $data)
     {
+        if($startDateTime == 0)
+            $startDateTime = __get__($data, 'start_date_time', 0);
+        if($endDateTime == 0)
+            $endDateTime = __get__($data, 'end_date_time', 0);
+
+        $startDateTime = is_numeric($startDateTime)?$startDateTime:intval($startDateTime);
+        $endDateTime = is_numeric($endDateTime)?$endDateTime:intval($endDateTime);
+
         if( (! $venueId) || ($startDateTime >= $endDateTime))
         {
-            $data = ['msg' => "Invalid request: $venueId $startDateTime $endDateTime."];
+            $data = ['msg' => "Could not book for: venue=$venue, startDateTime=$startDateTime
+                and endTime=$endTime"];
             $this->send_data($data, "error" );
             return;
         }
 
-        $request = array_merge($_POST
-            , ['venue'=>$venueId
-            , 'date' => dbDate($startDateTime)
+        // Who is creating.
+        $data['created_by'] = getLogin();
+
+        // Now check if 'dates' or 'repeat_pat is given.
+        $request = array_merge($data
+            , ['venue'=>$venueId, 'date' => dbDate($startDateTime)
             , 'start_time' => dbTime($startDateTime)
             , 'end_time' => dbTime($endDateTime)]
         );
 
         $ret = submitBookingRequest( $request );
-
         $status = $ret['success']?'ok':'error';
-        $ret['payload'] = json_encode($request);
-        $this->send_data( $ret, $status);
+        // $ret['payload'] = json_encode($request);
+        $this->send_data($ret, $status);
         return;
     }
 
@@ -663,7 +738,7 @@ class Api extends CI_Controller
             $gmapkey = getConfigValue('GOOGLE_MAP_API_KEY');
         }
 
-        $this->send_data( ['apikey'=>$token, 'gmapapikey'=>$gmapkey
+        $this->send_data(['apikey'=>$token, 'gmapapikey'=>$gmapkey
             , 'authenticated'=>$res?true:false], $token?'ok':'erorr');
         return;
     }
@@ -687,8 +762,8 @@ class Api extends CI_Controller
         * TODO: I may have to redo this table.
         *
         *   - /api/config/key e.g.
-        *     - /api/config/bookmyvenue.class
-        *     - /api/config/evnet.class 
+        *   - /api/config/bookmyvenue.class
+        *   - /api/config/evnet.class 
         *
         * @Returns   
      */
@@ -703,10 +778,16 @@ class Api extends CI_Controller
         }
 
         $args = func_get_args();
+        if(in_array(strtoupper($args[0]), ['CLIENT_SECRET', 'GOOGLE_MAP_API_KEY']))
+        {
+            $this->send_data(["Not allowed"], "ok");
+            return;
+        }
+
         if( __get__($args, 0, '') )
         {
             $id = $args[0];
-            $data = getTableEntry( 'config', 'id', ["id"=>$id]);
+            $data = getTableEntry('config', 'id', ["id"=>$id]);
             $this->send_data($data, "ok");
             return;
         }
@@ -736,7 +817,7 @@ class Api extends CI_Controller
         if( $args[0] === 'list')
         {
             $startDate = dbDate(intval(__get__($args, 1, strtotime('today'))));
-            $login = $_POST['login'];
+            $login = getLogin();
             $requests = getRequestOfUser($login);
             $events = getEventsOfUser($login, $startDate);
 
@@ -923,6 +1004,9 @@ class Api extends CI_Controller
         *   - /me/profile
         *   - /me/aws
         *   - /me/jc
+        *   - /me/roles
+        *   - /me/talk
+        *             /register
         *
         * @Returns   
      */
@@ -949,12 +1033,43 @@ class Api extends CI_Controller
                 $jcs[$jc['jc_id']] = $jc;
             $data['jcs'] = $jcs;
         }
+        else if( $args[0] === 'roles')
+        {
+            $info = getUserInfo($user, true);
+            $data = explode(',', $info['roles']);
+        }
         else if( $args[0] === 'aws')
         {
             $upcoming = getUpcomingAWSOfSpeaker($user);
             if($upcoming)
                 $data[] = $upcoming;
             $data = getAwsOfSpeaker($user);
+        }
+        else if( $args[0] === 'talk')
+        {
+            if($args[1] === 'register' || $args[1] === 'add')
+            {
+                $_POST['created_by'] = getLogin();
+                $_POST['created_on'] = dbDateTime('now');
+                $_POST['speaker'] = speakerName($_POST['speaker_id']);
+                $data = addNewTalk($_POST);
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'unscheduled')
+            {
+                $data = getMyUnscheduledTalks(getLogin());
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'cancel')
+            {
+                $data = cancelTalk($args[2]);
+                $this->send_data($data, 'ok');
+                return;
+            }
+            $this->send_data(["unknown requests"], 'ok');
+            return;
         }
         else if( $args[0] === 'course')
         {
@@ -2078,7 +2193,7 @@ class Api extends CI_Controller
             else if($args[1] === 'add')
             {
                 $whom = urldecode($args[2]);
-                $res = addSpeakerToList($whom);
+                $res = addAWSSpeakerToList($whom);
                 $this->send_data($res, 'ok');
                 return;
             }
@@ -2088,14 +2203,42 @@ class Api extends CI_Controller
                 return;
             }
         }
-        else
-        {
-            $this->send_data(["Unknown request"], "ok");
-            return;
-        }
+
+        $this->send_data(["Unknown request"], "ok");
+        return;
     }
 
 
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Handles people related queries and post.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function people()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $args = func_get_args();
+        if($args[0] === 'speaker')
+        {
+            if($args[1] === 'add')
+            {
+                $name = splitNameIntoParts($_POST['name']);
+                $_POST = array_merge($_POST, $name);
+                $ret = addUpdateSpeaker($_POST);
+                $this->send_data($ret, 'ok');
+                return;
+            }
+        }
+        $this->send_data(["Unknown request"], "ok");
+        return;
+    }
 }
 
 ?>

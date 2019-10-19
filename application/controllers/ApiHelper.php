@@ -1,8 +1,9 @@
 <?php
 /**
     * @Synopsis  Same as submitRequest but slighly modernised for API class. We
-    * did not touched the submitRequest function because it might have broke the
-    * working interface.
+    * did not touched the submitRequest function because it might break the
+    * working interface in old website.
+    *
     * TODO: Retire submitRequest function and use this one.
     *
     * @Param $request Array containing all params.
@@ -24,15 +25,25 @@ function submitBookingRequest( array $request ) : array
         return $res;
     }
 
-    $repeatPat = __get__( $request, 'repeat_pat', '' );
-    if( strlen( $repeatPat ) > 0 )
-        $days = repeatPatToDays( $repeatPat, $request[ 'date' ] );
-    else
-        $days = array($request['date']);
-
-    if( count( $days ) < 1 )
+    // Check if $request contains 'dates'. If not then check 'repeat_pat'
+    $days = __get__($request, 'dates', []);
+    if((! $days) || count($days) == 0)
     {
-        $ret[ 'msg'] = "I could not generate list of slots for you reuqest";
+        $repeatPat = trim(__get__($request, 'repeat_pat', ''));
+        if(isRepeatPatternValid($repeatPat) > 0)
+            $days = repeatPatToDays($repeatPat, $request['date']);
+        else
+            $days = array($request['date']);
+    }
+
+    // Add current date to days. In case, the repeat pattern was bad, we might
+    // miss the current date.clean-webpack-plugin 
+    if(! in_array($request['date'], $days))
+        $days[] = $request['date'];
+
+    if(count($days) < 1)
+    {
+        $ret[ 'msg'] = "I could not find any date in your request.";
         $ret['success'] = false;
         return $ret;
     }
@@ -42,7 +53,8 @@ function submitBookingRequest( array $request ) : array
     $prevGid = $res->fetch( PDO::FETCH_ASSOC);
     $gid = intval( $prevGid['gid'] ) + 1;
 
-    $errorMsg = 'MSG FROM HIPPO: ';
+    $errorMsg = '';
+    $nBookings = 0;
     foreach( $days as $day )
     {
         $rid += 1;
@@ -69,16 +81,19 @@ function submitBookingRequest( array $request ) : array
             , $request
         );
 
-        if( ! $res )
+        if(! $res)
         {
             $errorMsg .= "Could not submit request id $gid";
             $ret['msg'] = $errorMsg;
             $ret['success'] = false;
             return $ret;
         }
+        else
+            $nBookings += 1;
     }
     $ret['success'] = true;
     $ret['msg'] = $errorMsg;
+    $ret['num_bookings'] = $nBookings;
     $ret['gid'] = $gid;
     return $ret;
 }

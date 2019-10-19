@@ -107,74 +107,11 @@ function admin_update_speaker( array $data ) : array
 
     if( $data['response'] == 'submit' )
     {
-        // If there is not speaker id, then  create a new speaker.
-        $sid = __get__( $data, 'id', -1 );
-        $res = null;
-        $warning = '';
-
-        if( $sid < 0 )  // Insert a new enetry.
-        {
-            // Insert a new entry.
-            $speakerId = getUniqueFieldValue( 'speakers', 'id' );
-            $data[ 'id' ] = intval( $speakerId ) + 1;
-            $data['email'] = trim($data['email']);
-            $sid = $data[ 'id' ];
-            $res = insertIntoTable( 'speakers'
-                        , 'id,honorific,email,first_name,middle_name,last_name,' .
-                            'designation,department,homepage,institute'
-                        , $data
-                        );
-        }
-        else // Update the speaker.
-        {
-            if( __get__( $data, 'id', 0 ) > 0 )
-                $whereKey = 'id';
-            else
-                $whereKey = 'first_name,middle_name,last_name';
-
-            $speaker = getTableEntry( 'speakers', $whereKey, $data );
-            if( $speaker )
-            {
-                // Update the entry
-                $res = updateTable( 'speakers', $whereKey
-                    , 'honorific,email,first_name,middle_name,last_name,' .
-                    'designation,department,homepage,institute'
-                    , $data
-                );
-
-                // Update all talks related to  this speaker..
-                try 
-                {
-                    $sname =  speakerName( $sid );
-                    $res = updateTable( 'talks', 'speaker_id', 'speaker'
-                        , array( 'speaker_id' => $sid, 'speaker' => $sname )
-                    );
-                        
-                } catch (Exception $e) 
-                {
-                    $warning .= printWarning( "Failed to update some talks by this speaker " .
-                        $e->getMessage() );
-                }
-
-                if( $res )
-                    $final['message'] .= printInfo( " .. updated related talks as well " );
-            }
-        }
-
-        // After inserting new speaker, upload his/her image.
-        if( array_key_exists( 'picture', $_FILES ) && $_FILES[ 'picture' ]['name'] )
-        {
-            $imgpath = getSpeakerPicturePath( $sid );
-            $final['message'] .= printInfo( "Uploading speaker image to $imgpath .. " );
-            $res = uploadImage( $_FILES[ 'picture' ], $imgpath );
-            if( ! $res )
-                $final['error'] .= minionEmbarrassed( "Could not upload speaker image to $imgpath" );
-        }
-
-        if( $res )
-            $final['message'] .= 'Updated/Inserted speaker. <br />' . $warning;
+        $ret = addUpdateSpeaker($data);
+        if( $ret['success'] )
+            $final['message'] .= 'Updated/Inserted speaker. <br />' . $ret['msg'];
         else
-            $final['error'] .= printInfo( "Failed to update/insert speaker" );
+            $final['error'] .= printInfo( "Failed to update/insert speaker" ) . $ret['msg'];
 
         return $final;
     }

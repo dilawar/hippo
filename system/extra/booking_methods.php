@@ -1,6 +1,18 @@
 <?php
 require BASEPATH . 'database.php';
 
+function isRepeatPatternValid(string $pat) : bool
+{
+    if(strlen(trim($pat)) < 4)
+        return false;
+    $pat = explode(',', $pat);
+    if(count($pat) != 3)
+        return false;
+    if(strlen($pat[0]) == 0)
+        return false;
+    return true;
+}
+
 function getRecurrentPatternOfThisRequest( string $gid ): string
 {
     // If this request has any recurrent pattern associated with it in the
