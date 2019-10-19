@@ -84,7 +84,7 @@ echo '</form>';
 if( __get__( $_POST, 'id', '' ) )
 {
     // Get the real speaker id for database table.
-    $speaker = __get__($speakersMap, $_POST['id'], '');
+    $speaker = __get__($speakersMap, $_POST['id'], []);
     if( $speaker )
     {
         $picPath = getSpeakerPicturePath( $speaker['id'] );
