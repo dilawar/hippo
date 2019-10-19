@@ -89,9 +89,10 @@ function getEventsOfTalkId( $talkId )
 function getBookingRequestOfTalkId( $talkId )
 {
     $externalId = getTalkExternalId( $talkId );
-    $entry = getTableEntry( 'bookmyvenue_requests', 'external_id,status'
-        , array( 'external_id' => "$externalId", 'status' => 'PENDING' )
-        );
+    $entry = getTableEntry('bookmyvenue_requests'
+        , 'external_id,status'
+        , ['external_id'=>"$externalId", 'status'=>'PENDING']
+    );
     return $entry;
 }
 
@@ -293,8 +294,8 @@ function getPendingRequestsGroupedByGID( )
 function getRequestsGroupedByGID( $status = 'PENDING'  )
 {
     $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( 'SELECT * FROM bookmyvenue_requests
-        WHERE status=:status  GROUP BY gid ORDER BY date,start_time' );
+    $stmt = $hippoDB->prepare('SELECT * FROM bookmyvenue_requests
+        WHERE status=:status AND date>=NOW() GROUP BY gid ORDER BY date,start_time' );
     $stmt->bindValue( ':status', $status );
     $stmt->execute( );
     return fetchEntries( $stmt );

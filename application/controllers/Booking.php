@@ -2,6 +2,7 @@
 
 require_once BASEPATH. 'autoload.php';
 require_once BASEPATH. 'extra/booking_methods.php';
+require_once BASEPATH. 'extra/talk.php';
 
 trait Booking 
 {
@@ -238,7 +239,7 @@ trait Booking
         if( $action== 'delete' )
         {
             // Delete this entry from talks.
-            $res = deleteFromTable( 'talks', 'id', $_POST );
+            $res = deleteFromTable('talks', 'id', $_POST );
             if( $res )
             {
                 flashMessage( 'Successfully deleted entry' );
@@ -280,39 +281,8 @@ trait Booking
         }
         else if( $action == 'update' )
         {
-            $msg = '';
-            $res = updateTable( 'talks', 'id'
-                        , 'class,host,coordinator,title,description'
-                        , $_POST 
-                    );
-
-            if( $res )
-            {
-                $msg .= printInfo( 'Successfully updated entry' );
-                // Now update the related event as wel.
-                $event = getEventsOfTalkId( $_POST[ 'id' ] );
-                $tableName = 'events';
-                if( ! $event )
-                {
-                    $event = getBookingRequestOfTalkId( $_POST[ 'id' ] );
-                    $tableName = 'bookmyvenue_requests';
-                }
-
-                if( $event )
-                {
-                    $res = updateTable( $tableName, 'external_id'
-                                    , 'title,description'
-                                    , array( 'external_id' => "talks." . $_POST[ 'id' ] 
-                                        , 'title' => talkToEventTitle( $_POST )
-                                        , 'description' => $_POST[ 'description' ]
-                                    )
-                        );
-
-                    if( $res )
-                        flashMessage( "Successfully updated associtated event" );
-                }
-            }
-
+            $res = updateThisTalk($_POST);
+            flashMessage($res['msg']);
             redirect( 'user/show_public' );
         }
         else if( $action == 'schedule' )

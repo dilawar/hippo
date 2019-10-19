@@ -8,6 +8,7 @@ require_once __DIR__.'/User.php';
 require_once BASEPATH . '/extra/bmv.php';
 require_once BASEPATH . '/extra/people.php';
 require_once BASEPATH . '/extra/search.php';
+require_once BASEPATH . '/extra/talk.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -1045,7 +1046,7 @@ class Api extends CI_Controller
                 $data[] = $upcoming;
             $data = getAwsOfSpeaker($user);
         }
-        else if( $args[0] === 'talk')
+        else if($args[0] === 'talk')
         {
             if($args[1] === 'register' || $args[1] === 'add')
             {
@@ -1056,7 +1057,13 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
                 return;
             }
-            else if($args[1] === 'unscheduled')
+            else if($args[1] === 'all')
+            {
+                $data = getMyTalks(getLogin());
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'upcoming')
             {
                 $data = getMyUnscheduledTalks(getLogin());
                 $this->send_data($data, 'ok');
@@ -2236,6 +2243,41 @@ class Api extends CI_Controller
                 return;
             }
         }
+        $this->send_data(["Unknown request"], "ok");
+        return;
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  TALK api.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function talk()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+        $args = func_get_args();
+
+        if($args[0] === 'get')
+        {
+            $talkid = $args[1];
+            $data = getTalkWithBooking($talkid, getLogin());
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'update')
+        {
+            $talkid = $args[1];
+            $data = updateThisTalk($_POST);
+            $this->send_data($data, "ok");
+            return;
+        }
+
         $this->send_data(["Unknown request"], "ok");
         return;
     }

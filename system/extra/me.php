@@ -60,6 +60,52 @@ function getMyUnscheduledTalks($created_by)
 
 /* --------------------------------------------------------------------------*/
 /**
+    * @Synopsis  Rreturn all my talks.
+    *
+    * @Param $login
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getMyTalks(string $created_by, bool $withBooking=true
+    , bool $onlyUnscheduledAndUpcoming=true): array
+{
+    $talks = getTableEntries( 'talks', 'created_on'
+        , "status='VALID' AND speaker_id > '0' AND created_by='$created_by'");
+
+    if(! $withBooking)
+        return $talks;
+
+    $results = [];
+    foreach($talks as &$talk)
+    {
+        if(! __get__($talk,'class', ''))
+            continue;
+
+        $talk['booking'] = [];
+        $talk['booking_status'] = 'NOT SCHEDULED';
+        $request = getBookingRequestOfTalkId($talk['id']);
+        if($request)
+        {
+            $talk['booking'] = $request;
+            $talk['booking_status'] = 'BOOKING UNDER REVIEW';
+        }
+
+        // Ignore any talk which is deliverd more than 1 days ago.
+        $ev = getEventsOfTalkId($talk['id']);
+        if($ev)
+        {
+            if(strtotime($ev['date']) < strtotime('yesterday'))
+                continue;
+            $talk['booking'] = $ev;
+            $talk['booking_status'] = 'CONFIRMED';
+        }
+    }
+    return $talks;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
     * @Synopsis  Cancel this talk.
     *
     * @Param $talkid
