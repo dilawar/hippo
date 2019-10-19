@@ -778,10 +778,16 @@ class Api extends CI_Controller
         }
 
         $args = func_get_args();
+        if(in_array(strtoupper($args[0]), ['CLIENT_SECRET', 'GOOGLE_MAP_API_KEY']))
+        {
+            $this->send_data(["Not allowed"], "ok");
+            return;
+        }
+
         if( __get__($args, 0, '') )
         {
             $id = $args[0];
-            $data = getTableEntry( 'config', 'id', ["id"=>$id]);
+            $data = getTableEntry('config', 'id', ["id"=>$id]);
             $this->send_data($data, "ok");
             return;
         }
@@ -811,7 +817,7 @@ class Api extends CI_Controller
         if( $args[0] === 'list')
         {
             $startDate = dbDate(intval(__get__($args, 1, strtotime('today'))));
-            $login = $_POST['login'];
+            $login = getLogin();
             $requests = getRequestOfUser($login);
             $events = getEventsOfUser($login, $startDate);
 
