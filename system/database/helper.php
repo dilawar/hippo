@@ -1905,9 +1905,10 @@ function updateTable( $tablename, $wherekeys, $keys, array $data )
     foreach( $keys as $k )
     {
         // If values for this key in $data is null then don't use it here.
-        if( ! __get__( $data, $k, false ) )
+        if(! __get__( $data, $k, false))
         {
-            $data[ $k ] = null;
+            $data[$k] = null;
+            continue;
         }
 
         array_push( $cols, $k );
