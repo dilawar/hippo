@@ -317,7 +317,8 @@ class Api extends CI_Controller
             $course = getRunningCourseByID($fs[0], $fs[2], $fs[1]);
 
             // Do not send email when using APP.
-            $res = registerForCourse($course, $data, false);
+            $res = handleCourseRegistration($course, $data, $data['type']
+                ,  getLogin(), getLogin());
 
             if($res['success'])
                 $this->send_data($res, 'ok');
@@ -2194,20 +2195,31 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'course')
         {
+            assert($args[1]) or die("/course/x requires a valid 'x'");
+
             if($args[1] === 'registration')
             {
+                // We are sending base64 encoded string because course id can have
                 $data = $_POST;
-                $data['type'] = strtoupper($args[2]);
-                $course = getRunningCourseByID($_POST['course_id']
-                    , $_POST['year'], $_POST['semester']);
+                $course = getRunningCourseByID($data['course_id']
+                    , $data['year'], $data['semester']);
 
-                $res = registerForCourse($course, $data);
+                assert($course) or die("No valid course is found.");
+                assert(__get__($args, 2,'')) or die("Empty TYPE ");
 
-                if($res['success'])
-                    $this->send_data($res, 'ok');
-                else
-                    $this->send_data($res, 'error');
+                // Do not send email when using APP.
+                $res = handleCourseRegistration($course, $data, $args[2]
+                    , $data['student_id'], getLogin());
 
+                $this->send_data($res, 'ok');
+                return;
+            }
+            if($args[1] === 'grade')
+            {
+                // We are sending base64 encoded string because course id can have
+                // Do not send email when using APP.
+                assert(isset($_POST['student_id'])) or die('No valid student id');
+                $res = assignGrade($_POST, getLogin());
                 $this->send_data($res, 'ok');
                 return;
             }

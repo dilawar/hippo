@@ -13,6 +13,7 @@ require_once  __DIR__.'/methods.php';
 function assignGrade(array $data, string $by = 'HIPPO') : array
 {
     $login = $data['student_id'];
+    $data['grade_is_given_on'] = dbDateTime('now');
 
     $ret = ['success'=>true, 'msg' => ''];
     $st = updateTable( 'course_registration'
@@ -28,7 +29,7 @@ function assignGrade(array $data, string $by = 'HIPPO') : array
         // Send email.
         $subject = "Grade has been assigned to one of your course";
         $body = p("Dear " . loginToText($data['student_id']));
-        $body .= p("Admin Acad ($by) has assigned grade to one of your course.");
+        $body .= p("Academic admin ($by) has just assigned grade to one of your courses.");
 
         $infoData = [ 'course' => getCourseName($data['course_id'])
             , 'year/semester' => $data['year'].'/'.$data['semester']
@@ -37,16 +38,20 @@ function assignGrade(array $data, string $by = 'HIPPO') : array
             , 'assigned_by' => $by
         ]; 
         $body .= arrayToVerticalTableHTML($infoData, 'info');
+
+        $body .= p("Note that a grade 'X' means that previous grade has 
+            been removed. Academic admin may have made an error.");
+
         $body .= p("If there is any mistake, please contact academic office.
-            <strong>Also note that grades on HIPPO is not final official record.
-            Final Grade is kept by Academic office. Hippo is a platform to inform 
-            you about your grade. 
+            <strong>Note that grades on HIPPO are not final official record.
+            Your final grade is kept by Academic office. Hippo is a platform 
+            to inform you about your grade. In case of discrepency, the record 
+            at Academic Office shall be deemed correct.
             </strong>");
         sendHTMLEmail($body, $subject, getLoginEmail($login));
     }
     else
         $ret['msg'] .= "Could not assign grade for $login. <br /> ";
-
 
     return $ret;
 }
