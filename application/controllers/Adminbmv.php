@@ -4,6 +4,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
 require_once BASEPATH.'calendar/methods.php';
+
+require_once BASEPATH.'extra/talk.php';
+
 include_once __DIR__ . '/AdminSharedFunc.php';
 
 class Adminbmv extends CI_Controller
@@ -404,52 +407,8 @@ class Adminbmv extends CI_Controller
             redirect( 'adminbmv/manages_talks');
         }
 
-        // Delete this entry from talks.
-        $data = array( 'id' => $id );
-        $res = deleteFromTable( 'talks', 'id', $data );
-        if( $res )
-        {
-            flashMessage( 'Successfully deleted talk' );
-            $success = true;
-            $externalId = getTalkExternalId( $id );
-            $events = getTableEntries( 'events'
-                , 'external_id', "external_id='$externalId' AND status='VALID'" 
-            );
-            $requests = getTableEntries( 'bookmyvenue_requests'
-                , 'external_id', "external_id='$externalId' AND status='PENDING'" 
-            );
-            foreach( $events as $e )
-            {
-                echo printInfo( "Cancelling associated booking." );
-                echo arrayToTableHTML( $e, 'info' );
-                $e[ 'status' ] = 'CANCELLED';
-                // Now cancel this talk in requests, if there is any.
-                $res = updateTable( 'events', 'external_id', 'status', $e );
-            }
-
-            foreach( $requests as $r )
-            {
-                echo printInfo( "Cancelling associated booking request " );
-                echo arrayToTableHTML( $r, 'info' );
-
-                $r[ 'status' ] = 'CANCELLED';
-                $res = updateTable( 'bookmyvenue_requests', 'external_id', 'status', $r);
-            }
-
-            // /* VALIDATION: Check the bookings are deleted  */
-            $events = getTableEntries( 'events'
-                , 'external_id', "external_id='$externalId' AND status='VALID'"
-            );
-            $requests = getTableEntries( 'bookmyvenue_requests'
-                , 'external_id', "external_id='$externalId' AND status='VALID'"
-            );
-            assert( ! $events );
-            assert( ! $requests );
-            flashMessage( "Successfully deleted related events/requests of talk id $id." );
-        }
-        else
-            printWarning( "Failed to delete the talk." );
-
+        $res = removeThisTalk($id, whoAmI());
+        flashMessage( __get__($res, 'html', ''));
         redirect('adminbmv/manages_talks');
     }
 

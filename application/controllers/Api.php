@@ -8,6 +8,7 @@ require_once __DIR__.'/User.php';
 require_once BASEPATH . '/extra/bmv.php';
 require_once BASEPATH . '/extra/people.php';
 require_once BASEPATH . '/extra/search.php';
+require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/talk.php';
 
 /* --------------------------------------------------------------------------*/
@@ -213,7 +214,7 @@ class Api extends CI_Controller
     /**
         * @Synopsis  Search API.
         *
-        * @Returns   
+        * @Returns   Send array only. Do 
      */
     /* ----------------------------------------------------------------------------*/
     public function search()
@@ -230,7 +231,7 @@ class Api extends CI_Controller
         if($args[0] === 'awsspeaker')
         {
             $logins = searchInLogins($q, "AND eligible_for_aws='YES'");
-            $this->send_data($logins);
+            $this->send_data_helper($logins);
             return;
         }
         else if($args[0] === 'speaker')
@@ -293,7 +294,9 @@ class Api extends CI_Controller
 
         if($args[0] === 'running')
         {
-            $data = getRunningCourses();
+            $year = __get__($args, 1, getCurrentYear());
+            $semester = __get__($args, 2, getCurrentSemester());
+            $data = getSemesterCourses($year, $semester);
 
             // For convinience, let user know if he/she can register for this
             // course.
@@ -326,7 +329,7 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'metadata')
         {
-            $cids = __get__($args, 1, 'all');
+            $cids = base64_decode(__get__($args, 1, base64_encode('all')));
             if( $cids === 'all')
             {
                 $data = [];
@@ -339,12 +342,18 @@ class Api extends CI_Controller
             }
             else
             {
-                $cids = explode(',', $args[1]);
                 $data = [];
-                foreach($cids as $cid)
-                    $data[$cid] = getCourseInfo($cid);
+                foreach(explode(',', $cids) as $cid)
+                    $data[$cid] = getCourseById($cid);
             }
 
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === "registration")
+        {
+            $crs = explode('-', base64_decode($args[1]));
+            $data = getCourseRegistrations($crs[0], intval($crs[2]), $crs[1]);
             $this->send_data($data, "ok");
             return;
         }
@@ -848,14 +857,16 @@ class Api extends CI_Controller
                 if($rid)
                 {
                     $res = changeRequestStatus($gid, $rid, 'CANCELLED');
-                    $this->send_data( ["Request $gid.$rid is deleted"], $res?"ok":"failed");
+                    $this->send_data( ['success'=>$res, 'msg'=>"Request $gid.$rid is deleted"], "ok");
                     return;
                 }
                 else
                 {
                     // delete the whole group.
                     $res = changeStatusOfRequests($gid, 'CANCELLED');
-                    $this->send_data(["Request group $gid is deleted"], $res?"ok":"failed");
+                    $this->send_data(['success'=>$res
+                        , 'msg'=>"Request group $gid is deleted"]
+                        , "ok");
                     return;
                 }
             }
@@ -868,20 +879,22 @@ class Api extends CI_Controller
                 if($eid)
                 {
                     $res = changeStatusOfEvent($gid, $eid, $login, 'CANCELLED');
-                    $this->send_data( ["Event $gid.$eid is cancelled"], $res?"ok":"failed");
+                    $this->send_data(['success'=>$res, 
+                        'msg'=>"Event $gid.$eid is cancelled"], "ok");
                     return;
                 }
                 else
                 {
                     // delete the whole group.
                     $res = changeStatusOfEventGroup($gid, $login, 'CANCELLED');
-                    $this->send_data(["Event group $gid is cancelled."], $res?"ok":"failed");
+                    $this->send_data(['msg'=>"Event group $gid is cancelled."
+                        , 'success'=>$res], "ok");
                     return;
                 }
             }
             else
             {
-                $this->send_data( ["Not implemented"], "ok");
+                $this->send_data(['success'=>false, 'msg'=>"Not implemented"], "ok");
                 return;
             }
         }
@@ -2169,13 +2182,33 @@ class Api extends CI_Controller
             }
             else if($args[1] === 'update')
             {
-                $data = update_aws_entry($_POST, getLogin());
+                $data = updateAWS($_POST, getLogin());
                 $this->send_data($data, 'ok');
                 return;
             }
             else
             {
                 $this->send_data(["Unknown request"], "ok");
+                return;
+            }
+        }
+        else if($args[0] === 'course')
+        {
+            if($args[1] === 'registration')
+            {
+                $data = $_POST;
+                $data['type'] = strtoupper($args[2]);
+                $course = getRunningCourseByID($_POST['course_id']
+                    , $_POST['year'], $_POST['semester']);
+
+                $res = registerForCourse($course, $data);
+
+                if($res['success'])
+                    $this->send_data($res, 'ok');
+                else
+                    $this->send_data($res, 'error');
+
+                $this->send_data($res, 'ok');
                 return;
             }
         }
@@ -2272,13 +2305,17 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'update')
         {
-            $talkid = $args[1];
             $data = updateThisTalk($_POST);
             $this->send_data($data, "ok");
             return;
         }
-
-        $this->send_data(["Unknown request"], "ok");
+        else if($args[0] === 'remove' || $args[0] == "cancel")
+        {
+            $data = removeThisTalk($args[1], getLogin());
+            $this->send_data($data, "ok");
+            return;
+        }
+        $this->send_data(['msg'=>"Unknown request", 'status'=>false], "ok");
         return;
     }
 }

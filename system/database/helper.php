@@ -2520,8 +2520,9 @@ function getSemesterCourses( $year, $sem )
 {
     $sDate = dbDate( strtotime( "$year-01-01" ) );
     $eDate = dbDate( strtotime( "$year-07-31" ) );
+    $sem = strtoupper($sem);
 
-    if( $sem == 'AUTUMN' )
+    if($sem === 'AUTUMN')
     {
         $sDate = dbDate( strtotime( "$year-07-01" ) );
         $eDate = dbDate( strtotime( "$year-12-31" )  );
@@ -2531,7 +2532,10 @@ function getSemesterCourses( $year, $sem )
     $res = $hippoDB->query( "SELECT * FROM courses WHERE
                     start_date >= '$sDate' AND end_date <= '$eDate' " );
 
-    return fetchEntries( $res );
+    $courses = fetchEntries($res);
+    foreach($courses as &$course)
+        $course['name'] = getCourseName($course['course_id']);
+    return $courses;
 }
 
 /**
@@ -2543,7 +2547,7 @@ function getRunningCourses( )
 {
     $year = getCurrentYear( );
     $sem = getCurrentSemester( );
-    return getSemesterCourses( $year, $sem );
+    return getSemesterCourses($year, $sem);
 }
 
 function deleteBookings( $course )
@@ -3821,7 +3825,7 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
     $data['registered_on'] = dbDateTime('now');
 
     // This is not very clean solution. 
-    if($data['status'] !== 'DROPPED')
+    if(__get__($data, 'status', 'VALID') !== 'DROPPED')
     {
         $data['status'] = 'VALID';
         $what = $data['type'] . 'ed';

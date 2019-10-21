@@ -83,12 +83,12 @@ function getMyTalks(string $created_by, bool $withBooking=true
             continue;
 
         $talk['booking'] = [];
-        $talk['booking_status'] = 'NOT SCHEDULED';
+        $talk['booking_status'] = 'UNSCHEDULED';
         $request = getBookingRequestOfTalkId($talk['id']);
         if($request)
         {
             $talk['booking'] = $request;
-            $talk['booking_status'] = 'BOOKING UNDER REVIEW';
+            $talk['booking_status'] = 'PENDING';
         }
 
         // Ignore any talk which is deliverd more than 1 days ago.
@@ -100,8 +100,9 @@ function getMyTalks(string $created_by, bool $withBooking=true
             $talk['booking'] = $ev;
             $talk['booking_status'] = 'CONFIRMED';
         }
+        $results[] = $talk;
     }
-    return $talks;
+    return $results;
 }
 
 /* --------------------------------------------------------------------------*/

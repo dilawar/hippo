@@ -116,4 +116,21 @@ function updateAWS(array $data, string $by='HIPPO'): array
 
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Update this registration.
+    *
+    * @Param array
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function updateRegistration(arrray $data): array
+{
+    $res = updateTable('course_registration', 'student_id,year,semester,course_id'
+        , 'type,status,grade'
+        , $data);
+
+}
+
 ?>
