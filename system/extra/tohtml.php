@@ -2459,14 +2459,6 @@ function getCourseInstructorsEmails( string $cid, string $year = '', string $sem
     return $instructors;
 }
 
-function getCourseInfo( $cid ) : string
-{
-    $c =  getCourseById( $cid );
-    $instructors = getCourseInstructors( $c );
-    return $html . '<br>' . $instructors;
-}
-
-
 function smallCaps( $text )
 {
     return "<font style=\"font-variant:small-caps\"> $text </font>";

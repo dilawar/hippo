@@ -7,8 +7,7 @@ require_once __DIR__.'/AdminacadCourses.php';
 require_once __DIR__.'/AdminacadJC.php';
 require_once __DIR__.'/AdminSharedFunc.php';
 
-require_once BASEPATH . '/extra/aws.php';
-require_once BASEPATH . '/extra/adminacad.php';
+require_once BASEPATH . '/extra/acad.php';
 
 class Adminacad extends CI_Controller
 {
