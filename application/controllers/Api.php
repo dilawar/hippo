@@ -204,7 +204,11 @@ class Api extends CI_Controller
             $awses = getTentativeAWSSchedule();
             $data = [];
             foreach($awses as &$aws)
+            {
+                $info = getExtraAWSInfo($aws['speaker']);
+                $aws = array_merge($aws, $info);
                 $data[$aws['date']][] = $aws;
+            }
             $this->send_data($data, 'ok');
             return;
         }
@@ -2240,7 +2244,7 @@ class Api extends CI_Controller
                 $speakers = getAWSSpeakers('pi_or_host');
                 foreach($speakers as &$speaker)
                 {
-                    $extraInfo = getExtraAWSInfo($speaker);
+                    $extraInfo = getExtraAWSInfo($speaker['login'], $speaker);
                     $speaker = array_merge($speaker, $extraInfo);
                 }
                 $this->send_data($speakers, 'ok');
@@ -2267,7 +2271,11 @@ class Api extends CI_Controller
                 return;
             }
         }
-
+        else if($args[0] === 'reschedule')
+        {
+            rescheduleAWS();
+            $this->send_data(['success'=>true, 'msg'=> "Reschedule OK."], "ok");
+        }
         $this->send_data(["Unknown request"], "ok");
         return;
     }

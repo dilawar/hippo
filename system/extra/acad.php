@@ -339,35 +339,37 @@ function assignGrade(array $data, string $by = 'HIPPO') : array
     else
         $ret['msg'] .= "Could not assign grade for $login. <br /> ";
 
+
     return $ret;
 }
 
-function getExtraAWSInfo(array $speaker) : array
+function getExtraAWSInfo(string $login, array $speaker=[]) : array
 {
-    $upcomingAWS = getUpcomingAWS($speaker['login']);
-    $pastAWSes = getAwsOfSpeaker($speaker['login']);
+    $upcomingAWS = getUpcomingAWS($login);
+    $pastAWSes = getAwsOfSpeaker($login);
 
     // Get PI/HOST and speaker specialization.
-    $pi = getPIOrHost($speaker['login']);
-    $specialization = getSpecialization($speaker['login'], $pi);
+    $pi = getPIOrHost($login);
+    $specialization = getSpecialization($login, $pi);
 
     // This user may have not given any AWS in the past. We consider their
     // joining date as last AWS date.
     if(count($pastAWSes) > 0)
     {
         $lastAws = $pastAWSes[0];
-        $lastAwsDate = strtotime($lastAws['date']);
+        $lastAwsDate = $lastAws['date'];
     }
     else
-        $lastAwsDate = strtotime($speaker['joined_on']);
-
-    $today = strtotime(__get__($upcomingAWS, 'date', 'today'));
-        
-    $nDays = ($today - $lastAwsDate)/24/3600;
-
-    return ["days_since_aws"=>$nDays
-        , "specialization"=>$specialization
+    {
+        if(! $speaker)
+            $speaker = getLoginInfo($login);
+        $lastAwsDate = $speaker['joined_on'];
+    }
+    return ["specialization"=>$specialization
+        , "pi_or_host" => $pi
+        , 'last_aws_date' => $lastAwsDate
         , 'num_aws' => count($pastAWSes)];
 }
+
 
 ?>
