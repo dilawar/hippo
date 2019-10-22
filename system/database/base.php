@@ -910,6 +910,8 @@ class BMVPDO extends PDO
 // Construct the PDO
 // And initiaze the database.
 $hippoDB = new BMVPDO( "localhost" );
-$hippoDB->initialize();
+
+// DO not initialize in production code.
+//$hippoDB->initialize();
 
 ?>

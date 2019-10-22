@@ -1513,6 +1513,26 @@ function getAwsOfSpeaker( $speaker )
     return fetchEntries( $stmt );
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get last AWS of speaker.
+    *
+    * @Param $speaker
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getLatestAWSOfSpeaker(string $speaker): array
+{
+    $hippoDB = initDB();;
+    $query = "SELECT * FROM annual_work_seminars WHERE speaker=:speaker
+        ORDER BY date DESC LIMIT 1" ;
+    $stmt = $hippoDB->prepare( $query );
+    $stmt->bindValue( ':speaker', $speaker );
+    $stmt->execute( );
+    return fetchEntry($stmt);
+}
+
 function getSupervisors( )
 {
     $hippoDB = initDB();;

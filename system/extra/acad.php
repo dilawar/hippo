@@ -342,4 +342,32 @@ function assignGrade(array $data, string $by = 'HIPPO') : array
     return $ret;
 }
 
+function getExtraAWSInfo(array $speaker) : array
+{
+    $upcomingAWS = getUpcomingAWS($speaker['login']);
+    $pastAWSes = getAwsOfSpeaker($speaker['login']);
+
+    // Get PI/HOST and speaker specialization.
+    $pi = getPIOrHost($speaker['login']);
+    $specialization = getSpecialization($speaker['login'], $pi);
+
+    // This user may have not given any AWS in the past. We consider their
+    // joining date as last AWS date.
+    if(count($pastAWSes) > 0)
+    {
+        $lastAws = $pastAWSes[0];
+        $lastAwsDate = strtotime($lastAws['date']);
+    }
+    else
+        $lastAwsDate = strtotime($speaker['joined_on']);
+
+    $today = strtotime(__get__($upcomingAWS, 'date', 'today'));
+        
+    $nDays = ($today - $lastAwsDate)/24/3600;
+
+    return ["days_since_aws"=>$nDays
+        , "specialization"=>$specialization
+        , 'num_aws' => count($pastAWSes)];
+}
+
 ?>

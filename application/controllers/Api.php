@@ -2230,7 +2230,10 @@ class Api extends CI_Controller
             {
                 $speakers = getAWSSpeakers('pi_or_host');
                 foreach($speakers as &$speaker)
-                    $speaker['total'] = numberOfAWSGivenBySpeaker($speaker['login']);
+                {
+                    $extraInfo = getExtraAWSInfo($speaker);
+                    $speaker = array_merge($speaker, $extraInfo);
+                }
                 $this->send_data($speakers, 'ok');
                 return;
             }
