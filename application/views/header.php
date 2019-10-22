@@ -152,11 +152,16 @@ $(document).ready(function(){
 </script>
 
 <div class="header">
-<h1 class="title">
+<div class="h1 title">
 <a href="<?= site_url( 'welcome' ) ?>" >
   <?php echo img( 'data/HippoLogoCropped.png', false, array('height'=>'70px')); ?> <span style="font-size:60px">Hippo</span>
 </a>
-</h1>
+<div class="h6 float-right">
+<a style="color:white" target="hippo_popup" href="https://ncbs.res.in/hippo/app/www">
+<u>Hippo Beta</u></a>
+<a style="color:white" target="_blank" href="https://play.google.com/store/apps/details?id=com.dilawar.hippo"><u>Hippo Android App</u></a>
+</div>
+</div>
 
 <table class="public_links">
     <tr>
