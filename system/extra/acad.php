@@ -339,7 +339,37 @@ function assignGrade(array $data, string $by = 'HIPPO') : array
     else
         $ret['msg'] .= "Could not assign grade for $login. <br /> ";
 
+
     return $ret;
 }
+
+function getExtraAWSInfo(string $login, array $speaker=[]) : array
+{
+    $upcomingAWS = getUpcomingAWS($login);
+    $pastAWSes = getAwsOfSpeaker($login);
+
+    // Get PI/HOST and speaker specialization.
+    $pi = getPIOrHost($login);
+    $specialization = getSpecialization($login, $pi);
+
+    // This user may have not given any AWS in the past. We consider their
+    // joining date as last AWS date.
+    if(count($pastAWSes) > 0)
+    {
+        $lastAws = $pastAWSes[0];
+        $lastAwsDate = $lastAws['date'];
+    }
+    else
+    {
+        if(! $speaker)
+            $speaker = getLoginInfo($login);
+        $lastAwsDate = $speaker['joined_on'];
+    }
+    return ["specialization"=>$specialization
+        , "pi_or_host" => $pi
+        , 'last_aws_date' => $lastAwsDate
+        , 'num_aws' => count($pastAWSes)];
+}
+
 
 ?>

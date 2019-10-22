@@ -199,6 +199,19 @@ class Api extends CI_Controller
                 return;
             }
         }
+        else if($args[0] === 'aws_schedule')
+        {
+            $awses = getTentativeAWSSchedule();
+            $data = [];
+            foreach($awses as &$aws)
+            {
+                $info = getExtraAWSInfo($aws['speaker']);
+                $aws = array_merge($aws, $info);
+                $data[$aws['date']][] = $aws;
+            }
+            $this->send_data($data, 'ok');
+            return;
+        }
         else if($args[0] === 'repeatpat')
         {
             $pat = base64_decode($args[1]);
@@ -2230,7 +2243,10 @@ class Api extends CI_Controller
             {
                 $speakers = getAWSSpeakers('pi_or_host');
                 foreach($speakers as &$speaker)
-                    $speaker['total'] = numberOfAWSGivenBySpeaker($speaker['login']);
+                {
+                    $extraInfo = getExtraAWSInfo($speaker['login'], $speaker);
+                    $speaker = array_merge($speaker, $extraInfo);
+                }
                 $this->send_data($speakers, 'ok');
                 return;
             }
@@ -2255,7 +2271,11 @@ class Api extends CI_Controller
                 return;
             }
         }
-
+        else if($args[0] === 'reschedule')
+        {
+            rescheduleAWS();
+            $this->send_data(['success'=>true, 'msg'=> "Reschedule OK."], "ok");
+        }
         $this->send_data(["Unknown request"], "ok");
         return;
     }
