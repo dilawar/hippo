@@ -14,9 +14,11 @@ function searchInLogins(string $q, $where=''): array
         login,email,last_name,middle_name,first_name,
         CONCAT_WS(' ',first_name,last_name) as name
         FROM logins WHERE status='ACTIVE' 
+        AND login != ''
         AND first_name IS NOT NULL AND  first_name != ''
         $where
         AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
+        GROUP BY email
         ");
 }
 
