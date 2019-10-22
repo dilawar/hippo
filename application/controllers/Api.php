@@ -199,6 +199,15 @@ class Api extends CI_Controller
                 return;
             }
         }
+        else if($args[0] === 'aws_schedule')
+        {
+            $awses = getTentativeAWSSchedule();
+            $data = [];
+            foreach($awses as &$aws)
+                $data[$aws['date']][] = $aws;
+            $this->send_data($data, 'ok');
+            return;
+        }
         else if($args[0] === 'repeatpat')
         {
             $pat = base64_decode($args[1]);
