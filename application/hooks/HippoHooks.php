@@ -21,10 +21,15 @@ class HippoHooks
         }
         if( $class === 'info' ) 
         {
+            $page = basename( $_SERVER[ 'PHP_SELF'] );
+            $page = str_replace( '.php', '', $page );
+            if($page === 'photography_club')
+                return;
+
             // Just check we are inside intranet.
             if( !(isAuthenticated() || isIntranet()))
             {
-                echo flashMessage( "To access this page, either login first or use intranet." );
+                echo flashMessage( "To access this page ($page), either login first or use intranet." );
                 redirect( "welcome");
                 return;
             }
