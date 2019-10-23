@@ -888,7 +888,6 @@ function getSpeakerPicturePathById( $id )
  */
 function rescheduleAWS( $method = 'reschedule_default' ) : array
 {
-    echo printInfo( "Rescheduling with $method ...." );
     if( $method == 'reschedule_default' )
         $scriptPath = FCPATH.'./scripts/schedule.sh';
     else if( $method == 'reschedule_group_greedy' )
@@ -898,7 +897,7 @@ function rescheduleAWS( $method = 'reschedule_default' ) : array
 
     // echo("Executing $scriptPath with timeout 60 secs.");
     $command = "timeout 60 $scriptPath";
-    $res = hippo_shell_exec( $command, $output, $err );
+    $res = @hippo_shell_exec( $command, $output, $err );
     return [ 'status' => $res, 'stdout' => $err . $output ];
 }
 
