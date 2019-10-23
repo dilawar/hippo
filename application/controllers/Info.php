@@ -13,6 +13,23 @@ class Info extends CI_Controller
         $this->template->load($view, $data);
     }
 
+    public function photography_club()
+    {
+        // Return a random image.
+        $filename = random_jpeg('temp/_backgrounds/');
+        if(file_exists($filename))
+        { 
+            $mime = mime_content_type($filename); //<-- detect file type
+            header('Content-Length: '.filesize($filename)); //<-- sends filesize header
+            header("Content-Type: $mime"); //<-- send mime-type header
+            header('Content-Disposition: inline; filename="'.$filename.'";'); //<-- sends filename header
+            readfile($filename); //<--reads and outputs the file onto the output buffer
+            die(); //<--cleanup
+            exit; //and exit
+        }
+    }
+
+
     public function courses( )
     {
         $year = __get__( $_GET, 'year', getCurrentYear());
