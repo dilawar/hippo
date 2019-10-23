@@ -366,8 +366,9 @@ function getExtraAWSInfo(string $login, array $speaker=[]) : array
         $lastAwsDate = $speaker['joined_on'];
     }
     return ["specialization"=>$specialization
-        , "pi_or_host" => $pi
-        , 'last_aws_date' => $lastAwsDate
+        , "pi_or_host"=>$pi
+        , 'last_aws_date'=>$lastAwsDate
+        , 'days_since_last_aws'=>(strtotime('today')-strtotime($lastAwsDate))/3600/24
         , 'num_aws' => count($pastAWSes)];
 }
 
