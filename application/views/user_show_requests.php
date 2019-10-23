@@ -84,13 +84,14 @@ else
         echo '<table class="info">';
         echo '<form method="post" action="'.site_url('user/private_event_edit').'">';
         echo "<tr><td> <strong>Group id $gid </strong>";
-        echo '<button name="response" title="Cancel this group" 
+        echo '<button class="btn btn-warning small" name="response" title="Cancel this group" 
             onclick="AreYouSure(this,\'DELETE GROUP\')" >Cancel Group</button></td>';
 
         // If this event if from external talk, then do not allow user to edit
         // it here.
         if( ! isEventOfTalk( $group ) )
-            echo "<td><button title=\"Edit this event\" name=\"response\" 
+            echo "<td><button class=\"btn btn-primary\" 
+                    title=\"Edit this event\" name=\"response\" 
                     value=\"edit\" font-size=\"small\">Edit Group</button></td>";
         else
             echo 'This event belongs to a talk, 

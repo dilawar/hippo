@@ -91,7 +91,7 @@ if( count( $reqs ) > 0)
     <br />
     <a class="btn btn-secondary fa fa-pencil-square-o" 
         href="<?=site_url("/user/show_private")?>">
-        Manage My Private Events ('<?=$flag?>)
+        Manage My Private Events (total=<?=$flag?>)
     </a> 
 </div>
 <div class="col rounded menu-item text-left m-3 p-2">
