@@ -169,6 +169,7 @@ class Api extends CI_Controller
                 return;
             }
         }
+
         else if($args[0] === 'externalid')
         {
             $externalID = explode('.', $args[1]);
