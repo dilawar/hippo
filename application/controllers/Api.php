@@ -2184,6 +2184,9 @@ class Api extends CI_Controller
             }
             else if($args[1] === 'assign')
             {
+                $_POST['venue'] = __get__($_POST, 'venue'
+                    , getDefaultAWSVenue($_POST['date'])
+                );
                 $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
                 $this->send_data($data, 'ok');
                 return;
@@ -2275,6 +2278,7 @@ class Api extends CI_Controller
         {
             rescheduleAWS();
             $this->send_data(['success'=>true, 'msg'=> "Reschedule OK."], "ok");
+            return;
         }
         $this->send_data(["Unknown request"], "ok");
         return;

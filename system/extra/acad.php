@@ -24,7 +24,7 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
         if( $awsID > 0 )
         {
             $res['success'] = true;
-            $res['msg'] = "Successfully assigned";
+            $res['msg'] = "Successfully assigned. ";
 
             // Don't rescheduleAWS. It will change the rest of the 
             // entries for the week.
@@ -33,14 +33,14 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
             // Send email to user.
             $st = notifyUserAboutUpcomingAWS( $speaker, $date, $awsID );
             if(! $st)
-                $res['msg'] .= "Failed to send email to user";
+                $res['msg'] .= "Failed to send email to user. ";
 
             return $res;
         }
         else
         {
             $res['success'] = false;
-            $res['msg'] = "Invalid entry. Probably date ('$date') is in past.";
+            $res['msg'] .= "Invalid entry. Probably date ('$date') is in past. ";
             return $res;
         }
     }
