@@ -27,155 +27,156 @@ usernames/password associated with both
 
 ### Booking related
 
-??? question "How to create a general booking request?"
+##### How to create a general booking request?
 
-    Click on ==**QuickBook**== at the top-right corner of the page. 
+Click on ==**QuickBook**== at the top-right corner of the page. 
 
-    You will be asked for date, start time, and end time. And other optional
-    information. Click on ==__Show Available Venues__== to see the available
-    venues.
+You will be asked for date, start time, and end time. And other optional
+information. Click on ==__Show Available Venues__== to see the available
+venues.
 
-    ![](images/booking.png){: style="width:60%"}
+![](images/booking.png){: style="width:60%"}
 
-    To book your venue, press ==__Book__== button below your venue. And you will be
-    presented with a form.
+To book your venue, press ==__Book__== button below your venue. And you will be
+presented with a form.
 
-    Please make sure you fill it under the right `CLASS` (e.g. `THESIS SEMINAR`,
-    `LAB MEETING`, `TALK` etc.).  Once a request is submitted, your slot/venue
-    is blocked and an email is sent your way. 
+Please make sure you fill it under the right `CLASS` (e.g. `THESIS SEMINAR`,
+`LAB MEETING`, `TALK` etc.).  Once a request is submitted, your slot/venue
+is blocked and an email is sent your way. 
 
-    !!! note "Recurrent Event"
-        To make recurrent booking (maximum for 6 months), select appropriate
-        days in __select days__ list. To limit your booking to some weeks such
-        as first and third of every month, select those weeks (==Hold down
-        `Ctrl` keys when selecting multiple entries.==).
+!!! note "Recurrent Event"
+    To make recurrent booking (maximum for 6 months), select appropriate
+    days in __select days__ list. To limit your booking to some weeks such
+    as first and third of every month, select those weeks (==Hold down
+    `Ctrl` keys when selecting multiple entries.==).
 
-        Don't worry, you can always delete your booking requests in case of
-        error.
-
-
-    ![](images/booking_details.png){: style="width:60%"}
-
-    !!! info "Emails in spam"
-        If you are importing work emails into other email accounts such as
-        gmail, please check your spam folder.
-
-    You will receive confirmation/rejection email after approval/disapproval.
-    You will receive an email alert to renew your booking, 5 to 7 days in
-    advance before your last event expires.
+    Don't worry, you can always delete your booking requests in case of
+    error.
 
 
-??? question "I need to change a confirmed booking (of a public Talks/Seminar)?"
+![](images/booking_details.png){: style="width:60%"}
 
-    If the talk is already confirmed, then you need to contact academic admin or
-    deans office to cancel it. If not, then you need to cancel pending request.
+!!! info "Emails in spam"
+    If you are importing work emails into other email accounts such as
+    gmail, please check your spam folder.
+
+You will receive confirmation/rejection email after approval/disapproval.
+You will receive an email alert to renew your booking, 5 to 7 days in
+advance before your last event expires.
 
 
-??? question "How do I book my thesis seminar?"
+#### I need to change a confirmed booking (of a public Talks/Seminar)?
 
-    See the item just below on how to book a public talk. While booking, select 
-    the talk `CLASS` to `THESIS SEMINAR`.
+If the talk is already confirmed, then you need to contact academic admin or
+deans office to cancel it. If not, then you need to cancel pending request.
 
-??? question "How do I book my presynopsis seminar?"
 
-    Normally you give your presynopsis seminar as AWS. While editing your
-    AWS entry, select `IS PRESYNOPSIS SEMINAR` to `YES`.
-    
-    In case, you are giving your presynopsis as a 30 min talk before the AWS, it
-    can be booked similar to a public talk. See below.
-    
-??? question "How to book a public talk, lecture or seminar?"
+#### How do I book my thesis seminar?
 
-    !!! info 
-        Keep the photo and email id of speaker handy. You can continue without them but
-        they are very useful for preparing documents. We strongly recommend that you
-        arrange photo and email id of speaker. Email of speaker is never publicly displayed. 
+See the item just below on how to book a public talk. While booking, select 
+the talk `CLASS` to `THESIS SEMINAR`.
 
-    In your home page after login, click on ==__Book for talk/seminar etc.
-    (Academic Events)__== and fill details.
+#### How do I book my presynopsis seminar?
 
-    First section is for speaker, second is for talk. Third (optional) contains
-    scheduling information. 
+Normally you give your presynopsis seminar as AWS. While editing your
+AWS entry, select `IS PRESYNOPSIS SEMINAR` to `YES`.
 
-    If there is already some event on your selected date/venue, booking will be
-    ignored but talk will be registered. You can schedule it later by visiting
-    ==__Manage my public events__== link.  If the venue is available on chosen
-    date and time, both talk and venue will be booked pending approval. After
-    approval, you can see your event
-    [here](https://ncbs.res.in/hippo/info/talks). 
+In case, you are giving your presynopsis as a 30 min talk before the AWS, it
+can be booked similar to a public talk. See below.
 
-    It will also appear on calendar and emails will be sent to appropriate
-    mailing lists at appropriate times. Morning 8am is the usual time when
-    automatic email is sent.
+#### How to book a public talk, lecture or seminar?
 
-??? question "Editing/updating/scheduling talks?"
+!!! info 
+Keep the photo and email id of speaker handy. You can continue without them but
+they are very useful for preparing documents. We strongly recommend that you
+arrange photo and email id of speaker. Email of speaker is never publicly displayed. 
 
-    Go to your home page, and click on ==__Manage my public events__==. You will
-    see all upcoming talks registered by you. You can click on ==__Edit__==
-    button to edit the description and title.  If it is not already scheduled,
-    you can schedule it by clicking on ==__Schedule__== button.
+In your home page after login, click on ==__Book for talk/seminar etc.
+(Academic Events)__== and fill details.
 
-??? question "How to cancel or edit booking request/event?"
+First section is for speaker, second is for talk. Third (optional) contains
+scheduling information. 
 
-    To edit or cancel a request or a confirmed booking, click 'My Home' (on top
-    right corner box) then on 'Manage My Private Events'.
+If there is already some event on your selected date/venue, booking will be
+ignored but talk will be registered. You can schedule it later by visiting
+==__Manage my public events__== link.  If the venue is available on chosen
+date and time, both talk and venue will be booked pending approval. After
+approval, you can see your event
+[here](https://ncbs.res.in/hippo/info/talks). 
 
-    ![](images/faq_go_to_link_to_edit.png){: style="width:60%"}
+It will also appear on calendar and emails will be sent to appropriate
+mailing lists at appropriate times. Morning 8am is the usual time when
+automatic email is sent.
 
-    All of your bookings should be visible on this page. To cancel a request or
-    a confirmed booking, click on the button infront of a particular row. You
-    can also modify/cancel the whole group (recurrent bookings).
+#### Editing/updating/scheduling talks?
 
-    ![](images/faq_cancel_private_events.png){: style="width:60%"}
+Go to your home page, and click on ==__Manage my public events__==. You will
+see all upcoming talks registered by you. You can click on ==__Edit__==
+button to edit the description and title.  If it is not already scheduled,
+you can schedule it by clicking on ==__Schedule__== button.
+
+#### How to cancel or edit booking request/event?
+
+To edit or cancel a request or a confirmed booking, click 'My Home' (on top
+right corner box) then on 'Manage My Private Events'.
+
+![](images/faq_go_to_link_to_edit.png){: style="width:60%"}
+
+All of your bookings should be visible on this page. To cancel a request or
+a confirmed booking, click on the button infront of a particular row. You
+can also modify/cancel the whole group (recurrent bookings).
+
+![](images/faq_cancel_private_events.png){: style="width:60%"}
 
 ### AWS related
 
-??? question "How do I know I am eligible for AWS?"
+#### How do I know I am eligible for AWS?
 
-    Go to your profile page. At the top-right corner, click on ==__Hi user__==
-    link.
+Go to your profile page. At the top-right corner, click on ==__Hi user__==
+link.
 
-    ![User profile entry](images/user_profile_entry.png){: style="width:60%"}
+![User profile entry](images/user_profile_entry.png){: style="width:60%"}
 
-    Check __Your profile__ table. The field `ELIGIBLE_FOR_AWS` should be `YES`
-    if you are eligible for aws.
+Check __Your profile__ table. The field `ELIGIBLE_FOR_AWS` should be `YES`
+if you are eligible for aws.
 
-    ![eligible for aws](images/user_eligible_aws.png){:style="width:60%"}
+![eligible for aws](images/user_eligible_aws.png){:style="width:60%"}
 
-    If it is set to `NO`, write to _Academic Office_ to include yourself to the
-    roster. Every two months, Hippo sends an email to your PI to review the
-    list of students who are eligible for AWS. If you are missing on this list,
-    probably they will inform Academic Office. But why leave this to older
-    people!
+If it is set to `NO`, write to _Academic Office_ to include yourself to the
+roster. Every two months, Hippo sends an email to your PI to review the
+list of students who are eligible for AWS. If you are missing on this list,
+probably they will inform Academic Office. But why leave this to older
+people!
 
 
-??? question "How do I upload my AWS abstract?"
-    Click on ==__My AWS__== link in your home page. If you cant’t find this
-    link, you are not eligible for AWS. Please contact academic office if
-    you are (why would you be reading this otherwise!).
+#### How do I upload my AWS abstract?
 
-    ![](images/faq_user_click_myaws.png) 
+Click on ==__My AWS__== link in your home page. If you cant’t find this
+link, you are not eligible for AWS. Please contact academic office if
+you are (why would you be reading this otherwise!).
 
-    Click on it!
+![](images/faq_user_click_myaws.png) 
 
-    If you haven’t acknowledged the AWS schedule yet, you will see a button
-    ==__Acknowledge AWS__==. Click it. After acknowledging the AWS, you will see
-    a table of your AWS entry.  Press ==__Edit__== button below it.
+Click on it!
 
-    ![](images/faq_user_edit_aws.png)
+If you haven’t acknowledged the AWS schedule yet, you will see a button
+==__Acknowledge AWS__==. Click it. After acknowledging the AWS, you will see
+a table of your AWS entry.  Press ==__Edit__== button below it.
 
-    Clicking on ==Edit== button will take to you a form. Fill it and ==Submit==.
-    Read the instructions at the top of the page. If you need help, write to
-    [Academic Office](mainto:acadoffice@ncbs.res.in).
+![](images/faq_user_edit_aws.png)
 
-    !!! warning "Do no copy/paste from MS Word or PDF"
-        Please do not copy paste from MS Work or PDF. It may contain special
-        characters which will not display OK in html. Copy your content to a
-        html editor (Google docs etc.) and see if everything looks fine. 
-        
+Clicking on ==Edit== button will take to you a form. Fill it and ==Submit==.
+Read the instructions at the top of the page. If you need help, write to
+[Academic Office](mainto:acadoffice@ncbs.res.in).
 
-    After successful upload, you can see your abstract
-    [here](https://ncbs.res.in/hippo/info/aws){target=blank}.
+!!! warning "Do no copy/paste from MS Word or PDF"
+    Please do not copy paste from MS Work or PDF. It may contain special
+    characters which will not display OK in html. Copy your content to a
+    html editor (Google docs etc.) and see if everything looks fine. 
+    
+
+After successful upload, you can see your abstract
+[here](https://ncbs.res.in/hippo/info/aws){target=blank}.
 
 ??? tip "Not found what you are looking for?"
     Open a issue on repository [{{ bugs }}]({{ bugs }}) or write to [Hippo mailing
