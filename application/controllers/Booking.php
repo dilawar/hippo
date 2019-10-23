@@ -118,9 +118,8 @@ trait Booking
 
     public function private_event_edit($arg='')
     {
-        $response = $_POST['response'];
+        $response = strtoupper($_POST['response']);
         $gid = $_POST['gid'];
-        $eid = $_POST['eid'];
 
         if($response == 'DO NOTHING')
         {
@@ -128,6 +127,7 @@ trait Booking
         }
         else if($response == 'DELETE EVENT')
         {
+            $eid = $_POST['eid'];
             $res = deleteFromTable( 'events', 'gid,eid', $_POST );
             if($res)
                 flashMessage( "Successfully deleted $gid.$eid.");
@@ -138,6 +138,17 @@ trait Booking
             $res = updateTable( 'events', 'gid', 'status', $_POST );
             if($res)
                 flashMessage("Successfully cancelled $gid");
+        }
+        else if( $response == 'UPDATE GROUP')
+        {
+            $res = updateTable('events', 'gid', 'title,is_public_event,description,class', $_POST);
+            if($res)
+                flashMessage("Successfully updated group $gid");
+        }
+        else if( $response == 'EDIT')
+        {
+            $this->load_user_view('user_group_event_edit', ['gid'=>$gid]);
+            return;
         }
         else
         {
