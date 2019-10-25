@@ -1062,6 +1062,32 @@ class Api extends CI_Controller
                 $jcs[$jc['jc_id']] = $jc;
             $data['jcs'] = $jcs;
         }
+        else if($args[0] === 'request')
+        {
+            $params = explode('.', $args[1]);
+            $where = 'gid';
+            if(intval(__get__($params, 1, -1)) >= 0)
+                $where .= ',rid';
+            $res = updateTable('bookmyvenue_requests'
+                , $where
+                , 'title,description,is_public_event,class'
+                , $_POST);
+            $this->send_data(['success'=>$res, 'msg'=>'Success'], "ok");
+            return;
+        }
+        else if($args[0] === 'event')
+        {
+            $params = explode('.', $args[1]);
+            $where = 'gid';
+            if(intval(__get__($params, 1, -1)) >= 0)
+                $where .= ',eid';
+            $res = updateTable('events'
+                , $where
+                , 'title,description,is_public_event,class'
+                , $_POST);
+            $this->send_data(['success'=>$res, 'msg'=>'Success'], "ok");
+            return;
+        }
         else if( $args[0] === 'roles')
         {
             $info = getUserInfo($user, true);

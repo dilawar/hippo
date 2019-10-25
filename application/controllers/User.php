@@ -424,6 +424,31 @@ class User extends CI_Controller
         redirect( 'welcome' );
     }
 
+    public function execute_submit()
+    {
+        $login = $_POST[ 'login' ];
+        $pass = $_POST[ 'password' ];
+        $id = $_POST[ 'id' ];
+        $auth = authenticate( $login, $pass );
+        if( ! $auth )
+        {
+            echo flashMessage("Authentication failed. Try again.");
+            $this->load_user_view("execute", $_POST);
+            return;
+        }
+        $query = getTableEntry( 'queries', 'id', $_POST );
+        $res = executeURlQueries( $query['query'] );
+        if( $res )
+        {
+            $_POST['status'] = 'EXECUTED';
+            $res = updateTable( 'queries', 'id', 'status', $_POST );
+            if($res)
+                echo flashMessage( "Success! " );
+        }
+        $this->load_user_view('home');
+        return;
+    }
+
     public function upload_to_db( $tablename, $unique_key, $redirect = 'home')
     {
         $filename = $_FILES['spreadsheet']['tmp_name']; $data =
@@ -564,6 +589,7 @@ class User extends CI_Controller
             flashMessage( "Successfully revoked.");
         redirect("user/info");
     }
+
 }
 
 ?>
