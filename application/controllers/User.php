@@ -445,7 +445,7 @@ class User extends CI_Controller
             if($res)
                 echo flashMessage( "Success! " );
         }
-        $this->load_user_view('home');
+        $this->load_user_view('user');
         return;
     }
 
