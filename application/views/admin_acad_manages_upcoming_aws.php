@@ -40,7 +40,7 @@ if( count( $upcomingAwsNextWeek ) < 1 )
     echo alertUser( "No AWS found for upcoming week.", false );
 else
 {
-    $table = '<div>';
+    $table = '<div style="border:1px solid lightblue">';
     foreach( $upcomingAwsNextWeek as $upcomingAWS )
     {
         $table .= '<form action="'.site_url('adminacad/next_week_aws_action').'" method="post" >';
@@ -113,7 +113,7 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
     $awsThisWeek = count( $awses );
 
     // Show AWSes
-    $table .= '<tr>';
+    $table .= '<tr style="border-top:2px solid blue">';
     foreach( $awses as $countAWS => $aws )
     {
         $table .= '<td>';
