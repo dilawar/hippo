@@ -133,7 +133,7 @@ function getTalksWithEvent( $start_date, $end_date )
  */
 function doAWSHouseKeeping( )
 {
-    $oldAws = getTableEntries( 'upcoming_aws' , 'date', "status='VALID' AND date < NOW( )");
+    $oldAws = getTableEntries( 'upcoming_aws' , 'date', "status='VALID' AND date < CURDATE( )");
     $badEntries = array( );
     foreach( $oldAws as $aws )
     {
@@ -291,11 +291,11 @@ function getPendingRequestsGroupedByGID( )
 }
 
 // Get all requests with given status.
-function getRequestsGroupedByGID( $status = 'PENDING'  )
+function getRequestsGroupedByGID($status='PENDING')
 {
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare('SELECT * FROM bookmyvenue_requests
-        WHERE status=:status AND date>=NOW() GROUP BY gid ORDER BY date,start_time' );
+        WHERE status=:status AND date>=CURDATE() GROUP BY gid ORDER BY date,start_time' );
     $stmt->bindValue( ':status', $status );
     $stmt->execute( );
     return fetchEntries( $stmt );
@@ -347,7 +347,7 @@ function getRequestOfUser( $userid, $status = 'PENDING' )
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare(
         'SELECT * FROM bookmyvenue_requests WHERE created_by=:created_by
-        AND status=:status AND date >= NOW() - INTERVAL 2 DAY
+        AND status=:status AND date >= CURDATE() - INTERVAL 2 DAY
         ORDER BY date,start_time' );
     $stmt->bindValue( ':created_by', $userid );
     $stmt->bindValue( ':status', $status );
@@ -370,7 +370,7 @@ function getRequestOfUserGroupedAndWithCount( $userid, $status = 'PENDING' )
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare(
         'SELECT *, COUNT(*) AS total_events FROM bookmyvenue_requests WHERE created_by=:created_by
-        AND status=:status AND date >= NOW() - INTERVAL 2 DAY
+        AND status=:status AND date >= CURDATE() - INTERVAL 2 DAY
         GROUP BY gid ORDER BY date,start_time' );
     $stmt->bindValue( ':created_by', $userid );
     $stmt->bindValue( ':status', $status );
@@ -1970,7 +1970,7 @@ function  scheduledAWSInFuture( $speaker )
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare(
         "SELECT * FROM upcoming_aws WHERE
-        speaker=:speaker AND date > NOW()
+        speaker=:speaker AND date > CURDATE()
         " );
     $stmt->bindValue( ":speaker", $speaker );
     $stmt->execute( );
@@ -1989,7 +1989,7 @@ function temporaryAwsSchedule( $speaker )
     $hippoDB = initDB();;
     $stmt = $hippoDB->prepare(
         "SELECT * FROM aws_temp_schedule WHERE
-        speaker=:speaker AND date > NOW()
+        speaker=:speaker AND date > CURDATE()
         " );
     $stmt->bindValue( ":speaker", $speaker );
     $stmt->execute( );
