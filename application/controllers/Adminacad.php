@@ -57,6 +57,12 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( "admin_acad_aws_db" );
     }
 
+    public function awslist()
+    {
+        $data = getAllAWS();
+        $this->load_adminacad_view( "admin_acad_aws_list", ['AWSES_CI'=>$data]);
+    }
+
     public function email_and_docs( )
     {
         $this->load_adminacad_view( "admin_acad_email_and_docs" );

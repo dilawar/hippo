@@ -2216,7 +2216,7 @@ function acceptScheduleOfAWS($speaker, $date, string $venue='')
 {
     $hippoDB = initDB();;
 
-    if( ! $venue )
+    if(! $venue)
         $venue = getDefaultAWSVenue( $date );
 
     // If date is invalid, return.

@@ -58,10 +58,15 @@ echo '<table class="admin">
     </table>';
 
 echo '<br />';
+
 echo '<table class="admin">
     <tr>
-        <td> <a class="clickable_small" href="'.site_url('adminacad/add_aws_entry').'">Add Missing AWS entry</td>
-        <td> <a class="clickable_small" href="'.site_url('adminacad/aws_db').'">AWS Database</a> </td>
+        <td> <a class="clickable_small" href="'.site_url('adminacad/awslist').'">
+            Add List of all AWS
+        </td>
+        <td> 
+            <a class="clickable_small" href="'.site_url('adminacad/aws_db').'">AWS Roster</a> 
+        </td>
     </tr>
     <tr>
         <td> <a class="clickable_small"

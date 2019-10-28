@@ -66,6 +66,6 @@ foreach( $speakers as $i => $speaker )
 $table .= '</table>';
 echo $table;
 
-echo goBackToPageLink( "info/aws", "Go back" );
+echo goBackToPageLink( "adminacad", "Go back" );
 
 ?>
