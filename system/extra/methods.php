@@ -1954,7 +1954,7 @@ function getDefaultAWSVenue( string $date ) : string
 {
     // Even of odd week of the year.
     $day = intval( date('W', strtotime($date)) );
-    if( $day  % 2 == 1 )
+    if($day  % 2 == 1 )
         return 'Haapus (LH1)';
     else
         return 'InstemAuditorium100Seater';
