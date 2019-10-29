@@ -171,8 +171,10 @@ trait AdminacadCourses
                         return;
                     }
                 }
-                echo printErrorSevere( "Failed to delete course from the" );
+                flashMessage( "Failed to delete course from the" );
             }
+            redirect( "adminacad/courses" );
+            return;
         }
         else // Add or Update here.
         {
@@ -187,22 +189,19 @@ trait AdminacadCourses
                 }
             }
 
-            $_POST[ 'semester' ] = getSemester(  $_POST[ 'end_date' ] );
-            $_POST[ 'year' ] = getYear( $_POST[ 'end_date' ]  );
+            // NOTE: the start date of course determines the semester and year
+            // of a course. The end date can spill into next semester.
+            // Especially in AUTUMN semester. What can I do, this is NCBS!
+            $_POST['semester'] = getSemester($_POST['start_date']);
+            $_POST['year'] = getYear($_POST['start_date']);
 
             // Check if any other course is running on this venue/slot between given
             // dates.
-            $startDate = $_POST[ 'start_date' ];
-            $endDate = $_POST[ 'end_date' ];
-
-            $sem = getSemester( $endDate );
-            $year = getYear( $endDate );
-
-            $_POST[ 'semester' ] = $sem;
-            $_POST[ 'year' ] = $year;
+            $startDate = $_POST['start_date'];
+            $endDate = $_POST['end_date'];
 
             $coursesAtThisVenue = getCoursesAtThisVenueSlotBetweenDates(
-                $_POST[ 'venue' ], $_POST[ 'slot' ], $startDate, $endDate
+                $_POST['venue'], $_POST['slot'], $startDate, $endDate
             );
 
             $collisionCourses = array_filter(
@@ -229,24 +228,27 @@ trait AdminacadCourses
             }
 
             // No collision. Add or update now.
-            if ( $response == 'add' )
+            if ($response === 'add')
             {
-                $msg .= "Adding a new course in current course list" ;
-                if( strlen( $_POST[ 'course_id' ] ) > 0 )
+                if(strlen($_POST['course_id']) > 0)
                 {
                     $id = getCourseInstanceId( $_POST[ 'course_id' ], $sem, $year );
                     $_POST[ 'id' ] = $id;
                     $res = insertIntoTable('courses',"id,course_id,$updatable", $_POST);
-                    if( ! $res )
-                        $msg .= printWarning( "Could not add course to list" );
+                    if(! $res)
+                        $msg .= "Could not add course to list.";
                     else
                     {
                         $res = addCourseBookings( $_POST[ 'id' ] );
-                        flashMessage("Successfully added course. Blocked venue as well.");
+                        $msg .= "Successfully added course. Blocked venue as well.";
                     }
                 }
                 else
-                    $msg .= printWarning( "Could ID can not be empty" );
+                    $msg .= "Could ID can not be empty";
+
+                flashMessage($msg);
+                redirect("adminacad/courses");
+                return;
             }
             else if ( $response == 'update' )
             {
@@ -257,13 +259,16 @@ trait AdminacadCourses
                     $msg .= printInfo( 'Updated running course ' . $_POST['course_id'] . '.' );
                     flashMessage( $msg );
                 }
+                redirect( "adminacad/courses" );
+                return;
             }
             else
+            {
                 printWarning( "Unknown task '$response'. " );
-
+                redirect( "adminacad/courses" );
+                return;
+            }
         }
-        redirect( "adminacad/courses" );
-        return;
     }
 
     public function slots_action( $arg = '' )

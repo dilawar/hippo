@@ -1097,7 +1097,7 @@ function getSemester( $date )
     *
     * @return
  */
-function getYear( $date )
+function getYear($date)
 {
     return date( 'Y', strtotime( $date ) );
 }

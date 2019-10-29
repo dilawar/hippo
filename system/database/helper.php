@@ -2539,19 +2539,23 @@ function getCourseName( string $cexpr ) : string
 
 function getSemesterCourses( $year, $sem )
 {
-    $sDate = dbDate( strtotime( "$year-01-01" ) );
-    $eDate = dbDate( strtotime( "$year-07-31" ) );
+    $sDate = dbDate(strtotime("$year-01-01"));
+    $eDate = dbDate(strtotime("$year-08-31"));
     $sem = strtoupper($sem);
 
     if($sem === 'AUTUMN')
     {
-        $sDate = dbDate( strtotime( "$year-07-01" ) );
-        $eDate = dbDate( strtotime( "$year-12-31" )  );
+        // This can spill over to next year but start date must have current
+        // year.
+        $nextYear = intval($year)+1;
+        $sDate = dbDate(strtotime("$year-07-01"));
+        $eDate = dbDate(strtotime("$nextYear-01-31"));
     }
 
     $hippoDB = initDB();;
     $res = $hippoDB->query( "SELECT * FROM courses WHERE
-                    start_date >= '$sDate' AND end_date <= '$eDate' " );
+        start_date>='$sDate' AND end_date<='$eDate' AND YEAR(start_date)=$year
+        ");
 
     $courses = fetchEntries($res);
     foreach($courses as &$course)
