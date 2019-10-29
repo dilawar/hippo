@@ -12,7 +12,7 @@ function showEditCourse( $buttonVal, $course )
 {
     global $symbDelete;
     $editHTML = "<h3 id='editcourse'>$buttonVal course</h3>";
-
+    $editHTML .= printNote("<tt>ID</tt> of course can not be more than 8 chars.");
     $editHTML .= '<form method="post" action="'.site_url('adminacad/all_courses_action').'">';
     $editHTML .= dbTableToHTMLTable( 'courses_metadata', $course
             , 'id,credits:required,name:required,description,'
@@ -82,7 +82,7 @@ $( function() {
 
 
 // Logic for POST requests.
-$course = array( 'id' => '', 'day' => '', 'start_time' => '', 'end_time' => '' );
+$course = array('id' => '', 'day' => '', 'start_time' => '', 'end_time' => '' );
 echo "<h1>All courses</h1>";
 echo p( "The form to ADD a new course or EDIT a selected course is at the bottom." );
 echo '<input id="filter_all_courses" placeholder="Type to filter courses" />';
@@ -110,7 +110,7 @@ elseif( __get__( $_GET, 'id', false ) )
 }
 
 
-echo showEditCourse( $buttonVal, $course);
+echo showEditCourse($buttonVal, $course);
 
 echo "<br/><br/>";
 echo goBackToPageLink( 'adminacad/home', 'Go back' );
