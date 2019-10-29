@@ -232,7 +232,7 @@ trait AdminacadCourses
             {
                 if(strlen($_POST['course_id']) > 0)
                 {
-                    $id = getCourseInstanceId( $_POST[ 'course_id' ], $sem, $year );
+                    $id = getCourseInstanceId($_POST[ 'course_id' ], $_POST['semester'], $_POST['year']);
                     $_POST[ 'id' ] = $id;
                     $res = insertIntoTable('courses',"id,course_id,$updatable", $_POST);
                     if(! $res)
