@@ -158,6 +158,22 @@ class Api extends CI_Controller
             $this->send_data([], "Not authenticated");
             return;
         }
+        else if($args[0] === 'flashcards') 
+        {
+            $data = getPublicEventsOnThisDay('today');
+            $tom = getPublicEventsOnThisDay('tomorrow');
+            $data = array_merge($data, $tom);
+            $cards = [];
+            foreach($data as $item)
+            {
+                $cards[] = [ 'title'=>$item['title']
+                    , 'date'=>$item['date']
+                    , 'time'=>$item['start_time']
+                ];
+            }
+            $this->send_data($cards, 'ok');
+            return;
+        }
         else if($args[0] === 'venues')
         {
             if($args[1] === 'availability')
