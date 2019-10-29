@@ -1052,7 +1052,7 @@ class Api extends CI_Controller
         $user = getLogin();
         $args = func_get_args();
 
-        if( $args[0] === 'profile')
+        if($args[0] === 'profile')
         {
             $ldap = getUserInfo($user, true);
             $remove = ['fname', 'lname'];
@@ -1061,6 +1061,13 @@ class Api extends CI_Controller
             foreach(getUserJCs($user) as $jc)
                 $jcs[$jc['jc_id']] = $jc;
             $data['jcs'] = $jcs;
+        }
+        else if($args[0] === 'roles')
+        {
+            $user = getLogin();
+            $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
+            $this->send_data($data[0], "ok");
+            return;
         }
         else if($args[0] === 'request')
         {
