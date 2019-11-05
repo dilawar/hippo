@@ -426,11 +426,11 @@ class User extends CI_Controller
 
     public function execute_submit()
     {
-        $login = $_POST[ 'login' ];
-        $pass = $_POST[ 'password' ];
-        $id = $_POST[ 'id' ];
-        $auth = authenticate( $login, $pass );
-        if( ! $auth )
+        $login = $_POST['login'];
+        $pass = $_POST['password'];
+        $id = $_POST['id'];
+        $auth = authenticate($login, $pass);
+        if(! $auth)
         {
             echo flashMessage("Authentication failed. Try again.");
             $this->load_user_view("execute", $_POST);

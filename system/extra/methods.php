@@ -1209,7 +1209,7 @@ function verifyRequest( array $request ) : string
     }
 
     // Let admin override this condition.
-    if( ! anyOfTheseRoles( array( 'BOOKMYVENUE_ADMIN', 'ACAD_ADMIN' ) ) )
+    if( ! anyOfTheseRoles(array('BOOKMYVENUE_ADMIN', 'ACAD_ADMIN', 'MEETINGS')))
     {
         if( strtotime( $request[ 'date' ] ) >= strtotime( 'now' ) + 60 * 24 * 3600 )
         {
