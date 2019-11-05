@@ -626,6 +626,7 @@ function getPublicEventsNum(string $from, int $limit=10, int $offset=0)
 function getPublicEventsOnThisDay( $date = 'today', $status = 'VALID' )
 {
     $hippoDB = initDB();;
+    $date = dbDate($date);
     $stmt = $hippoDB->prepare( "SELECT * FROM events WHERE date = :date AND
         status=:status AND is_public_event='YES' ORDER BY date,start_time"
         );
