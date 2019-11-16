@@ -185,6 +185,10 @@ After successful upload, you can see your abstract
 ## Course related
 
 #### How do I give feedback
-  Click on ==__My Courses__== link in your home page.
+
+  Click on ==__My Courses__== link in your home page. You will see a `Feedback
+  button` as shown below.
+
+  ![](./images/user_couse_feedback.png){:style="width:50%"}
   
 
