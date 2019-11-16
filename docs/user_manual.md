@@ -181,3 +181,10 @@ After successful upload, you can see your abstract
 ??? tip "Not found what you are looking for?"
     Open a issue on repository [{{ bugs }}]({{ bugs }}) or write to [Hippo mailing
     list]( {{ hippo_mailing_list }} ). 
+
+## Course related
+
+#### How do I give feedback
+  Click on ==__My Courses__== link in your home page.
+  
+
