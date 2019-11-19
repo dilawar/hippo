@@ -54,8 +54,8 @@ OUTFILENAME=${TEXFILENAME%.tex}.pdf
     # lualatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
 
     #pdflatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
-    latexmk -xelatex -quiet "$INFILE"
-    # xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
+    #latexml -xelatex -quiet "$INFILE"
+    xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
     # echo "$TEXFILENAME" > $MD5
     # xelatex --interaction nonstopmode --output-directory=/tmp "$INFILE"
 )
