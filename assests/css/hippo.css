@@ -45,14 +45,11 @@ div.sticker {
     background-color: GhostWhite;
 }
 
-div.user_float {
+table.user_float {
     position : fixed;
     top : 2%;
-    right: 10%;
+    right: 15%;
     max-width: var(--maxwidth);
-}
-
-table.user_float {
     border-radius: 10px;
     padding: 3px;
     float: right;
