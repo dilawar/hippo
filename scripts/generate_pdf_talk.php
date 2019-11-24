@@ -211,13 +211,21 @@ function generatePdfForTalk( string $date, string $id = '' ) : string
     if( $date )
         $outfile .= '_' . $date;
 
-    foreach( $ids as $id )
+    if(count($ids) > 0)
     {
-        $talk = getTableEntry( 'talks', 'id', array( 'id' => $id ) );
-        $event = getEventsOfTalkId( $id );
-        $tex[] = eventToTex( $event, $talk );
-        $tex[] = '\pagebreak';
-        $outfile .= "_$id";
+        foreach( $ids as $id )
+        {
+            $talk = getTableEntry( 'talks', 'id', array( 'id' => $id ) );
+            $event = getEventsOfTalkId( $id );
+            $tex[] = eventToTex( $event, $talk );
+            $tex[] = '\pagebreak';
+            $outfile .= "_$id";
+        }
+    }
+    else
+    {
+        $tex[] = "No event found.";
+        $outfile = "NOTHING";
     }
 
     $tex[] = '\end{document}';
