@@ -91,10 +91,11 @@ $default = array_merge( $default, $_POST );
 // If external_id is given then this needs to go into request table. This is 
 // used to fetch event data from external table. The format of this field if 
 // TABLENAME.ID. 'SELF.-1' means the there is not external dependency.
-if(!isset($external_id))
+if(! isset($external_id))
     $external_id = 'SELF.-1';
-else
-    $default['is_public_event'] = true;
+
+if(__substr__('talks.', $external_id, true))
+    $default['is_public_event'] = 'YES';
 
 echo '<form method="post" action="' . site_url("user/bookingrequest_submit/$goback") . '">';
 echo dbTableToHTMLTable( 'bookmyvenue_requests'
