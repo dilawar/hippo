@@ -84,7 +84,7 @@ trait AWS
                     $sendEmail = false;
 
                 // Create subject for email
-                $subject = "Your preferences for AWS schedule has been recieved";
+                $subject = "Your preferences for AWS schedule has been received";
 
                 $msg = "<p>Dear " . loginToText( $login ) . "</p>";
                 $msg .= "<p>Your scheduling request has been logged. </p>";

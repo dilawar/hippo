@@ -71,7 +71,7 @@ $options = explode(',', 'Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
 
 
 
-<div class="h2">Feedback recieved for <?=count($feedbackMap)?> courses.</div>
+<div class="h2">Feedback received for <?=count($feedbackMap)?> courses.</div>
 <?php foreach($countMap as $key => $qidMap): ?>
     <div class="card">
         <div class="card-header h3">
