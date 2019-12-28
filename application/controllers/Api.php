@@ -2190,7 +2190,6 @@ class Api extends CI_Controller
             }
             else
                 $data['flash'] = "Unknown request " . $subtask;
-
             $this->send_data($data, "ok");
             return;
         }
@@ -2294,7 +2293,7 @@ class Api extends CI_Controller
         {
             if($args[1] === 'fetch')
             {
-                $speakers = getAWSSpeakers('pi_or_host');
+                $speakers = getAWSSpeakers($sortby='pi_or_host');
                 foreach($speakers as &$speaker)
                 {
                     $extraInfo = getExtraAWSInfo($speaker['login'], $speaker);
@@ -2316,6 +2315,13 @@ class Api extends CI_Controller
                 $whom = urldecode($args[2]);
                 $res = addAWSSpeakerToList($whom);
                 $this->send_data($res, 'ok');
+                return;
+            }
+            else if($args[1] === 'available_dates')
+            {
+                $numDates = intval(__get__($args, 2, 5)); // get next 5 slots.
+                $datesAvailable = awsDatesAvailable($numDates);
+                $this->send_data($datesAvailable, "ok");
                 return;
             }
             else

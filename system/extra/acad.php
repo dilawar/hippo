@@ -345,7 +345,7 @@ function assignGrade(array $data, string $by = 'HIPPO') : array
 
 function getExtraAWSInfo(string $login, array $speaker=[]) : array
 {
-    $upcomingAWS = getUpcomingAWS($login);
+    $upcomingAWS = getUpcomingAWSOfSpeaker($login);
     $pastAWSes = getAwsOfSpeaker($login);
 
     // Get PI/HOST and speaker specialization.
@@ -369,8 +369,39 @@ function getExtraAWSInfo(string $login, array $speaker=[]) : array
         , "pi_or_host"=>$pi
         , 'last_aws_date'=>$lastAwsDate
         , 'days_since_last_aws'=>(strtotime('today')-strtotime($lastAwsDate))/3600/24
+        , 'upcoming_aws'=> __get__($upcomingAWS, 'date', '')
         , 'num_aws' => count($pastAWSes)];
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Retrun available AWS dates.
+    *
+    * @Param $numSlots Maximum number of dates to return. If -1 is given, 20
+    * weeks are returned.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function awsDatesAvailable(int $numSlots) : array
+{
+    if($numSlots < 0)
+        $numSlots = 20;
+
+    // Find next $numSlots available slots.
+    $dates = [];
+    // From next week + 3 weeks.
+    $startDate = strtotime('next monday') + 3 * 7 * 86400;
+    for ($i = 0; $i < 10*$numSlots; $i++) {
+        $date = dbDate($startDate + $i*7*86400);
+        // Check if a slot is available.
+        $nAWS = intval(getTotalUpcomingAWSOnThisMonday($date));
+        if($nAWS < maxAWSAllowed())
+            $dates[] = $date;
+        if(count($dates) >= $numSlots)
+            break;
+    }
+    return $dates;
+}
 
 ?>

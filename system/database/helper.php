@@ -2188,6 +2188,18 @@ function getUpcomingAWSOnThisMonday( $monday )
     return $res;
 }
 
+function getTotalUpcomingAWSOnThisMonday( $monday )
+{
+    $date = dbDate( $monday );
+    $res = executeQuery( "SELECT COUNT(*) as total FROM upcoming_aws WHERE date='$date'" );
+    return __get__($res, 'total', 0);
+}
+
+function maxAWSAllowed(): int
+{
+    return 3;
+}
+
 function getUpcomingAWSById( $id )
 {
     $hippoDB = initDB();;
@@ -2196,7 +2208,7 @@ function getUpcomingAWSById( $id )
     return  $stmt->fetch( PDO::FETCH_ASSOC );
 }
 
-function getUpcomingAWSOfSpeaker( $speaker )
+function getUpcomingAWSOfSpeaker($speaker)
 {
     return getTableEntry( 'upcoming_aws', 'speaker,status'
         , array( 'speaker'=> $speaker , 'status' => 'VALID' ) 
