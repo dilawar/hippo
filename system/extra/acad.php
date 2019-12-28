@@ -395,9 +395,9 @@ function awsDatesAvailable(int $numSlots) : array
     for ($i = 0; $i < 10*$numSlots; $i++) {
         $date = dbDate($startDate + $i*7*86400);
         // Check if a slot is available.
-        $nAWS = intval(getTotalUpcomingAWSOnThisMonday($date));
+        $nAWS = getTotalUpcomingAWSOnThisMonday($date);
         if($nAWS < maxAWSAllowed())
-            $dates[] = $date;
+            $dates[] = [$nAWS, $date];
         if(count($dates) >= $numSlots)
             break;
     }

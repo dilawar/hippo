@@ -2188,11 +2188,12 @@ function getUpcomingAWSOnThisMonday( $monday )
     return $res;
 }
 
-function getTotalUpcomingAWSOnThisMonday( $monday )
+function getTotalUpcomingAWSOnThisMonday(string $monday): int
 {
-    $date = dbDate( $monday );
-    $res = executeQuery( "SELECT COUNT(*) as total FROM upcoming_aws WHERE date='$date'" );
-    return __get__($res, 'total', 0);
+    $date = dbDate($monday);
+    $res = executeQuery("SELECT COUNT(*) as total FROM upcoming_aws 
+        WHERE date='$date'", true);
+    return $res[0]['total'];
 }
 
 function maxAWSAllowed(): int
