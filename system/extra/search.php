@@ -11,7 +11,7 @@ require_once __DIR__ . '/methods.php';
 function searchInLogins(string $q, $where=''): array
 {
     return executeQuery("SELECT 
-        login,email,last_name,middle_name,first_name,
+        login,email,last_name,middle_name,first_name,pi_or_host,
         CONCAT_WS(' ',first_name,last_name) as name
         FROM logins WHERE status='ACTIVE' 
         AND login != ''
