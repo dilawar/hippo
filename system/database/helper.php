@@ -2724,10 +2724,14 @@ function updateBookings( $course )
 /* ----------------------------------------------------------------------------*/
 function getCourseRegistrations( string $cid, int $year, string $semester ) : array
 {
-    return getTableEntries( 'course_registration'
+    $registrations = getTableEntries( 'course_registration'
         , 'student_id'
         , "status='VALID' AND type != 'DROPPED' AND course_id='$cid' AND year='$year' AND semester='$semester'"
     );
+    foreach($registrations as &$reg)
+        $reg['login'] = getLoginInfo($reg['student_id'], true);
+
+    return $registrations;
 }
 
 function canIChangeRegistration($c, $login) : bool
