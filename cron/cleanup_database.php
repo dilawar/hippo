@@ -3,7 +3,7 @@
 function cleanup_database_cron( )
 {
     /* Every monday, check students who are not eligible for AWS anymore */
-    if( trueOnGivenDayAndTime( 'this sunday', '16:00' ) )
+    if( trueOnGivenDayAndTime( 'this monday', '7:00' ) )
     {
         echo printInfo( 'Monday, removing students who have given PRE_SYNOPSIS SEMINAR and thesis SEMINAR' );
 
