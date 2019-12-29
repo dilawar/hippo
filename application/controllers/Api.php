@@ -1080,7 +1080,6 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'roles')
         {
-            $user = getLogin();
             $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
             $this->send_data($data[0], "ok");
             return;
@@ -1118,10 +1117,10 @@ class Api extends CI_Controller
         }
         else if( $args[0] === 'aws')
         {
+            $data = getAwsOfSpeaker($user);
             $upcoming = getUpcomingAWSOfSpeaker($user);
             if($upcoming)
                 $data[] = $upcoming;
-            $data = getAwsOfSpeaker($user);
         }
         else if($args[0] === 'talk')
         {

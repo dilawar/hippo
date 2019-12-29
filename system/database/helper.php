@@ -2211,8 +2211,9 @@ function getUpcomingAWSById( $id )
 
 function getUpcomingAWSOfSpeaker($speaker)
 {
-    return getTableEntry( 'upcoming_aws', 'speaker,status'
-        , array( 'speaker'=> $speaker , 'status' => 'VALID' ) 
+    return getTableEntry('upcoming_aws'
+        , 'speaker,status'
+        , ['speaker'=> $speaker, 'status' => 'VALID'] 
     );
 }
 
