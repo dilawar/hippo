@@ -959,7 +959,6 @@ p.note {
 p.wherewhen {
     font-size: large;
     color: blue;
-    border-bottom: 1px dotted gray;
     font-variant: small-caps;
 }
 
