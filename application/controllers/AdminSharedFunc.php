@@ -63,16 +63,11 @@ function admin_send_email( array $data ) : array
     $subject = $data[ 'subject' ];
 
     $res['message'] =  "<h2>Email content are following</h2>";
-    $mdfile = html2Markdown( $msg, true );
-    $md = file_get_contents( trim($mdfile) );
+    $res['message'] .= $msg;
+    $res['message'] .= printInfo( "Sending email to $to ($cclist ) with subject $subject" );
 
-    if( $md )
-    {
-        $res['message'] .= printInfo( "Sending email to $to ($cclist ) with subject $subject" );
-        sendHTMLEmail( $msg, $subject, $to, $cclist );
-    }
-    else
-        $res['error'] = p("Could not find email text.");
+    $attachments = __get__($data, 'attachments', '');
+    sendHTMLEmail( $msg, $subject, $to, $cclist, $attachments);
 
     return $res;
 }

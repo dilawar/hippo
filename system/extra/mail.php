@@ -117,7 +117,7 @@ function mailFooter( ) {
 }
 
 function sendHTMLEmailUnsafe(string $msg, string $subject
-    , string $to, string $cclist='', string $attachment='' )
+    , string $to, string $cclist='', string $attachments='' )
 {
     global $maildir;
     $mail = new PHPMailer(true);
@@ -167,7 +167,7 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
 
     $mail->isHTML(true);
 
-    foreach(explode( ',', $attachment ) as $f)
+    foreach(explode( ',', $attachments) as $f)
         if(trim($f))
             $mail->addAttachment($f);
 
@@ -182,11 +182,11 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
 }
 
 function sendHTMLEmail( string $msg, string $sub, string $to
-    , string $cclist = '', string $attachment='')
+    , string $cclist = '', string $attachments='')
 {
     try 
     {
-        return sendHTMLEmailUnsafe( $msg, $sub, $to, $cclist, $attachment);
+        return sendHTMLEmailUnsafe( $msg, $sub, $to, $cclist, $attachments);
     } 
     catch (Exception $e)
     {
@@ -207,12 +207,12 @@ function sendHTMLEmail( string $msg, string $sub, string $to
     * @Param $sub
     * @Param $to
     * @Param $cclist
-    * @Param $attachment
+    * @Param $attachments (csv list)
     *
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function sendPlainTextEmail($msg, $sub, $to, $cclist='', $attachment = null)
+function sendPlainTextEmail($msg, $sub, $to, $cclist='', $attachments='')
 {
     global $maildir;
     $conf = getConf( );
@@ -273,9 +273,9 @@ function sendPlainTextEmail($msg, $sub, $to, $cclist='', $attachment = null)
         $cmd .= "-c $cclist";
     }
 
-    if( $attachment )
+    if($attachments)
     {
-        foreach( explode( ',', $attachment ) as $f )
+        foreach( explode( ',', $attachments) as $f )
             $cmd .= " -a \"$f\" ";
     }
 
