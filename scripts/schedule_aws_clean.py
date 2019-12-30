@@ -105,12 +105,13 @@ def init():
 
 
 def assign_weight_method_a(edges):
+    """Assign equal cost to each edge."""
     global g_
     for speaker, slot in edges:
-        add_edge(speaker, slot)
+        add_edge_with_cost(speaker, slot)
 
 
-def add_edge(speaker, slot):
+def add_edge_with_cost(speaker, slot):
     global ideal_gap_
     date, si = slot
     lastAWS = g_.nodes[speaker]['last_aws_on']
@@ -154,7 +155,7 @@ def assign_weight_method_b(edges, specializations=[]):
         for speaker in g_.successors('source'):
             ssp = g_.nodes[speaker]['specialization']
             if ssp == sp:
-                add_edge(speaker, slot)
+                add_edge_with_cost(speaker, slot)
 
     return specializations
 
