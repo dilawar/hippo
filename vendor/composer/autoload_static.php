@@ -31,6 +31,7 @@ class ComposerStaticInite1888158aa47bd0bbfc973101953a37d
         'L' => true,
         'G' => true,
         'F' => true,
+        'E' => true,
         'C' => true,
         'A' => true,
     );
@@ -145,6 +146,10 @@ class ComposerStaticInite1888158aa47bd0bbfc973101953a37d
         'Firebase\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
+        'Eluceo\\iCal\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/eluceo/ical/src',
         ),
         'Composer\\XdebugHandler\\' => 
         array (
