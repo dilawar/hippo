@@ -468,7 +468,7 @@ class Adminbmv extends CI_Controller
 
     public function send_email_action()
     {
-        $res = admin_send_email( $_POST );
+        $res = admin_send_email($_POST);
         if( $res['error'] )
             printWarning( $res['error'] );
         else
