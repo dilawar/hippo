@@ -396,14 +396,18 @@ class User extends CI_Controller
 
     public function downloadaws( $date, $speaker = '')
     {
-        $pdffile = pdfFileOfAWS( $date, $speaker );
-        $this->download( $pdffile, false );
-
-        echo '<script type="text/javascript" charset="utf-8">
-                window.onload = function() {
-                    window.close();
-                };
+        $ret = pdfFileOfAWS( $date, $speaker );
+        $pdffile = $ret['pdf'];
+        if(file_exists($pdffile)) 
+        {
+            $this->download( $pdffile, false );
+            echo '<script type="text/javascript" charset="utf-8">
+                window.onload = function() { window.close(); }; 
             </script>';
+        }
+        else {
+            echo flashMessage($ret['error'] . '<br />' . __get__($ret, 'stdout', '') );
+        }
     }
 
     public function downloadtalk( $date, $id )

@@ -792,7 +792,7 @@ function getThumbnail( $originalImage )
 
     // Create thumbnain in temp dir.
     $outputImage = sys_get_temp_dir() . '/thumb.png';
-    echo "Creating $outputImage ";
+    // echo "Creating $outputImage ";
     $img->writeImage( $outputImage );
     $img->clear( );
     $img->destroy( );

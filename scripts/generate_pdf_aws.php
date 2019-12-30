@@ -131,14 +131,16 @@ function awsToTex( $aws )
 
 } // Function ends.
 
-function pdfFileOfAWS( string $date, string $speaker = '' ) : string
+function pdfFileOfAWS(string $date, string $speaker='') : array
 {
+    $ret = ['pdf'=> '', 'error' => ''];
+
     if( ! $date )
     {
-        echo printWarning( "Invalid date $date" );
-        return '';
+        $ret['error'] = "Invalid date $date";
+        return $ret;
     }
-    
+
     $whereExpr = "date='" . $date . "'";
     if( $speaker )
         $whereExpr .= " AND speaker='$speaker'";
@@ -168,12 +170,12 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
         , '\usepackage{tcolorbox}'
         //, '\tcbuselibrary{fitting}'
         , '\begin{document}'
-        );
+    );
 
     $outfile = 'AWS_' . $date;
     foreach( $awses as $aws )
     {
-        $outfile .= '_' . $aws[ 'speaker' ];
+        $outfile .= '_' . trim($aws['speaker']);
         $tex[] = awsToTex( $aws );
         $tex[] = '\newpage';
     }
@@ -198,13 +200,17 @@ function pdfFileOfAWS( string $date, string $speaker = '' ) : string
         hippo_shell_exec( $cmd, $stdout, $stderr );
 
     if( file_exists($pdfFile) )
-        return $pdfFile;
+    {
+        $ret['pdf'] = $pdfFile;
+        return $ret;
+    }
 
-    alertUser( "Failed to genered pdf document <br>
+    $ret['error'] = "Failed to genered pdf document <br>
         This is usually due to hidden special characters 
-        in your abstract. You need to clean your entry up." 
-        );
-    return '';
+        in your abstract. You need to clean your entry up.";
+
+    $ret['stdout'] = $cmd . '<br />' . $stdout . $stderr;
+    return $ret;
 }
 
 ?>

@@ -7,17 +7,18 @@ $default = array( 'date' => $today );
 if( __get__($_GET, 'date', '' ) )
     $default[ 'date' ] = $_GET[  'date' ];
 
-$form = ' <form method="get" action="">
-    <table class="show_info">
+$form = '
+<form method="get" action="">
+    <table class="table">
         <tr>
             <td><input class="datepicker" type="text" name="date" value="' .
                     $default[ 'date' ] . '" ></td>
-            <td><button type="submit" name="response"
+            <td><button class="btn btn-primary" type="submit" name="response"
                     title="Show events on this day"
                     value="show">Show Events This Day Onwards</button></td>
         </tr>
     </table>
-    </form>
+</form>
     ';
 
 echo "$form <br /> <br />";
@@ -52,9 +53,14 @@ else
                 $talkHtml .= '</div>'; $talkHtml .= "<br>";
 
                 // Link to pdf file.
-                $talkHtml.= '<a style="margin-left:100%;align:right;" target="_blank" href="'
+                $talkHtml .= '<div class="div pull-right">';
+                $talkHtml .= '<a target="_blank" href="'
                         . site_url("user/downloadtalk/".$default['date']."/$talkId") . '">
                         <i class="fa fa-download ">PDF</i></a>';
+                $talkHtml .= '<a target="_blank" href="'
+                        . site_url("user/downloadtalkical/".$default['date']."/$talkId") . '">
+                        <i class="fa fa-calendar ">iCal</i></a>';
+                $talkHtml .= '</div>';
             }
             else
             {

@@ -1981,8 +1981,8 @@ function closePage( )
 
 function awsPdfURL( $speaker, $date, $msg = 'Download PDF' )
 {
-    $pdfFile = pdfFileOfAWS( $date, $speaker );
-    return download_file( $pdfFile );
+    $ret = pdfFileOfAWS( $date, $speaker );
+    return download_file( $ret['pdf'] );
 }
 
 /* --------------------------------------------------------------------------*/
