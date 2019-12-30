@@ -3186,7 +3186,7 @@ function eventToICALFile(array $event): string
 {
     $icalStr = eventToICALString($event);
     $date = $event['date'];
-    $icalFile = sys_get_temp_dir() . '/EVENT_'.$date.'.ical';
+    $icalFile = sys_get_temp_dir() . '/EVENT_'.$date.'.ics';
     file_put_contents($icalFile, $icalStr);
     return $icalFile;
 }
