@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """schedule_aws.py: 
 
 Query the database and schedule AWS. This is legacy version. Still works but not
@@ -600,11 +601,8 @@ def main(outfile):
     _logger.info('Scheduling AWS')
     getAllAWSPlusUpcoming()
     ans = None
-    try:
-        construct_flow_graph()
-        ans = computeSchedule()
-    except Exception as e:
-        _logger.warn("Failed to schedule. Error was %s" % e)
+    construct_flow_graph()
+    ans = computeSchedule()
 
     try:
         print_schedule(ans, outfile)

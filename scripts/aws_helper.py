@@ -39,7 +39,7 @@ def findReplacement( speaker, date, specialization, piH, schedule ):
             if speakerA == speaker:
                 continue
             slot = '%s,%d' % (dateA,i)
-            spec = g_.node[slot]['specialization']
+            spec = g_.nodes[slot]['specialization']
             if spec != specialization:
                 continue
 
@@ -50,7 +50,7 @@ def findReplacement( speaker, date, specialization, piH, schedule ):
 
             # final check. Make sure the AWS does not come too early.
             nDays = ( toDate(dateA) - toDate(date) ).days
-            prevAWS = g_.node[ speakerA ][ 'last_date' ]
+            prevAWS = g_.nodes[ speakerA ][ 'last_date' ]
             newDate = prevAWS - datetime.timedelta( days = nDays )
             if (newDate - prevAWS).days < 400:
                 _logger.warn( 'Costly swapping. ignoring...' )
@@ -70,7 +70,7 @@ def no_common_labs( schedule, nweeks = 2, ncalls = 0 ):
     for ix, date in enumerate(sortedDates[:nweeks]):
         labs = []
         for i, speaker in enumerate(schedule[ date ]):
-            spec = g_.node['%s,%d'%(date,i)]['specialization']
+            spec = g_.nodes['%s,%d'%(date,i)]['specialization']
             piH = speakers_[speaker]['pi_or_host']
             if piH in labs:
                 spec = specialization_.get( speaker, 'UNSPECIFIED' )

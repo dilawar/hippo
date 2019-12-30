@@ -207,18 +207,19 @@ echo goBackToPageLink( "adminacad/home", "Go back" );
 /* ----------------------------------------------------------------------------*/
 echo "<h1 id='temporary_assginments'>Temporary assignments</h1>";
 
-echo printInfo("Three methods are available for scheduling AWS. First one is default.");
+echo printNote("Three methods are available for scheduling AWS. First one is default.");
 
 $methodTable  = "<form method=\"post\" action=\"".site_url('adminacad/schedule_upcoming_aws'). "\">";
-$methodTable .= ' <table> ';
-$methodTable .= '<tr><td>';
-$methodTable .= '<button name="method" value="reschedule_default">
-    <strong>Recompute (DEFAULT)</strong></button>';
-$methodTable .= "</td><td>";
-$methodTable .= '<button name="method" value="reschedule_group_greedy">Recompute (GroupAndGreedily)</button>';
-$methodTable .= "</td><td>";
-$methodTable .= '<button name="method" value="reschedule">Recompute (DoNotGroupAWS)</button>';
-$methodTable .= "</td></tr>";
+$methodTable .= ' <table class="table">';
+$methodTable .= '<tr>';
+$methodTable .= '<td><button class="btn btn-primary" name="method" value="reschedule"> <strong>Recompute 
+    <br /> (No Theme)</strong></button></td>';
+$methodTable .= "</td>";
+$methodTable .= '<td><button class="btn btn-secondary" name="method" value="reschedule_group">Recompute <br /> 
+    (Group By Theme)</button></td>';
+$methodTable .= '<td><button class="btn btn-secondary" name="method" value="reschedule_group_greedy">Recompute 
+    <br /> (Group By Theme Greedily)</button></td>';
+$methodTable .= "</tr>";
 $methodTable .= '</table>';
 $methodTable .= "</form>";
 echo $methodTable;
@@ -373,7 +374,6 @@ echo goBackToPageLink( "adminacad/home", "Go back" );
 
 ?>
 
-/* <!-- This should be copy pasted --> */
 <script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
 <script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
 <script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>

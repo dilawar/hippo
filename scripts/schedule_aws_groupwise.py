@@ -342,14 +342,14 @@ def construct_graph( validSlots ):
             _logger.info( 'Nothing for user %s' % speaker )
             continue
 
-        prevAWSDate = g_.node[ speaker ][ 'last_date' ]
+        prevAWSDate = g_.nodes[ speaker ][ 'last_date' ]
         for slot, monday, speci in validSlots:
             # If this slot does not belong to some specialization then ignore
             # it.
-            if g_.node[ slot ]['specialization'] != speakerSpecialization:
+            if g_.nodes[ slot ]['specialization'] != speakerSpecialization:
                 continue
 
-            date = g_.node[ slot ][ 'date' ]
+            date = g_.nodes[ slot ][ 'date' ]
             weight = computeCost( speaker, date, prevAWSDate )
             if weight is None:
                 continue
@@ -483,8 +483,8 @@ def write_graph( outfile  = 'network.dot' ):
     dotText = [ "digraph G { " ]
     for n in g_.nodes():
         nodeText = '\t"%s" [' % n
-        for attr in g_.node[ n ]:
-            nodeText += '%s="%s", ' % (attr, g_.node[n][attr] )
+        for attr in g_.nodes[ n ]:
+            nodeText += '%s="%s", ' % (attr, g_.nodes[n][attr] )
         nodeText += ']'
         dotText.append( nodeText )
 
@@ -685,7 +685,7 @@ def findSpeakerWithSpecialization( specialization, after_date, not_in_these_labs
             continue
         for i, speakerA in enumerate( schedule[dateA] ):
             slot = '%s,%d' % (dateA,i)
-            spec = g_.node[slot]['specialization']
+            spec = g_.nodes[slot]['specialization']
             if spec != specialization:
                 continue
             thisPI = speakers_[ speakerA ]['pi_or_host']
@@ -706,7 +706,7 @@ def print_schedule( schedule, outfile ):
         totalFreshers = 0
         for speaker in schedule[ date ]:
             line += '%13s (%10s, %1d) %4s' % (speaker
-                , g_.node[speaker]['last_date'].strftime('%Y-%m-%d')
+                , g_.nodes[speaker]['last_date'].strftime('%Y-%m-%d')
                 , len( aws_[ speaker ] )
                 , short( speakersSpecialization_[speaker])
                 )
