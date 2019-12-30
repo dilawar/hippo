@@ -3,21 +3,22 @@
 function cleanup_database_cron( )
 {
     /* Every monday, check students who are not eligible for AWS anymore */
-    if( trueOnGivenDayAndTime( 'this monday', '17:00' ) )
+    if( trueOnGivenDayAndTime( 'this monday', '7:00' ) )
     {
         echo printInfo( 'Monday, removing students who have given PRE_SYNOPSIS SEMINAR and thesis SEMINAR' );
 
-        // In last two weeks.
-        $cutoff = dbDate( strtotime( 'today' ) - 14 * 24 * 3600 );
-
+        // In last year.
+        $cutoff = dbDate( strtotime('today') - 365*24*86400);
         $presynAWS = getTableEntries( 'annual_work_seminars', 'date'
             , "IS_PRESYNOPSIS_SEMINAR='YES' AND date > '$cutoff'" );
 
         foreach( $presynAWS as $aws )
         {
             $speaker = $aws[ 'speaker' ];
-            if(isEligibleForAWS($speaker))
+            if(isEligibleForAWS($speaker)) {
+                echo printInfo("Removing $speaker.");
                 removeAWSSpeakerFromList($speaker);
+            }
         }
 
         /* Now removing students with THESIS SEMINAR */
@@ -28,16 +29,17 @@ function cleanup_database_cron( )
 
         foreach( $thesisSeminars as $talk )
         {
-            $speaker = getSpeakerByID( $talk['speaker_id'] ) or getSpeakerByName( $talk[ 'speaker' ] );
-            $login = findAnyoneWithEmail( __get__( $speaker, 'email', '' ) );
-            if( __get__($login, 'login', '') )
+            $speaker = getSpeakerByID($talk['speaker_id']) or getSpeakerByName($talk['speaker']);
+            $login = findAnyoneWithEmail(__get__($speaker, 'email', ''));
+            if(__get__($login, 'login', ''))
             {
-                $login = $login[ 'login'];
-                if( isEligibleForAWS( $login ) )
+                $login = $login['login'];
+                if(isEligibleForAWS($login)) {
+                    echo printInfo("Removing $speaker.");
                     removeAWSSpeakerFromList( $login );
+                }
             }
         }
-
     }
 
     /* Every monday, check students who are not eligible for AWS anymore */
@@ -48,11 +50,6 @@ function cleanup_database_cron( )
             , "(first_name IS NULL OR first_name='') OR first_name=last_name AND status='ACTIVE'" 
         );
 
-        // foreach( $badLogins as $l )
-        // {
-        // var_dump( $l );
-        // echo " <br />";
-        // }
 
         echo printInfo( "Total " . count( $badLogins) . " are found" );
         foreach( $badLogins as $l )
@@ -67,9 +64,9 @@ function cleanup_database_cron( )
             {
                 $ldap[ 'login' ] = $login;
                 $res = updateTable( 'logins', 'login', 'first_name,last_name,email', $ldap );
-                if( $res )
+                if($res)
                 {
-                    var_dump( $ldap );
+                    var_dump($ldap);
                     echo printInfo( " ... $login is fixed" );
                 }
             }

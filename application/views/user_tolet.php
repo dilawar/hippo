@@ -41,7 +41,7 @@ $apartmentSelect = arrayToSelectList( 'value', $apartmentTypes );
 
 // Create alerts.
 echo " <h2>My Email Alerts</h2> ";
-echo printInfo( "You will recieve email whenever following types of listings are added by others." );
+echo printInfo( "You will receive email whenever following types of listings are added by others." );
 
 $where = "login='$user' AND on_table='apartments' AND  on_field='type'";
 $myAlerts = getTableEntries( 'alerts', 'login', $where );

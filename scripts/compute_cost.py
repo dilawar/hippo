@@ -24,16 +24,22 @@ def parabola( x0, offset, x ):
     ys = offset + offset * (x-minX) ** 2.0
     return ys
 
-def linear( nAWS, x ):
-    if nAWS <= 2:
-        return max(0, x - 1 )
+def linear( nAWS, year ):
+    """These parameters are choosen by obverving the plots.
+    """
+    x = year - 1
+    if nAWS <= 1:
+        return max(0, x)
+    elif nAWS == 2:
+        c = 0.1
+        m = (0.55-c)/0.5
     elif nAWS == 3:
-        m, c = 0.8, 0.7
-    elif nAWS == 4:
-        m, c = 0.7, 0.5
+        c = 0.5
+        m = (1.5-c)/1.5
     else:
-        m, c = 0.63333, 0.3333
-    return max(0, m * x - c )
+        c = 1.5
+        m = (3-c)/4
+    return max(0, m*x+c)
 
 def computeCost( slot_date, lastDate, nAWS ):
     ndays = ( slot_date - lastDate ).days
@@ -58,6 +64,7 @@ def random_date(start, end):
 def test( ):
     import matplotlib as mpl
     import matplotlib.pyplot as plt
+    mpl.style.use(['bmh', 'fivethirtyeight'])
     mpl.rcParams['text.usetex'] = False
     # Generate random test data.
     start = datetime.datetime.strptime( '2017-03-18', __fmt__ )

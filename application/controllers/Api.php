@@ -1077,10 +1077,11 @@ class Api extends CI_Controller
             foreach(getUserJCs($user) as $jc)
                 $jcs[$jc['jc_id']] = $jc;
             $data['jcs'] = $jcs;
+            $this->send_data($data, "ok");
+            return;
         }
         else if($args[0] === 'roles')
         {
-            $user = getLogin();
             $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
             $this->send_data($data[0], "ok");
             return;
@@ -1115,13 +1116,27 @@ class Api extends CI_Controller
         {
             $info = getUserInfo($user, true);
             $data = explode(',', $info['roles']);
+            $this->send_data($data, "ok");
+            return;
         }
         else if( $args[0] === 'aws')
         {
+            $data = getAwsOfSpeaker($user);
             $upcoming = getUpcomingAWSOfSpeaker($user);
             if($upcoming)
                 $data[] = $upcoming;
-            $data = getAwsOfSpeaker($user);
+            $this->send_data($data, 'ok');
+            return;
+        }
+        else if( $args[0] === 'acknowledge_aws')
+        {
+            $user = getLogin();
+            $awsID = $args[1];
+            $res = updateTable('upcoming_aws', 'id,speaker', 'acknowledged'
+                , ['id'=>$awsID, 'speaker'=>$user, 'acknowledged'=>'YES']
+            );
+            $this->send_data(['res'=>$res], 'ok');
+            return;
         }
         else if($args[0] === 'talk')
         {
@@ -1159,15 +1174,21 @@ class Api extends CI_Controller
         {
             $data = getMyAllCourses($user);
             ksort($data);
+            $this->send_data($data, "ok");
+            return;
         }
         else if( $args[0] === 'jc')
         {
             $data = getUpcomingJCPresentations();
+            $this->send_data($data, "ok");
+            return;
         }
         else
+        {
             $data = ['Unknown query'];
-
-        $this->send_data($data, 'ok');
+            $this->send_data($data, 'ok');
+            return;
+        }
     }
 
     /* --------------------------------------------------------------------------*/
