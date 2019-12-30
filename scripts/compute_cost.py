@@ -29,16 +29,16 @@ def linear( nAWS, year ):
     """
     x = year - 1
     if nAWS <= 1:
-        return max(0, x)
+        return max(0, x) # + 0.1*random.random())
     elif nAWS == 2:
-        c = 0.1
-        m = (0.55-c)/0.5
+        c = 0.25
+        m = (1-c)/1
     elif nAWS == 3:
-        c = 0.5
-        m = (1.5-c)/1.5
+        c = 1
+        m = (2.1-c)/2
     else:
-        c = 1.5
-        m = (3-c)/4
+        c = 2
+        m = (3.1-c)/4
     return max(0, m*x+c)
 
 def computeCost( slot_date, lastDate, nAWS ):
@@ -78,9 +78,13 @@ def test( ):
 
         plt.xlabel( 'Gap in years between slot and last AWS' )
         plt.ylabel( 'Cost' )
-        plt.plot( xval, yval, label = '#AWS = %d' % naws )
-        plt.legend( )
+        plt.plot( xval, yval, '-', marker=f'${naws}$'
+                , markevery=30, markersize=15
+                , alpha=0.7
+                , label = f'#AWS={naws}')
+        plt.legend(fontsize=10)
 
+    plt.tight_layout()
     plt.savefig( "%s.png" % sys.argv[0] )
 
 if __name__ == '__main__':
