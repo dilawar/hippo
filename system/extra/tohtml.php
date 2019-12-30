@@ -1834,7 +1834,6 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
 
     $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
 
-
     $pic = '';
     if( $with_picture )
     {
@@ -1879,7 +1878,7 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
     $talkHTML = '<div class="">' . fixHTML( $talk['description'] ) . '</div>';
 
     // Final HTML.
-    $html = "<details> <summary> <h1> $title </h1> </summary>";
+    $html = "<details> <summary> <div class='h3'> $title </div> </summary>";
     $html .= "<div> $infoTable </div> <div> $talkHTML </div>";
     $html .= "</details>";
     return $html;

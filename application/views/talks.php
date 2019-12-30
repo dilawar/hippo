@@ -1,6 +1,5 @@
 <?php
 require_once BASEPATH . 'autoload.php';
-
 $today = dbDate( 'today' );
 $default = array( 'date' => $today );
 
@@ -53,7 +52,7 @@ else
                 $talkHtml .= '</div>'; $talkHtml .= "<br>";
 
                 // Link to pdf file.
-                $talkHtml .= '<div class="div pull-right">';
+                $talkHtml .= '<div class="div pull-right" style="margin-right:20px">';
                 $talkHtml .= '<a target="_blank" href="'
                         . site_url("user/downloadtalk/".$default['date']."/$talkId") . '">
                         <i class="fa fa-download ">PDF</i></a>';

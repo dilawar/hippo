@@ -22,6 +22,7 @@ final class Versions
      */
     public const VERSIONS          = array (
   'chriskacerguis/codeigniter-restserver' => '3.0.0@ee06e378d50ff28bfeba88c554bf2ae5c65907ce',
+  'eluceo/ical' => '0.16.0@97da0d94c9716e65c141066a2d96aa098379721b',
   'firebase/php-jwt' => 'v5.0.0@9984a4d3a32ae7673d6971ea00bae9d0a1abba0e',
   'google/apiclient' => 'v2.2.4@d6c7563bdf88d6a0719ea63e21c74dc86032364e',
   'google/apiclient-services' => 'v0.112@0cc6d74aa99f5af8385c7b87599b97460e036dc2',
@@ -60,7 +61,7 @@ final class Versions
   'webmozart/assert' => '1.5.0@88e6d84706d09a236046d686bbea96f07b3a34f4',
   'webmozart/glob' => '4.1.0@3cbf63d4973cf9d780b93d2da8eec7e4a9e63bbe',
   'webmozart/path-util' => '2.3.0@d939f7edc24c9a1bb9c0dee5cb05d8e859490725',
-  'codeigniter/framework' => 'dev-devel@c0051075c40cc919c0da4c1034064f3b3ac7b46f',
+  'codeigniter/framework' => 'dev-devel@37515fb65909383159d939d07aee9f70563224c3',
 );
 
     private function __construct()

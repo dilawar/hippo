@@ -15,7 +15,8 @@
 		"google/apiclient": "^2.2",
 		"renanbr/bibtex-parser": "^2",
 		"chriskacerguis/codeigniter-restserver": "^3.0",
-                "phpmailer/phpmailer": "^6.0"
+                "phpmailer/phpmailer": "^6.0",
+		"eluceo/ical": "^0.16.0"
 	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"

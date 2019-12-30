@@ -957,9 +957,10 @@ p.note {
 }
 
 p.wherewhen {
-    font-size: large;
-    color: blue;
+    font-size: normal;
+    /* color: blue; */
     font-variant: small-caps;
+    margin:0px;
 }
 
 div.human_readable p:first-of-type::first-letter {
