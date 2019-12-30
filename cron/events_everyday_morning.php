@@ -41,7 +41,15 @@ function events_everyday_morning_cron()
                             $to = $template[ 'recipients' ];
                             $ccs = $template[ 'cc' ];
                             $msg = $template[ 'email_body' ];
+
                             $attachment = '';
+                            try {
+                                $attachment = eventToICALFile($event);
+                            } 
+                            catch (Exception $e)
+                            {
+                            }
+                            // echo printInfo("Event $subject; attachment: $attachment");
                             $res = sendHTMLEmail( $msg, $subject, $to, $ccs, $attachment );
                             if( $res )
                                 echo printInfo( "Email sent successfully" );
