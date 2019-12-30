@@ -887,13 +887,13 @@ function getSpeakerPicturePathById( $id )
 function rescheduleAWS( $method = 'reschedule_default' ) : array
 {
     if( $method == 'reschedule_default' )
-        $scriptPath = FCPATH.'./scripts/schedule_aws.py';
+        $scriptPath = FCPATH.'./scripts/schedule_notheme.sh';
     else if( $method == 'reschedule_group_greedy' )
         $scriptPath = FCPATH.'./scripts/schedule_aws_greedy_groupwise.py';
     else if( $method == 'reschedule_group' )
-        $scriptPath = FCPATH.'./scripts/schedule.sh';
+        $scriptPath = FCPATH.'./scripts/schedule_groupbytheme.sh';
     else
-        $scriptPath = FCPATH.'./scripts/schedule_aws.py';
+        $scriptPath = FCPATH.'./scripts/schedule_notheme.sh';
 
     // echo("Executing $scriptPath with timeout 60 secs.");
     $command = "timeout 60 $scriptPath";
