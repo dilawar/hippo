@@ -199,7 +199,7 @@ trait Booking
                 if( count( $rgroup ) > 0 )
                 {
                     $data[ 'NUMBER_OF_REQUESTS'] = count( $rgroup );
-                    $subject = "Your booking request (id-$gid) has been recieved";
+                    $subject = "Your booking request (id-$gid) has been received";
                     $template = emailFromTemplate( 'BOOKING_NOTIFICATION', $data );
 
                     $body = $template[ 'email_body'];
