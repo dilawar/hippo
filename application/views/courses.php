@@ -28,9 +28,9 @@ function showAlertTable( ) {
 
 $slotCourses = array( );
 $tileCourses = array( );
-$runningCourses = $cRunningCourses;
-$sem = $cSemester;
-$year = $cYear;
+$sem = $cSemester ?? getCurrentSemester();
+$year = $cYear ?? getCurrentYear();
+$runningCourses = $cRunningCourses ?? getSemesterCourses($year, $sem);
 
 // Collect both metadata and other information in slotCourse array.
 foreach( $runningCourses as $c )

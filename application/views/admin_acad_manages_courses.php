@@ -22,10 +22,11 @@ function showEditCourse( $buttonVal, $course )
             , $buttonVal
             );
 
-    $editHTML .= ' <button title="Delete this entry" type="submit" onclick="AreYouSure(this)"
+    $editHTML .= ' <button class="btn btn-danger" 
+        title="Delete this entry" type="submit" onclick="AreYouSure(this)"
             name="response" value="Delete">' . $symbDelete .
         '</button>';
-    $editHTML .= '<button id="addMoreInstructors">Add more instructors</button>';
+    $editHTML .= '<button class="btn btn-info" id="addMoreInstructors">Add more instructors</button>';
     $editHTML .= '</form>';
     return $editHTML;
 }
@@ -87,12 +88,13 @@ echo "<h1>All courses</h1>";
 echo p( "The form to ADD a new course or EDIT a selected course is at the bottom." );
 echo '<input id="filter_all_courses" placeholder="Type to filter courses" />';
 
-echo coursesTable( $editable = true, $with_form = true, $class = "small_font" );
+echo coursesTable( $editable = true, $with_form = true, $class = "small_font table" );
 
 echo '<h1>Edit a course or add a new one</h1>';
 echo '<form method="post" action="#editcourse">';
 echo '<input id="course" name="id" type="text" value="" >';
-echo '<button type="submit" name="response" value="show">Edit Course</button>';
+echo '<button class="btn btn-primary"
+        type="submit" name="response" value="show">Edit Course</button>';
 echo '</form>';
 
 // We can edit course using both _GET or _POST.

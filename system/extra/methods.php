@@ -1617,7 +1617,7 @@ function cancelRequesttAndNotifyBookingParty( $request )
 {
     echo printInfo( "Cancelling and notifying the booking party" );
     $res = changeRequestStatus( $request[ 'gid' ]
-        , $request[ 'eid' ], $request[ 'created_by' ], 'CANCELLED'
+        , $request[ 'rid' ], $request[ 'created_by' ], 'CANCELLED'
     );
 
     $login = $request[ 'created_by' ];
