@@ -73,6 +73,22 @@ class Adminacad extends CI_Controller
         $this->load_adminacad_view( 'admin_acad_manages_enrollments', $data );
     }
 
+    /* Manage faculty */
+    public function faculty($arg = '')
+    {
+        $this->load_adminacad_view( 'admin_manages_faculty.php');
+        return;
+    }
+
+    public function faculty_task($arg = '')
+    {
+        $res = admin_faculty_task($_POST);
+        if(! $res['success'])
+            echo flashMessage($res['msg']);
+        $this->faculty();
+        return;
+    }
+
     public function show_enrollments( $user = '' )
     {
         $data = [ 'user' => $user ];

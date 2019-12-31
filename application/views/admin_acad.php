@@ -28,14 +28,15 @@ $(function() {
 
 $symbUpdate = '<i class="fa fa-check"></i>';
 
-echo '<table class="admin"><tr>';
+echo '<table class="admin table">';
+echo '<tr>';
 echo '<td><a class="clickable" href="'.site_url('adminacad/upcoming_aws').'">Manage Upcoming AWSes</a></td>';
 echo '<td><a class="clickable" href="'.site_url('adminacad/scheduling_request'). '">
         Manage ' . count( $pendingScheduleRequest) . ' Pending Scheduling Requests</a></td>';
 echo '</tr></table>';
 echo ' <br /> ';
 
-echo '<table class="admin">
+echo '<table class="admin table">
     <tr>
         <td> Update AWS speaker<br />
             <form method="post" action="' . site_url("$ref/update_aws_speaker") . '">
@@ -58,7 +59,7 @@ echo '<table class="admin">
     </table>';
 
 echo '<br />';
-echo '<table class="admin">
+echo '<table class="admin table">
     <tr>
         <td> <a class="clickable_small" href="'.site_url('adminacad/add_aws_entry').'">Add Missing AWS entry</td>
         <td> <a class="clickable_small" href="'.site_url('adminacad/aws_db').'">AWS Database</a> </td>
@@ -69,6 +70,12 @@ echo '<table class="admin">
             ' pending requests</a>
         </td>
         <td> <a class="clickable_small" href="'.site_url('adminacad/email_and_docs').'">Emails and Documents</td>
+    </tr>
+    <tr>
+        <td> <a class="clickable_small"
+            href="'.site_url('adminacad/faculty').'">Manage Faculty and Course Instructors</a>
+        </td>
+        <td></td>
     </tr>
     </table>';
 
@@ -122,9 +129,9 @@ if( isset( $_POST[ 'response' ] ))
 /*
  * Course work,
  */
-echo '<h1>Courses</h1>';
+echo '<h1 class="div">Courses</h1>';
 echo '
-  <table class="admin">
+  <table class="admin table">
     <tr>
         <td>
             <a class="clickable" href="'.site_url('adminacad/enrollments').'"
@@ -169,7 +176,7 @@ echo '
 // Journal clubs.
 echo '<h1>Journal Clubs</h1>';
 echo '
-  <table class="admin">
+  <table class="admin table">
     <tr>
         <td><a class="clickable" href="'.site_url('adminacad/jc').'">Add/Update Journal Clubs</a> </td>
         <td><a class="clickable" href="'.site_url('adminacad/jc_admins').'">Manage Journal Club Admins</a></td>
@@ -179,18 +186,27 @@ echo '
 
 
 
-echo '<h1>EXTRA</h1>';
-echo "<h2>Automatic Housekeeping</h2>";
+echo '<h1>Manage talks and seminars</h1>';
+echo '<table class="admin table">';
+echo '<tr>
+        <td> <a class="clickable" href="'.site_url('adminacad/manages_talks').'">Manage talks/seminar</td>
+        <td> <a class="clickable" href="'.site_url('adminacad/manages_speakers').'">Manage talk/seminar speakers</td>
+    </tr>';
+echo '</table>';
+
+
+echo '<h1>Extra</h1>';
+echo "<h2>AWS Housekeeping</h2>";
 
 $badEntries = doAWSHouseKeeping( );
 if( count( $badEntries ) == 0 )
-    echo printInfo( "AWS House is in order." );
+    echo printInfo( "AWSs are in order." );
 else
 {
     // can't make two forms on same page with same action. They will merge.
-    echo alertUser( "Following entries could not be moved to main AWS list. Most
-        likely these entries have no data. You need to fix them. ", false
-    );
+    echo printNote("Following entries could not be moved to main AWS list. Most
+        likely these entries have no data. You need to fix them. You need to know
+        at least one supervisor to fix them. ");
 
     echo '<form action="' . site_url("adminacad/update_upcoming_aws") . '" method="post">';
     foreach( $badEntries as $aws )
@@ -203,10 +219,9 @@ else
     echo '</form>';
 }
 
-
 echo "<h2>Information</h2>";
 echo '
-  <table border="0" class="admin">
+  <table border="0" class="admin table">
     <tr>
         <td>AWS summary <small>
             See the summary of all AWSs. You may be able to spot missing AWS entry
@@ -224,13 +239,6 @@ echo '
     </tr>
   </table>';
 
-echo '<h1>Manage talks and seminars</h1>';
-echo '<table class="admin">';
-echo '<tr>
-        <td> <a class="clickable" href="'.site_url('adminacad/manages_talks').'">Manage talks/seminar</td>
-        <td> <a class="clickable" href="'.site_url('adminacad/manages_speakers').'">Manage talk/seminar speakers</td>
-    </tr>';
-echo '</table>';
 
 echo goBackToPageLink( 'adminacad', 'Go back' );
 

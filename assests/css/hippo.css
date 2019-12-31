@@ -1,8 +1,8 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth: 1000px;
-    --minwidth: 400px;
+    --maxwidth: 800px;
+    --minwidth: 300px;
 }
 
 
@@ -15,7 +15,7 @@ body {
     /* font-family: "Libre Baskerville"; */
     /* font-size: 16px; */
     /* font-family : 'EB Garamond'; */
-    font-family: "Open Sans", "Arial", sans-serif;
+    /* font-family: "Open Sans", "Arial", sans-serif; */
     width: 90%;
     max-width: var(--maxwidth);
     min-width: var(--minwidth);
@@ -73,7 +73,7 @@ div.radio {
 }
 
 h1.title {
-    font-size: xx-large;
+    font-size: x-large;
     font-variant: small-caps;
     vertical-align: bottom;
     display: inline-block;
@@ -964,7 +964,7 @@ p.wherewhen {
 }
 
 div.human_readable p:first-of-type::first-letter {
-    font-size: xx-large;
+    font-size: x-large;
 }
 
 td.db_table_fieldname {
@@ -1161,7 +1161,7 @@ a.link_as_button {
 }
 
 a.clickable {
-    font-size: xx-large;
+    font-size: x-large;
     font-weight: bold;
     font-variant: small-caps;
     cursor: url;

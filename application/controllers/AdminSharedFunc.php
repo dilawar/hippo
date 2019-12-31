@@ -4,9 +4,9 @@ require_once BASEPATH.'autoload.php';
 function admin_update_talk( $data )
 {
     $res = updateTable( 'talks', 'id'
-                , 'class,host,host_extra,coordinator,title,description'
-                , $data 
-            );
+        , 'class,host,host_extra,coordinator,title,description'
+        , $data 
+    );
 
     if( $res )
     {
@@ -93,7 +93,7 @@ function admin_update_speaker( array $data ) : array
             $res = deleteFromTable( 'speakers', 'first_name,last_name,institute', $data );
 
         if( $res )
-             $final['message'] = "Successfully deleted entry";
+            $final['message'] = "Successfully deleted entry";
         else
             $final['error'] = minionEmbarrassed( "Failed to delete speaker from database" );
 
@@ -117,11 +117,11 @@ function admin_update_speaker( array $data ) : array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  venue actions are shared between admin and bmvadmin.
-    *
-    * @Param $arg
-    *
-    * @Returns   
+ * @Synopsis  venue actions are shared between admin and bmvadmin.
+ *
+ * @Param $arg
+ *
+ * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
 function admin_venue_actions(array $data, string &$msg) : bool
@@ -187,6 +187,63 @@ function admin_delete_booking( )
 {
     // Admin is deleting booking.
 
+}
+
+function admin_faculty_task($data) : array
+{
+    $ret = ['success'=>true, 'msg'=>''];
+    $response = strtolower($data['response']);
+    if( $response == 'update' )
+    {
+        $data[ 'modified_on' ] = date( 'Y-m-d H:i:s', strtotime( 'now' ));
+        $res = updateTable( 'faculty', 'email'
+            , 'first_name,middle_name,last_name,status' . 
+',modified_on,url,specialization,affiliation,institute'
+            , $data 
+        );
+
+        if( $res ) {
+            $ret['success'] = true;
+            $ret['msg'] .= 'Successfully updated faculty';
+        }
+        else
+        {
+            $ret['success'] = false;
+            $res['msg'] .= "I could not update faculty";
+        }
+    }
+    else if( $response == 'add' )
+    {
+        $data[ 'modified_on' ] = date( 'Y-m-d H:i:s', strtotime( 'now' ));
+        $res = insertIntoTable( 'faculty'
+            , 'email,first_name,middle_name,last_name,status'.
+',modified_on,url,specialization,affiliation,institute'
+            , $data 
+        );
+
+        if( $res )
+            $ret['msg'] .= 'Successfully added a new faculty';
+        else
+        {
+            $ret['success'] = true;
+            $ret['msg'] .= "I could not edit new faculty.";
+        }
+    }
+    else if( $response == 'delete' )
+    {
+        $res = deleteFromTable( 'faculty', 'email', $data );
+        $ret['success'] = $res?true:false;
+        if( $res )
+            $ret['msg'] .= ( "Successfully deteleted faculty." );
+        else
+            $ret['msg'] .= "Failed to delete entry from table.";
+    }
+    else
+    {
+        $ret['success'] = false;
+        $ret['msg'] .= "Not implemented yet $response.";
+    }
+    return $ret;
 }
 
 ?>
