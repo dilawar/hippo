@@ -22,7 +22,7 @@ function showEditCourse( $buttonVal, $course )
             , $buttonVal
             );
 
-    $editHTML .= ' <button class="btn btn-danger" 
+    $editHTML .= '<button class="btn btn-danger" 
         title="Delete this entry" type="submit" onclick="AreYouSure(this)"
             name="response" value="Delete">' . $symbDelete .
         '</button>';
@@ -88,9 +88,9 @@ echo "<h1>All courses</h1>";
 echo p( "The form to ADD a new course or EDIT a selected course is at the bottom." );
 echo '<input id="filter_all_courses" placeholder="Type to filter courses" />';
 
-echo coursesTable( $editable = true, $with_form = true, $class = "small_font table" );
+echo coursesTable($editable=true, $with_form=true, $class="small_font table");
 
-echo '<h1>Edit a course or add a new one</h1>';
+echo '<h1>Add/Update a course</h1>';
 echo '<form method="post" action="#editcourse">';
 echo '<input id="course" name="id" type="text" value="" >';
 echo '<button class="btn btn-primary"
