@@ -18,13 +18,12 @@ foreach( $faculty as $fac )
     $specialization[ $fac[ 'specialization' ] ] = 0;
 }
 
-echo "<h2>Add a new faculty or update existing faculty </h3>";
-
 $facultyEmails = array_keys( $facultyMap );
 $specialization = array_keys( $specialization );
-
-echo printNote('To update a faculty, first search him/her.');
-
+echo printNote('To update a faculty, first search him/her.
+    <br />
+    To remove a faculty from the list, select <tt>STATUS</tt> to <tt>INVALID</tt>.
+    ');
 ?>
 
 <script type="text/javascript" charset="utf-8">
