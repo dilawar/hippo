@@ -35,40 +35,45 @@ if( ! requiredPrivilege( 'ADMIN' ) )
 
 echo "<table class=\"admin\">";
 echo '<tr>
-        <td>
-            <form method="post" action="'.site_url('admin/addupdatedelete').'">
+    <td>
+        <form method="post" action="'.site_url('admin/addupdatedelete').'">
             <input id="autocomplete_user" name="login" placeholder="I will autocomplete " >
             <button name="response" value="edit">Add/Update/Delete user</button>
-            </form>
-        </td>
-        <td>
-            <a class="clickable" href="'.site_url('admin/showusers') .'" target="_blank">Show all users</a>
-        </td>
-    </tr>
+        </form>
+    </td>
+    <td>
+        <a class="clickable" href="'.site_url('admin/showusers') .'" target="_blank">Show all users</a>
+    </td>
+</tr>
     ';
 
 echo '
-    <tr>
-        <td>
-            <a class="clickable" href="'.site_url("admin/emailtemplates").'">Manage Email template</a>
-        </td>
-        <td>
-            <a class="clickable" href="'. site_url( 'admin/faculty' ) . '">Manage faculty</a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <a class="clickable" href="'.site_url( 'admin/holidays') . '">Manage holidays</a>
-        </td>
-    </tr>
-    ';
-
+<tr>
+    <td>
+        <a class="clickable" href="'.site_url("admin/emailtemplates").'">Manage Email template</a>
+    </td>
+    <td>
+        <a class="clickable" href="'. site_url( 'admin/faculty' ) . '">Manage faculty</a>
+    </td>
+</tr>
+<tr>
+    <td>
+        <a class="clickable" href="'.site_url( 'admin/holidays') . '">Manage holidays</a>
+    </td>
+</tr>
+<tr>
+    <td>
+        <a class="clickable" href="'.site_url( 'admin/notifyfcm') . '">
+        Send Notification To App User</a>
+    </td>
+</tr>
+';
 echo '</table>';
 
 
 echo ' <br /> <br />';
 echo '<h1>Hippo Configuration</h1>';
-$editable = 'id,value';
+$editable = 'id,value,comment';
 $default = array( );
 
 echo ' <form action="'.site_url('admin/configuration') .'" method="post">';
