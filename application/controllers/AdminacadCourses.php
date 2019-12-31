@@ -4,9 +4,9 @@ trait AdminacadCourses
 {
 
     // VIEWS.
-    public function courses( )
+    public function courses($data=[])
     {
-        $this->load_adminacad_view( 'admin_acad_manages_current_courses' );
+        $this->load_adminacad_view('admin_acad_manages_current_courses', $data);
     }
 
     public function allcourses( )
@@ -140,7 +140,8 @@ trait AdminacadCourses
         if( $response == 'do_nothing' )
         {
             flashMessage( "User said do nothing.");
-            redirect( "adminacad/courses" );
+            $this->load_adminacad_view( "courses" );
+            return;
         }
         else if( $response == 'delete' )
         {
@@ -184,7 +185,7 @@ trait AdminacadCourses
                 if( ! __get__($_POST, $k, '' ) )
                 {
                     printErrorSevere( "Incomplete entry. $k is not found." );
-                    redirect( 'adminacad/courses' );
+                    $this->load_adminacad_view( 'admin_acad_manages_current_courses', $_POST );
                     return;
                 }
             }
@@ -221,9 +222,8 @@ trait AdminacadCourses
                     $msg .= arrayToVerticalTableHTML( $cc, 'info' );
                     $msg .= '<br>';
                 }
-
                 printErrorSevere( $msg );
-                redirect( "adminacad/courses" );
+                $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
                 return;
             }
 
@@ -247,7 +247,7 @@ trait AdminacadCourses
                     $msg .= "Could ID can not be empty";
 
                 flashMessage($msg);
-                redirect("adminacad/courses");
+                $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
                 return;
             }
             else if ( $response == 'update' )
@@ -259,13 +259,13 @@ trait AdminacadCourses
                     $msg .= printInfo( 'Updated running course ' . $_POST['course_id'] . '.' );
                     flashMessage( $msg );
                 }
-                redirect( "adminacad/courses" );
+                $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
                 return;
             }
             else
             {
                 printWarning( "Unknown task '$response'. " );
-                redirect( "adminacad/courses" );
+                $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
                 return;
             }
         }

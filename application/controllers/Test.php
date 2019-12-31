@@ -2,7 +2,7 @@
 
 require_once FCPATH.'./tests/test_ldap.php';
 require_once FCPATH.'./tests/test_methods.php';
-require_once FCPATH.'./tests/test_mail.php';
+// require_once FCPATH.'./tests/test_mail.php';
 
 class Test extends CI_Controller 
 {
@@ -17,10 +17,10 @@ class Test extends CI_Controller
         test_methods();
     }
 
-    public function mail()
-    {
-        test_mail();
-    }
+    // public function mail()
+    // {
+        // test_mail();
+    // }
 
 }
 

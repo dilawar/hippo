@@ -2317,7 +2317,8 @@ function coursesTable( $editable = false, $with_form = true, $class="" )
             if( $with_form )
                 $html .= '<form action="#editcourse" method="post" accept-charset="utf-8">';
 
-            $html .= '<td> <button name="response" value="Edit">Edit</button>';
+            $html .= '<td> <button name="response" class="btn btn-secondary btn-small" 
+                value="Edit">Edit</button>';
             $html .= '<input type="hidden" name="id" value="' . $c['id'] . '">';
             $html .= '</td>';
 

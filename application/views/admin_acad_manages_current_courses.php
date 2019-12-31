@@ -6,8 +6,16 @@ echo userHTML( );
 global $symbDelete;
 global $symbBell;
 
-$sem = getCurrentSemester( );
-$year = getCurrentYear( );
+
+// Prefer $_GET over controller.
+$year = $year ?? getCurrentYear();
+$year = $_GET['year'] ?? $year;
+$semester = $semester ?? getCurrentSemester();
+$semester = $_GET['semester'] ?? $semester;
+
+echo '<div class="float-right">';
+echo selectYearSemesterForm($year, $semester, '/adminacad/courses');
+echo '</div>';
 
 $action = 'Add';
 
@@ -28,10 +36,17 @@ $venues = getTableEntries( 'venues', '', "type='LECTURE HALL'" );
 $venueSelect = venuesToHTMLSelect( $venues );
 $slotSelect = arrayToSelectList( 'slot', array_keys($slotMap), $slotMap );
 
-// Running course for this semester.
+// Running course for the next semester which might overlap with this one. 
+$runningCourses = getSemesterCourses( $year, $semester);
+
+// This is bit wiered but leave it like this. Sometimes user might select a
+// semester which is already a next semester (on new year eve). This is a bit
+// odd here but I forgot why I am doing it here. If it is not hurting anyone,
+// leave it as it is.
 $nextSem = getNextSemester( );
-$runningCourses = getSemesterCourses( $year, $sem );
-$nextSemCourses = getSemesterCourses( $nextSem[ 'year' ], $nextSem[ 'semester' ] );
+$nextSemCourses = [];
+if($nextSem['year'] != $year && $nextSem['semester'] != $semester)
+    $nextSemCourses = getSemesterCourses( $nextSem[ 'year' ], $nextSem[ 'semester' ] );
 
 $runningCoursesWithoutInsts = array_merge( $runningCourses, $nextSemCourses );
 
@@ -54,7 +69,7 @@ foreach( $runningCourses as $x )
 // Array to hold runnig course.
 $default = array(
     'venue' => $venueSelect
-    , 'semester' => $sem
+    , 'semester' => $semester
     , 'year' => $year
     , 'course_id' => $courseIdsSelect
 );
@@ -80,17 +95,19 @@ echo p( "To edit details of a course " .
     goBackToPageLinkInline( "adminacad/allcourses" , "click here." )
 );
 
-$runningCoursesHTML  = "<h1>Courses running in $year/$sem </h1>";
-$runningCoursesHTML .= '<table class="info sortable">';
+$runningCoursesHTML  = "<h1>Courses running in $year/$semester </h1>";
+$runningCoursesHTML .= '<table class="sortable table table-striped">';
 if( count($runningCourses) > 0 )
 {
-    $tobefilterd = 'id,semester,year';
+    $tobefilterd = 'id,year,semester';
     $runningCoursesHTML .= arrayHeaderRow( $runningCourses[0], 'info', $tobefilterd );
     foreach( $runningCourses as $course )
     {
         $courseID = $course[ 'course_id'];
+        // $course['year/semester'] = $course['year'] . '/' . $course['semester'];
 
         $cname = getCourseName( $course[ 'course_id'] );
+
         $course['course_id'] = '<strong>'
             . '<a target="_blank" href="' . site_url('adminacad/allcourses?id='.$courseID.'#editcourse') . '">' 
             . '<i class="fa fa-pencil"></i> </a>' 
@@ -104,7 +121,8 @@ if( count($runningCourses) > 0 )
         $runningCoursesHTML .= arrayToRowHTML($course, 'aws', $tobefilterd, true, false);
         $runningCoursesHTML .=  '<td>
             <form action="#edit_current_course" method="post">
-                <button type="submit" value="Edit">Edit Course</button>
+                <button class="btn btn-secondary" 
+                    type="submit" value="Edit">Edit Course</button>
                 <input type="hidden" name="running_course" value="' 
                     .  $course[ 'id' ] . ': ' . $cname .  '" />
             </form></td>';
@@ -116,7 +134,7 @@ if( count($runningCourses) > 0 )
     echo '</div>';
 }
 else
-    echo p( "No courses found for this semester: $sem/$year." );
+    echo p( "No courses found for this semester: $semester/$year." );
 
 
 /* --------------------------------------------------------------------------*/
@@ -140,7 +158,7 @@ else
 echo '<form method="post" action="'.site_url('adminacad/courses_action') .'">';
 $default[ 'slot' ] = $slotSelect;
 $default[ 'venue' ] = $venueSelect;
-$default[ 'semester' ] = $sem;
+$default[ 'semester' ] = $semester;
 $default[ 'is_audit_allowed' ] = "YES";
 $default[ 'max_registration' ] = -1;
 
@@ -148,7 +166,7 @@ if( __get__( $_POST, 'running_course', '') )
 {
     $action = 'Update';
     $course = getTableEntry( 'courses', 'id', array( 'id' => $_POST[ 'running_course_id' ]) );
-    $default[ 'semester' ] = $sem;
+    $default[ 'semester' ] = $semester;
 
     // Select the already assigned venue.
     $venueSelect = venuesToHTMLSelect( $venues, false, 'venue', array( $course[ 'venue' ] ) );
