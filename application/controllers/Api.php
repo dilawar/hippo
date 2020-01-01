@@ -10,6 +10,7 @@ require_once BASEPATH . '/extra/people.php';
 require_once BASEPATH . '/extra/search.php';
 require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/talk.php';
+include_once BASEPATH . '/extra/acad.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -282,6 +283,12 @@ class Api extends CI_Controller
             $this->send_data_helper(array_merge($speakers, $faculty));
             return;
         }
+        else if($args[0] === 'faculty')
+        {
+            $faculty = searchInFaculty($q);
+            $this->send_data_helper($faculty);
+            return;
+        }
         else if($args[0] === 'login')
         {
             $logins = searchInLogins($q);
@@ -378,6 +385,7 @@ class Api extends CI_Controller
                     $data[$cid] = getCourseById($cid);
             }
 
+            ksort($data);
             $this->send_data($data, "ok");
             return;
         }
@@ -413,6 +421,56 @@ class Api extends CI_Controller
             return;
         }
     }
+
+    // Only acadadmin can do these.
+    public function course()
+    {
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        if(! in_array('ACAD_ADMIN', getRoles($login)))
+        {
+            $this->send_data([], "Forbidden");
+            return;
+        }
+
+        $args = func_get_args();
+        if($args[0] === 'metadata')
+        {
+            if($args[1] === 'get')
+            {
+                $cid = base64_decode($args[2]);
+                $data = getCourseById($cid);
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($args[1] === 'update')
+            {
+                $cid = base64_decode($args[2]);
+                $_POST['id'] = $cid;
+                $res = updateCourseMetadata($_POST);
+                $this->send_data(['success'=>$res, 'payload'=>$_POST], "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown request"], "error");
+                return;
+            }
+        }
+        else
+        {
+            $this->send_data(["Unknown request"], "error");
+            return;
+        }
+    }
+
+
 
     /* --------------------------------------------------------------------------*/
     /**
@@ -2317,6 +2375,8 @@ class Api extends CI_Controller
                 $speakers = getAWSSpeakers($sortby='pi_or_host');
                 foreach($speakers as &$speaker)
                 {
+                    if(! $speaker)
+                        continue;
                     $extraInfo = getExtraAWSInfo($speaker['login'], $speaker);
                     $speaker = array_merge($speaker, $extraInfo);
                 }

@@ -56,7 +56,7 @@ trait AdminacadCourses
     {
         // Send to referrer.
         if($this->agent->is_referral())
-            redirect($this->agent->referrer());
+            rediect($this->agent->referrer());
         redirect( $fallback );
     }
 
@@ -95,14 +95,7 @@ trait AdminacadCourses
             echo printInfo( "Adding a new course in current course list" );
             if( strlen( $_POST[ 'id' ] ) > 0 )
             {
-                $res = insertIntoTable( 
-                    'courses_metadata'
-                    , 'id,name,credits,description' 
-                        .  ',instructor_1,instructor_2,instructor_3'
-                        . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
-                    , $_POST 
-                    );
-
+                $res = insertCourseMetadata($_POST);
                 if( ! $res )
                     echo printWarning( "Could not add course to list" );
                 else
@@ -114,14 +107,7 @@ trait AdminacadCourses
         }
         else if ( $_POST[ 'response' ] == 'Update' ) 
         {
-            $res = updateTable( 'courses_metadata'
-                    , 'id'
-                    , 'name,credits,description' 
-                        .  ',instructor_1,instructor_2,instructor_3'
-                        . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
-                    , $_POST 
-                    );
-
+            $res = updateCourseMetadata($_POST);
             if( $res )
                 echo flashMessage( 'Updated course : ' . $_POST[ 'id' ] );
         }

@@ -350,7 +350,9 @@ function getExtraAWSInfo(string $login, array $speaker=[]) : array
 
     // Get PI/HOST and speaker specialization.
     $pi = getPIOrHost($login);
-    $specialization = getSpecialization($login, $pi);
+    $specialization = 'UNKNOWN';
+    if($pi)
+        $specialization = getSpecialization($login, $pi);
 
     // This user may have not given any AWS in the past. We consider their
     // joining date as last AWS date.
@@ -361,7 +363,7 @@ function getExtraAWSInfo(string $login, array $speaker=[]) : array
     }
     else
     {
-        if(! $speaker)
+        if(! __get__($speaker, 'joined_on', ''))
             $speaker = getLoginInfo($login);
         $lastAwsDate = $speaker['joined_on'];
     }
@@ -402,6 +404,31 @@ function awsDatesAvailable(int $numSlots) : array
             break;
     }
     return $dates;
+}
+
+function insertCourseMetadata(array $data) 
+{
+    $res = insertIntoTable( 
+        'courses_metadata'
+        , 'id,name,credits,description' 
+        .  ',instructor_1,instructor_2,instructor_3'
+        . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
+        , $data 
+    );
+    return $res;
+}
+
+function updateCourseMetadata(array $data) 
+{
+    $res = updateTable( 'courses_metadata'
+        , 'id'
+        , 'name,credits,description' 
+        .  ',instructor_1,instructor_2,instructor_3'
+        . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
+        , $data 
+    );
+
+    return $res;
 }
 
 ?>
