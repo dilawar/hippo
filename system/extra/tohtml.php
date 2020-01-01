@@ -3157,6 +3157,14 @@ function getAWSSupervisorsHTML( array $aws ) : string
     return implode( ", ", $supervisors);
 }
 
+function getLoginHTML($login)
+{
+    $info = getLoginInfo($login);
+    if( ! $info)
+        return $login . " (<tt>LDAP info unavailable.</tt>)";
+    return trim(arrayToName($info, true));
+}
+
 function getAWSTcmHTML( array $aws ) : string 
 {
     $tcms = [];
