@@ -2,6 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once BASEPATH.'autoload.php';
+require_once BASEPATH.'extra/admin.php';
 
 class Admin extends CI_Controller
 {
@@ -47,6 +48,45 @@ class Admin extends CI_Controller
             echo flashMessage("Successfully updated.");
 
         redirect('admin');
+    }
+
+    public function notifyfcm($data=[])
+    {
+        $this->load_admin_view('admin_fcm', $data);
+        return;
+    }
+
+    public function sendfcm()
+    {
+        if(! $_POST['topic'])
+        {
+            echo flashMessage("No topic selected.");
+            $this->notifyfcm($_POST);
+            return;
+        }
+
+        if($_POST['title'] || $_POST['body'])
+        {
+            $topic = $_POST['topic'];
+            $title = $_POST['title'];
+            $body = $_POST['body'];
+            echo "$title";
+            $res = sendFirebaseCloudMessage($topic, $title, $body);
+            if($res)
+                echo flashMessage("Successfully submitted: " 
+                . json_encode($res)
+                . '<br />'
+                . json_encode($_POST)
+                );
+            else
+                echo flashMessage("Failed:" . json_encode($res));
+            $this->notifyfcm();
+            return;
+        }
+
+        echo flashMessage("Both 'title' and 'body' are emtpy.");
+        $this->notifyfcm($_POST);
+        return;
     }
 
     public function deleteuser( $md5 = '' )

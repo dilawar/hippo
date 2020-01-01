@@ -13,7 +13,7 @@ $year = $_GET['year'] ?? $year;
 $semester = $semester ?? getCurrentSemester();
 $semester = $_GET['semester'] ?? $semester;
 
-echo '<div class="float-right">';
+echo '<div style="display:flex; justify-content: flex-end">';
 echo selectYearSemesterForm($year, $semester, '/adminacad/courses');
 echo '</div>';
 
@@ -91,9 +91,9 @@ if( $_POST && array_key_exists( 'running_course', $_POST ) )
     $action = 'Edit';
 }
 
-echo p( "To edit details of a course " . 
-    goBackToPageLinkInline( "adminacad/allcourses" , "click here." )
-);
+// echo p( "To edit details of a course " .
+    // goBackToPageLinkInline( "adminacad/allcourses" , "click here." )
+// );
 
 $runningCoursesHTML  = "<h1>Courses running in $year/$semester </h1>";
 $runningCoursesHTML .= '<table class="sortable table table-striped">';
