@@ -10,6 +10,7 @@ require_once BASEPATH . '/extra/people.php';
 require_once BASEPATH . '/extra/search.php';
 require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/talk.php';
+include_once BASEPATH . '/extra/acad.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -169,6 +170,7 @@ class Api extends CI_Controller
                 $cards[] = [ 'title'=>$item['title']
                     , 'date'=>$item['date']
                     , 'time'=>$item['start_time']
+                    , 'venue'=>$item['venue']
                 ];
             }
             $this->send_data($cards, 'ok');
@@ -282,6 +284,12 @@ class Api extends CI_Controller
             $this->send_data_helper(array_merge($speakers, $faculty));
             return;
         }
+        else if($args[0] === 'faculty')
+        {
+            $faculty = searchInFaculty($q);
+            $this->send_data_helper($faculty);
+            return;
+        }
         else if($args[0] === 'login')
         {
             $logins = searchInLogins($q);
@@ -378,6 +386,7 @@ class Api extends CI_Controller
                     $data[$cid] = getCourseById($cid);
             }
 
+            ksort($data);
             $this->send_data($data, "ok");
             return;
         }
@@ -413,6 +422,122 @@ class Api extends CI_Controller
             return;
         }
     }
+
+    // Only acadadmin can do these.
+    public function course()
+    {
+        // Only need api key
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        if(! in_array('ACAD_ADMIN', getRoles($login)))
+        {
+            $this->send_data([], "Forbidden");
+            return;
+        }
+
+        $args = func_get_args();
+        if($args[0] === 'metadata')
+        {
+            if($args[1] === 'get')
+            {
+                $cid = base64_decode($args[2]);
+                $data = getCourseById($cid);
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($args[1] === 'update')
+            {
+                $cid = base64_decode($args[2]);
+                $_POST['id'] = $cid;
+                $res = updateCourseMetadata($_POST);
+                $this->send_data(['success'=>$res], "ok");
+                return;
+            }
+            else if($args[1] === 'deactivate')
+            {
+                $cid = base64_decode($args[2]);
+                $_POST['id'] = $cid;
+                $_POST['status'] = 'DEACTIVATED';
+                $res = updateTable('courses_metadata', 'id', 'status', $_POST);
+                $this->send_data(['success'=>$res], "ok");
+                return;
+            }
+            else if($args[1] === 'activate')
+            {
+                $cid = base64_decode($args[2]);
+                $_POST['id'] = $cid;
+                $_POST['status'] = 'VALID';
+                $res = updateTable('courses_metadata', 'id', 'status', $_POST);
+                $this->send_data(['success'=>$res], "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown request"], "error");
+                return;
+            }
+        }
+        else if($args[0] === 'running')
+        {
+            $endpoint = $args[1];
+            if($endpoint === 'update')
+            {
+                $res = @addOrUpdateRunningCourse($_POST, 'update');
+                $this->send_data($res, "ok");
+                return;
+            }
+            else if($endpoint === 'add')
+            {
+                $res = @addOrUpdateRunningCourse($_POST, 'add');
+                $this->send_data($res, "ok");
+                return;
+            }
+            else if($endpoint === 'remove')
+            {
+                $res = deleteRunningCourse($_POST);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else if($endpoint === 'assignslotvenue')
+            {
+                $res = assignSlotVenueRunningCourse($_POST);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown endpoint slot/$endpoint"], "error");
+                return;
+            }
+        }
+        if($args[0] === 'slot')
+        {
+            $endpoint = $args[1];
+            if($endpoint === 'all')
+            {
+                $data = getSlots();
+                $this->send_data($data, "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown endpoint slot/$endpoint"], "error");
+                return;
+            }
+        }
+        else
+        {
+            $this->send_data(["Unknown request"], "error");
+            return;
+        }
+    }
+
+
 
     /* --------------------------------------------------------------------------*/
     /**
@@ -645,8 +770,15 @@ class Api extends CI_Controller
         // Required for MAP to work.
         if( $args[0] === 'list')
         {
-            $type = __get__($args, 1, 'all');
-            $data = getVenuesByType($type);
+            $types = __get__($args, 1, 'all');
+            // For courses.
+            if($types === 'course')
+                $types = 'LECTURE HALL,AUDITORIUM';
+            $data = [];
+            foreach(explode(',', $types) as $type) {
+                $type = urldecode($type);
+                $data = array_merge($data, getVenuesByType($type));
+            }
             $this->send_data($data, "ok");
             return;
         }
@@ -2317,6 +2449,8 @@ class Api extends CI_Controller
                 $speakers = getAWSSpeakers($sortby='pi_or_host');
                 foreach($speakers as &$speaker)
                 {
+                    if(! $speaker)
+                        continue;
                     $extraInfo = getExtraAWSInfo($speaker['login'], $speaker);
                     $speaker = array_merge($speaker, $extraInfo);
                 }

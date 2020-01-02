@@ -350,7 +350,9 @@ function getExtraAWSInfo(string $login, array $speaker=[]) : array
 
     // Get PI/HOST and speaker specialization.
     $pi = getPIOrHost($login);
-    $specialization = getSpecialization($login, $pi);
+    $specialization = 'UNKNOWN';
+    if($pi)
+        $specialization = getSpecialization($login, $pi);
 
     // This user may have not given any AWS in the past. We consider their
     // joining date as last AWS date.
@@ -361,7 +363,7 @@ function getExtraAWSInfo(string $login, array $speaker=[]) : array
     }
     else
     {
-        if(! $speaker)
+        if(! __get__($speaker, 'joined_on', ''))
             $speaker = getLoginInfo($login);
         $lastAwsDate = $speaker['joined_on'];
     }
@@ -402,6 +404,172 @@ function awsDatesAvailable(int $numSlots) : array
             break;
     }
     return $dates;
+}
+
+function insertCourseMetadata(array $data) 
+{
+    $res = insertIntoTable( 
+        'courses_metadata'
+        , 'id,name,credits,description' 
+        .  ',instructor_1,instructor_2,instructor_3'
+        . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
+        , $data 
+    );
+    return $res;
+}
+
+function updateCourseMetadata(array $data) 
+{
+    $res = updateTable( 'courses_metadata'
+        , 'id'
+        , 'name,credits,description' 
+        .  ',instructor_1,instructor_2,instructor_3'
+        . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
+        , $data 
+    );
+
+    return $res;
+}
+
+function getSlots():array
+{
+    $tiles = getTableEntries('slots', 'groupid');
+    $result = array();
+    foreach($tiles as &$tile)
+        $result[$tile['groupid']][] = $tile;
+
+    foreach($result as $slotGroup => &$vals)
+    {
+        $html = [];
+        foreach($vals as $val)
+            $html[] = $val['day'];
+        $html = implode('-', $html) . '; ' . $vals[0]['start_time'] 
+            . ' to ' . $vals[0]['end_time'];
+        $result[$slotGroup]['html'] = $html;
+    }
+    return $result;
+}
+
+
+function deleteRunningCourse(array $data): array
+{
+    $ret = ['success'=>false, 'msg'=>''];
+    if( strlen($data['id']) > 0 )
+    {
+        $msg = '';
+        $res = deleteFromTable('courses', 'id', $data);
+        if($res)
+        {
+            deleteBookings($data['id']);
+            $msg .= "Successfully deleted entry";
+            // Remove all enrollments.
+            $year = getCurrentYear( );
+            $sem = getCurrentSemester( );
+            $res = deleteFromTable( 'course_registration', 'semester,year,course_id'
+                , ['year'=>$year, 'semester'=>$sem, 'course_id'=>$data['course_id']]
+            );
+
+            if($res)
+            {
+                $msg .= "Successfully removed  all enrollments. I have not notifiied the students.";
+                $ret['success'] = true;
+                $ret['msg'] = $msg;
+                return $ret;
+            }
+        }
+        $ret['success'] = false;
+        $ret['msg'] = $msg;
+    }
+    else
+        $ret['msg'] = "Invalid course ID.";
+    return $ret;
+}
+
+function addRunningCourse(array $data, string $msg=''): array
+{
+    $msg = '';
+    $updatable = 'semester,year,start_date,end_date,max_registration,' 
+        . 'allow_deregistration_until,is_audit_allowed,slot,venue,note'
+        . ',url,ignore_tiles';
+    if(strlen($data['course_id']) > 0)
+    {
+        $id = getCourseInstanceId($data[ 'course_id' ], $data['semester'], $data['year']);
+        $data[ 'id' ] = $id;
+        $res = insertIntoTable('courses',"id,course_id,$updatable", $data);
+        if(! $res)
+            $msg .= "Could not add course to list.";
+        else
+        {
+            $res = addCourseBookings( $data[ 'id' ] );
+            $msg .= "Successfully added course. Blocked venue as well.";
+        }
+    }
+    else
+        $msg .= "Could ID can not be empty";
+    return ['success' => true, 'msg' => $msg ];
+}
+
+function updateRunningCourse(array $data, string $msg='') : array
+{
+    $updatable = 'semester,year,start_date,end_date,max_registration,' 
+        . 'allow_deregistration_until,is_audit_allowed,slot,venue,note'
+        . ',url,ignore_tiles';
+    $res = updateTable( 'courses', 'id', $updatable , $data );
+    if( $res )
+    {
+        $res = updateBookings( $data[ 'id' ] );
+        $msg .= 'Updated running course ' . $data['course_id'] . '.';
+    }
+    return ['success'=>true, 'msg'=>$msg];
+}
+
+
+function addOrUpdateRunningCourse(array $data, string $response) : array
+{
+    // NOTE: the start date of course determines the semester and year
+    // of a course. The end date can spill into next semester.
+    // Especially in AUTUMN semester. What can I do, this is NCBS!
+    $data['semester'] = getSemester($data['start_date']);
+    $data['year'] = getYear($data['start_date']);
+
+    // Check if any other course is running on this venue/slot between given
+    // dates.
+    $startDate = $data['start_date'];
+    $endDate = $data['end_date'];
+
+    $coursesAtThisVenue = getCoursesAtThisVenueSlotBetweenDates(
+        $data['venue'], $data['slot'], $startDate, $endDate
+    );
+
+    $collisionCourses = array_filter(
+        $coursesAtThisVenue
+        , function( $c ) use ($data) { 
+            return $c['course_id'] != $data[ 'course_id' ]; 
+        }
+    );
+
+    $msg = '';
+    if( count( $collisionCourses ) > 0 )
+    {
+        foreach( $collisionCourses as $cc )
+        {
+            $msg .= "Following course is already assigned at this slot/venue";
+            $msg .= arrayToVerticalTableHTML( $cc, 'info' );
+            $msg .= '<br>';
+        }
+        return ['success' => false, 'msg' => $msg ];
+    }
+
+    // No collision. Add or update now.
+    if ($response === 'add')
+        return addRunningCourse($data, $msg);
+    else if ( $response === 'update' )
+        return updateRunningCourse($data, $msg);
+    else
+    {
+        $msg .= "Unknown task '$response'";
+        return ['success'=>true, 'msg' =>$msg];
+    }
 }
 
 ?>

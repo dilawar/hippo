@@ -1503,7 +1503,7 @@ function getLastAwsOfSpeaker( $speaker )
     *
     * @return
  */
-function getAwsOfSpeaker( $speaker )
+function getAwsOfSpeaker(string $speaker): array
 {
     $hippoDB = initDB();;
     $query = "SELECT * FROM annual_work_seminars WHERE speaker=:speaker
@@ -1927,11 +1927,8 @@ function updateTable( $tablename, $wherekeys, $keys, array $data )
     foreach( $keys as $k )
     {
         // If values for this key in $data is null then don't use it here.
-        if(! __get__( $data, $k, false))
-        {
-            $data[$k] = null;
+        if(null === $data[$k])
             continue;
-        }
 
         array_push( $cols, $k );
         array_push( $values, "$k=:$k" );
@@ -2210,7 +2207,7 @@ function getUpcomingAWSById( $id )
     return  $stmt->fetch( PDO::FETCH_ASSOC );
 }
 
-function getUpcomingAWSOfSpeaker($speaker)
+function getUpcomingAWSOfSpeaker(string $speaker)
 {
     return getTableEntry('upcoming_aws'
         , 'speaker,status'
@@ -3094,6 +3091,7 @@ function getCourseById( $cid )
 }
 
 
+
 /**
     * @brief Check if registration for courses is open.
     *
@@ -3208,7 +3206,7 @@ function getTableColumnTypes( $tableName, $columnName )
 
 }
 
-function getPIOrHost( string $loginOrEmail ) : string
+function getPIOrHost(string $loginOrEmail) : string
 {
     $login = explode('@', $loginOrEmail)[0];
 
@@ -3251,7 +3249,7 @@ function getPIOrHost( string $loginOrEmail ) : string
 /* ----------------------------------------------------------------------------*/
 function getCoursesAtThisVenueSlotBetweenDates( $venue, $slot, $start, $end )
 {
-    $whereExpr = "( end_date > '$start' AND start_date < '$end' )
+    $whereExpr = "(end_date > '$start' AND start_date < '$end' )
                     AND slot='$slot' AND venue='$venue'";
     $courses = getTableEntries( 'courses', 'start_date' , $whereExpr );
     return $courses;
@@ -3289,12 +3287,14 @@ function getLoginSpecialization( $login )
     return trim( $res[ 'specialization' ] );
 }
 
-function getFacultySpecialization( $email )
+function getFacultySpecialization(string $email)
 {
     $hippoDB = initDB();;
     $res = $hippoDB->query( "SELECT specialization FROM faculty WHERE email='$email'");
-    $res = $res->fetch( PDO::FETCH_ASSOC );
-    return trim($res[ 'specialization']);
+    $res = $res->fetch(PDO::FETCH_ASSOC);
+    if($res)
+        return trim($res['specialization']);
+    return 'UNKNOWN';
 }
 
 /* --------------------------------------------------------------------------*/

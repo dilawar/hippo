@@ -2402,10 +2402,10 @@ function getCourseShortInfoText( $course )
     return $text;
 }
 
-function getCourseInstructors( string $c, string $year = '', string $sem='' )
+function getCourseInstructorsList($c, string $year='', string $sem=''):array
 {
-    if( is_string( $c ) )
-        $c =  getCourseById( $c );
+    if(is_string($c))
+        $c =  getCourseById($c);
 
     $instructors = array( );
     foreach( $c as $k => $v )
@@ -2416,13 +2416,24 @@ function getCourseInstructors( string $c, string $year = '', string $sem='' )
                 if( $i )
                 {
                     $name = arrayToName( findAnyoneWithEmail( $i ) );
-                    $instructors[ ] = "<a id=\"emaillink\" href=\"mailto:$v\" target=\"_top\">
-                        $name </a>";
+                    $instructors[] = [$v, $name];
                 }
             }
     }
-    $instructors = implode( '<br>', $instructors );
     return $instructors;
+}
+
+function getCourseInstructors( string $c, string $year = '', string $sem='' )
+{
+    $res = [];
+    $list = getCourseInstructorsList($c, $year, $sem);
+    foreach($list as $inst)
+    {
+        $v = $inst[0];
+        $name = $inst[1];
+        $res[] = "<a id=\"emaillink\" href=\"mailto:$v\" target=\"_top\"> $name </a>";
+    }
+    return ['html'=>implode('<br />', $res), 'data' => $list];
 }
 
 /* --------------------------------------------------------------------------*/

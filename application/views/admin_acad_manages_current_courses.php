@@ -55,7 +55,7 @@ $runningCourses = array( );
 foreach( $runningCoursesWithoutInsts as $course )
 {
    $cid = $course[ 'course_id'];
-   $instHTML = getCourseInstructors( $cid );
+   $instHTML = getCourseInstructors( $cid )['html'];
    $course['instructors'] = $instHTML;
    $runningCourses[] = $course;
 }

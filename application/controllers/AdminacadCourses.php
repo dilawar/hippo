@@ -56,7 +56,7 @@ trait AdminacadCourses
     {
         // Send to referrer.
         if($this->agent->is_referral())
-            redirect($this->agent->referrer());
+            rediect($this->agent->referrer());
         redirect( $fallback );
     }
 
@@ -95,14 +95,7 @@ trait AdminacadCourses
             echo printInfo( "Adding a new course in current course list" );
             if( strlen( $_POST[ 'id' ] ) > 0 )
             {
-                $res = insertIntoTable( 
-                    'courses_metadata'
-                    , 'id,name,credits,description' 
-                        .  ',instructor_1,instructor_2,instructor_3'
-                        . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
-                    , $_POST 
-                    );
-
+                $res = insertCourseMetadata($_POST);
                 if( ! $res )
                     echo printWarning( "Could not add course to list" );
                 else
@@ -114,21 +107,14 @@ trait AdminacadCourses
         }
         else if ( $_POST[ 'response' ] == 'Update' ) 
         {
-            $res = updateTable( 'courses_metadata'
-                    , 'id'
-                    , 'name,credits,description' 
-                        .  ',instructor_1,instructor_2,instructor_3'
-                        . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
-                    , $_POST 
-                    );
-
+            $res = updateCourseMetadata($_POST);
             if( $res )
                 echo flashMessage( 'Updated course : ' . $_POST[ 'id' ] );
         }
         redirect( "adminacad/allcourses" );
     }
 
-    // Current running courses.
+    // Current courses.
     public function courses_action($arg = '')
     {
         $response = strtolower($_POST['response']);
@@ -148,32 +134,8 @@ trait AdminacadCourses
             // We may or may not generate here. Email will be null if autocomplete was
             // used in previous page. In most cases, user is likely to use autocomplete
             // feature.
-            if( strlen($_POST[ 'id' ]) > 0 )
-            {
-                $msg = '';
-                $res = deleteFromTable( 'courses', 'id', $_POST );
-                if( $res )
-                {
-                    deleteBookings( $_POST[ 'id' ] );
-                    $msg .= "Successfully deleted entry";
-
-                    // Remove all enrollments.
-                    $year = getCurrentYear( );
-                    $sem = getCurrentSemester( );
-
-                    $res = deleteFromTable( 'course_registration', 'semester,year,course_id'
-                        , array( 'year' => $year, 'semester' => $sem, 'course_id' => $_POST[ 'course_id'] )
-                    );
-                    if( $res )
-                    {
-                        $msg .= "Successfully removed  all enrollments. I have not notifiied the students.";
-                        flashMessage($msg);
-                        redirect( 'adminacad/courses' );
-                        return;
-                    }
-                }
-                flashMessage( "Failed to delete course from the" );
-            }
+            $res = deleteRunningCourse($_POST);
+            flashMessage($res['msg']);
             redirect( "adminacad/courses" );
             return;
         }
@@ -190,84 +152,10 @@ trait AdminacadCourses
                 }
             }
 
-            // NOTE: the start date of course determines the semester and year
-            // of a course. The end date can spill into next semester.
-            // Especially in AUTUMN semester. What can I do, this is NCBS!
-            $_POST['semester'] = getSemester($_POST['start_date']);
-            $_POST['year'] = getYear($_POST['start_date']);
-
-            // Check if any other course is running on this venue/slot between given
-            // dates.
-            $startDate = $_POST['start_date'];
-            $endDate = $_POST['end_date'];
-
-            $coursesAtThisVenue = getCoursesAtThisVenueSlotBetweenDates(
-                $_POST['venue'], $_POST['slot'], $startDate, $endDate
-            );
-
-            $collisionCourses = array_filter(
-                $coursesAtThisVenue
-                , function( $c ) { return $c['course_id'] != $_POST[ 'course_id' ]; }
-            );
-
-            $msg = '';
-            $updatable = 'semester,year,start_date,end_date,max_registration,' 
-                . 'allow_deregistration_until,is_audit_allowed,slot,venue,note'
-                . ',url,ignore_tiles';
-            if( count( $collisionCourses ) > 0 )
-            {
-                foreach( $collisionCourses as $cc )
-                {
-                    $msg .= "Following course is already assigned at this slot/venue";
-                    $msg .= arrayToVerticalTableHTML( $cc, 'info' );
-                    $msg .= '<br>';
-                }
-                printErrorSevere( $msg );
-                $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
-                return;
-            }
-
-            // No collision. Add or update now.
-            if ($response === 'add')
-            {
-                if(strlen($_POST['course_id']) > 0)
-                {
-                    $id = getCourseInstanceId($_POST[ 'course_id' ], $_POST['semester'], $_POST['year']);
-                    $_POST[ 'id' ] = $id;
-                    $res = insertIntoTable('courses',"id,course_id,$updatable", $_POST);
-                    if(! $res)
-                        $msg .= "Could not add course to list.";
-                    else
-                    {
-                        $res = addCourseBookings( $_POST[ 'id' ] );
-                        $msg .= "Successfully added course. Blocked venue as well.";
-                    }
-                }
-                else
-                    $msg .= "Could ID can not be empty";
-
-                flashMessage($msg);
-                $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
-                return;
-            }
-            else if ( $response == 'update' )
-            {
-                $res = updateTable( 'courses', 'id', $updatable , $_POST );
-                if( $res )
-                {
-                    $res = updateBookings( $_POST[ 'id' ] );
-                    $msg .= printInfo( 'Updated running course ' . $_POST['course_id'] . '.' );
-                    flashMessage( $msg );
-                }
-                $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
-                return;
-            }
-            else
-            {
-                printWarning( "Unknown task '$response'. " );
-                $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
-                return;
-            }
+            $res = addOrUpdateRunningCourse($_POST, $response);
+            flashMessage($res['msg']);
+            $this->load_adminacad_view('admin_acad_manages_current_courses', $_POST);
+            return;
         }
     }
 
