@@ -518,8 +518,7 @@ function updateRunningCourse(array $data, string $msg='') : array
     if( $res )
     {
         $res = updateBookings( $data[ 'id' ] );
-        $msg .= printInfo( 'Updated running course ' . $data['course_id'] . '.' );
-        flashMessage( $msg );
+        $msg .= 'Updated running course ' . $data['course_id'] . '.';
     }
     return ['success'=>true, 'msg'=>$msg];
 }

@@ -3249,7 +3249,7 @@ function getPIOrHost(string $loginOrEmail) : string
 /* ----------------------------------------------------------------------------*/
 function getCoursesAtThisVenueSlotBetweenDates( $venue, $slot, $start, $end )
 {
-    $whereExpr = "( end_date > '$start' AND start_date < '$end' )
+    $whereExpr = "(end_date > '$start' AND start_date < '$end' )
                     AND slot='$slot' AND venue='$venue'";
     $courses = getTableEntries( 'courses', 'start_date' , $whereExpr );
     return $courses;

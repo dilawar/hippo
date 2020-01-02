@@ -170,6 +170,7 @@ class Api extends CI_Controller
                 $cards[] = [ 'title'=>$item['title']
                     , 'date'=>$item['date']
                     , 'time'=>$item['start_time']
+                    , 'venue'=>$item['venue']
                 ];
             }
             $this->send_data($cards, 'ok');
@@ -486,7 +487,13 @@ class Api extends CI_Controller
             $endpoint = $args[1];
             if($endpoint === 'update')
             {
-                $res = addOrUpdateRunningCourse($_POST, 'update');
+                $res = @addOrUpdateRunningCourse($_POST, 'update');
+                $this->send_data($res, "ok");
+                return;
+            }
+            else if($endpoint === 'add')
+            {
+                $res = @addOrUpdateRunningCourse($_POST, 'add');
                 $this->send_data($res, "ok");
                 return;
             }
