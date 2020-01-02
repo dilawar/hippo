@@ -431,4 +431,22 @@ function updateCourseMetadata(array $data)
     return $res;
 }
 
+function getSlots():array
+{
+    $tiles = getTableEntries('slots', 'groupid');
+    $result = array();
+    foreach($tiles as &$tile)
+        $result[$tile['groupid']][] = $tile;
+
+    foreach($result as $slotGroup => &$vals)
+    {
+        $html = '';
+        foreach($vals as $val)
+            $html .= $val['day'] . ', ';
+        $html .= $vals[0]['start_time'] . ' to ' . $vals[0]['end_time'];
+        $result[$slotGroup]['html'] = $html;
+    }
+    return $result;
+}
+
 ?>

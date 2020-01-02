@@ -454,12 +454,45 @@ class Api extends CI_Controller
                 $cid = base64_decode($args[2]);
                 $_POST['id'] = $cid;
                 $res = updateCourseMetadata($_POST);
-                $this->send_data(['success'=>$res, 'payload'=>$_POST], "ok");
+                $this->send_data(['success'=>$res], "ok");
+                return;
+            }
+            else if($args[1] === 'deactivate')
+            {
+                $cid = base64_decode($args[2]);
+                $_POST['id'] = $cid;
+                $_POST['status'] = 'DEACTIVATED';
+                $res = updateTable('courses_metadata', 'id', 'status', $_POST);
+                $this->send_data(['success'=>$res], "ok");
+                return;
+            }
+            else if($args[1] === 'activate')
+            {
+                $cid = base64_decode($args[2]);
+                $_POST['id'] = $cid;
+                $_POST['status'] = 'VALID';
+                $res = updateTable('courses_metadata', 'id', 'status', $_POST);
+                $this->send_data(['success'=>$res], "ok");
                 return;
             }
             else
             {
                 $this->send_data(["Unknown request"], "error");
+                return;
+            }
+        }
+        if($args[0] === 'slot')
+        {
+            $endpoint = $args[1];
+            if($endpoint === 'all')
+            {
+                $data = getSlots();
+                $this->send_data($data, "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown endpoint slot/$endpoint"], "error");
                 return;
             }
         }

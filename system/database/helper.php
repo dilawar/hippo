@@ -3091,6 +3091,7 @@ function getCourseById( $cid )
 }
 
 
+
 /**
     * @brief Check if registration for courses is open.
     *

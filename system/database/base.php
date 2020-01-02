@@ -513,6 +513,7 @@ class BMVPDO extends PDO
                 , instructor_5 VARCHAR(50)
                 , instructor_6 VARCHAR(50)
                 , instructor_extras VARCHAR(500) -- comma separated list of extra
+                , status ENUM('VALID', 'INVALID', 'DEACTIVATED') default 'VALID'
                 , comment VARCHAR(100)
                 )
             ");
