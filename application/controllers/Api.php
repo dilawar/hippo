@@ -481,6 +481,33 @@ class Api extends CI_Controller
                 return;
             }
         }
+        else if($args[0] === 'running')
+        {
+            $endpoint = $args[1];
+            if($endpoint === 'update')
+            {
+                $res = addOrUpdateRunningCourse($_POST, 'update');
+                $this->send_data($res, "ok");
+                return;
+            }
+            else if($endpoint === 'remove')
+            {
+                $res = deleteRunningCourse($_POST);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else if($endpoint === 'assignslotvenue')
+            {
+                $res = assignSlotVenueRunningCourse($_POST);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown endpoint slot/$endpoint"], "error");
+                return;
+            }
+        }
         if($args[0] === 'slot')
         {
             $endpoint = $args[1];
@@ -736,8 +763,15 @@ class Api extends CI_Controller
         // Required for MAP to work.
         if( $args[0] === 'list')
         {
-            $type = __get__($args, 1, 'all');
-            $data = getVenuesByType($type);
+            $types = __get__($args, 1, 'all');
+            // For courses.
+            if($types === 'course')
+                $types = 'LECTURE HALL,AUDITORIUM';
+            $data = [];
+            foreach(explode(',', $types) as $type) {
+                $type = urldecode($type);
+                $data = array_merge($data, getVenuesByType($type));
+            }
             $this->send_data($data, "ok");
             return;
         }
