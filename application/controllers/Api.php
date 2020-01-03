@@ -2053,6 +2053,18 @@ class Api extends CI_Controller
             $this->send_data(["Subscribed"], "ok");
             return;
         }
+        else if( $args[0] === 'unsubscribe')
+        {
+            $forumName = $args[1];
+            if($forumName == 'emergency') {
+                $this->send_data(["Can't unscribe from emergency"], "ok");
+                return;
+            }
+            $login = getLogin();
+            User::unsubscribeToForum($this, $login, $forumName);
+            $this->send_data(["Unsubscribed"], "ok");
+            return;
+        }
         else if( $args[0] === 'subscriptions')
         {
             $login = getLogin();
