@@ -372,7 +372,7 @@ class Api extends CI_Controller
             if( $cids === 'all')
             {
                 $data = [];
-                $metadata = getTableEntries('courses_metadata');
+                $metadata = getTableEntries('courses_metadata', 'id', "status='VALID'");
                 foreach($metadata as $m)
                 {
                     $m['instructors'] = getCourseInstructors($m['id']);
@@ -452,9 +452,31 @@ class Api extends CI_Controller
             }
             else if($args[1] === 'update')
             {
+                $res = updateCourseMetadata($_POST);
+                $this->send_data(['success'=>$res], "ok");
+                return;
+            }
+            else if($args[1] === 'add')
+            {
+                $isValid = true;
+                foreach(['id', 'name'] as $k)
+                    if(! $_POST[$k])
+                        $isValid = false;
+
+                if($isValid) {
+                    $res = insertCourseMetadata($_POST);
+                    $this->send_data(['success'=>$res, 'payload'=>$_POST], "ok");
+                } else {
+                    $this->send_data(['success'=>'Invalid entry', 'payload'=>$_POST], "ok");
+                }
+                return;
+            }
+            else if($args[1] === 'delete')
+            {
                 $cid = base64_decode($args[2]);
                 $_POST['id'] = $cid;
-                $res = updateCourseMetadata($_POST);
+                $_POST['status'] = 'INVALID';
+                $res = updateTable('courses_metadata', 'id', 'status', $_POST);
                 $this->send_data(['success'=>$res], "ok");
                 return;
             }
@@ -2031,6 +2053,18 @@ class Api extends CI_Controller
             $this->send_data(["Subscribed"], "ok");
             return;
         }
+        else if( $args[0] === 'unsubscribe')
+        {
+            $forumName = $args[1];
+            if($forumName == 'emergency') {
+                $this->send_data(["Can't unscribe from emergency"], "ok");
+                return;
+            }
+            $login = getLogin();
+            User::unsubscribeToForum($this, $login, $forumName);
+            $this->send_data(["Unsubscribed"], "ok");
+            return;
+        }
         else if( $args[0] === 'subscriptions')
         {
             $login = getLogin();
@@ -2065,10 +2099,14 @@ class Api extends CI_Controller
                     ]);
                 $data['db_error'] = $this->db->error();
 
+                // Post to FCM
+
                 // Also add notifications for subscribed users.
                 foreach( $_POST['tags'] as $tag)
                 {
                     // Get the list of subscribers.
+                    sendFirebaseCloudMessage($tag, $_POST['title'], $_POST['description']);
+
                     $subs = $this->db->select('login')
                         ->get_where('board_subscriptions'
                         , ['board' => $tag, 'status' => 'VALID' ])->result_array();

@@ -3086,7 +3086,7 @@ function getCourseSlot( $cid )
 
 function getCourseById( $cid )
 {
-    $c =  getTableEntry( 'courses_metadata', 'id', array( 'id' => $cid ) );
+    $c =  getTableEntry('courses_metadata', 'id,status', ['id' => $cid,'status'=>'VALID']);
     return $c;
 }
 

@@ -408,11 +408,13 @@ function awsDatesAvailable(int $numSlots) : array
 
 function insertCourseMetadata(array $data) 
 {
-    $res = insertIntoTable( 
+    $data['status'] = 'VALID';
+    $res = insertOrUpdateTable( 
         'courses_metadata'
-        , 'id,name,credits,description' 
+        , 'id,name,credits,description,status' 
         .  ',instructor_1,instructor_2,instructor_3'
         . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment'
+        , 'status'
         , $data 
     );
     return $res;
