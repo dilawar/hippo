@@ -372,7 +372,7 @@ class Api extends CI_Controller
             if( $cids === 'all')
             {
                 $data = [];
-                $metadata = getTableEntries('courses_metadata');
+                $metadata = getTableEntries('courses_metadata', 'id', "status='VALID'");
                 foreach($metadata as $m)
                 {
                     $m['instructors'] = getCourseInstructors($m['id']);
@@ -452,9 +452,31 @@ class Api extends CI_Controller
             }
             else if($args[1] === 'update')
             {
+                $res = updateCourseMetadata($_POST);
+                $this->send_data(['success'=>$res], "ok");
+                return;
+            }
+            else if($args[1] === 'add')
+            {
+                $isValid = true;
+                foreach(['id', 'name'] as $k)
+                    if(! $_POST[$k])
+                        $isValid = false;
+
+                if($isValid) {
+                    $res = insertCourseMetadata($_POST);
+                    $this->send_data(['success'=>$res, 'payload'=>$_POST], "ok");
+                } else {
+                    $this->send_data(['success'=>'Invalid entry', 'payload'=>$_POST], "ok");
+                }
+                return;
+            }
+            else if($args[1] === 'delete')
+            {
                 $cid = base64_decode($args[2]);
                 $_POST['id'] = $cid;
-                $res = updateCourseMetadata($_POST);
+                $_POST['status'] = 'INVALID';
+                $res = updateTable('courses_metadata', 'id', 'status', $_POST);
                 $this->send_data(['success'=>$res], "ok");
                 return;
             }
