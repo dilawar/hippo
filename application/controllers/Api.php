@@ -2099,10 +2099,14 @@ class Api extends CI_Controller
                     ]);
                 $data['db_error'] = $this->db->error();
 
+                // Post to FCM
+
                 // Also add notifications for subscribed users.
                 foreach( $_POST['tags'] as $tag)
                 {
                     // Get the list of subscribers.
+                    sendFirebaseCloudMessage($tag, $_POST['title'], $_POST['description']);
+
                     $subs = $this->db->select('login')
                         ->get_where('board_subscriptions'
                         , ['board' => $tag, 'status' => 'VALID' ])->result_array();

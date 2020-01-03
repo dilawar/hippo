@@ -549,9 +549,12 @@ class User extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public static function getNotifications($ci, string $user, int $limit=10) : array
     {
-      $query = $ci->db->get_where('notifications'
-          , ['login'=>$user, 'status'=>'VALID'], $limit);
-      return $query->result_array();
+        $data = getTableEntries('notifications'
+            , 'created_on'
+            , "login='$user' AND status='VALID' AND 
+                    created_on > DATE_SUB(NOW(), INTERVAL 2 MONTH)"
+        );
+        return $data;
     }
 
     public static function subscribeToForum($ci, $login, $board)
