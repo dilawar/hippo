@@ -2536,7 +2536,7 @@ function courseToHTMLRow( array $c, string $slot, string $sem, string $year
                 class="show_as_link" value="' . $cinfo . '"
                 title="' . $cname . '" > <i class="fa fa-2x fa-info-circle"></i>
             </button>
-        <br />' . $instructors . " <br /> $note " . '</td>
+        <br />' . $instructors['html'] . " <br /> $note " . '</td>
         <td>' .  $schedule . '</td>
         <td>' . "$slotInfo <br /><strong> $venue </strong> </td>";
 
