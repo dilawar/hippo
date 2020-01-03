@@ -1227,10 +1227,6 @@ class Api extends CI_Controller
             $ldap = getUserInfo($user, true);
             $remove = ['fname', 'lname'];
             $data = array_diff_key($ldap, array_flip($remove));
-            $jcs = [];
-            foreach(getUserJCs($user) as $jc)
-                $jcs[$jc['jc_id']] = $jc;
-            $data['jcs'] = $jcs;
             $this->send_data($data, "ok");
             return;
         }
@@ -1335,6 +1331,14 @@ class Api extends CI_Controller
         {
             $data = getUpcomingJCPresentations();
             $this->send_data($data, "ok");
+            return;
+        }
+        else if( $args[0] === 'jclist')
+        {
+            $jcs = [];
+            foreach(getUserJCs($user) as $jc)
+                $jcs[$jc['jc_id']] = $jc;
+            $this->send_data($jcs, "ok");
             return;
         }
         else
