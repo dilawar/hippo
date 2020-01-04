@@ -585,7 +585,7 @@ class Api extends CI_Controller
             $this->send_data([$res?'Success':'Failed'], 'ok');
             return;
         }
-        if($args[0] === 'acknowledge')
+        else if($args[0] === 'acknowledge')
         {
             $_POST['acknowledged'] = 'YES';
             $_POST['id'] = $args[1];
@@ -593,10 +593,14 @@ class Api extends CI_Controller
             $this->send_data([$res?'Success':'Failed'], 'ok');
             return;
         }
-        if($args[0] === 'info')
+        else if($args[0] === 'info')
         {
-            $jcID = $args[1];
-            $data = getTableEntry('journal_clubs', 'id,status', ["id"=>$jcID, 'status'=>'ACTIVE']);
+            $jcID = __get__($args, 1, 'all');
+            if($jcID !== 'all')
+                $data = getTableEntry('journal_clubs', 'id,status'
+                , ["id"=>$jcID, 'status'=>'ACTIVE']);
+            else
+                $data = getTableEntries('journal_clubs', 'id', "status='ACTIVE'");
             $this->send_data($data, 'ok');
             return;
         }
@@ -613,7 +617,6 @@ class Api extends CI_Controller
             $this->send_data(['msg'=>"Unknown request", 'success'=>false], "ok");
             return;
         }
-
     }
 
     public function jcadmin()
@@ -1135,7 +1138,7 @@ class Api extends CI_Controller
         if( $pickupPoint )
             $where .= " AND pickup_point='$pickupPoint' ";
         if( $dropPoint )
-            $where .= " AND drop_point='$drop_point' ";
+            $where .= " AND drop_point='$dropPoint' ";
         if( $vehicle )
             $where .= " AND vehicle='$vehicle' ";
 
@@ -1329,17 +1332,37 @@ class Api extends CI_Controller
         }
         else if( $args[0] === 'jc')
         {
-            $data = getUpcomingJCPresentations();
-            $this->send_data($data, "ok");
-            return;
-        }
-        else if( $args[0] === 'jclist')
-        {
-            $jcs = [];
-            foreach(getUserJCs($user) as $jc)
-                $jcs[$jc['jc_id']] = $jc;
-            $this->send_data($jcs, "ok");
-            return;
+            $endpoint = __get__($args, 1, 'presentations');
+            if($endpoint === 'presentations') {
+                $data = getUpcomingJCPresentations();
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if( $endpoint === 'list') {
+                $jcs = [];
+                foreach(getUserJCs($user) as $jc)
+                    $jcs[$jc['jc_id']] = $jc;
+                $this->send_data($jcs, "ok");
+                return;
+            }
+            else if( $endpoint === 'subscribe') {
+                $jcid = $args[2];
+                $data = ['jc_id'=>$jcid, 'login'=>getLogin()];
+                $res = subscribeJC($data);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else if( $endpoint === 'unsubscribe') {
+                $jcid = $args[2];
+                $data = ['jc_id'=>$jcid, 'login'=>getLogin()];
+                $res = unsubscribeJC($data);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else {
+                $this->send_data(["unknown endpoint: $endpoint."], 'ok');
+                return;
+            }
         }
         else
         {
