@@ -768,14 +768,14 @@ function getNumBookings(int $num, int $limit )
     $from = dbDate('today');
     $now = dbTime(strtotime('now'));
     $events = getTableEntries( 'events'
-        , 'date' // we gonna usort is later
+        , 'date,end_time' // we gonna usort is later
         , "status='VALID' AND TIMESTAMP(date, end_time) >= NOW()"
         , "class,title,status,description,date,venue,created_by,start_time,end_time,url"
         , $num
         , $limit
     );
     $requests = getTableEntries( 'bookmyvenue_requests'
-        , 'date' // we gonna usort it later.
+        , 'date,end_time' // we gonna usort it later.
         , "status='PENDING' AND TIMESTAMP(date, end_time) >= NOW()"
         , "class,title,status,description,date,venue,created_by,start_time,end_time,url"
         , $num 

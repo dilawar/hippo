@@ -11,6 +11,7 @@ require_once BASEPATH . '/extra/search.php';
 require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/talk.php';
 include_once BASEPATH . '/extra/acad.php';
+include_once BASEPATH . '/extra/services.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -585,7 +586,7 @@ class Api extends CI_Controller
             $this->send_data([$res?'Success':'Failed'], 'ok');
             return;
         }
-        if($args[0] === 'acknowledge')
+        else if($args[0] === 'acknowledge')
         {
             $_POST['acknowledged'] = 'YES';
             $_POST['id'] = $args[1];
@@ -593,10 +594,14 @@ class Api extends CI_Controller
             $this->send_data([$res?'Success':'Failed'], 'ok');
             return;
         }
-        if($args[0] === 'info')
+        else if($args[0] === 'info')
         {
-            $jcID = $args[1];
-            $data = getTableEntry('journal_clubs', 'id,status', ["id"=>$jcID, 'status'=>'ACTIVE']);
+            $jcID = __get__($args, 1, 'all');
+            if($jcID !== 'all')
+                $data = getTableEntry('journal_clubs', 'id,status'
+                , ["id"=>$jcID, 'status'=>'ACTIVE']);
+            else
+                $data = getTableEntries('journal_clubs', 'id', "status='ACTIVE'");
             $this->send_data($data, 'ok');
             return;
         }
@@ -613,7 +618,6 @@ class Api extends CI_Controller
             $this->send_data(['msg'=>"Unknown request", 'success'=>false], "ok");
             return;
         }
-
     }
 
     public function jcadmin()
@@ -1135,7 +1139,7 @@ class Api extends CI_Controller
         if( $pickupPoint )
             $where .= " AND pickup_point='$pickupPoint' ";
         if( $dropPoint )
-            $where .= " AND drop_point='$drop_point' ";
+            $where .= " AND drop_point='$dropPoint' ";
         if( $vehicle )
             $where .= " AND vehicle='$vehicle' ";
 
@@ -1155,6 +1159,173 @@ class Api extends CI_Controller
         $res = ['timetable'=> $timetableMap, 'routes'=>$routes];
         $this->send_data($res, 'ok');
         return;
+    }
+
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Transport details.
+        *    - /api/transportation/timetable/day/[from]/[to]/[vehicle]
+        *    e.g., 
+        *       - /api/tranport/schedule/day/MANDARA/NCBS/Buggy
+        *    - /api/transportation/vehicle/[list|remove|add|update]
+        *    - /api/transportation/routes/[list|remove|add|update]
+        *
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function transportation()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        $roles = getRoles($login);
+        if(! in_array('SERVICES_ADMIN', $roles))
+        {
+            $this->send_data([$roles], "Forbidden.");
+            return;
+        }
+
+        $args = func_get_args();
+        $endpoint = $args[0];
+
+        if($endpoint === 'timetable') 
+        {
+            $day = __get__($args, 1, 'all');
+            $where = "status='VALID'";
+            if($day != 'all')
+                $where .= " AND day='$day'";
+
+            $pickupPoint = __get__($args, 2, '');
+            $dropPoint = __get__($args, 3, '');
+            $vehicle = __get__($args, 4, '');
+
+            if( $pickupPoint )
+                $where .= " AND pickup_point='$pickupPoint' ";
+            if( $dropPoint )
+                $where .= " AND drop_point='$dropPoint' ";
+            if( $vehicle )
+                $where .= " AND vehicle='$vehicle' ";
+
+            $data = getTableEntries('transport'
+                , 'day,pickup_point,trip_start_time'
+                , $where);
+            $timetableMap = [];
+            foreach( $data as $d )
+            {
+                $timetableMap[strtolower($d['day'])]
+                    [strtolower($d['pickup_point'])]
+                    [strtolower($d['drop_point'])][] = $d;
+            }
+            $this->send_data($timetableMap, 'ok');
+            return;
+        }
+        else if($endpoint === 'vehicle')
+        {
+            if($args[1] === 'list')
+            {
+                $res = executeQuery("SELECT DISTINCT vehicle FROM transport WHERE status='VALID'");
+                $this->send_data(array_map(function($x) { return $x['vehicle']; }, $res), 'ok');
+                return;
+            }
+            else if($args[1] === 'add')
+            {
+
+            }
+            else if($args[1] === 'remove')
+            {
+
+            }
+            else if($args[1] === 'update')
+            {
+
+            }
+            else
+            {
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
+            }
+        }
+        else if($endpoint === 'schedule')
+        {
+            if($args[1] === 'list')
+            {
+
+            }
+            else if($args[1] === 'add')
+            {
+                $res = addNewTransportationSchedule($_POST);
+                if(!$res['success'])
+                    $res['payload'] = $_POST;
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else if($args[1] === 'remove' || $args[1] === 'delete')
+            {
+                if(intval($args[2]) < 0) {
+                    $this->send_data(["Invalid entry."], 'ok');
+                    return;
+                }
+                $data = ['id'=>$args[2], 'status'=>'INVALID'];
+                $res = updateTable('transport', 'id', 'status', $data);
+                $this->send_data(['success'=>$res], 'ok');
+                return;
+            }
+            else if($args[1] === 'update')
+            {
+                $keys = 'trip_start_time,trip_end_time,day,comment,day,';
+                $keys .= "edited_by,last_modified_on";
+                $_POST['last_modified_on'] = strtotime('now');
+                $_POST['edited_by'] = getLogin();
+                $res = updateTable('transport', 'id', $keys, $_POST);
+                $this->send_data(['success'=>$res], 'ok');
+                return;
+            }
+            else
+            {
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
+            }
+        }
+        else if($endpoint === 'route')
+        {
+            if($args[1] === 'list')
+            {
+                $routes = executeQuery( 
+                    "SELECT DISTINCT pickup_point,drop_point,url FROM transport WHERE status='VALID'"
+                );
+                $this->send_data($routes, 'ok');
+
+            }
+            else if($args[1] === 'add')
+            {
+
+            }
+            else if($args[1] === 'remove')
+            {
+
+            }
+            else if($args[1] === 'update')
+            {
+
+            }
+            else
+            {
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
+            }
+        }
+        else 
+        {
+            $res = ["unknown endpoint $endpoint"];
+            $this->send_data($res, 'ok');
+            return;
+        }
     }
 
     /* --------------------------------------------------------------------------*/
@@ -1227,10 +1398,6 @@ class Api extends CI_Controller
             $ldap = getUserInfo($user, true);
             $remove = ['fname', 'lname'];
             $data = array_diff_key($ldap, array_flip($remove));
-            $jcs = [];
-            foreach(getUserJCs($user) as $jc)
-                $jcs[$jc['jc_id']] = $jc;
-            $data['jcs'] = $jcs;
             $this->send_data($data, "ok");
             return;
         }
@@ -1333,9 +1500,37 @@ class Api extends CI_Controller
         }
         else if( $args[0] === 'jc')
         {
-            $data = getUpcomingJCPresentations();
-            $this->send_data($data, "ok");
-            return;
+            $endpoint = __get__($args, 1, 'presentations');
+            if($endpoint === 'presentations') {
+                $data = getUpcomingJCPresentations();
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if( $endpoint === 'list') {
+                $jcs = [];
+                foreach(getUserJCs($user) as $jc)
+                    $jcs[$jc['jc_id']] = $jc;
+                $this->send_data($jcs, "ok");
+                return;
+            }
+            else if( $endpoint === 'subscribe') {
+                $jcid = $args[2];
+                $data = ['jc_id'=>$jcid, 'login'=>getLogin()];
+                $res = subscribeJC($data);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else if( $endpoint === 'unsubscribe') {
+                $jcid = $args[2];
+                $data = ['jc_id'=>$jcid, 'login'=>getLogin()];
+                $res = unsubscribeJC($data);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else {
+                $this->send_data(["unknown endpoint: $endpoint."], 'ok');
+                return;
+            }
         }
         else
         {
