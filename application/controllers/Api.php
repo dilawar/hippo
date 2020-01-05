@@ -11,6 +11,7 @@ require_once BASEPATH . '/extra/search.php';
 require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/talk.php';
 include_once BASEPATH . '/extra/acad.php';
+include_once BASEPATH . '/extra/services.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -1163,7 +1164,7 @@ class Api extends CI_Controller
     /* --------------------------------------------------------------------------*/
     /**
         * @Synopsis  Transport details.
-        *    - /api/transportation/schedule/day/[from]/[to]/[vehicle]
+        *    - /api/transportation/timetable/day/[from]/[to]/[vehicle]
         *    e.g., 
         *       - /api/tranport/schedule/day/MANDARA/NCBS/Buggy
         *    - /api/transportation/vehicle/[list|remove|add|update]
@@ -1173,10 +1174,24 @@ class Api extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public function transportation()
     {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        $roles = getRoles($login);
+        if(! in_array('SERVICES_ADMIN', $roles))
+        {
+            $this->send_data([$roles], "Forbidden.");
+            return;
+        }
+
         $args = func_get_args();
         $endpoint = $args[0];
 
-        if($endpoint === 'schedule') 
+        if($endpoint === 'timetable') 
         {
             $day = __get__($args, 1, 'all');
             $where = "status='VALID'";
@@ -1204,20 +1219,16 @@ class Api extends CI_Controller
                     [strtolower($d['pickup_point'])]
                     [strtolower($d['drop_point'])][] = $d;
             }
-
-            // Get routes.
-            $routes = executeQuery( 
-                "SELECT DISTINCT pickup_point,drop_point,url FROM transport WHERE status='VALID'"
-            );
-            $res = ['timetable'=> $timetableMap, 'routes'=>$routes];
-            $this->send_data($res, 'ok');
+            $this->send_data($timetableMap, 'ok');
             return;
         }
         else if($endpoint === 'vehicle')
         {
             if($args[1] === 'list')
             {
-
+                $res = executeQuery("SELECT DISTINCT vehicle FROM transport WHERE status='VALID'");
+                $this->send_data(array_map(function($x) { return $x['vehicle']; }, $res), 'ok');
+                return;
             }
             else if($args[1] === 'add')
             {
@@ -1246,6 +1257,52 @@ class Api extends CI_Controller
             }
             else if($args[1] === 'add')
             {
+                $res = addNewTransportationSchedule($_POST);
+                if(!$res['success'])
+                    $res['payload'] = $_POST;
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else if($args[1] === 'remove' || $args[1] === 'delete')
+            {
+                if(intval($args[2]) < 0) {
+                    $this->send_data(["Invalid entry."], 'ok');
+                    return;
+                }
+                $data = ['id'=>$args[2], 'status'=>'INVALID'];
+                $res = updateTable('transport', 'id', 'status', $data);
+                $this->send_data(['success'=>$res], 'ok');
+                return;
+            }
+            else if($args[1] === 'update')
+            {
+                $keys = 'trip_start_time,trip_end_time,day,comment,day,';
+                $keys .= "edited_by,last_modified_on";
+                $_POST['last_modified_on'] = strtotime('now');
+                $_POST['edited_by'] = getLogin();
+                $res = updateTable('transport', 'id', $keys, $_POST);
+                $this->send_data(['success'=>$res], 'ok');
+                return;
+            }
+            else
+            {
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
+            }
+        }
+        else if($endpoint === 'route')
+        {
+            if($args[1] === 'list')
+            {
+                $routes = executeQuery( 
+                    "SELECT DISTINCT pickup_point,drop_point,url FROM transport WHERE status='VALID'"
+                );
+                $this->send_data($routes, 'ok');
+
+            }
+            else if($args[1] === 'add')
+            {
 
             }
             else if($args[1] === 'remove')
@@ -1270,7 +1327,6 @@ class Api extends CI_Controller
             return;
         }
     }
-
 
     /* --------------------------------------------------------------------------*/
     /**

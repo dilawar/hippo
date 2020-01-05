@@ -2115,8 +2115,8 @@ function cmp( $a, $b )
 function cmp_datetime( $a, $b )
 {
     $fmt = 'Y-m-d H:i:s';
-    $aa = DateTime::createFromFormat($fmt, $a['date'] . ' ' . $b['start_time']);
-    $bb = DateTime::createFromFormat($fmt, $b['date'] . ' ' . $b['start_time']);
+    $aa = DateTime::createFromFormat($fmt, $a['date'] . ' ' . $b['end_time']);
+    $bb = DateTime::createFromFormat($fmt, $b['date'] . ' ' . $b['end_time']);
     return ($aa->getTimestamp() - $bb->getTimestamp());
 }
 
