@@ -1162,6 +1162,118 @@ class Api extends CI_Controller
 
     /* --------------------------------------------------------------------------*/
     /**
+        * @Synopsis  Transport details.
+        *    - /api/transportation/schedule/day/[from]/[to]/[vehicle]
+        *    e.g., 
+        *       - /api/tranport/schedule/day/MANDARA/NCBS/Buggy
+        *    - /api/transportation/vehicle/[list|remove|add|update]
+        *    - /api/transportation/routes/[list|remove|add|update]
+        *
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function transportation()
+    {
+        $args = func_get_args();
+        $endpoint = $args[0];
+
+        if($endpoint === 'schedule') 
+        {
+            $day = __get__($args, 1, 'all');
+            $where = "status='VALID'";
+            if($day != 'all')
+                $where .= " AND day='$day'";
+
+            $pickupPoint = __get__($args, 2, '');
+            $dropPoint = __get__($args, 3, '');
+            $vehicle = __get__($args, 4, '');
+
+            if( $pickupPoint )
+                $where .= " AND pickup_point='$pickupPoint' ";
+            if( $dropPoint )
+                $where .= " AND drop_point='$dropPoint' ";
+            if( $vehicle )
+                $where .= " AND vehicle='$vehicle' ";
+
+            $data = getTableEntries('transport'
+                , 'day,pickup_point,trip_start_time'
+                , $where);
+            $timetableMap = [];
+            foreach( $data as $d )
+            {
+                $timetableMap[strtolower($d['day'])]
+                    [strtolower($d['pickup_point'])]
+                    [strtolower($d['drop_point'])][] = $d;
+            }
+
+            // Get routes.
+            $routes = executeQuery( 
+                "SELECT DISTINCT pickup_point,drop_point,url FROM transport WHERE status='VALID'"
+            );
+            $res = ['timetable'=> $timetableMap, 'routes'=>$routes];
+            $this->send_data($res, 'ok');
+            return;
+        }
+        else if($endpoint === 'vehicle')
+        {
+            if($args[1] === 'list')
+            {
+
+            }
+            else if($args[1] === 'add')
+            {
+
+            }
+            else if($args[1] === 'remove')
+            {
+
+            }
+            else if($args[1] === 'update')
+            {
+
+            }
+            else
+            {
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
+            }
+        }
+        else if($endpoint === 'schedule')
+        {
+            if($args[1] === 'list')
+            {
+
+            }
+            else if($args[1] === 'add')
+            {
+
+            }
+            else if($args[1] === 'remove')
+            {
+
+            }
+            else if($args[1] === 'update')
+            {
+
+            }
+            else
+            {
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
+            }
+        }
+        else 
+        {
+            $res = ["unknown endpoint $endpoint"];
+            $this->send_data($res, 'ok');
+            return;
+        }
+    }
+
+
+    /* --------------------------------------------------------------------------*/
+    /**
         * @Synopsis  Find a person over ldap.
         *
         * @Param $query
