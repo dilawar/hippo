@@ -1216,16 +1216,8 @@ class Api extends CI_Controller
             if( $vehicle )
                 $where .= " AND vehicle='$vehicle' ";
 
-            $data = getTableEntries('transport', 'day,trip_start_time', $where);
-            $timetableMap = [];
-            foreach($data as $d) {
-                $k0 = $d['vehicle'];
-                $k1 = $d['trip_start_time'];
-                $k2 = $d['day'];
-                $timetableMap[$k0][$k1][$k2][]=$d;
-            }
-            ksort($timetableMap);
-            $this->send_data($timetableMap, 'ok');
+            $data = getTableEntries('transport', 'vehicle,day,trip_start_time', $where);
+            $this->send_data($data, 'ok');
             return;
         }
         else if($endpoint === 'vehicle')
@@ -1275,8 +1267,10 @@ class Api extends CI_Controller
                     $this->send_data(["Invalid entry."], 'ok');
                     return;
                 }
-                $data = ['id'=>$args[2], 'status'=>'INVALID'];
-                $res = updateTable('transport', 'id', 'status', $data);
+                foreach(explode(',', $args[2]) as $id) {
+                    $data = ['id'=> $id];
+                    $res = deleteFromTable('transport', 'id', $data);
+                }
                 $this->send_data(['success'=>$res], 'ok');
                 return;
             }
