@@ -1216,12 +1216,15 @@ class Api extends CI_Controller
             if( $vehicle )
                 $where .= " AND vehicle='$vehicle' ";
 
-            $data = getTableEntries('transport'
-                , 'day,pickup_point,trip_start_time'
-                , $where);
+            $data = getTableEntries('transport', 'day,trip_start_time', $where);
             $timetableMap = [];
-            foreach( $data as $d )
-                $timetableMap[strtolower($d['trip_start_time'])][strtolower($d['day'])][] = $d;
+            foreach($data as $d) {
+                $k0 = $d['vehicle'];
+                $k1 = $d['trip_start_time'];
+                $k2 = $d['day'];
+                $timetableMap[$k0][$k1][$k2][]=$d;
+            }
+            ksort($timetableMap);
             $this->send_data($timetableMap, 'ok');
             return;
         }
