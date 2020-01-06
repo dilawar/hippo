@@ -1193,10 +1193,17 @@ class Api extends CI_Controller
 
         if($endpoint === 'timetable') 
         {
-            $day = __get__($args, 1, 'all');
+            $days = strtolower(__get__($args, 1, 'all'));
             $where = "status='VALID'";
-            if($day != 'all')
-                $where .= " AND day='$day'";
+            if($days != 'all')
+            {
+                $where .= ' AND (';
+                $temp = [];
+                foreach(explode(',', $days) as $day)
+                    $temp[] = " day='$day' ";
+                $where .= implode(" OR ", $temp);
+                $where .= " )";
+            }
 
             $pickupPoint = __get__($args, 2, '');
             $dropPoint = __get__($args, 3, '');
@@ -1214,11 +1221,7 @@ class Api extends CI_Controller
                 , $where);
             $timetableMap = [];
             foreach( $data as $d )
-            {
-                $timetableMap[strtolower($d['day'])]
-                    [strtolower($d['pickup_point'])]
-                    [strtolower($d['drop_point'])][] = $d;
-            }
+                $timetableMap[strtolower($d['trip_start_time'])][strtolower($d['day'])][] = $d;
             $this->send_data($timetableMap, 'ok');
             return;
         }
