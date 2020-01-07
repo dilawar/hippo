@@ -44,7 +44,7 @@ echo heading("Upcoming talks (Newest first)");
 // Show upcoming talks to user. She has edit, delete or schedule them.
 echo '<div style="font-size:x-small">';
 // Outer table
-echo '<table class="table-hover table-responsive table_in_table">';
+echo '<table class="table table-hover table_in_table">';
 foreach( $upcomingTalks as $t )
 {
     echo '<tr>';
