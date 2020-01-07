@@ -1,4 +1,5 @@
 <?php
+require_once BASEPATH . '/extra/admin.php';
 
 function events_everyday_morning_cron()
 {
@@ -11,6 +12,7 @@ function events_everyday_morning_cron()
         echo printInfo( "8am. Event for today" );
         $todaysEvents = getPublicEventsOnThisDay( $today );
         $nTalks = 0;
+        $fcmBody = "";
         if(count( $todaysEvents ) > 0)
         {
             foreach( $todaysEvents as $event )
@@ -25,6 +27,7 @@ function events_everyday_morning_cron()
                     $talk = getTableEntry( 'talks', 'id', $data );
                     if( $talk )
                     {
+                        $fcmBody .= '<br />' . $talk['title'];
                         $html = talkToHTML( $talk );
                         $nTalks += 1;
 
@@ -57,9 +60,30 @@ function events_everyday_morning_cron()
                     }
                 }
             }
+            if($fcmBody)
+                sendFirebaseCloudMessage("academic", "Today's academic events", $fcmBody);
         }
         else
             echo printInfo( "No event found on day " . $today );
+    }
+
+    // Course and JC info.
+    if( trueOnGivenDayAndTime('today', '18:00')) {
+
+        // Today's JC
+        $today = dbDate('today');
+        $jcs = getJournalClubs();
+        foreach($jcs as $jc) {
+            $jcid = $jc['id'];
+            $jc = getJCPresentation($jcid);
+            if($jc)
+                sendFirebaseCloudMessage($jcid
+                , "Today's $jcid by " . $jc['presenter']
+                , $jc['title']);
+        }
+
+        $courses = getRunningCoursesAtThisDay('today');
+        var_dump($courses);
     }
 }
 
