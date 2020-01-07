@@ -1193,10 +1193,17 @@ class Api extends CI_Controller
 
         if($endpoint === 'timetable') 
         {
-            $day = __get__($args, 1, 'all');
+            $days = strtolower(__get__($args, 1, 'all'));
             $where = "status='VALID'";
-            if($day != 'all')
-                $where .= " AND day='$day'";
+            if($days != 'all')
+            {
+                $where .= ' AND (';
+                $temp = [];
+                foreach(explode(',', $days) as $day)
+                    $temp[] = " day='$day' ";
+                $where .= implode(" OR ", $temp);
+                $where .= " )";
+            }
 
             $pickupPoint = __get__($args, 2, '');
             $dropPoint = __get__($args, 3, '');
@@ -1209,17 +1216,8 @@ class Api extends CI_Controller
             if( $vehicle )
                 $where .= " AND vehicle='$vehicle' ";
 
-            $data = getTableEntries('transport'
-                , 'day,pickup_point,trip_start_time'
-                , $where);
-            $timetableMap = [];
-            foreach( $data as $d )
-            {
-                $timetableMap[strtolower($d['day'])]
-                    [strtolower($d['pickup_point'])]
-                    [strtolower($d['drop_point'])][] = $d;
-            }
-            $this->send_data($timetableMap, 'ok');
+            $data = getTableEntries('transport', 'vehicle,trip_start_time,day', $where);
+            $this->send_data($data, 'ok');
             return;
         }
         else if($endpoint === 'vehicle')
@@ -1269,8 +1267,10 @@ class Api extends CI_Controller
                     $this->send_data(["Invalid entry."], 'ok');
                     return;
                 }
-                $data = ['id'=>$args[2], 'status'=>'INVALID'];
-                $res = updateTable('transport', 'id', 'status', $data);
+                foreach(explode(',', $args[2]) as $id) {
+                    $data = ['id'=> $id];
+                    $res = deleteFromTable('transport', 'id', $data);
+                }
                 $this->send_data(['success'=>$res], 'ok');
                 return;
             }
