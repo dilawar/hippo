@@ -1216,7 +1216,7 @@ class Api extends CI_Controller
             if( $vehicle )
                 $where .= " AND vehicle='$vehicle' ";
 
-            $data = getTableEntries('transport', 'vehicle,day,trip_start_time', $where);
+            $data = getTableEntries('transport', 'vehicle,trip_start_time,day', $where);
             $this->send_data($data, 'ok');
             return;
         }
