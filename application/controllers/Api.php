@@ -2593,6 +2593,61 @@ class Api extends CI_Controller
         }
     }
 
+    // Common admin tasks.
+    public function admin()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $login = getLogin();
+        $roles = getRoles($login);
+        if(! (in_array('ACAD_ADMIN', getRoles($login)) 
+            || in_array('BOOKMYVENUE_ADMIN', $roles))) 
+        {
+            $this->send_data([], "Forbidden");
+            return;
+        }
+
+        $args = func_get_args();
+        $data = [];
+        if($args[0] === 'talk')
+        {
+            $endpoint = __get__($args, 1, 'list');
+            if($endpoint === 'list')
+            {
+                $limit = __get__($args, 2, 100);
+                // Get talks only in future.
+                $talks = getTableEntries('talks', 'created_on DESC'
+                    , "status!='INVALID'", '*', $limit); 
+                foreach($talks as &$talk) {
+                    $event = getEventsOfTalkId($talk['id']);
+                    if($event)
+                        $talk['event'] = $event;
+                    $req = getBookingRequestOfTalkId($talk['id']);
+                    if($req)
+                        $talk['request'] = $req;
+                }
+                $this->send_data($talks, 'ok');
+                return;
+            }
+            else if($endpoint === 'update')
+            {
+                $res = updateThisTalk($_POST);
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else
+            {
+                $this->send_data(["Unknown request"], "ok");
+                return;
+            }
+        }
+        $this->send_data(["Unknown request"], "ok");
+        return;
+    }
     // Admin acad
     public function acadadmin()
     {

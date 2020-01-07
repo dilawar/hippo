@@ -122,7 +122,6 @@ function getTalksWithEvent( $start_date, $end_date )
         $results[] = $row;
     }
     return $results;
-
 }
 
 /**
