@@ -2549,7 +2549,34 @@ function getCourseName( string $cexpr ) : string
     return $c['name'];
 }
 
-function getSemesterCourses( $year, $sem )
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get running courses on this day.
+    *
+    * @Param $date  At a given day.
+    *
+    * @Returns  List of courses.
+ */
+/* ----------------------------------------------------------------------------*/
+function getRunningCoursesAtThisDay($date) 
+{
+    $date = dbDate($date);
+    $hippoDB = initDB();
+    $thisDay = strtolower(date('D', strtotime($date)));
+
+    $courses = [];
+    $slots = getTableEntries('slots', 'day', "LOWER(day)='$thisDay'");
+    foreach($slots as $slot) {
+        foreach(getRunningCoursesOnTheseSlotTiles($date, $slot['id']) as $c) {
+            $name = getCourseName($c['id']);
+            $c['name'] = $name;
+            $courses[] = $c;
+        }
+    }
+    return $courses;
+}
+
+function getSemesterCourses($year, $sem)
 {
     $sDate = dbDate(strtotime("$year-01-01"));
     $eDate = dbDate(strtotime("$year-08-31"));
