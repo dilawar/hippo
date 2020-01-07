@@ -765,7 +765,8 @@ class BMVPDO extends PDO
                 , drop_point VARCHAR(50) NOT NULL
                 , day ENUM('Sun','Mon','Tue','Wed','Thu','Fri','Sat') NOT NULL
                 , trip_start_time TIME NOT NULL
-                , trip_end_time TIME NOT NULL
+                , trip_end_time TIME 
+                , duration INT DEFAULT 0
                 , url VARCHAR(1000) 
                 , status ENUM('VALID','INVALID','CANCELLED') DEFAULT 'VALID'
                 , score INT DEFAULT '0'

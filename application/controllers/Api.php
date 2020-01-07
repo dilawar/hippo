@@ -1255,7 +1255,14 @@ class Api extends CI_Controller
             }
             else if($args[1] === 'add')
             {
-                $res = addNewTransportationSchedule($_POST);
+                $res = [];
+                try {
+                    $res = addNewTransportationSchedule($_POST);
+                }
+                catch (Exception $e) {
+                    $res = ['success'=>false, 'msg' => $e->getMessage()];
+                }
+
                 if(!$res['success'])
                     $res['payload'] = $_POST;
                 $this->send_data($res, 'ok');

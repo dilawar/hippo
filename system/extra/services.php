@@ -5,8 +5,7 @@ function addNewTransportationSchedule(array $data): array
     $ret = ['msg'=>'', 'success'=>false];
 
     // Add a new schedule.
-    $keys = 'pickup_point,drop_point,day';
-    $keys .= ',trip_start_time,trip_end_time,vehicle';
+    $keys = 'pickup_point,drop_point,day,trip_start_time,duration,vehicle';
     foreach(explode(',', $keys) as $key) 
     {
         if(! $data[$key])
@@ -17,13 +16,14 @@ function addNewTransportationSchedule(array $data): array
         }
     }
 
-    if(strtotime($data['trip_end_time']) <= strtotime($data['trip_start_time']))
+    if(intval($data['duration']) <= 5)
     {
         $ret['success'] = false;
-        $ret['msg'] .= "Trip end-time is before trip start time.";
+        $ret['msg'] .= "Duration is too small.";
         return $ret;
     }
-
+    $data['trip_end_time'] = dbTime(strtotime($data['trip_start_time'])
+        + intval($data['duration'])*60);
     $data['id'] = getUniqueID('transport');
     $data['last_modified_on'] = dbDateTime('now');
     $data['edited_by'] = getLogin();
