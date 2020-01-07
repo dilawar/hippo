@@ -68,7 +68,7 @@ function events_everyday_morning_cron()
     }
 
     // Course and JC info.
-    if( trueOnGivenDayAndTime('today', '18:00')) {
+    if( trueOnGivenDayAndTime('today', '7:00')) {
 
         // Today's JC
         $today = dbDate('today');
@@ -82,8 +82,18 @@ function events_everyday_morning_cron()
                 , $jc['title']);
         }
 
-        $courses = getRunningCoursesAtThisDay('today');
-        var_dump($courses);
+        $courses = getRunningCoursesAtThisDay('today'); $html = '';
+        foreach($courses as $course) {
+            $html = '';
+            $sinfo = getSlotInfo($course['slot'],
+                $course['ignore_tiles']); $html .= $course['name']; 
+            $html .= ' at ' . $course['venue'];
+            $html .= ', ' . $sinfo; 
+            $html .= '.<br />';
+            sendFirebaseCloudMessage($course['id']
+                , 'One of your courses is running today'
+                , $html);
+        }
     }
 }
 

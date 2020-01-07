@@ -2570,7 +2570,7 @@ function getRunningCoursesAtThisDay($date)
         foreach(getRunningCoursesOnTheseSlotTiles($date, $slot['id']) as $c) {
             $name = getCourseName($c['id']);
             $c['name'] = $name;
-            $courses = array_merge($courses, $c);
+            $courses[] = $c;
         }
     }
     return $courses;
