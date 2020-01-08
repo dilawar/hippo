@@ -64,6 +64,9 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
     $speaker = $data['speaker'];
     $date = $data['date'];
     $reason = __get__($data, 'reason', 'None given. So rude!');
+    $aws = getTableEntry( 'upcoming_aws', 'speaker,date'
+        , ['speaker' => $speaker, 'date' => dbDate($date)]
+    );
     $res = clearUpcomingAWS( $speaker, $date );
     $piOrHost = getPIOrHost( $speaker );
     $final = ['msg'=>'', 'status'=>false];
@@ -78,15 +81,12 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
         $msg .= "<p>
             Your upcoming AWS schedule has been removed by Hippo admin ($bywhom).
             If this is a  mistake, please write to acadoffice@ncbs.res.in
-            immediately.
-            </p>
-            <p> The AWS schedule which is removed is the following </p>
-";
+            immediately.";
 
         $msg .= p( "Following reason was given by admin." );
         $msg .= p( $reason );
-
-        $msg .= arrayToVerticalTableHTML( $data, 'info' );
+        $msg .= p("The AWS schedule which is removed is the following:");
+        $msg .= arrayToVerticalTableHTML( $aws, 'info' );
         $cclist = "acadoffice@ncbs.res.in,hippo@lists.ncbs.res.in";
         if($piOrHost)
             $cclist .= ",$piOrHost";
