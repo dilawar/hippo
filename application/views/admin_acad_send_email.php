@@ -20,7 +20,6 @@ if( $_POST )
         , 'send' );
     echo '<input type="hidden" name="attachments" value="'.$attachments.'" />';
     echo '</form>';
-
     if(file_exists($attachments))
         echo printNote("Attaching: $attachments");
 }
