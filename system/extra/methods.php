@@ -358,7 +358,7 @@ function __get__( array $arr, $what, $default = NULL )
     *
     * @return List of dates generated from this pattern.
  */
-function repeatPatToDays( string $pat, string $start_day = 'today' ) : array
+function repeatPatToDays( string $pat, string $start_day = 'oday' ) : array
 {
     if( trim($pat) == '' )
         return array();
@@ -395,7 +395,7 @@ function repeatPatToDays( string $pat, string $start_day = 'today' ) : array
         {
             foreach( $days as $d )
             {
-                $strDate = "$w $d  $month";
+                $strDate = "$w $d of $month";
                 $date = dbDate( strtotime( $strDate ) );
 
                 if( (strtotime( $date ) >= strtotime( $start_day )) && 
