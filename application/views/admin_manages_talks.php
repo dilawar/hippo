@@ -119,6 +119,7 @@ foreach( $upcomingTalks as $t )
                 , 'lightyellow'
                 , 'eid,class,url,modified_by,timestamp,calendar_id,status,calendar_event_id,last_modified_on' );
 
+
             /* PREPARE email template */
             $talkid = explode( '.', $event[ 'external_id' ])[1];
             $talk = getTableEntry( 'talks', 'id', array( 'id' => $talkid ) );

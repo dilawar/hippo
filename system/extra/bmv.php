@@ -26,7 +26,7 @@ function cancelEvents(string $gid, string $eids, string $by='HIPPO', string $rea
     $ret = ['success'=>true, 'msg' => ''];
 
     if(! $reason)
-        $reason = "No reason is provided by admin. So rude!";
+        $reason = "No reason was given by admin. So rude!";
 
     // Get events to cancelled.
     $events = [];

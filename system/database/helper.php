@@ -955,7 +955,8 @@ function checkCollision($request): array
     foreach($reqs as $r)
     {
         // Not the our request.
-        if($r['gid'] == $request['gid'] && $r['rid'] == $request['rid'])
+        if(intval($r['gid']) == intval($request['gid']) 
+            && intval($r['rid']) == intval($request['rid']))
             continue;
         $all[] = $r;
     }
@@ -988,7 +989,7 @@ function approveRequest( string $gid, string $rid ): array
     if($collideWith && count($collideWith) > 0)
     {
         $msg .= "Following request is colliding with another event or request. Rejecting it..";
-        $msg .= arrayToTableHTML( $collideWith, 'request' );
+        $msg .= arrayToTableHTML( $collideWith[0], 'request' );
         return ['msg'=>$msg, 'success'=>false, 'data'=>$collideWith];
     }
 

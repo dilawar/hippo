@@ -34,6 +34,51 @@ function whereWhenHTML( $event )
         . $event['venue' ] ;
 }
 
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Create an email out of a talk event.
+    *
+    * @Param array
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function eventToEmail(array $event, array $talk = []): array
+{
+    /* PREPARE email template */
+    $talkid = explode( '.', $event[ 'external_id' ])[1];
+    if(! $talk)
+        $talk = getTableEntry( 'talks', 'id', array( 'id' => $talkid ) );
+    if( ! $talk )
+        return [];
+
+    $talkHTML = talkToHTML( $talk, false );
+    $attachments = eventToICALFile($event);
+    $subject = __ucwords__( $talk[ 'class' ] ) . " by " . $talk['speaker'] . ' on ' .
+        humanReadableDate( $event[ 'date' ] );
+
+    $hostInstitite = emailInstitute($talk['host'], $talk['host_extra']);
+    $data = emailFromTemplate(
+        "this_event" 
+        , array( 'EMAIL_BODY' => $talkHTML
+        , 'HOST_INSTITUTE' => strtoupper( $hostInstitite )
+        ) 
+    );
+    $data['subject'] = $subject;
+    $data['attachments'] = $attachments;
+    return $data;
+}
+
+function talkToEmail(string $talkid)
+{
+    $talk = getTableEntry('talks', 'id,status'
+        , ['id'=>$talkid, 'status'=>'VALID']);
+    $event = getEventsOfTalkId($talkid);
+    return eventToEmail($event, $talk);
+}
+
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Convert a given where/when event to HTML.

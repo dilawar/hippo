@@ -1248,7 +1248,6 @@ function verifyRequest( array $request ) : string
  */
 function emailInstitute( $email, $email2='', $format='html')
 {
-
     $ncbs = 'National Center For Biological Sciences (TIFR)';
     $instem = 'Institute for Stem Cell Science and Regenerative Medicine';
     $ccamp =  'Center for Cellular and Molecular Platforms';

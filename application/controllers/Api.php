@@ -2470,6 +2470,82 @@ class Api extends CI_Controller
         $this->send_data($data, 'ok');
     }
 
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  Called should check the permissions.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
+    public function __commontasks() 
+    {
+        $args = func_get_args();
+        if($args[0] === 'events')
+        {
+            $data = [];
+            $subtask = $args[1];
+            if($subtask === 'upcoming')
+            {
+                $from = intval(__get__($args, 2, 0));
+                $to = intval(__get__($args, 3, 30));
+                $limit = $to - $from; // these many groups
+                $data = getEventsGID('today', 'VALID', $limit, $from);
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($subtask === 'cancel')
+            {
+                $gid = $args[2];
+                $eid = __get__($args, 3, '');  // csv of eid
+                $data = cancelEvents($gid, $eid, getLogin(), __get__($_POST,'reason',''));
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($subtask === 'gid')
+            {
+                $gid = $args[2];
+                // All events by gid.
+                $data = getEventsByGroupId($gid, 'VALID', 'today');
+                $this->send_data($data, "ok");
+                return;
+            }
+            else
+            {
+                $data['flash'] = "Unknown request " . $subtask;
+                $this->send_data($data, "ok");
+                return;
+            }
+
+            $this->send_data($data, "ok");
+            return;
+        }
+        else if($args[0] === 'event')
+        {
+            $data = [];
+            $subtask = __get__($args, 1, 'update');
+            if($subtask === 'delete' || $subtask === 'cancel') 
+            {
+                $_POST['status'] = 'CANCELLED';
+                $subtask = 'update';
+            }
+
+            if($subtask === 'update')
+            {
+                $res = updateEvent($_POST['gid'], $_POST['eid'], $_POST);
+                $data['flash'] = 'successfully updated';
+            }
+            else
+                $data['flash'] = "Unknown request " . $subtask;
+            $this->send_data($data, "ok");
+            return;
+        }
+        else
+        {
+            $this->send_data(['flash' => 'Unknown Request'], "ok");
+            return;
+        }
+    }
+
     // BMV ADMIN
     public function bmvadmin()
     {
@@ -2535,56 +2611,11 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'events')
         {
-            $data = [];
-            $subtask = $args[1];
-            if($subtask === 'upcoming')
-            {
-                $from = intval(__get__($args, 2, 0));
-                $to = intval(__get__($args, 3, 30));
-                $limit = $to - $from; // these many groups
-                $data = getEventsGID('today', 'VALID', $limit, $from);
-                $this->send_data($data, "ok");
-                return;
-            }
-            else if($subtask === 'cancel')
-            {
-                $gid = $args[2];
-                $eid = __get__($args, 3, '');  // csv of eid
-                $data = cancelEvents($gid, $eid, getLogin(), __get__($_POST,'reason',''));
-                $this->send_data($data, "ok");
-                return;
-            }
-            else if($subtask === 'gid')
-            {
-                $gid = $args[2];
-                // All events by gid.
-                $data = getEventsByGroupId($gid, 'VALID', 'today');
-                $this->send_data($data, "ok");
-                return;
-            }
-            else
-            {
-                $data['flash'] = "Unknown request " . $subtask;
-                $this->send_data($data, "ok");
-                return;
-            }
-
-            $this->send_data($data, "ok");
-            return;
+            return $this->__commontasks(...$args);
         }
         else if($args[0] === 'event')
         {
-            $data = [];
-            $subtask = __get__($args, 1, 'update');
-            if($subtask === 'update')
-            {
-                $res = updateEvent($_POST['gid'], $_POST['eid'], $_POST);
-                $data['flash'] = 'successfully updated';
-            }
-            else
-                $data['flash'] = "Unknown request " . $subtask;
-            $this->send_data($data, "ok");
-            return;
+            return $this->__commontasks(...$args);
         }
         else
         {
@@ -2619,24 +2650,62 @@ class Api extends CI_Controller
             if($endpoint === 'list')
             {
                 $limit = __get__($args, 2, 100);
-                // Get talks only in future.
+
+                // Don't fetch any talk created 6 months ago.
                 $talks = getTableEntries('talks', 'created_on DESC'
-                    , "status!='INVALID'", '*', $limit); 
+                    , "status!='INVALID' AND created_on > DATE_SUB(now(), INTERVAL 6 MONTH)"
+                    , '*', $limit); 
+
+                $data = [];
                 foreach($talks as &$talk) {
                     $event = getEventsOfTalkId($talk['id']);
-                    if($event)
+                    // if event was in past then don't use this talk;
+                    if($event) {
+                        if(strtotime($event['date']) < strtotime('yesterday'))
+                            continue;
                         $talk['event'] = $event;
+                    }
                     $req = getBookingRequestOfTalkId($talk['id']);
                     if($req)
                         $talk['request'] = $req;
+                    $data[] = $talk;
                 }
                 $this->send_data($talks, 'ok');
                 return;
             }
-            else if($endpoint === 'update')
+            else if($endpoint === 'get')
+            {
+                $tid = intval(__get__($args, 2, '-1'));
+
+                if($tid < 0) 
+                {
+                    $this->send_data(["Invalid talk id $tid."], 'ok');
+                    return;
+                }
+
+                // Get talks only in future.
+                $talk = getTableEntry('talks', 'id,status'
+                    , ['id'=>$tid, 'status'=>'VALID']);
+                $event = getEventsOfTalkId($talk['id']);
+                if($event)
+                    $talk['event'] = $event;
+                $req = getBookingRequestOfTalkId($talk['id']);
+                if($req)
+                    $talk['request'] = $req;
+                $this->send_data($talk, 'ok');
+                return;
+            }
+            else if($endpoint === 'delete')
             {
                 $res = updateThisTalk($_POST);
                 $this->send_data($res, 'ok');
+                return;
+            }
+            else if($endpoint === 'email')
+            {
+                $tid = $args[2];
+                $email = talkToEmail($tid);
+                $this->send_data($email, 'ok');
                 return;
             }
             else
@@ -2645,9 +2714,40 @@ class Api extends CI_Controller
                 return;
             }
         }
-        $this->send_data(["Unknown request"], "ok");
+        else if($args[0] === 'event') 
+        {
+            return $this->__commontasks(...$args);
+        }
+        // NOTE: Usually admin can not approve requests; he can do so for some
+        // requests associated with talks. 
+        else if($args[0] === 'request') 
+        {
+            if($args[1] === 'cancel' || $args[1] === 'delete')
+            {
+                $res = changeRequestStatus( $request[ 'gid' ]
+                    , $request[ 'rid' ], $request[ 'created_by' ]
+                    , 'CANCELLED');
+                $this->send_data(['status'=>$res], "ok");
+                return;
+            }
+            else if($args[1] === 'approve')
+            {
+                // make sure that it is a PUBLIC EVENT.
+                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
+                $this->send_data($ret, "ok");
+                return;
+            }
+            else
+            {
+                $data = ['flash' => 'Unknown request'];
+                $this->send_data($data, "ok");
+                return;
+            }
+        }
+        $this->send_data(["Unknown request: ", $args], "ok");
         return;
     }
+
     // Admin acad
     public function acadadmin()
     {
