@@ -159,20 +159,26 @@ $(document).ready(function(){
 <div class="h6 float-right">
 <a style="color:white" target="hippo_popup" href="https://ncbs.res.in/hippo/app/www">
 <u>Hippo Beta</u></a>
-<a style="color:white" target="_blank" href="https://play.google.com/store/apps/details?id=com.dilawar.hippo"><u>Hippo Android App</u></a>
+<a style="color:white" target="_blank" href="https://play.google.com/store/apps/details?id=com.dilawar.hippo">
+<u>Android App</u></a>
+<a class="color:white" target="_blank" href="https://ncbs-hippo.readthedocs.io/en/latest/">
+<u>Docs</u>
+</a> 
 </div>
 </div>
 
 <table class="public_links">
     <tr>
     <td><a class="bright" href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
-    <td><a class="bright" href="<?= site_url('info/aws') ?>" target="hippo_popup">AWSs</a></td>
+    <td>
+        <a class="bright" href="<?= site_url('info/aws') ?>" target="hippo_popup">AWS/</a>
+        <a class="bright" href="<?= site_url('info/jc') ?>" target="hippo_popup">JC</a>
+    </td>
     <td><a class="bright" href="<?= site_url('info/talks') ?>" target="hippo_popup">Talks</a></td>
-    <td><a class="bright" href="<?= site_url('info/jc') ?>" target="hippo_popup">JCs</a> </td>
     <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
     <td><a class="bright" href="<?= getConfigValue( 'CALENDAR_URL' ) ?>" target="hippo_popup">Calendar</a> </td>
-    <td><a class="bright" href="https://ncbs-hippo.readthedocs.io/en/latest/" target="hippo_popup">Docs</a> </td>
+    <td><a class="bright" href="<?= site_url('info/events') ?>" target="hippo_popup" >Events</a></td>
     </tr>
 </table>
 </div>

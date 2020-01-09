@@ -1150,6 +1150,7 @@ a.clickable {
 a.bright {
     color : white;
     font-variant: small-caps;
+    padding:2px;
 }
 
 a.clickable_small {

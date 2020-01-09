@@ -428,7 +428,7 @@ function fetchEntries( $res, int $n = -1, $how = PDO::FETCH_ASSOC ) : array
         while( $row = $res->fetch( $how ) )
         {
             $row = array_map('utf8_encode', $row);
-            array_push( $array, $row );
+            $array[] = $row;
             if( count($array) == $n )
                 break;
         }
