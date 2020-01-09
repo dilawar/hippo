@@ -1,19 +1,23 @@
 <?php
 require_once BASEPATH.'autoload.php';
 
-function showAlertTable( ) {
-    $html = '<div class="row">
-            <div class="col">
-                <i class="fa fa-flag-o"></i>
-                To enroll, visit <a class="btn btn-link" href="user_manages_courses.php">
+function showAlertTable( ) 
+{
+    $html = '
+    <table>
+    <div class="row">
+        <div class="col">
+            <i class="fa fa-flag-o"></i>
+            To enroll, visit <a class="btn btn-link" href="user_manages_courses.php">
                 My Courses</a> link in your home page after login.
-            </div>
-            <div class="col">
-                <i class="fa fa-flag-checkered fa-1x"></i> Registration on Hippo is mandatory; 
-                <a class="btn btn-link" href="http://moodle.ncbs.res.in" target="_blank">MOODLE</a> 
-                enrollment is independent of it!
-            </div>
-        </div>';
+        </div>
+        <div class="col">
+            <i class="fa fa-flag-checkered fa-1x"></i> Registration on Hippo is mandatory; 
+            <a class="btn btn-link" href="http://moodle.ncbs.res.in" target="_blank">MOODLE</a> 
+            enrollment is independent of it!
+        </div>
+    </div>
+    </table>';
     return $html;
 }
 
@@ -105,19 +109,16 @@ $html = '';
 // This semester courses.
 foreach( $slotCourses as $slot => $courses )
 {
-    $div = '<div class="container">';
+    $div = '';
     foreach( $courses as $c )
     {
         $cid = $c[ 'course_id' ];
         // Add header only to the first entry.
-        $courseTable = '<table class="show_course">';
+        $courseTable = '<table class="table show_course">';
         // $courseTable .= "<caption> $cid </caption>";
-        $courseTable .= "<tr>";
 
         // This function fills in $enrollments.
         $courseTable .= courseToHTMLRow( $c, $slot, $sem, $year, $enrollments );
-
-        $courseTable .= '</tr>';
         $courseTable .= '</table>';
 
         $data = getEnrollmentTableAndEmails( $cid, $enrollments, 'info exportable' );
@@ -142,11 +143,10 @@ foreach( $slotCourses as $slot => $courses )
             $regTable .= '</table>';
         }
         else
-            $regTable = '<table></table>';
+            $regTable = '<table><tr><td></td></tr></table>';
 
         $div .= $courseTable;
         $div .= $regTable;
-        $div .= '</div>';
     }
     $html .= $div;
 }
