@@ -31,7 +31,7 @@ function aws_schedule_fac_student_cron( )
             if( $res )
             {
                 echo printInfo( "Successfully assigned $speaker for $date" );
-                $res = notifyUserAboutUpcomingAWS( $speaker, $date );
+                notifyUserAboutUpcomingAWS( $speaker, $date );
             }
         }
     }

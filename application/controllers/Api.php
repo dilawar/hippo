@@ -2539,9 +2539,39 @@ class Api extends CI_Controller
             $this->send_data($data, "ok");
             return;
         }
+        else if($args[0] === 'email')
+        {
+            if($args[1] === 'talk')
+            {
+                $tid = intval(__get__($args, 2, '-1'));
+                if($tid < 0) {
+                    $this->send_data(
+                        ['success' => false, 'msg'=>"Invalid talk id $tid"]
+                        , "ok");
+                    return;
+                }
+                $email = talkToEmail($tid);
+                $this->send_data($email, 'ok');
+                return;
+            }
+            else if($args[1] === 'post') 
+            {
+                $data = $_POST;
+                $res = sendHTMLEmail($data['email_body'], $data['subject']
+                    , $data['recipient'], $data['cc'], $data['attachments'] 
+                );
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else 
+            { 
+                $this->send_data(['msg' => 'Unknown Request', 'success'=>false], "ok");
+                return;
+            }
+        }
         else
         {
-            $this->send_data(['flash' => 'Unknown Request'], "ok");
+            $this->send_data(['success' => false, 'msg' => $args], "ok");
             return;
         }
     }
@@ -2611,11 +2641,11 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'events')
         {
-            return $this->__commontasks(...$args);
+            return $this->__commontasks('events', ...$args);
         }
         else if($args[0] === 'event')
         {
-            return $this->__commontasks(...$args);
+            return $this->__commontasks('event', ...$args);
         }
         else
         {
@@ -2716,7 +2746,7 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'event') 
         {
-            return $this->__commontasks(...$args);
+            return $this->__commontasks('event', ...$args);
         }
         // NOTE: Usually admin can not approve requests; he can do so for some
         // requests associated with talks. 
@@ -2972,8 +3002,7 @@ class Api extends CI_Controller
         }
 
         $args = func_get_args();
-        return $this->__commontasks(...$args);
-
+        return $this->__commontasks('email', ...$args);
     }
 }
 

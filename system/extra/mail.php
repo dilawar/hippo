@@ -117,22 +117,23 @@ function mailFooter( ) {
 }
 
 function sendHTMLEmailUnsafe(string $msg, string $subject
-    , string $to, string $cclist='', string $attachments='' )
+    , string $to, string $cclist='', string $attachments='' ): array
 {
+    $ret = ['success'=>false, 'msg'=>''];
     global $maildir;
     $mail = new PHPMailer(true);
     $conf = getConf();
 
     if( strlen( trim( $msg ) ) < 1 )
     {
-        echo printInfo( "Message is too small" );
-        return false;
+        $ret['msg'] .= p( "Message is too small" );
+        return $ret;
     }
 
     if(! __get__( $conf['global'], 'send_emails', false))
     {
-        printInfo( "Email service has not been configured or sending email is not allowed." );
-        return false;
+        $ret['msg'] .= p( "Email service has not been configured or sending email is not allowed." );
+        return $ret;
     }
 
     $mail->isSMTP();                                          
@@ -148,9 +149,10 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
     $archivefile = $maildir . '/' . md5($subject . $msg) . '.email';
     if(file_exists($archivefile))
     {
-        printWarning( "This email has already been sent. Doing nothing" );
-        printWarning( "-> archive file $archivefile " );
-        return false;
+        $ret['msg'] .= p( "This email has already been sent. Doing nothing" );
+        $ret['msg'] .= p( "-> archive file $archivefile " );
+        $ret['success'] = true;
+        return $ret;
     }
 
     $timestamp = date( 'r', strtotime( 'now' ) );
@@ -178,11 +180,13 @@ function sendHTMLEmailUnsafe(string $msg, string $subject
 
     // generate md5 of email. And store it in archive.
     file_put_contents( $archivefile, "SENT" );
-    return true;
+    $ret['success'] = true;
+    $ret['msg'] .= p('Successfully sent.');
+    return $ret;
 }
 
 function sendHTMLEmail( string $msg, string $sub, string $to
-    , string $cclist = '', string $attachments='')
+    , string $cclist = '', string $attachments=''): array
 {
     try 
     {

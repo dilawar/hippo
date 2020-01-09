@@ -32,9 +32,8 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
 
             // Send email to user.
             $st = notifyUserAboutUpcomingAWS( $speaker, $date, $awsID );
-            if(! $st)
-                $res['msg'] .= "Failed to send email to user. ";
-
+            if(! $st['status'] )
+                $res['msg'] .= $st['msg'];
             return $res;
         }
         else
