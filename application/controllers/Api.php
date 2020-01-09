@@ -2860,6 +2860,21 @@ class Api extends CI_Controller
         $this->send_data(['msg'=>"Unknown request", 'status'=>false], "ok");
         return;
     }
+
+
+    // Emails.
+    public function email()
+    {
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        $args = func_get_args();
+        return $this->__commontasks(...$args);
+
+    }
 }
 
 ?>
