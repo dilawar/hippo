@@ -1,11 +1,11 @@
 <?php
 
 require_once BASEPATH . 'autoload.php';
+require_once FCPATH . 'system/extra/me.php';
 
 echo userHTML( );
 
-$conf = getConf( );
-$picPath = $conf['data']['user_imagedir'] . '/' . whoAmI() . '.jpg';
+$picPath = getUserPhoto(whoAmI());
 
 ///////////////////////////////////////////////////////////////////////////
 // PICTURE OF SPEAKER

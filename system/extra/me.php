@@ -149,4 +149,22 @@ function getVenuesWithStatusOnThisDayAndTime($date, $startTime, $endTime): array
     return $venues;
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  User photo if available.
+    *
+    * @Param string
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getUserPhotoB64(string $user): string 
+{
+    $conf = getConf( );
+    $picPath = $conf['data']['user_imagedir'] . '/' . $user . '.jpg';
+    if(file_exists($picPath))
+        return base64_encode(file_get_contents($picPath));
+    return '';
+}
+
 ?>

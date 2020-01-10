@@ -12,6 +12,7 @@ require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/talk.php';
 include_once BASEPATH . '/extra/acad.php';
 include_once BASEPATH . '/extra/services.php';
+include_once BASEPATH . '/extra/me.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -1383,6 +1384,7 @@ class Api extends CI_Controller
         *
         * @Param 
         *   - /me/profile
+        *   - /me/photo
         *   - /me/aws
         *   - /me/jc
         *   - /me/roles
@@ -1407,7 +1409,7 @@ class Api extends CI_Controller
         if($args[0] === 'profile')
         {
             $ldap = getUserInfo($user, true);
-            $remove = ['fname', 'lname'];
+            $remove = ['fname', 'lname', 'mname', 'roles'];
             $data = array_diff_key($ldap, array_flip($remove));
             $this->send_data($data, "ok");
             return;
@@ -1416,6 +1418,12 @@ class Api extends CI_Controller
         {
             $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
             $this->send_data($data[0], "ok");
+            return;
+        }
+        else if($args[0] === 'photo')
+        {
+            $pic = getUserPhotoB64(getLogin());
+            $this->send_data(['base64'=>$pic], "ok");
             return;
         }
         else if($args[0] === 'request')
