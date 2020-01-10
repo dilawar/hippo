@@ -163,8 +163,12 @@ class Api extends CI_Controller
         else if($args[0] === 'flashcards') 
         {
             $data = getPublicEventsOnThisDay('today');
+            $data = array_filter( $data
+                , function($ev) {
+                    return (strtotime($ev['end_time']) >= strtotime('now'));
+                });
             $tom = getPublicEventsOnThisDay('tomorrow');
-            $data = array_merge($data, $tom);
+            $data = array_merge($tom, $data);
             $cards = [];
             foreach($data as $item)
             {
