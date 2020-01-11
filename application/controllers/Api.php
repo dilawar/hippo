@@ -2148,50 +2148,66 @@ class Api extends CI_Controller
         }
 
         $args = func_get_args();
-        if( count($args) == 0 )
-            $args[0] = 'images';
-
         $res = [];
-        if( $args[0] == 'images')
+        if( $args[0] === 'image')
         {
-            $invId = intval(__get__($_POST, 'inventory_id', -1));
-            if($invId < 0)
+            $endpoint = __get__($args, 1, 'inventory');
+            if($endpoint === 'inventory') 
             {
-                $this->send_data($res, "Inventory ID is not found.");
-                return;
-            }
+                $invId = intval(__get__($_POST, 'inventory_id', -1));
+                if($invId < 0)
+                {
+                    $this->send_data($res, "Inventory ID is not found.");
+                    return;
+                }
 
-            $storeFolder = getUploadDir();
-            if (!empty($_FILES)) 
-            {
-                $tempFile = $_FILES['file']['tmp_name'];          
-                $md5 = md5_file( $tempFile );
-                $filename = $md5 . $_FILES['file']['name'];
-                $targetFile =  $storeFolder . "/$filename";
+                if (! empty($_FILES)) 
+                {
+                    $storeFolder = getUploadDir();
+                    $tempFile = $_FILES['file']['tmp_name'];          
+                    $md5 = md5_file( $tempFile );
+                    $filename = $md5 . $_FILES['file']['name'];
+                    $targetFile = getLoginPicturePath(getLogin());
+                    $res['stored'] = move_uploaded_file($tempFile, $targetFile); 
+                    // Add this value to database.
+                    $this->db->select_max('id', 'maxid');
+                    $r = $this->db->get('images')->result_array();
+                    if($r)
+                        $id = $r[0]['maxid'];
+                    else
+                        $id = 0;
 
-                $res['stored'] = move_uploaded_file($tempFile, $targetFile); 
-
-                // Add this value to database.
-                $this->db->select_max('id', 'maxid');
-                $r = $this->db->get('images')->result_array();
-                if($r)
-                    $id = $r[0]['maxid'];
+                    // Prepare data to send back to client.
+                    $data = [ 'external_id' => 'inventory.' . $invId ];
+                    $data['path'] = $filename;
+                    $data['uploaded_by'] = getLogin();
+                    $data['id'] = intval($id)+1;
+                    $this->db->insert('images', $data);
+                    $res['dbstatus'] = $this->db->error();
+                    $this->send_data($res, 'ok');
+                    return;
+                }
                 else
-                    $id = 0;
-
-                // Prepare data to send back to client.
-                $data = [ 'external_id' => 'inventory.' . $invId ];
-                $data['path'] = $filename;
-                $data['uploaded_by'] = getLogin();
-                $data['id'] = intval($id)+1;
-                $this->db->insert('images', $data);
-                $res['dbstatus'] = $this->db->error();
+                {
+                    $this->send_data( $res, 'No file uploaded.');
+                    return;
+                }
+            }
+            else if($endpoint === 'profile') 
+            {
+                $img = $_FILES[ 'file' ];
+                $ext = explode("/", $img['type'])[1];
+                $tempFile = $img['tmp_name'];
+                $conf = getConf();
+                $targetFile = $conf['data']['user_imagedir'].'/'.getLogin().'.jpg';
+                saveImageAsJPEG($tempFile, $ext, $targetFile);
+                $res['stored'] = $targetFile;
                 $this->send_data($res, 'ok');
                 return;
             }
             else
             {
-                $this->send_data( $res, 'No file uploaded.');
+                $this->send_data( ['Unknow request: ' +$endpoint], 'ok');
                 return;
             }
             $this->send_data($res, 'error');

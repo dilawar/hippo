@@ -799,7 +799,6 @@ function getThumbnail( $originalImage )
     return $outputImage;
 }
 
-
 /**
     * @brief Image of login. These are different than speaker.
     *
