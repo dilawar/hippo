@@ -5,7 +5,7 @@ require_once FCPATH . 'system/extra/me.php';
 
 echo userHTML( );
 
-$picPath = getUserPhoto(whoAmI());
+$picPath = getLoginPicturePath(whoAmI());
 
 ///////////////////////////////////////////////////////////////////////////
 // PICTURE OF SPEAKER
@@ -41,11 +41,9 @@ $tab .= $picAction;
 echo $tab;
 
 $info = getUserInfo( whoAmI(), true );
+$editables = array_keys(getProfileEditables($info));
 
 echo '<h1>Your profile </h1>';
-
-$editables = 'title,first_name,honorific,last_name,alternative_email,institute' . 
-    ',valid_until,joined_on,pi_or_host,specialization';
 
 $specializations = array_map(
     function( $x ) { return $x['specialization']; }, getAllSpecialization( )
@@ -71,7 +69,7 @@ $info[ 'pi_or_host' ] = arrayToSelectList('pi_or_host'
 );
 
 echo '<form method="post" action="' . site_url('/user/info/action') . '" >';
-echo dbTableToHTMLTable( 'logins', $info, $editables );
+echo dbTableToHTMLTable( 'logins', $info, implode(',', $editables));
 echo "</form>";
 
 if(__get__($info, 'eligible_for_aws', 'NO') =="NO")

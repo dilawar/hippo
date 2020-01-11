@@ -1408,11 +1408,25 @@ class Api extends CI_Controller
 
         if($args[0] === 'profile')
         {
-            $ldap = getUserInfo($user, true);
-            $remove = ['fname', 'lname', 'mname', 'roles'];
-            $data = array_diff_key($ldap, array_flip($remove));
-            $this->send_data($data, "ok");
-            return;
+            $endpoint = __get__($args, 1, 'get');
+            if($endpoint === 'get') 
+            {
+                $ldap = getUserInfo($user, true);
+                $remove = ['fname', 'lname', 'mname', 'roles'];
+                $data = array_diff_key($ldap, array_flip($remove));
+                $this->send_data($data, "ok");
+                return;
+            }
+            elseif($endpoint === 'editables') 
+            {
+                $this->send_data(getProfileEditables(), "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data(["unknown request $endpoint."], "ok");
+                return;
+            }
         }
         else if($args[0] === 'roles')
         {
