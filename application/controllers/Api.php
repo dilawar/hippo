@@ -1417,6 +1417,19 @@ class Api extends CI_Controller
                 $this->send_data($data, "ok");
                 return;
             }
+            elseif($endpoint === 'update')
+            {
+                $data = ['success'=>false, 'msg'=>''];
+                $editables = array_keys(getProfileEditables());
+                $_POST['login'] = getLogin();
+                $res = updateTable('logins', 'login', $editables, $_POST);
+                if($res)
+                    $data['success'] = true;
+                else
+                    $data['msg'] .= 'Failed to update profile.';
+                $this->send_data($data, "ok");
+                return;
+            }
             elseif($endpoint === 'editables') 
             {
                 $this->send_data(getProfileEditables(), "ok");
@@ -1629,7 +1642,7 @@ class Api extends CI_Controller
 
         if($args[0] === 'create')
         {
-            $id = getUniqueID( 'accomodation' );
+            $id = getUniqueID('accomodation');
             $_POST['id'] = $id;
             $_POST['status'] = 'AVAILABLE';
             $_POST['created_by'] = getLogin();
@@ -1638,13 +1651,12 @@ class Api extends CI_Controller
             $res = insertIntoTable( 'accomodation'
                 , 'id,type,available_from,available_for,open_vacancies,address,description'
                 . ',status,owner_contact,rent,extra,advance,url,created_by,created_on'
-                , $_POST
-            );
+                , $_POST);
 
             if($res)
-                $this->send_data( ['id'=>$id],  'ok');
+                $this->send_data( ['success'=>true, 'id'=>$id, 'msg'=>''],  'ok');
             else
-                $this->send_data( ['Failed'],  'error');
+                $this->send_data( ['success'=>false, 'msg'=>'Failed'], 'error');
             return;
         }
         if($args[0] === 'update')
@@ -2219,6 +2231,19 @@ class Api extends CI_Controller
                 $this->send_data($res, 'ok');
                 return;
             }
+            else if($endpoint === 'speaker') 
+            {
+                $id = $args[2];
+                $img = $_FILES[ 'file' ];
+                $ext = explode("/", $img['type'])[1];
+                $tempFile = $img['tmp_name'];
+                $conf = getConf();
+                $targetFile = $conf['data']['user_imagedir']."/$id.jpg";
+                saveImageAsJPEG($tempFile, $ext, $targetFile);
+                $res['stored'] = $targetFile;
+                $this->send_data($res, 'ok');
+                return;
+            }
             else
             {
                 $this->send_data( ['Unknow request: ' +$endpoint], 'ok');
@@ -2561,6 +2586,21 @@ class Api extends CI_Controller
             $this->send_data($data, "ok");
             return;
         }
+        else if($args[0] === 'table')
+        {
+            if($args[1] === 'fieldinfo') 
+            {
+                $data = getTableFieldInfo($args[2]);
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($args[1] === 'types') 
+            {
+                $ctypes = getTableColumnTypes($args[2], $args[3]);
+                $this->send_data($ctypes, "ok");
+                return;
+            }
+        }
         else if($args[0] === 'event')
         {
             $data = [];
@@ -2608,6 +2648,43 @@ class Api extends CI_Controller
             else 
             { 
                 $this->send_data(['msg' => 'Unknown Request', 'success'=>false], "ok");
+                return;
+            }
+        }
+        else if($args[0] === 'speaker')
+        {
+            if($args[1] === 'fetch')
+            {
+                // Fetch speaker.
+                $speakerId = intval($args[2]);
+                if( $speakerId < 0) {
+                    $this->send_data(
+                        ['success'=>false, 'msg'=>"Invalid speaker ID" . $speakerId]
+                        , "ok");
+                    return;
+                 }
+
+                $data = getSpeakerByID($speakerId);
+                $picpath = getSpeakerPicturePath($speakerId);
+                $photo = '';
+                if(file_exists($picpath))
+                    $photo = base64_encode(file_get_contents($picpath));
+                $data['photo'] = $photo;
+                $this->send_data($data, "ok");
+                return;
+            }
+            if($args[1] === 'update')
+            {
+                // Updating speaker.
+                $res = addUpdateSpeaker($_POST);
+                $this->send_data($res, "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data([
+                    'msg' => 'Unknown Request ' . json_encode($args)
+                    , 'success'=>false], "ok");
                 return;
             }
         }
@@ -2682,13 +2759,9 @@ class Api extends CI_Controller
             return;
         }
         else if($args[0] === 'events')
-        {
-            return $this->__commontasks('events', ...$args);
-        }
+            return $this->__commontasks(...$args);
         else if($args[0] === 'event')
-        {
-            return $this->__commontasks('event', ...$args);
-        }
+            return $this->__commontasks(...$args);
         else
         {
             $this->send_data(['flash' => 'Unknown Request'], "ok");
@@ -2787,9 +2860,12 @@ class Api extends CI_Controller
             }
         }
         else if($args[0] === 'event') 
-        {
-            return $this->__commontasks('event', ...$args);
-        }
+            return $this->__commontasks(...$args);
+        else if($args[0] === 'speaker')
+            return $this->__commontasks(...$args);
+        else if($args[0] === 'table')
+            return $this->__commontasks(...$args);
+
         // NOTE: Usually admin can not approve requests; he can do so for some
         // requests associated with talks. 
         else if($args[0] === 'request') 
@@ -3032,7 +3108,6 @@ class Api extends CI_Controller
         $this->send_data(['msg'=>"Unknown request", 'status'=>false], "ok");
         return;
     }
-
 
     // Emails.
     public function email()

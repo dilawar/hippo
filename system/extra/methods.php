@@ -806,7 +806,7 @@ function getThumbnail( $originalImage )
     *
     * @return
  */
-function getLoginPicturePath( $login, $default = 'hippo' )
+function getLoginPicturePath($login, $default = 'hippo')
 {
     $conf = getConf( );
     $picPath = $conf['data']['user_imagedir'] . '/' . $login . '.jpg';
@@ -837,36 +837,32 @@ function getUserPicture( $user, $default = 'null', $width='200px' )
     return $html;
 }
 
-function getUserPicturePath( $user )
+function getUserPicturePath($user)
 {
-    $picPath = getLoginPicturePath( $user, $default );
+    $picPath = getLoginPicturePath($user, $default);
     return $picPath;
 }
 
 
-function getSpeakerPicturePath( $speaker )
+function getSpeakerPicturePath($speaker)
 {
+    if(is_array($speaker))
+        $speaker = $speaker['id'];
     $conf = getConf( );
     $datadir = $conf[ 'data' ]['user_imagedir'];
-
     if( is_numeric( $speaker ) && intval( $speaker ) > 0 )
     {
         // The speaker may not be inserted in database yet. Just return the
         // image by id.
-        return $datadir . '/' . $speaker . '.jpg';
+        $picPath = $datadir . '/' . $speaker . '.jpg';
+        if(! file_exists($picPath))
+            $picPath = nullPicPath('null');
+        return $picPath;
     }
 
-    else if( is_string( $speaker ) )
-        $speaker = splitName( $speaker );
-
-    // If image exists by speaker id then return that else go back to old
-    // model where emails are saved by name of the speaker.
-    if( intval( __get__( $speaker, 'id', 0 ) )  > 0 )
-        return $datadir . '/' . $speaker[ 'id' ] . '.jpg';
-
+    $speaker = splitName($speaker);
     $filename = $speaker[ 'first_name' ] . $speaker[ 'middle_name' ] .
                 $speaker[ 'last_name' ] . '.jpg' ;
-
     $filename = str_replace( ' ', '', $filename );
     return $datadir . '/' . $filename;
 }
