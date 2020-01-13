@@ -1683,6 +1683,9 @@ function awsToHTMLLarge( $aws, $with_picture = true )
     );
     $tcm = array_filter( $tcm );
     $title = $aws[ 'title' ];
+    if(__get__($aws, 'is_presynopsis_seminar', 'NO') === 'YES')
+        $title = "(Presynopsis Seminar) $title";
+
     if( strlen( $title ) == 0 )
         $title = "Not disclosed yet.";
 
@@ -1760,8 +1763,7 @@ function awsToHTML( $aws, $with_picture = false )
     if( strlen( $title ) == 0 )
         $title = "Not disclosed yet.";
 
-
-    if( __get__( $aws, 'is_presynopsis_seminar', 'NO' ) == 'YES' )
+    if( __get__( $aws, 'is_presynopsis_seminar', 'NO' ) === 'YES' )
         $title = '(Presynopsis Seminar)' . ' ' . $title;
 
     $abstract = $aws[ 'abstract' ];
