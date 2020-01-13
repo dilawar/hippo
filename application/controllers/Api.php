@@ -2673,11 +2673,32 @@ class Api extends CI_Controller
                 $this->send_data($data, "ok");
                 return;
             }
-            if($args[1] === 'update')
+            if($args[1] === 'update' || $args[1] === 'new')
             {
                 // Updating speaker.
                 $res = addUpdateSpeaker($_POST);
                 $this->send_data($res, "ok");
+                return;
+            }
+            if($args[1] === 'delete')
+            {
+                // Delete speakers only if there is no valid talks associated
+                // with it.
+                $speakerID = intval(__get__($args, 2, '-1'));
+                if($speakerID < 0) {
+                    $this->send_data(['success'=>false, 'msg'=>'Invalid speaker ID'], "ok");
+                    return;
+                }
+                $talks = getTableEntries('talks', 'id'
+                    , "status='ACTIVE' and speaker_id='$speakerID'"
+                );
+                if($talks && count($talks) > 0) {
+                    $this->send_data(['success'=>false, 'msg'=>'Speaker has valid talks.'], "ok");
+                    return;
+                }
+                $res = deleteFromTable('speakers', 'id', ['id'=>$speakerID]);
+                $res = deleteFromTable('talks', 'speaker_id', ['speaker_id'=>$speakerID]);
+                $this->send_data(['success'=>$res, 'msg'=>'Successfully deleted'], "ok");
                 return;
             }
             else
