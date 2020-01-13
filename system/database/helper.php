@@ -2877,9 +2877,9 @@ function getSpeakerByName( $name )
     return $res->fetch( PDO::FETCH_ASSOC );
 }
 
-function getSpeakerByID( $id )
+function getSpeakerByID($id): array
 {
-    return getTableEntry( 'speakers', 'id', array( 'id' => $id ) );
+    return getTableEntry('speakers', 'id', ['id' => $id]);
 }
 
 function getWeeklyEventByClass( $classes )
@@ -3198,6 +3198,46 @@ function totalClassEvents( )
 
     return $numEvents;
 }
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  get table field info.
+    *
+    * @Param $tableName
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getTableFieldInfo($tableName)
+{
+    $schema = getTableSchema($tableName);
+    $res = [];
+    foreach($schema as $row)
+    {
+        $type = $row['Type'];
+        $fname = $row['Field'];
+        if(preg_match( "/^(enum|set)\((.*)\)$/" , $type, $match))
+        {
+            $fs = [];
+            foreach( explode(",", $match[2] ) as &$v )
+                $fs[] = str_replace( "'", "", $v );
+            $res[$fname] = ['select', $fs];
+        }
+        else
+        {
+            if(__substr__('varchar', $type))
+                $res[$fname] = ['text', ''];
+            else if(__substr__('date', $type))
+                $res[$fname] = ['date', ''];
+            else if(__substr__('time', $type))
+                $res[$fname] = ['time', ''];
+            else
+                $res[$fname] = [$type, ''];
+        }
+    }
+    return $res;
+}
+
 
 /* --------------------------------------------------------------------------*/
 /**

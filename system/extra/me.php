@@ -149,4 +149,56 @@ function getVenuesWithStatusOnThisDayAndTime($date, $startTime, $endTime): array
     return $venues;
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  User photo if available.
+    *
+    * @Param string
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getUserPhotoB64(string $user): string 
+{
+    $conf = getConf( );
+    $picPath = $conf['data']['user_imagedir'] . '/' . $user . '.jpg';
+    if(file_exists($picPath))
+        return base64_encode(file_get_contents($picPath));
+    return '';
+}
+
+function getProfileEditables( ): array
+{ 
+    $schema = getTableSchema('logins');
+    $fs = 'title:select,first_name:text,honorific:select,last_name:text,'
+        .  'alternative_email:email,institute:text' 
+        .  ',valid_until:date,joined_on:date,pi_or_host:select,specialization:select';
+
+    $res = [];
+
+    // Prepare select list of faculty.
+    $faculty = getTableEntries( 'faculty', 'email', "status='ACTIVE'" );
+    $facultyEmails = array();
+    foreach( $faculty as $fac )
+        $facultyEmails[] = $fac['email'];
+
+    $specializations = array_map(
+        function( $x ) { return $x['specialization']; }, getAllSpecialization( )
+    );
+
+
+    foreach(explode(',', $fs) as $f)
+    {
+        $d = explode(':', $f);
+        $options = '';
+        if($d[1] === 'select')
+            $options = getTableColumnTypes('logins', $d[0]);
+        $res[$d[0]] =[$d[1], $options];
+    }
+    $res['specialization'][1] = $specializations;
+    $res['pi_or_host'][1] = $facultyEmails;
+    return $res;
+}
+
+
 ?>

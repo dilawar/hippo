@@ -12,6 +12,7 @@ require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/talk.php';
 include_once BASEPATH . '/extra/acad.php';
 include_once BASEPATH . '/extra/services.php';
+include_once BASEPATH . '/extra/me.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -163,8 +164,12 @@ class Api extends CI_Controller
         else if($args[0] === 'flashcards') 
         {
             $data = getPublicEventsOnThisDay('today');
+            $data = array_filter( $data
+                , function($ev) {
+                    return (strtotime($ev['end_time']) >= strtotime('now'));
+                });
             $tom = getPublicEventsOnThisDay('tomorrow');
-            $data = array_merge($data, $tom);
+            $data = array_merge($tom, $data);
             $cards = [];
             foreach($data as $item)
             {
@@ -1379,6 +1384,7 @@ class Api extends CI_Controller
         *
         * @Param 
         *   - /me/profile
+        *   - /me/photo
         *   - /me/aws
         *   - /me/jc
         *   - /me/roles
@@ -1402,16 +1408,49 @@ class Api extends CI_Controller
 
         if($args[0] === 'profile')
         {
-            $ldap = getUserInfo($user, true);
-            $remove = ['fname', 'lname'];
-            $data = array_diff_key($ldap, array_flip($remove));
-            $this->send_data($data, "ok");
-            return;
+            $endpoint = __get__($args, 1, 'get');
+            if($endpoint === 'get') 
+            {
+                $ldap = getUserInfo($user, true);
+                $remove = ['fname', 'lname', 'mname', 'roles'];
+                $data = array_diff_key($ldap, array_flip($remove));
+                $this->send_data($data, "ok");
+                return;
+            }
+            elseif($endpoint === 'update')
+            {
+                $data = ['success'=>false, 'msg'=>''];
+                $editables = array_keys(getProfileEditables());
+                $_POST['login'] = getLogin();
+                $res = updateTable('logins', 'login', $editables, $_POST);
+                if($res)
+                    $data['success'] = true;
+                else
+                    $data['msg'] .= 'Failed to update profile.';
+                $this->send_data($data, "ok");
+                return;
+            }
+            elseif($endpoint === 'editables') 
+            {
+                $this->send_data(getProfileEditables(), "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data(["unknown request $endpoint."], "ok");
+                return;
+            }
         }
         else if($args[0] === 'roles')
         {
             $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
             $this->send_data($data[0], "ok");
+            return;
+        }
+        else if($args[0] === 'photo')
+        {
+            $pic = getUserPhotoB64(getLogin());
+            $this->send_data(['base64'=>$pic], "ok");
             return;
         }
         else if($args[0] === 'request')
@@ -1603,7 +1642,7 @@ class Api extends CI_Controller
 
         if($args[0] === 'create')
         {
-            $id = getUniqueID( 'accomodation' );
+            $id = getUniqueID('accomodation');
             $_POST['id'] = $id;
             $_POST['status'] = 'AVAILABLE';
             $_POST['created_by'] = getLogin();
@@ -1612,13 +1651,12 @@ class Api extends CI_Controller
             $res = insertIntoTable( 'accomodation'
                 , 'id,type,available_from,available_for,open_vacancies,address,description'
                 . ',status,owner_contact,rent,extra,advance,url,created_by,created_on'
-                , $_POST
-            );
+                , $_POST);
 
             if($res)
-                $this->send_data( ['id'=>$id],  'ok');
+                $this->send_data( ['success'=>true, 'id'=>$id, 'msg'=>''],  'ok');
             else
-                $this->send_data( ['Failed'],  'error');
+                $this->send_data( ['success'=>false, 'msg'=>'Failed'], 'error');
             return;
         }
         if($args[0] === 'update')
@@ -2136,50 +2174,79 @@ class Api extends CI_Controller
         }
 
         $args = func_get_args();
-        if( count($args) == 0 )
-            $args[0] = 'images';
-
         $res = [];
-        if( $args[0] == 'images')
+        if( $args[0] === 'image')
         {
-            $invId = intval(__get__($_POST, 'inventory_id', -1));
-            if($invId < 0)
+            $endpoint = __get__($args, 1, 'inventory');
+            if($endpoint === 'inventory') 
             {
-                $this->send_data($res, "Inventory ID is not found.");
+                $invId = intval(__get__($_POST, 'inventory_id', -1));
+                if($invId < 0)
+                {
+                    $this->send_data($res, "Inventory ID is not found.");
+                    return;
+                }
+
+                if (! empty($_FILES)) 
+                {
+                    $storeFolder = getUploadDir();
+                    $tempFile = $_FILES['file']['tmp_name'];          
+                    $md5 = md5_file( $tempFile );
+                    $filename = $md5 . $_FILES['file']['name'];
+                    $targetFile = getLoginPicturePath(getLogin());
+                    $res['stored'] = move_uploaded_file($tempFile, $targetFile); 
+                    // Add this value to database.
+                    $this->db->select_max('id', 'maxid');
+                    $r = $this->db->get('images')->result_array();
+                    if($r)
+                        $id = $r[0]['maxid'];
+                    else
+                        $id = 0;
+
+                    // Prepare data to send back to client.
+                    $data = [ 'external_id' => 'inventory.' . $invId ];
+                    $data['path'] = $filename;
+                    $data['uploaded_by'] = getLogin();
+                    $data['id'] = intval($id)+1;
+                    $this->db->insert('images', $data);
+                    $res['dbstatus'] = $this->db->error();
+                    $this->send_data($res, 'ok');
+                    return;
+                }
+                else
+                {
+                    $this->send_data( $res, 'No file uploaded.');
+                    return;
+                }
+            }
+            else if($endpoint === 'profile') 
+            {
+                $img = $_FILES[ 'file' ];
+                $ext = explode("/", $img['type'])[1];
+                $tempFile = $img['tmp_name'];
+                $conf = getConf();
+                $targetFile = $conf['data']['user_imagedir'].'/'.getLogin().'.jpg';
+                saveImageAsJPEG($tempFile, $ext, $targetFile);
+                $res['stored'] = $targetFile;
+                $this->send_data($res, 'ok');
                 return;
             }
-
-            $storeFolder = getUploadDir();
-            if (!empty($_FILES)) 
+            else if($endpoint === 'speaker') 
             {
-                $tempFile = $_FILES['file']['tmp_name'];          
-                $md5 = md5_file( $tempFile );
-                $filename = $md5 . $_FILES['file']['name'];
-                $targetFile =  $storeFolder . "/$filename";
-
-                $res['stored'] = move_uploaded_file($tempFile, $targetFile); 
-
-                // Add this value to database.
-                $this->db->select_max('id', 'maxid');
-                $r = $this->db->get('images')->result_array();
-                if($r)
-                    $id = $r[0]['maxid'];
-                else
-                    $id = 0;
-
-                // Prepare data to send back to client.
-                $data = [ 'external_id' => 'inventory.' . $invId ];
-                $data['path'] = $filename;
-                $data['uploaded_by'] = getLogin();
-                $data['id'] = intval($id)+1;
-                $this->db->insert('images', $data);
-                $res['dbstatus'] = $this->db->error();
+                $id = $args[2];
+                $img = $_FILES[ 'file' ];
+                $ext = explode("/", $img['type'])[1];
+                $tempFile = $img['tmp_name'];
+                $conf = getConf();
+                $targetFile = $conf['data']['user_imagedir']."/$id.jpg";
+                saveImageAsJPEG($tempFile, $ext, $targetFile);
+                $res['stored'] = $targetFile;
                 $this->send_data($res, 'ok');
                 return;
             }
             else
             {
-                $this->send_data( $res, 'No file uploaded.');
+                $this->send_data( ['Unknow request: ' +$endpoint], 'ok');
                 return;
             }
             $this->send_data($res, 'error');
@@ -2519,6 +2586,21 @@ class Api extends CI_Controller
             $this->send_data($data, "ok");
             return;
         }
+        else if($args[0] === 'table')
+        {
+            if($args[1] === 'fieldinfo') 
+            {
+                $data = getTableFieldInfo($args[2]);
+                $this->send_data($data, "ok");
+                return;
+            }
+            else if($args[1] === 'types') 
+            {
+                $ctypes = getTableColumnTypes($args[2], $args[3]);
+                $this->send_data($ctypes, "ok");
+                return;
+            }
+        }
         else if($args[0] === 'event')
         {
             $data = [];
@@ -2566,6 +2648,64 @@ class Api extends CI_Controller
             else 
             { 
                 $this->send_data(['msg' => 'Unknown Request', 'success'=>false], "ok");
+                return;
+            }
+        }
+        else if($args[0] === 'speaker')
+        {
+            if($args[1] === 'fetch')
+            {
+                // Fetch speaker.
+                $speakerId = intval($args[2]);
+                if( $speakerId < 0) {
+                    $this->send_data(
+                        ['success'=>false, 'msg'=>"Invalid speaker ID" . $speakerId]
+                        , "ok");
+                    return;
+                 }
+
+                $data = getSpeakerByID($speakerId);
+                $picpath = getSpeakerPicturePath($speakerId);
+                $photo = '';
+                if(file_exists($picpath))
+                    $photo = base64_encode(file_get_contents($picpath));
+                $data['photo'] = $photo;
+                $this->send_data($data, "ok");
+                return;
+            }
+            if($args[1] === 'update' || $args[1] === 'new')
+            {
+                // Updating speaker.
+                $res = addUpdateSpeaker($_POST);
+                $this->send_data($res, "ok");
+                return;
+            }
+            if($args[1] === 'delete')
+            {
+                // Delete speakers only if there is no valid talks associated
+                // with it.
+                $speakerID = intval(__get__($args, 2, '-1'));
+                if($speakerID < 0) {
+                    $this->send_data(['success'=>false, 'msg'=>'Invalid speaker ID'], "ok");
+                    return;
+                }
+                $talks = getTableEntries('talks', 'id'
+                    , "status='ACTIVE' and speaker_id='$speakerID'"
+                );
+                if($talks && count($talks) > 0) {
+                    $this->send_data(['success'=>false, 'msg'=>'Speaker has valid talks.'], "ok");
+                    return;
+                }
+                $res = deleteFromTable('speakers', 'id', ['id'=>$speakerID]);
+                $res = deleteFromTable('talks', 'speaker_id', ['speaker_id'=>$speakerID]);
+                $this->send_data(['success'=>$res, 'msg'=>'Successfully deleted'], "ok");
+                return;
+            }
+            else
+            {
+                $this->send_data([
+                    'msg' => 'Unknown Request ' . json_encode($args)
+                    , 'success'=>false], "ok");
                 return;
             }
         }
@@ -2640,13 +2780,9 @@ class Api extends CI_Controller
             return;
         }
         else if($args[0] === 'events')
-        {
-            return $this->__commontasks('events', ...$args);
-        }
+            return $this->__commontasks(...$args);
         else if($args[0] === 'event')
-        {
-            return $this->__commontasks('event', ...$args);
-        }
+            return $this->__commontasks(...$args);
         else
         {
             $this->send_data(['flash' => 'Unknown Request'], "ok");
@@ -2745,9 +2881,12 @@ class Api extends CI_Controller
             }
         }
         else if($args[0] === 'event') 
-        {
-            return $this->__commontasks('event', ...$args);
-        }
+            return $this->__commontasks(...$args);
+        else if($args[0] === 'speaker')
+            return $this->__commontasks(...$args);
+        else if($args[0] === 'table')
+            return $this->__commontasks(...$args);
+
         // NOTE: Usually admin can not approve requests; he can do so for some
         // requests associated with talks. 
         else if($args[0] === 'request') 
@@ -2990,7 +3129,6 @@ class Api extends CI_Controller
         $this->send_data(['msg'=>"Unknown request", 'status'=>false], "ok");
         return;
     }
-
 
     // Emails.
     public function email()
