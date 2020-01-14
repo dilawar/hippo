@@ -138,8 +138,7 @@ function updateRegistration(arrray $data): array
     *
     * @Param $course
     *   Array representing course (from table running courses)
-    * @Param $reg
-    *   Array representing registration (from table course_registrations)
+    * @Param $data
     * @Param $what
     *   AUDIT, CREDIT or DROP
     * @Param $student
@@ -152,7 +151,7 @@ function updateRegistration(arrray $data): array
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function handleCourseRegistration(array $course, array $reg
+function handleCourseRegistration(array $course, array $data
     , string $what
     , string $student, string $bywhom, $sendEmail=true) : array
 {
@@ -170,13 +169,11 @@ function handleCourseRegistration(array $course, array $reg
     else
         $to = $student;
 
-
     $ret = ['msg'=>'', 'success'=>true];
-    $data = $reg;
     $data['last_modified_on'] = dbDateTime('now');
 
     // If new registration, get the current timestamp else use old one.
-    $data['registered_on'] = __get__($reg, "registered_on", dbDateTime('now'));
+    $data['registered_on'] = __get__($data, "registered_on", dbDateTime('now'));
 
     if($what === 'DROP')
         $data['status'] = 'DROPPED';
@@ -194,8 +191,6 @@ function handleCourseRegistration(array $course, array $reg
         return ["success"=>false, "msg"=> "Unknown course registration task $what"];
 
 
-    // Update the registration table.
-
     $data['year'] = $course['year'];
     $data['semester'] = $course['semester'];
     $data['course_id'] = $course['course_id'];
@@ -206,6 +201,7 @@ function handleCourseRegistration(array $course, array $reg
     // do not register and raise and error.
     if( $course['is_audit_allowed'] === 'NO' && $data['type'] === 'AUDIT' )
     {
+        $ret['success'] = false;
         $ret['msg'] = "Sorry but course $cid does not allow <tt>AUDIT</tt>.";
         return $ret;
     }
@@ -214,15 +210,32 @@ function handleCourseRegistration(array $course, array $reg
     // then add student to waiting list and raise a flag.
     if( $course['max_registration'] > 0)
     {
+        // FIXME: This can be improved by just getting the counts.
         $numEnrollments = count(getCourseRegistrations( $cid, $course['year'], $course['semester'] ));
         if( intval($numEnrollments) >= intval($course['max_registration']) )
         {
             $data['status'] = 'WAITLIST';
+            $ret['success'] = true;
             $ret['msg'] .= p( "<i class=\"fa fa-flag fa-2x\"></i>
                 Number of registrations have reached the limit. I've added you to 
                 <tt>WAITLIST</tt>. Please contact academic office or your instructor about 
                 the policy on <tt>WAITLIST</tt>. By default, <tt>WAITLIST</tt> means 
                 <tt>NO REGISTRATION</tt>.");
+        }
+    }
+
+    // ON AUDIT AND CREDIT
+    if($what !== 'DROP')
+    {
+        // Check if any course is colliding with existing registration.
+        $myCourses = getMyCourses($data['semester'], $data['year'], $student);
+        foreach($myCourses as $myCourse) {
+            $cSlot = getCourseSlot($myCourse['course_id']);
+            if($cSlot && $cSlot === $data['slot']) {
+                $ret['success'] = false;
+                $ret['msg'] = getCourseName($myCourse['course_id'])." is already running on this slot $cSlot.";
+                return $ret;
+            }
         }
     }
 
@@ -245,6 +258,7 @@ function handleCourseRegistration(array $course, array $reg
     if(strtoupper($data['status']) === 'DROPPED')
         updateCourseWaitlist($data['course_id'], $data['year'], $data['semester']);
 
+    $ret['success'] = true;
     $ret['msg'] .= "Successfully $what course ".$data['course_id'];
 
     if($sendEmail)

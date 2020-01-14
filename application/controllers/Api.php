@@ -359,10 +359,14 @@ class Api extends CI_Controller
             assert(count($fs)==3);
 
             $course = getRunningCourseByID($fs[0], $fs[2], $fs[1]);
+            if(! $course) {
+                $res['success'] = false;
+                $res['msg'] = "Could not find a valid course: " + implode('-', $fs);
+                $this->send_data($res, "ok");
+            }
 
             // Do not send email when using APP.
-            $res = handleCourseRegistration($course, $data, $data['type']
-                ,  getLogin(), getLogin());
+            $res = handleCourseRegistration($course, $data, $data['type'], getLogin(), getLogin());
 
             if($res['success'])
                 $this->send_data($res, 'ok');

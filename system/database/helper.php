@@ -3104,11 +3104,10 @@ function getSlotInfo( $id, $ignore = '' )
     *
     * @return
  */
-function getCourseSlot( $cid )
+function getCourseSlot($cid)
 {
-    $hippoDB = initDB();;
-    $slot = getTableEntry( 'courses', 'slot', "course_id='$cid'" );
-    return $slots[ 'slot' ];
+    $course = executeQueryReadonly("SELECT slot FROM courses WHERE course_id='$cid'");
+    return $course['slot'];
 }
 
 function getCourseById( $cid )
