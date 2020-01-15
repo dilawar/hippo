@@ -199,7 +199,7 @@ function feedbackForm(string $year, string $sem, string $cid ) : array
     // DO NOT use ' to delimit the string; it wont work very well inside table.
     $numUnanswered = numQuestionsNotAnswered( whoAmI(), $year, $sem, $cid);
     $form =  "<form action='".site_url("user/givefeedback/$cid/$sem/$year")."' method='post'>";
-    $form .= "<button class='btn btn-primary pull-right' name='response' value='submit'>Feeback ("
+    $form .= "<button style='float:right' name='response' value='submit'>Feeback ("
                 . $numUnanswered . " unanswered.)</button>";
     $form .= "</form>";
     return ['html'=>$form, 'num_unanswered'=>$numUnanswered];
@@ -231,7 +231,6 @@ function coursesToHTMLTable(array $courses, array $runningCourses=null
         // If feedback is not given for this course, display a button.
         $sem = $c['semester'];
         $year = $c['year'];
-        $c['name'] = $course['name'];
 
         // If more than 30 days have passed, do not allow dropping courses.
         if( __get__($runningCourses, $cid, ''))
@@ -256,19 +255,15 @@ function coursesToHTMLTable(array $courses, array $runningCourses=null
                 );
             }
         }
-        $table = '<table>';
 
+        $table = '<table>';
         if($withFeedbackForm)
         {
             // Show form. Form is inside another table.
             $feedRes = feedbackForm($year, $sem, $cid );
             $table .= '<table><tr><td>';
             $table .= '<form method="post" action="'.site_url("user/manage_course/$action").'">';
-            // $table .= dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
-            $table .= arrayToVerticalTableHTML($c, 'info', '', $tofilter);
-            $table .= "<input type='hidden' name='course_id' value='".$c['course_id']."' />";
-            $table .= "<button class='btn btn-warning pull-right' 
-                    value=\"Drop\" name=\"response\">Drop</button>";
+            $table .= dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
             $table .= '</form>';
             $table .= '</td>';
 
@@ -841,7 +836,8 @@ function arrayToTHRow( array $array
 }
 
 // Convert an array to HTML
-function arrayToTableHTML($array, $tablename, $background='', $tobefilterd='', bool $header=true)
+function arrayToTableHTML( $array, $tablename, $background = ''
+        , $tobefilterd = '', $header = true )
 {
     if( $background )
         $background = "style=\"background:$background;\"";
@@ -1088,7 +1084,7 @@ function editor_script( $id, $default = '' )
     *
     * @return  An html table. You need to wrap it in a form.
  */
-function dbTableToHTMLTable( string $tablename, array $defaults = array()
+function dbTableToHTMLTable( string $tablename, array $defaults=[]
     , $editables = '', string $button_val = 'submit', string $hide = '', string $classes = '' ) 
 {
     global $dbChoices;
@@ -1158,16 +1154,15 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
                    />";
         }
 
-        // Genearte a select list of ENUM type class.
+        // Genearte a select list.
         $match = Array( );
         if( preg_match( '/^varchar\((.*)\)$/', $ctype ) )
         {
             $classKey = $tablename . '.' . $keyName;
             if(isset($dbChoices[$classKey]))
             {
-                $val = "<select name=\"$keyName\">";
+                $val = "<select tname=\"$keyName\" class='dbchoices'>";
                 $choices = getChoicesFromGlobalArray( $dbChoices, $classKey );
-
                 foreach( $choices as $k => $v )
                 {
                     $selected = '';
@@ -1182,7 +1177,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
         }
         elseif( preg_match( "/^enum\((.*)\)$/" , $ctype, $match ) )
         {
-            $val = "<select name=\"$keyName\">";
+            $val = "<select name=\"$keyName\" class='enum'>";
             foreach( explode(",", $match[1] ) as $v )
             {
                 $selected = '';
@@ -1198,7 +1193,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
         // TODO generate a multiple select for SET typeclass.
         else if( preg_match( "/^set\((.*)\)$/", $ctype, $match ) )
         {
-            $val = "<select multiple name=\"" . $keyName . '[]' . "\">";
+            $val = "<select class='set' multiple name=\"" . $keyName . '[]' . "\">";
             foreach( explode(",", $match[1] ) as $v )
             {
                 $selected = '';
@@ -1271,8 +1266,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
 
     // Let JS add extra rows here.
     $html .= '<tr><td></td><td><table id="' . $tablename . '_extra_rows"> </table></td>';
-
-    if( count( $editableKeys ) > 0 && strlen( $button_val ) > 0 )
+    if( count($editableKeys) > 0 && strlen( $button_val ) > 0 )
     {
         $html .= "<tr style=\"background:white;\"><td></td><td>";
         $html .= "<button class='btn btn-primary' 
@@ -1687,6 +1681,9 @@ function awsToHTMLLarge( $aws, $with_picture = true )
     );
     $tcm = array_filter( $tcm );
     $title = $aws[ 'title' ];
+    if(__get__($aws, 'is_presynopsis_seminar', 'NO') === 'YES')
+        $title = "(Presynopsis Seminar) $title";
+
     if( strlen( $title ) == 0 )
         $title = "Not disclosed yet.";
 
@@ -1764,8 +1761,7 @@ function awsToHTML( $aws, $with_picture = false )
     if( strlen( $title ) == 0 )
         $title = "Not disclosed yet.";
 
-
-    if( __get__( $aws, 'is_presynopsis_seminar', 'NO' ) == 'YES' )
+    if( __get__( $aws, 'is_presynopsis_seminar', 'NO' ) === 'YES' )
         $title = '(Presynopsis Seminar)' . ' ' . $title;
 
     $abstract = $aws[ 'abstract' ];

@@ -164,6 +164,7 @@ $default[ 'max_registration' ] = -1;
 
 if( __get__( $_POST, 'running_course', '') )
 {
+    echo printNote("It is not a good idea to update a course when there are registrations.");
     $action = 'Update';
     $course = getTableEntry( 'courses', 'id', array( 'id' => $_POST[ 'running_course_id' ]) );
     $default[ 'semester' ] = $semester;

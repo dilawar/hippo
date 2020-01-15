@@ -118,7 +118,6 @@ trait AdminacadCourses
     public function courses_action($arg = '')
     {
         $response = strtolower($_POST['response']);
-
         // If no venue is found, the leave it empty.
         if( ! __get__( $_POST, 'venue', '' ) )
             $_POST[ 'venue' ] = '';
