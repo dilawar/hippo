@@ -68,7 +68,7 @@ function getMyUnscheduledTalks($created_by)
  */
 /* ----------------------------------------------------------------------------*/
 function getMyTalks(string $created_by, bool $withBooking=true
-    , bool $onlyUnscheduledAndUpcoming=true): array
+    , bool $onlyUnscheduledAndUpcoming=false): array
 {
     $talks = getTableEntries( 'talks', 'created_on'
         , "status='VALID' AND speaker_id > '0' AND created_by='$created_by'");
@@ -89,6 +89,8 @@ function getMyTalks(string $created_by, bool $withBooking=true
         {
             $talk['booking'] = $request;
             $talk['booking_status'] = 'PENDING';
+            if($onlyUnscheduledAndUpcoming)
+                continue;
         }
 
         // Ignore any talk which is deliverd more than 1 days ago.
@@ -99,6 +101,8 @@ function getMyTalks(string $created_by, bool $withBooking=true
                 continue;
             $talk['booking'] = $ev;
             $talk['booking_status'] = 'CONFIRMED';
+            if($onlyUnscheduledAndUpcoming)
+                continue;
         }
         $results[] = $talk;
     }

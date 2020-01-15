@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/methods.php';
+include_once BASEPATH . '/extra/courses.php';
 
 /*
  * Assign AWS
@@ -29,7 +30,6 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
             // Don't rescheduleAWS. It will change the rest of the 
             // entries for the week.
             // rescheduleAWS( );
-
             // Send email to user.
             $st = notifyUserAboutUpcomingAWS( $speaker, $date, $awsID );
             if(! $st['success'] )
@@ -228,14 +228,13 @@ function handleCourseRegistration(array $course, array $data
     if($what !== 'DROP')
     {
         // Check if any course is colliding with existing registration.
-        $myCourses = getMyCourses($data['semester'], $data['year'], $student);
-        foreach($myCourses as $myCourse) {
-            $cSlot = getCourseSlot($myCourse['course_id']);
-            if($cSlot && $cSlot === $data['slot']) {
-                $ret['success'] = false;
-                $ret['msg'] = getCourseName($myCourse['course_id'])." is already running on this slot $cSlot.";
-                return $ret;
-            }
+        $myRegistrations = getMyCourses($data['semester'], $data['year'], $student);
+        $collision = collisionWithMyRegistrations($course, $myRegistrations);
+        if($collision['collision']) {
+            $ret['msg'] = 'Collision with the course: '
+                . getCourseName($collision['with']['course_id']);
+            $ret['success'] = false;
+            return $ret;
         }
     }
 

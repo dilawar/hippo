@@ -1,6 +1,5 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
 require_once __DIR__.'/ApiHelper.php';
 require_once __DIR__.'/Adminservices.php';
 require_once __DIR__.'/User.php';
@@ -242,6 +241,12 @@ class Api extends CI_Controller
             $pat = base64_decode($args[1]);
             $data = repeatPatToDays($pat);
             $this->send_data($data, 'ok');
+            return;
+        }
+        else if($args[0] === 'slot')
+        {
+            $slot = getSlotInfo($args[1]);
+            $this->send_data($slot, 'ok');
             return;
         }
         $this->send_data(['Unknown request'], "ok");
@@ -1526,7 +1531,7 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
                 return;
             }
-            else if($args[1] === 'upcoming')
+            else if($args[1] === 'upcoming' || $args[1] === 'unscheduled')
             {
                 $data = getMyUnscheduledTalks(getLogin());
                 $this->send_data($data, 'ok');
@@ -3088,6 +3093,19 @@ class Api extends CI_Controller
                 $_POST = array_merge($_POST, $name);
                 $ret = addUpdateSpeaker($_POST);
                 $this->send_data($ret, 'ok');
+                return;
+            }
+            else if($args[1] === 'update')
+            {
+                $name = splitNameIntoParts($_POST['name']);
+                $_POST = array_merge($_POST, $name);
+                $ret = addUpdateSpeaker($_POST);
+                $this->send_data($ret, 'ok');
+                return;
+            }
+            else if($args[1] === 'fetch')
+            {
+                $this->__commontasks('speaker', 'fetch', $args[2]); 
                 return;
             }
         }

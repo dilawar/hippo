@@ -3077,10 +3077,8 @@ function runningCoursesOnThisVenueSlot( $venue, $date, $startTime, $endTime )
 function getSlotInfo( $id, $ignore = '' )
 {
     $hippoDB = initDB();;
-
     $ignore = str_replace( ' ', ',', $ignore );
     $ignoreTiles = explode( ',', $ignore );
-
     $slots = getTableEntries( 'slots', 'id', "groupid='$id'" );
     $res = array( );
     foreach( $slots as $sl )
@@ -3089,8 +3087,7 @@ function getSlotInfo( $id, $ignore = '' )
         // fully.
         if( in_array( $sl['id'], $ignoreTiles ) )
             continue;
-
-        $res[ ] = $sl[ 'day' ] . ' ' . dbTime( $sl[ 'start_time' ] ) . '-'
+        $res[] = $sl[ 'day' ] . ' ' . dbTime( $sl[ 'start_time' ] ) . '-'
             . dbTime( $sl[ 'end_time' ] );
     }
     return  implode( ', ', $res );
