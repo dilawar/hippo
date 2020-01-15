@@ -1084,7 +1084,7 @@ function editor_script( $id, $default = '' )
     *
     * @return  An html table. You need to wrap it in a form.
  */
-function dbTableToHTMLTable( string $tablename, array $defaults = array()
+function dbTableToHTMLTable( string $tablename, array $defaults=[]
     , $editables = '', string $button_val = 'submit', string $hide = '', string $classes = '' ) 
 {
     global $dbChoices;
@@ -1154,16 +1154,15 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
                    />";
         }
 
-        // Genearte a select list of ENUM type class.
+        // Genearte a select list.
         $match = Array( );
         if( preg_match( '/^varchar\((.*)\)$/', $ctype ) )
         {
             $classKey = $tablename . '.' . $keyName;
             if(isset($dbChoices[$classKey]))
             {
-                $val = "<select name=\"$keyName\">";
+                $val = "<select tname=\"$keyName\" class='dbchoices'>";
                 $choices = getChoicesFromGlobalArray( $dbChoices, $classKey );
-
                 foreach( $choices as $k => $v )
                 {
                     $selected = '';
@@ -1178,7 +1177,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
         }
         elseif( preg_match( "/^enum\((.*)\)$/" , $ctype, $match ) )
         {
-            $val = "<select name=\"$keyName\">";
+            $val = "<select name=\"$keyName\" class='enum'>";
             foreach( explode(",", $match[1] ) as $v )
             {
                 $selected = '';
@@ -1194,7 +1193,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
         // TODO generate a multiple select for SET typeclass.
         else if( preg_match( "/^set\((.*)\)$/", $ctype, $match ) )
         {
-            $val = "<select multiple name=\"" . $keyName . '[]' . "\">";
+            $val = "<select class='set' multiple name=\"" . $keyName . '[]' . "\">";
             foreach( explode(",", $match[1] ) as $v )
             {
                 $selected = '';
@@ -1267,8 +1266,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults = array()
 
     // Let JS add extra rows here.
     $html .= '<tr><td></td><td><table id="' . $tablename . '_extra_rows"> </table></td>';
-
-    if( count( $editableKeys ) > 0 && strlen( $button_val ) > 0 )
+    if( count($editableKeys) > 0 && strlen( $button_val ) > 0 )
     {
         $html .= "<tr style=\"background:white;\"><td></td><td>";
         $html .= "<button class='btn btn-primary' 

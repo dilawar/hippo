@@ -358,21 +358,19 @@ function __get__( array $arr, $what, $default = NULL )
     *
     * @return List of dates generated from this pattern.
  */
-function repeatPatToDays( string $pat, string $start_day = 'oday' ) : array
+function repeatPatToDays( string $pat, string $start_day='today'): array
 {
-    if( trim($pat) == '' )
+    if(trim($pat) == '')
         return array();
-
+    $pat = strtolower($pat);
     $exploded = explode( ",", $pat);
     $days = $exploded[0];
-
-    $weeks = __get__( $exploded, 1, "All" );
-
+    $weeks = __get__($exploded, 1, "all" );
     $durationInMonths = intval($exploded[2]);
-    if( ! $durationInMonths )
+    if(! $durationInMonths)
         $durationInMonths = 6;
 
-    if( $weeks == "All" )
+    if( $weeks == "all" )
         $weeks = "first/second/third/fourth/fifth";
 
     $weeks = explode( "/", $weeks );

@@ -237,11 +237,11 @@ class User extends CI_Controller
             echo flashMessage($res['msg']);
             redirect( 'user/courses' );
         }
-        else if( $action == 'feedback' )
+        else if( $action === 'feedback' )
         {
             echo "Give feedback";
         }
-        else if( $action == 'drop' )
+        else if( $action === 'drop' )
         {
             // Using the same function to AUDIT/CREDIT/DROP courses. Function
             // registerForCourse is also called by App API.

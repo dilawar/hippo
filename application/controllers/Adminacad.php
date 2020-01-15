@@ -76,7 +76,7 @@ class Adminacad extends CI_Controller
     /* Manage faculty */
     public function faculty($arg = '')
     {
-        $this->load_adminacad_view( 'admin_manages_faculty.php');
+        $this->load_adminacad_view( 'admin_manages_faculty');
         return;
     }
 
@@ -103,7 +103,7 @@ class Adminacad extends CI_Controller
     public function gradecourse( $year, $sem, $course_id )
     {
         $data = array('course_id' => $course_id, 'year' => $year, 'semester' => $sem);
-        $this->load_adminacad_view('admin_acad_grade_course.php', $data );
+        $this->load_adminacad_view('admin_acad_grade_course', $data );
     }
 
     public function manages_talks()
@@ -367,8 +367,7 @@ class Adminacad extends CI_Controller
 
         if( $res )
         {
-            if($response == 'drop')
-            {
+            if($response == 'drop') {
                 $res = updateCourseWaitlist( $course, $year, $sem );
                 $msg = '';
                 if( ! $res )

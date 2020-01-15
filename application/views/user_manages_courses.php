@@ -1,5 +1,7 @@
 <?php
 require_once BASEPATH . 'autoload.php';
+require_once BASEPATH . 'extra/courses.php';
+
 $me = whoAmI();
 echo userHTML( );
 $sem = getCurrentSemester( );
@@ -14,9 +16,9 @@ foreach( $semCourses as $rc )
     $runningCourses[ $cid ] = $rc;
 }
 // User courses and slots.
-$myCourses = getMyCourses( $sem, $year, $user = $me );
+$myRegistrations = getMyCourses( $sem, $year, $user = $me );
 $mySlots = array( );
-foreach( $myCourses as $c )
+foreach( $myRegistrations as $c )
 {
     // Get the running courses.  In rare case, use may have enrolled in course
     // which is not running anymore.
@@ -63,8 +65,10 @@ foreach( $runningCourses as $c )
         $cid = $c[ 'course_id' ];
         $cname = getCourseName( $cid );
         $slot = $c[ 'slot' ];
-        if( in_array( $slot, $mySlots ) )
-        {
+
+        // A course may be running on the same slot but may not overlap in
+        // dates. 
+        if(collisionWithMyRegistrations($c, $myRegistrations)['collision']){
             $blockedCourses[ $cid ] = $cname;
             continue;
         }
@@ -80,7 +84,7 @@ foreach( $runningCourses as $c )
 }
 $courseSelect = arrayToSelectList( 'course_id', $options, $courseMap );
 $default = ['student_id' => $me, 'semester' => $sem, 'year' => $year, 'course_id' => $courseSelect];
-$myCourseTables = coursesToHTMLTable($myCourses, $runningCourses, $withFeedbackForm = true);
+$myCourseTables = coursesToHTMLTable($myRegistrations, $runningCourses, $withFeedbackForm = true);
 ?>
 
 <div class="card m-2 p-2">
@@ -88,7 +92,7 @@ $myCourseTables = coursesToHTMLTable($myCourses, $runningCourses, $withFeedbackF
 <div class="card-body">
 <ul class="list-group my-1" style="font-size:small">
     <li> Some courses may not allowed <tt>AUDIT</tt>. </li>
-    <li> Some courses may put a ceiling on the 
+    <li> Some courses may put a limit on the 
         number of enrollments. See the table at the end of page.
 </ul>
 
@@ -135,7 +139,7 @@ $action = 'drop';
             Hippo. After that you need to contact Academic Office.
         </div>
         <!-- table of courses -->
-        <?php if(count($myCourses) > 0): ?>
+        <?php if(count($myRegistrations) > 0): ?>
             <div class="row">
             <?php foreach($myCourseTables as $table): ?>
                 <div class="col"><?= $table ?></div>
@@ -184,7 +188,7 @@ foreach( $runningCourses as $cid => $course )
 $table .= '</table>';
 ?>
 <div class="card">
-<div class="card-header h2">Summary of current running courses</div>
+<div class="card-header h2">Summary of running courses</div>
 <div class="card-body"> <?=$table ?> </div>
 </div>
 <?=goBackToPageLink( "user/home", "Go back" )?>
