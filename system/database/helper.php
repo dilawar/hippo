@@ -2670,6 +2670,8 @@ function getMyCourses( $sem, $year, $user  ) : array
     $whereExpr = "(status='VALID' OR status='WAITLIST') AND semester='$sem' AND year='$year' 
         AND student_id='$user'";
     $courses = getTableEntries( 'course_registration', 'course_id', $whereExpr );
+    foreach($courses as &$c)
+        $c['name'] = getCourseName($c['course_id']);
     return $courses;
 }
 
@@ -3881,7 +3883,7 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
         $cid = $data['course_id'];
         $login = getLoginInfo($data['student_id'], true, true);
         $msg = p( "Dear " . arrayToName($login, true));
-        $msg .= p("I have successfully updated your courses.");
+        $msg .= p("Hippo has successfully updated your courses.");
 
         $sem = getCurrentSemester( );
         $year = getCurrentYear( );
@@ -3890,15 +3892,17 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
         $myCourses = getMyCourses($sem, $year, $user=$data['student_id']);
         if(count($myCourses)>0)
         {
-            $msg .= p("Followings are your courses this semester.");
+            $msg .= p("List of your courses this semester.");
             foreach( $myCourses as $c )
-                $msg .= arrayToVerticalTableHTML($c, 'info','','grade,grade_is_given_on');
+                $msg .= arrayToVerticalTableHTML($c, 'info',''
+                ,'grade,grade_is_given_on,status');
         }
         else
             $msg .= p("You are registered for no course this semester.");
 
         $to = $login['email'];
-        sendHTMLEmail($msg, "Successfully $what the course $cid", $to);
+        $cname = getCourseName($cid);
+        sendHTMLEmail($msg, "Successfully $what the course '$cname ($cid)'", $to);
     }
     return $res;
 }

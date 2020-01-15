@@ -367,8 +367,7 @@ class Adminacad extends CI_Controller
 
         if( $res )
         {
-            if($response == 'drop')
-            {
+            if($response == 'drop') {
                 $res = updateCourseWaitlist( $course, $year, $sem );
                 $msg = '';
                 if( ! $res )
