@@ -3097,19 +3097,6 @@ function getSlotInfo( $id, $ignore = '' )
 }
 
 
-/**
-    * @brief Get the slot of given slot.
-    *
-    * @param $cid
-    *
-    * @return
- */
-function getCourseSlot($cid)
-{
-    $course = executeQueryReadonly("SELECT slot FROM courses WHERE course_id='$cid'");
-    return $course['slot'];
-}
-
 function getCourseById( $cid )
 {
     $c =  getTableEntry('courses_metadata', 'id,status', ['id' => $cid,'status'=>'VALID']);

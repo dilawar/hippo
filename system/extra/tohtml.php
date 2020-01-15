@@ -199,7 +199,7 @@ function feedbackForm(string $year, string $sem, string $cid ) : array
     // DO NOT use ' to delimit the string; it wont work very well inside table.
     $numUnanswered = numQuestionsNotAnswered( whoAmI(), $year, $sem, $cid);
     $form =  "<form action='".site_url("user/givefeedback/$cid/$sem/$year")."' method='post'>";
-    $form .= "<button style='float:right' name='response' value='submit'>Feeback ("
+    $form .= "<button class='btn btn-primary pull-right' name='response' value='submit'>Feeback ("
                 . $numUnanswered . " unanswered.)</button>";
     $form .= "</form>";
     return ['html'=>$form, 'num_unanswered'=>$numUnanswered];
@@ -231,6 +231,7 @@ function coursesToHTMLTable(array $courses, array $runningCourses=null
         // If feedback is not given for this course, display a button.
         $sem = $c['semester'];
         $year = $c['year'];
+        $c['name'] = $course['name'];
 
         // If more than 30 days have passed, do not allow dropping courses.
         if( __get__($runningCourses, $cid, ''))
@@ -255,15 +256,19 @@ function coursesToHTMLTable(array $courses, array $runningCourses=null
                 );
             }
         }
-
         $table = '<table>';
+
         if($withFeedbackForm)
         {
             // Show form. Form is inside another table.
             $feedRes = feedbackForm($year, $sem, $cid );
             $table .= '<table><tr><td>';
             $table .= '<form method="post" action="'.site_url("user/manage_course/$action").'">';
-            $table .= dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
+            // $table .= dbTableToHTMLTable( 'course_registration', $c, '', $action, $tofilter );
+            $table .= arrayToVerticalTableHTML($c, 'info', '', $tofilter);
+            $table .= "<input type='hidden' name='course_id' value='".$c['course_id']."' />";
+            $table .= "<button class='btn btn-warning pull-right' 
+                    value=\"Drop\" name=\"response\">Drop</button>";
             $table .= '</form>';
             $table .= '</td>';
 
@@ -836,8 +841,7 @@ function arrayToTHRow( array $array
 }
 
 // Convert an array to HTML
-function arrayToTableHTML( $array, $tablename, $background = ''
-        , $tobefilterd = '', $header = true )
+function arrayToTableHTML($array, $tablename, $background='', $tobefilterd='', bool $header=true)
 {
     if( $background )
         $background = "style=\"background:$background;\"";
