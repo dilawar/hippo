@@ -2679,6 +2679,7 @@ class Api extends CI_Controller
                 if(file_exists($picpath))
                     $photo = base64_encode(file_get_contents($picpath));
                 $data['photo'] = $photo;
+                $data['html'] = speakerToHTML($data);
                 $this->send_data($data, "ok");
                 return;
             }
