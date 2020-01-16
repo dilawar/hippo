@@ -1438,6 +1438,8 @@ function getRoles( string $user ) : array
     $stmt->bindValue( ':email', $user );
     $stmt->execute( );
     $res = $stmt->fetch( PDO::FETCH_ASSOC );
+    if(! $res)
+        return ['USER'];
     return explode( ",", $res['roles'] );
 }
 

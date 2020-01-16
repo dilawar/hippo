@@ -31,7 +31,7 @@ class User extends CI_Controller
 
         // Fill data before sending to view.
         // Only show this section if user is eligible for AWS.
-        $data['cUserInfo'] = getLoginInfo(whoAmI());
+        $data['cUserInfo'] = getLoginInfo(whoAmI(), true, true);
         $this->template->load( $view, $data );
     }
 

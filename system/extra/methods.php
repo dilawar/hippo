@@ -40,9 +40,7 @@ function getUserIpAddr()
 function whoAmI( )
 {
     // Return the login name.
-    $me = 'HIPPO';
-    if( isset( $_SESSION) )
-        $me = __get__($_SESSION, 'WHOAMI', $me);
+    $me = __get__($_SESSION, 'WHOAMI', 'UNKNOWN');
     return explode('@', $me)[0];
 }
 
