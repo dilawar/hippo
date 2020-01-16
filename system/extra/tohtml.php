@@ -1161,7 +1161,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults=[]
             $classKey = $tablename . '.' . $keyName;
             if(isset($dbChoices[$classKey]))
             {
-                $val = "<select tname=\"$keyName\" class='dbchoices'>";
+                $val = "<select name=\"$keyName\" class='dbchoices'>";
                 $choices = getChoicesFromGlobalArray( $dbChoices, $classKey );
                 foreach( $choices as $k => $v )
                 {
