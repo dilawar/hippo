@@ -58,12 +58,10 @@ function extract_emails_from( $text )
     return $res;
 }
 
-
 function authenticateUser(string $ldap, string $pass )
 {
-    $auth = authenticateUsingLDAP( $ldap, $pass );
-    if(! $auth)
-        $auth = authenticateUsingIMAP( $ldap, $pass );
+    $auth = authenticateUsingLDAP( $ldap, $pass )
+         || authenticateUsingIMAP( $ldap, $pass );
     return $auth;
 }
 
