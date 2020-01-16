@@ -152,7 +152,6 @@ function authenticateUsingLDAP( string $user, string $pass ) : bool
         if( $res )
         {
             $bind = ldap_bind( $res, $ldapQuery, $pass );
-
             if( $bind )
             {
                 $auth = true;
@@ -160,9 +159,8 @@ function authenticateUsingLDAP( string $user, string $pass ) : bool
                 break;
             }
             ldap_close( $res );
-            }
+        }
     }
-
     return $auth;
 }
 
