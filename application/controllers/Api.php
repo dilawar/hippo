@@ -936,7 +936,7 @@ class Api extends CI_Controller
         $user = __get__($_POST,'login','NA');
         $password = __get__($_POST,'password', 'NA');
         $pass = base64_decode($password);
-        $res = authenticateUser($user, $pass);
+        $res = @authenticateUser($user, $pass);
         $token = '';
         $gmapkey = '';
 
