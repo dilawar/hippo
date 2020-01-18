@@ -2075,12 +2075,12 @@ function getUserKey(string $login, int $level = -1) : array
     * @Returns  
  */
 /* ----------------------------------------------------------------------------*/
-function genererateNewKey(string $user, int $level = 0)
+function genererateNewKey(string $user, int $level = 1)
 {
     $newKey = generateRandomString(20);
     $res = insertIntoTable( 'apikeys'
         , "login,apikey,level"
-        , ['login'=> $user, 'apikey'=>$newKey, 'level'=>$level]
+        , ['login'=> $user, 'apikey'=>$newKey, 'level'=>"$level"]
     );
 
     if($res)
