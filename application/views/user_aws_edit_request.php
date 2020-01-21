@@ -20,7 +20,7 @@ echo "<h3>Edit or add AWS entry</h3>";
 
 echo alertUser( "Supervisor 1 must be a local faculty. Others can be from outside.", false );
 
-echo '<form method="post" action="'.site_url("user/aws/edit_request/submit").'">';
+echo '<form method="post" action="'.site_url("user/aws/edit_request_create").'">';
 echo editableAWSTable( $awsId );
 echo "</form>";
 
