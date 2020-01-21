@@ -1664,7 +1664,7 @@ function horizontalLine( $width = "100%" )
     return "<div width=$width><hr width=$width align=left> </div>";
 }
 
-function awsToHTMLLarge( $aws, $with_picture = true )
+function awsToHTMLLarge( $aws, $with_picture = true, array $links=[])
 {
     $speaker = __ucwords__( loginToText( $aws[ 'speaker' ] , false ));
     $supervisors = array( 
@@ -1704,7 +1704,7 @@ function awsToHTMLLarge( $aws, $with_picture = true )
     }
 
     $whereWhen = whereWhenTable( $aws['venue'], $aws['date'], $aws['time'], $inothertable=true);
-    $left = '<table class="wherewhen">
+    $left = '<table class="table table-sm">
                 <tr>
                     <td colspan="2"><strong>' . $speaker .'</strong></td>
                 </tr>
@@ -1722,10 +1722,16 @@ function awsToHTMLLarge( $aws, $with_picture = true )
     $abstract = rescale_inline_images( $abstract );
 
     // Add table.
-    $html = "<h1>$title</h1>";
+    $html = '<div class="card">';
+    $html .= "<h1 class='card-header' style='font-size:x-large'>$title</h1>";
 
     $right =  fixHTML( $abstract );
+    $html .= "<div class='card-body'>";
     $html .= "<div> $infoTable </div> <div> $right </div>";
+    foreach ($links as $link) 
+        $html .= "<div class='card-link'>$link</div>";
+    $html .= "</div>";
+    $html .= '</div>';
     return $html;
 }
 
