@@ -4,9 +4,15 @@ require_once BASEPATH. 'autoload.php';
 
 trait AWS 
 {
-    public function aws( string $arg = '', string $arg2 = '' )
+    public function aws(string $arg = '', string $arg2 = '')
     {
         $user = whoAmI();
+        $scheduledAWS = scheduledAWSInFuture($user);
+        $tempScheduleAWS = temporaryAwsSchedule($user);
+        $userAWSData = ['cUser'=>whoAmI(), 'cScheduledAWS'=>$scheduledAWS
+            , 'cTempScheduleAWS'=>$tempScheduleAWS
+        ];
+
         if( strtolower($arg) == 'schedulingrequest' )
         {
             if( $arg2 == 'create' )
@@ -85,14 +91,12 @@ trait AWS
 
                 // Create subject for email
                 $subject = "Your preferences for AWS schedule has been received";
-
                 $msg = "<p>Dear " . loginToText( $login ) . "</p>";
                 $msg .= "<p>Your scheduling request has been logged. </p>";
                 $msg .= arrayToVerticalTableHTML( $_POST, 'info', NULL, 'response' );
-
                 $email = getLoginEmail( $login );
                 sendHTMLEmail( $msg, $subject, $email, 'hippo@lists.ncbs.res.in' );
-                redirect( 'user/aws' );
+                $this->load_user_view('user_aws', $userAWSData);
             }
             else if( strtolower(trim($arg2)) == 'delete' )
             {
@@ -110,7 +114,7 @@ trait AWS
                     $subject = "You have cancelled your AWS preference";
                     $this->session->set_flashdata( 'success', "Successfully cancelled" );
                 }
-                redirect( 'user/aws' );
+                $this->load_user_view('user_aws', $userAWSData);
             }
             else if( $arg2 )
             {
@@ -119,12 +123,6 @@ trait AWS
             }
             else
             {
-                // All action are done. Send user back to aws page.
-                $scheduledAWS = scheduledAWSInFuture( $user);
-                $tempScheduleAWS = temporaryAwsSchedule( $user);
-                // THis data is for user_aws.php page.
-                $userAWSData = ['cUser'=>whoAmI(), 'cScheduledAWS'=>$scheduledAWS
-                    , 'cTempScheduleAWS'=>$tempScheduleAWS];
                 $this->load_user_view('user_aws', $userAWSData);
             }
         }
@@ -150,39 +148,39 @@ trait AWS
         }
         else if( strtolower(trim($arg)) == 'edit_request' )
         {
-            if( strtolower( $arg2 ) == 'submit' )
-            {
-                $_POST[ 'speaker' ] =  whoAmI();
-                $res = insertIntoTable( 'aws_requests'
-                    , array( 'speaker', 'title', 'abstract', 'supervisor_1', 'supervisor_2'
-                    , 'tcm_member_1', 'tcm_member_2', 'tcm_member_3', 'tcm_member_4' 
-                    , 'date', 'time') 
-                    , $_POST 
-                );
-                if( $res )
-                    echo flashMessage( 'Successfully created a request to edit AWS details ' );
-                else
-                    echo minionEmbarrassed( 'I could not create a request to edit your AWS' );
-                redirect( "user/aws" );
-            }
+            $this->load_user_view( "user_aws_edit_request");
+            return;
+        }
+        else if(strtolower($arg) === 'edit_request_create') 
+        {
+            $_POST[ 'speaker' ] =  whoAmI();
+            $res = insertIntoTable( 'aws_requests'
+                , 'speaker,title,abstract,supervisor_1,supervisor_2'
+                 . 'tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4' 
+                 . 'is_presynopsis_seminar,date,time' 
+                , $_POST 
+            );
+            if( $res )
+                echo flashMessage( 'Successfully created a request to edit AWS details ' );
             else
-                $this->load_user_view( "user_aws_edit_request" );
+                echo minionEmbarrassed( 'I could not create a request to edit your AWS' );
+
+            $this->load_user_view("user_aws", $userAWSData);
+        }
+        else if(strtolower($arg) === 'edit_request_cancel') 
+        {
+            $_POST[ 'speaker' ] =  whoAmI();
+            $_POST['status'] = 'CANCELLED';
+            $res = updateTable( 'aws_requests', 'id', 'status', $_POST);
+            if($res) {
+                echo flashMessage( 'Successfully cancelled edit request.' );
+                $this->load_user_view("user_aws", $userAWSData);
+            }
         }
         else
         {
             if( $arg )
                 flashMessage( "Unnown action $arg", 'error' );
-
-            // All action are done. Send user back to aws page.
-            $scheduledAWS = scheduledAWSInFuture( $user);
-            $tempScheduleAWS = temporaryAwsSchedule( $user);
-
-            // This data is for user_aws.php page.
-            $userAWSData = ['cUser'=>whoAmI()
-                , 'cScheduledAWS'=>$scheduledAWS
-                , 'cTempScheduleAWS'=>$tempScheduleAWS
-            ];
-
             $this->load_user_view("user_aws", $userAWSData);
         }
     }

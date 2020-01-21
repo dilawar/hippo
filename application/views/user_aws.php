@@ -24,15 +24,16 @@ if($scheduledAWS && $eligible)
     }
     else
     {
-        echo printInfo("By pressing this button, you are confirming your AWS schedule.
-             Please contact academic office in case you want to change your schedule.
-            ");
+        echo "<div class='info'>
+            By pressing this button, you are confirming your AWS schedule.
+            Please contact academic office in case you want to change your schedule.";
 
         echo '<form method="post" action="' . site_url( 'user/aws_acknowledge' ) . "\">
-            <button $disabled name=\"acknowledged\" value=\"YES\">Acknowledge schedule</button>
+            <button class='btn-secondary' $disabled name=\"acknowledged\" value=\"YES\">Acknowledge schedule</button>
             <input type=\"hidden\" name=\"id\" value=\"" . $scheduledAWS[ 'id' ] . "\" >
             </form>
             ";
+        echo '</div>';
     }
 }
 else if($eligible)
@@ -101,11 +102,11 @@ else if($eligible)
 ?>
 
 <?php if(! $eligible): ?>
-    <div class="alert alert-warning">
-    You are no longer on AWS roster. Usually a name is removed from the roster
-     after one's <tt>PRESYNOPSIS SEMINARY</tt> or <tt>THESIS SEMINAR</tt>. If this is 
-    mistake, please write to Academic Office.
-    </div>
+<div class="alert alert-warning">
+    Your name is no longer on the AWS roster.
+    Usually a name is removed after one's <tt>PRESYNOPSIS SEMINARY</tt> 
+    or <tt>THESIS SEMINAR</tt>. If this is mistake, please write to Academic Office.
+</div>
 <?php endif;?>
 
 <?php if($scheduledAWS): ?>
@@ -131,50 +132,46 @@ else if($eligible)
 <?php endif; ?>
 
 <?php if( count( $awsRequests ) > 0 ): ?>
-    <div class="h3">Update pending requests</div>
+    <div class="h1">Update pending requests</div>
 <?php endif; ?>
-
 <?php foreach($awsRequests as $awsr): ?>
     <?php $id = $awsr['id']; ?>
-    <form method="post" action="<?=site_url('user/aws/request')?>">
-        <?= arrayToVerticalTableHTML( $awsr, 'aws' );?>
-        <button name="response" value="edit">Edit</button>
-        <button name="response" value="cancel">Cancel</button>
+    <?= arrayToVerticalTableHTML( $awsr, 'aa table table-sm table-secondary' );?>
+    <form method="post" action="<?=site_url('user/aws/edit_request_cancel')?>">
+        <button class='btn btn-warning' name="response" value="cancel">Cancel</button>
         <input type="hidden" name="id" value="<?=$id ?>" />
+        You can only <tt>Cancel</tt> this request. No editing allowed.
     </form>
 <?php endforeach; ?>
 
-<br /> <br />
-<?=goBackToPageLink( "user/home", "Go back" )?>
-
-<div class="h2">
-<i class="fa fa-leanpub"></i> I have learnt 'deeply' from previous AWSs
-</div>
-
-<div>
-I have been trained using Artificial Intelligence algorithms to write 
-AWS abstract. Ask me to write your AWS abstract by pressing the button 
-below (puny human)!
-</div>
-
-<form action="" method="post" accept-charset="utf-8">
-    <button class="btn btn-primary"
-            type="submit" name="response" value="write_my_aws">Write My AWS</button>
-    <button class="btn btn-secondary"
-            type="submit" name="response" value="clean_up">Cleap up</button>
-</form>
-
-<?php if( __get__( $_POST, 'response', '' ) === 'write_my_aws'): ?>
-    <?php $cmd = FCPATH . '/scripts/write_aws.sh'; ?>
-    <?=hippo_shell_exec($cmd, $awsText, $stderr)?>
-    <?=$awsText?>
-    <br>
-    <p> I will only get better! </p>
-<?php endif; ?>
-
 <br />
+
+<div class="card">
+    <div class='card-header'>
+        <i class="fa fa-leanpub"></i> I have learnt 'deeply' from previous AWSs
+    </div>
+    <div class='card-body'>
+        I have been trained using Artificial Intelligence algorithms to write 
+        AWS abstract. Ask me to write your AWS abstract by pressing the button 
+        below (puny human)!
+
+        <form action="" method="post" accept-charset="utf-8">
+            <button class="btn btn-primary"
+                    type="submit" name="response" value="write_my_aws">Write My AWS</button>
+            <button class="btn btn-secondary"
+                    type="submit" name="response" value="clean_up">Cleap up</button>
+        </form>
+
+        <?php if( __get__( $_POST, 'response', '' ) === 'write_my_aws'): ?>
+        <?php $cmd = FCPATH . '/scripts/write_aws.sh'; ?>
+        <?=hippo_shell_exec($cmd, $awsText, $stderr)?>
+        <?=$awsText?>
+        <br>
+        <p> I will only get better! </p>
+        <?php endif; ?>
+    </div>
+</div>
 <?=goBackToPageLink( "user/home", "Go back" )?>
-<br />
 
 <h1>Past Annual Work Seminar</h1>
 <table>
@@ -187,18 +184,13 @@ below (puny human)!
 
 <?php foreach( $awses as $aws): ?>
     <?php $id = $aws['id']; ?>
-    <div class="card my-3">
-    <div class="card-body m-2 p-2">
-    <form method="post" action="<?=site_url("user/aws/edit_request" )?>">
-        <?= awsToHTML($aws) ?>
-        <button class="btn btn-primary"
-                title="Edit this entry" name="response" value="edit">Edit</button>
-        <input type="hidden" name="id" value="<?=$id ?>" />
-    </form>
-    </div>
-    <div class="card-footer">
-        <?=awsPdfURL($aws['speaker'], $aws['date']) ?>
-    </div>
+    <div class='py-3'>
+        <form method="post" action="<?=site_url("user/aws/edit_request" )?>">
+            <?= awsToHTML($aws) ?>
+            <button class="btn btn-primary"
+                    title="Edit this entry" name="response" value="edit">Edit</button>
+            <input type="hidden" name="id" value="<?=$id ?>" />
+        </form>
     </div>
 <?php endforeach; ?>
 

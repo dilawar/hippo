@@ -1502,7 +1502,7 @@ function getIntranetLink( $login )
     *
     * @return  A editable table with submit button.
  */
-function editableAWSTable(int $awsId=-1, array $default=array(), bool $withlogin=false)
+function editableAWSTable(int $awsId=-1, array $default=[], bool $withlogin=false)
 {
     if( $awsId > 0 && ! $default )
         $default = getAwsById( $awsId );
@@ -1588,7 +1588,7 @@ function editableAWSTable(int $awsId=-1, array $default=array(), bool $withlogin
              <td></td>
              <td>
              <input  name="awsid" type="hidden" value="' . $awsId . '"  />
-             <button class="submit" name="response" value="submit">Submit</button>
+             <button class="btn btn-primary submit" name="response" value="submit">Submit</button>
              </td>
              </tr>
              ';
@@ -1783,7 +1783,7 @@ function awsToHTML( $aws, $with_picture = false )
     if( $with_picture )
         $pic = getUserPicture( $user, 'hippo', '200px' );
 
-    $extra = '<table class="tableintd">
+    $extra = '<table class="table table-sm table-info">
             <tr>
                 <td colspan="2"><strong>' . $speaker .'</strong></td>
             </tr>
@@ -1795,14 +1795,21 @@ function awsToHTML( $aws, $with_picture = false )
                  <td>' . smallCaps( 'Thesis Committee Members') . '</td>
                  <td>' . implode( ", ", $tcm) . '</td>
              </tr>
+             <tr>
+                 <td>Where/When</td>
+                 <td>'. venueToShortText($aws['venue']) . ', '
+                     . humanReadableDate($aws['date']) . ' '
+                     . humanReadableTime($aws['time']) . '</td>
+             </tr>
              </table>';
 
     $abstract = rescale_inline_images( $abstract );
 
     // Add table.
-    $html = "<h1>$title</h1>";
-    $html .= $extra;
-    $html .= $abstract;
+    $html = "<div class='card'>";
+    $html .= "<h1 class='card-header'>$title</h1>";
+    $html .= "<div class='card-body'> $extra $abstract </div>";
+    $html .= '</div>';
     return $html;
 }
 
