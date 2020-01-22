@@ -1140,7 +1140,22 @@ class Api extends CI_Controller
     public function transport()
     {
         $args = func_get_args();
-        $day = __get__($args, 0, 'all');
+        $firstArg = __get__($args, 0, 'all');
+
+        if($firstArg === 'upcoming') 
+        {
+            $day = date('D', strtotime('today'));
+            $nowTime = dbTime('now');
+            $endTime = dbTime('+2 hours');
+            $where = "day='$day' AND trip_start_time >= '$nowTime' AND trip_end_time<='$endTime'";
+            $where .= " status='VALID'";
+            $data = executeQuery("SELECT * FROM transport WHERE $where
+                GROUP BY vehicle,pickup_point,drop_point");
+            $this->send_data($data, 'ok');
+            return;
+        }
+
+        $day = $firstArg;
         $where = "status='VALID'";
         if($day != 'all')
             $where .= " AND day='$day'";
