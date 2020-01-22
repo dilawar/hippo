@@ -1,7 +1,7 @@
 :root {
     --background : rgba(255,255,251,0.8);
     --tabletdcolor: rgba(200,255,200,0.9);
-    --maxwidth: 1000px;
+    --width: 900px;
     --minwidth: 500px;
 }
 
@@ -16,15 +16,13 @@ body {
     /* font-size: 16px; */
     /* font-family : 'EB Garamond'; */
     /* font-family: "Open Sans", "Arial", sans-serif; */
-    width: 90%;
-    max-width: var(--maxwidth);
+    width: var(--width);
     min-width: var(--minwidth);
     margin: auto;
     /* background: #A9FFCB !important; */
 }
 
 #div_background_image {
-    /* width: 100%; */
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -47,23 +45,21 @@ div.sticker {
 
 table.user_float {
     position : fixed;
-    top : 2%;
-    right: 15%;
-    max-width: var(--maxwidth);
+    top : 3%;
+    left: 70%;
     border-radius: 10px;
-    padding: 3px;
-    float: right;
+    padding: 2px;
     border-collapse: separate;
-    border: 2px solid lightblue;
+    border: 1px solid lightblue;
 }
 
 table.user_float tr td {
-    padding: 5px;
+    padding: 1px;
     text-align: justify;
     vertical-align: bottom;
-    padding: 5px;
+    padding: 3px;
 }
-
+/*  */
 table.user_float a {
     color: red;
 }
@@ -322,10 +318,10 @@ table.timetable
 }
 
 table.timetable tr td {
-    min-width : 5px;
-    max-width : 100px;
-    vertical-align: top;
-    padding: 5px;
+  font-size: medium;
+  max-width : 10%;
+  vertical-align: bottom;
+  padding: 2px;
 }
 
 table.venue_slot {

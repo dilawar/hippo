@@ -946,11 +946,13 @@ function userHTML() : string
 
     $html .= '<td><a href="' . site_url('/user/logout') . '">
         <i class="fa fa-sign-out"></i>SignOut</a></td>';
-    // $html .= '</tr><tr>';
+
+    $html .= '</tr><tr>';
     $html .= '<td><a href="' . site_url( '/user/book' ) . '">
         <i class="fa fa-hand-pointer-o"></i>QuickBook</a>';
+
     $html .= '<td><a href="' . site_url( 'user/home' ) . '">
-        <i class="fa fa-home"></i>My Home</a>';
+            <i class="fa fa-home"></i>My Home</a></td>';
     $html .= '</tr>';
     $html .= '</table>';
     $html .= '</div>';
@@ -2272,11 +2274,10 @@ function inlineImageOfSpeaker( $speaker, $height = 'auto', $width = 'auto')
     *
     * @return
  */
-function slotTable( $width = "15px" )
+function slotTable(string $width = "20px") : string
 {
-
     $days = array( 'Mon', 'Tue', 'Wed', 'Thu', 'Fri' );
-    $html = '<table class="timetable">';
+    $html = '<table class="table table-sm table-borderless">';
 
     // Generate columns. Each one is 15 min long. Starting from 9am to 6:00pm
     $maxNumCols = intval( ( 18 - 9 ) * 4 );
@@ -2301,7 +2302,7 @@ function slotTable( $width = "15px" )
                 $duration = strtotime( $slot[ 'end_time' ] )  -
                             strtotime( $slot[ 'start_time' ] );
 
-                $text = humanReadableTime( $slot[ 'start_time' ] ) . ' - ' .
+                $text = humanReadableTime( $slot[ 'start_time' ] ) . '-' .
                         humanReadableTime(  $slot[ 'end_time' ] );
 
                 $bgColor = 'lightblue';
@@ -2314,11 +2315,9 @@ function slotTable( $width = "15px" )
 
                 $ncols = intval( $duration / 60 / 15 ); // Each column is 15 minutes.
 
-                $html .= "<td id=\"slot_$id\" style=\"background:$bgColor\" colspan=\"$ncols\">
-                         <button onClick=\"showRunningCourse(this)\"
-                          id=\"slot_$gid\" value=\"$id\" class=\"tiles\"> $id </button>
-                         <br> <small> <tt>$text</tt> </small> </td>";
-
+                $html .= "<td colspan=\"$ncols\">
+                    <button class='btn-info btn-sm' onClick=\"showRunningCourse(this)\" 
+                        value=\"$id\"><u>SLOT $id</u><br />$text</button> </td>";
                 $i += $ncols;
             }
             else
