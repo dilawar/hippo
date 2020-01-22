@@ -318,10 +318,10 @@ table.timetable
 }
 
 table.timetable tr td {
-    min-width : 5px;
-    max-width : 100px;
-    vertical-align: top;
-    padding: 5px;
+  font-size: medium;
+  max-width : 10%;
+  vertical-align: bottom;
+  padding: 2px;
 }
 
 table.venue_slot {

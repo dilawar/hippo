@@ -78,14 +78,11 @@ $tileCoursesJSON = json_encode( $tileCourses );
 $table = slotTable();
 ?>
 
-<div class="card m-1 p-1">
-    <div class="card-header h2"> Slot Table </div> 
-    <div class="card-body"> <?=$table ?> </div> 
-    <div class="card-footer">
-        Click on tiles such as <button class=\"tiles\" disabled>1A</button> 
-        to see the courses running on this slot.
-    </div>
+<div class="h2"> Slot Table </div> 
+<div class="info float-right">
+    Click on tiles to see the courses running on this slot.
 </div>
+<div class=""> <?=$table ?> </div> 
 
 <?php
 /* Select year and semester */
@@ -115,8 +112,6 @@ foreach( $slotCourses as $slot => $courses )
         $cid = $c[ 'course_id' ];
         // Add header only to the first entry.
         $courseTable = '<table class="table show_course">';
-        // $courseTable .= "<caption> $cid </caption>";
-
         // This function fills in $enrollments.
         $courseTable .= courseToHTMLRow( $c, $slot, $sem, $year, $enrollments );
         $courseTable .= '</table>';
@@ -152,8 +147,11 @@ foreach( $slotCourses as $slot => $courses )
 }
 ?>
 
+
 <div class="card m-2 p-2">
-    <div class="card-header"> <?=$form?> </div>
+    <div class="card-title"> 
+        <div class="float-right"> <?=$form?> </div>
+    </div>
     <div class="card-body>
         <?= showAlertTable() ?>
         <?=$html?>
