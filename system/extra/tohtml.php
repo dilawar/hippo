@@ -936,23 +936,21 @@ function arrayToHtmlTableOfLogins( $logins )
     return $table;
 }
 
-function userHTML( )
+function userHTML() : string
 {
     $user = whoAmI();
-
     $html = '<div class="user_float">';
     $html .= '<table class="user_float">';
     $html .= '<tr> <td><a href="' . site_url( '/user/info' ) .  '">
         <i class="fa fa-user-o"></i> Hi ' . $user.' </a> </td>';
 
     $html .= '<td><a href="' . site_url('/user/logout') . '">
-                    <i class="fa fa-sign-out"></i>SignOut</a></td>';
-    $html .= '</tr>';
-
-    $html .= '<tr><td><a href="' . site_url( '/user/book' ) . '">
-                    <i class="fa fa-hand-pointer-o"></i>QuickBook</a>';
+        <i class="fa fa-sign-out"></i>SignOut</a></td>';
+    // $html .= '</tr><tr>';
+    $html .= '<td><a href="' . site_url( '/user/book' ) . '">
+        <i class="fa fa-hand-pointer-o"></i>QuickBook</a>';
     $html .= '<td><a href="' . site_url( 'user/home' ) . '">
-                    <i class="fa fa-home"></i>My Home</a>';
+        <i class="fa fa-home"></i>My Home</a>';
     $html .= '</tr>';
     $html .= '</table>';
     $html .= '</div>';
