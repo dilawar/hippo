@@ -1148,7 +1148,7 @@ class Api extends CI_Controller
             $nowTime = dbTime('now');
             $endTime = dbTime('+2 hours');
             $where = "day='$day' AND trip_start_time >= '$nowTime' AND trip_end_time<='$endTime'";
-            $where .= " status='VALID'";
+            $where .= " AND status='VALID'";
             $data = executeQuery("SELECT * FROM transport WHERE $where
                 GROUP BY vehicle,pickup_point,drop_point");
             $this->send_data($data, 'ok');
