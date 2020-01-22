@@ -946,11 +946,13 @@ function userHTML() : string
 
     $html .= '<td><a href="' . site_url('/user/logout') . '">
         <i class="fa fa-sign-out"></i>SignOut</a></td>';
-    // $html .= '</tr><tr>';
+
+    $html .= '</tr><tr>';
     $html .= '<td><a href="' . site_url( '/user/book' ) . '">
         <i class="fa fa-hand-pointer-o"></i>QuickBook</a>';
+
     $html .= '<td><a href="' . site_url( 'user/home' ) . '">
-        <i class="fa fa-home"></i>My Home</a>';
+            <i class="fa fa-home"></i>My Home</a></td>';
     $html .= '</tr>';
     $html .= '</table>';
     $html .= '</div>';
