@@ -1140,7 +1140,22 @@ class Api extends CI_Controller
     public function transport()
     {
         $args = func_get_args();
-        $day = __get__($args, 0, 'all');
+        $firstArg = __get__($args, 0, 'all');
+
+        if($firstArg === 'upcoming') 
+        {
+            $day = date('D', strtotime('today'));
+            $nowTime = dbTime('now');
+            $endTime = dbTime('+2 hours');
+            $where = "day='$day' AND trip_start_time >= '$nowTime' AND trip_end_time<='$endTime'";
+            $where .= " AND status='VALID'";
+            $data = executeQuery("SELECT * FROM transport WHERE $where
+                GROUP BY vehicle,pickup_point,drop_point");
+            $this->send_data($data, 'ok');
+            return;
+        }
+
+        $day = $firstArg;
         $where = "status='VALID'";
         if($day != 'all')
             $where .= " AND day='$day'";
@@ -2270,12 +2285,6 @@ class Api extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public function forum()
     {
-        if(! authenticateAPI(getKey()))
-        {
-            $this->send_data([], "Not authenticated");
-            return;
-        }
-
         $args = func_get_args();
         $data = [];
 
@@ -2291,7 +2300,7 @@ class Api extends CI_Controller
             $this->db->select('*')
                  ->where('status', 'VALID')
                  ->order_by('created_on DESC')
-                 ->where('created_on >=', 'DATE_SUB(CURDATE(), INTERVAL 7 DAY)', FALSE)
+                 ->where('created_on >=', 'DATE_SUB(CURDATE(), INTERVAL 14 DAY)', FALSE)
                  ->limit( $limit );
 
             $data = $this->db->get('forum')->result_array();
@@ -2304,11 +2313,26 @@ class Api extends CI_Controller
                 $this->db->select('id')->where(['external_id'=>$eid, 'status'=>'VALID']);
                 $e['num_comments'] = $this->db->count_all_results('comment');
             }
-
             $this->send_data( $data, 'ok' );
             return;
         }
-        else if( $args[0] === 'delete' )
+        else if( $args[0] === 'alltags' )
+        {
+            // fixme: This should be from database.
+            $tags = explode(',', getConfigValue('ALLOWED_BOARD_TAGS'));
+            sort($tags, SORT_STRING);
+            $this->send_data($tags, 'ok' );
+            return;
+        }
+
+        // These requires authentications.
+        if(! authenticateAPI(getKey()))
+        {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
+        if( $args[0] === 'delete' )
         {
             $id = __get__($args, 1, -1);
             $this->db->set('status', 'DELETED')->where('id', $id);
@@ -2409,14 +2433,6 @@ class Api extends CI_Controller
                 $data['db_error'] = $this->db->error();
             }
             $this->send_data($data, 'ok');
-            return;
-        }
-        else if( $args[0] === 'alltags' )
-        {
-            // fixme: This should be from database.
-            $tags = explode(',', getConfigValue('ALLOWED_BOARD_TAGS'));
-            sort($tags, SORT_STRING);
-            $this->send_data($tags, 'ok' );
             return;
         }
 
