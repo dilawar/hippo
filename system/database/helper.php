@@ -820,12 +820,12 @@ function getNumberOfEntries( $tablename, $column = 'id' )
     return $res->fetch( PDO::FETCH_ASSOC );
 }
 
-function getUniqueFieldValue( $tablename, $column = 'id' )
+function getUniqueFieldValue( $tablename, $column='id'): int
 {
     $hippoDB = initDB();;
     $res = $hippoDB->query( "SELECT MAX($column) AS $column FROM $tablename" );
-    $res = $res->fetch( PDO::FETCH_ASSOC );
-    return __get__( $res, $column , 0 );
+    $res = $res->fetch(PDO::FETCH_ASSOC);
+    return intval(__get__($res, $column,-1))+1;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -853,44 +853,35 @@ function getUniqueID( $tablename )
     *
     * @return  Group id of request.
  */
-function submitRequest1(array $request) : array
+function submitRequestImproved(array $request) : array
 {
-    $hippoDB = initDB();;
-    $collision = false;
-    $result = ['msg'=>'', 'success'=>false];
+    $result = ['msg'=>'', 'success'=>false, 'collision'=>[]
+        ,  'gid'=>null, 'rid'=>[]];
 
-    if( ! whoAmI() )
-    {
-        $result['msg'] .= printErrorSevere( "Error: I could not determine the name of user" );
-        return $result;
-    }
 
-    $request[ 'created_by' ] = whoAmI();
+    $request['created_by'] = $request['created_by'] ?? whoAmI();
     $repeatPat = __get__( $request, 'repeat_pat', '' );
-
-    if( strlen( $repeatPat ) > 0 )
+    if(strlen($repeatPat) > 0)
         $days = repeatPatToDays( $repeatPat, $request[ 'date' ] );
     else
-        $days = Array( $request['date'] );
+        $days = [$request['date']];
 
-    if( count( $days ) < 1 )
+    if(count($days) < 1)
     {
         $result['msg'] .= minionEmbarrassed( "I could not generate list of slots for you reuqest" );
         return $result;
     }
 
-    $rid = 0;
-    $res = $hippoDB->query( 'SELECT MAX(gid) AS gid FROM bookmyvenue_requests' );
-    $prevGid = $res->fetch( PDO::FETCH_ASSOC);
-    $gid = intval( $prevGid['gid'] ) + 1;
-
+    $gid = getUniqueFieldValue('bookmyvenue_requests', 'gid');
+    $result['gid'] = $gid;
     $errorMsg = '';
-    foreach( $days as $day )
+    $rid = -1;
+    foreach($days as $day)
     {
         $rid += 1;
-        $request[ 'gid' ] = $gid;
-        $request[ 'rid' ] = $rid;
-        $request[ 'date' ] = $day;
+        $request['gid'] = $gid;
+        $request['rid'] = $rid;
+        $request['date'] = $day;
 
         $collideWith = checkCollision( $request );
         $hide = 'rid,external_id,description,is_public_event,url,modified_by';
@@ -898,27 +889,47 @@ function submitRequest1(array $request) : array
         if( $collideWith )
         {
             $errorMsg .= 'Collision with following event/request';
-            foreach( $collideWith as $ev )
+            foreach( $collideWith as $ev ) {
                 $errorMsg .= arrayToTableHTML( $ev, 'events', $hide );
-            $collision = true;
+                $result['collision'][] = $ev; true;
+            }
             continue;
         }
 
-        $request[ 'timestamp' ] = dbDateTime( 'now' );
-        $res = insertIntoTable( 'bookmyvenue_requests'
-            , 'gid,rid,external_id,created_by,venue,title,description' .
-                ',date,start_time,end_time,timestamp,is_public_event,class'
-            , $request
-        );
+        $request['timestamp'] = dbDateTime('now');
+        $request['modified_by'] = getLogin();
 
+        $keys = 'gid,rid,external_id,created_by,venue,title,description' .
+                ',date,start_time,end_time,timestamp,is_public_event,class';
+
+        foreach(explode(',', $keys) as $k) {
+            if(! $request[$k]) {
+                $errorMsg .= p("Empty value for '$key'. Fatal error.");
+                $request['msg'] .= $errorMsg;
+                return $result;
+            }
+        }
+
+        $res = insertIntoTable( 'bookmyvenue_requests', $keys, $request);
         if( is_null($res) )
         {
-            $errorMsg .= p("Could not submit request id $gid");
+            $errorMsg .= p("Could not submit request id $gid.");
             $result['msg'] .= $errorMsg;
             return $result;
         }
+
+        $result['gid'] = $gid;
+        $result['rid'][] = $rid;
     }
-    $result['success'] = true;
+
+    // Some or all requests were successfully submitted.
+    if(count($result['rid']) > 0) {
+        $result['msg'] .= "Successfully submitted requests $gid.$rid.";
+        $result['success'] = true;
+        return $result;
+    }
+
+    // Failed. No request could be submitted may be due to collision.
     return $result;
 }
 
@@ -2602,9 +2613,7 @@ function addOrUpdateSpeaker( $data )
     }
 
     // If we are here, then speaker is not found. Construct a new id.
-    $id = getUniqueFieldValue( 'speakers', 'id' );
-    $uid = intval( $id ) + 1;
-    $data[ 'id' ] = $uid;
+    $data['id'] = getUniqueFieldValue( 'speakers', 'id' );
     $res = insertIntoTable( 'speakers'
         , 'id,email,honorific,first_name,middle_name,last_name,'
             . 'designation,department,institute,homepage'
@@ -2654,7 +2663,7 @@ function addCourseBookings( $runningCourseId )
     $endDate = $course[ 'end_date' ];
 
     // Select unique gid.
-    $gid = intval( getUniqueFieldValue( 'bookmyvenue_requests', 'gid' ) ) + 1;
+    $gid = getUniqueFieldValue( 'bookmyvenue_requests', 'gid');
 
     $temp = $startDate;
     $rid = 0;

@@ -1974,28 +1974,49 @@ function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
     return $form;
 }
 
-function bookThisVenue( string $venue, string $date, string $startTime, string $endTime
-    , string $class = 'UNKNOWN', string $title = '', string $desc = '')
+function bookAVenueForThisAWS(array $aws): array
 {
-    $gid = 1 + intval(getUniqueFieldValue( 'bookmyvenue_requests', 'gid' ));
-    $rid = 0;
-    $data = array(
-        'gid' => $gid, 'rid' => $rid
-        , 'date' => dbDate( $date )
-        , 'start_time' => $startTime
-        , 'end_time' => $endTime
-        , 'venue' => $venue
-        , 'title' => $title
-        , 'class' => $class
-        , 'description' => 'AUTO BOOKED BY Hippo'
-        , 'created_by' => 'HIPPO'
-        , 'last_modified_on' => dbDateTime( 'now' )
-    );
-    $res = submitRequest1( $data );
-    if($res['success'])
-        return approveRequest( $gid, $rid, 'APPROVED' );
-    return $res;
+    $result = ['msg'=>'', 'status'=>false];
+    $extID = "upcoming_aws." . $aws['id'];
+
+    $booking = getTableEntry('events', 'external_id', ['external_id'=>$extID]);
+    $request = getTableEntry('bookmyvenue_requests', 'external_id', ['external_id'=>$extID]);
+
+    if($booking) { /* Update */
+        echo "TODO : update";
+
+    }
+    else if($request) { // Update
+        echo "TODO: Update";
+    }
+    else { /* Create new */
+        $data = ['external_id'=>$extID
+            ,  'date'=>$aws['date']
+            , 'start_time'=> $aws['time']
+            , 'end_time'=> dbTime( strtotime($aws['time'])+60*60)
+            , 'created_by'=>'HIPPO'
+            , 'is_public_event' => 'YES'
+            , 'class'=>'ANNUAL WORK SEMINAR'
+            , 'title'=> 'AWS by ' . $aws['speaker']
+            , 'last_modified_on' => dbDateTime('now')
+            , 'venue'=>$aws['venue']];
+
+        // If external_id already in the requests or events then update else create.
+        $res = submitRequestImproved($data);
+        if($res['success']) {
+            foreach($res['rid'] as $rid) {
+                $res2 = approveRequest( $res['gid'], $rid, 'APPROVED' );
+                $res['msg'] = $res2['msg'];
+            }
+        }
+        else
+            $result['msg'] .= $res['msg'];
+        return $res;
+    }
+    echo $result['msg'];
+    return $result;
 }
+
 
 /* --------------------------------------------------------------------------*/
 /**

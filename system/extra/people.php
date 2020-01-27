@@ -19,8 +19,7 @@ function addUpdateSpeaker(array $data): array
     if($sid < 0)  // Insert a new enetry.
     {
         // Insert a new entry.
-        $speakerId = getUniqueFieldValue( 'speakers', 'id' );
-        $data[ 'id' ] = intval( $speakerId ) + 1;
+        $data['id'] = getUniqueFieldValue( 'speakers', 'id' );
         $data['email'] = trim($data['email']);
         $sid = $data[ 'id' ];
         $res = insertIntoTable( 'speakers'
