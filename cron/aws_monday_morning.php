@@ -80,14 +80,18 @@ function notifyAcadOfficeUnassignedSlot( )
 function bookVenueForAWS( )
 {
     $today = dbDate( 'today' );
-    $upAWSs = getTableEntries( 'upcoming_aws', 'date', "status='VALID' AND date > '$today'");
+    $upAWSs = getTableEntries( 'upcoming_aws', 'date'
+        , "status='VALID' AND date > '$today'");
     foreach($upAWSs as $aws)
     {
-        bookVenue( $aws['venue'], $aws['date']
+        $res = bookThisVenue( $aws['venue']
+            , $aws['date']
             , $aws['time']
             , dbTime(strtotime($aws['time'])+90*60)
             , 'ANNUAL WORK SEMINAR'
         ); 
+        echo p($aws['date'] . '/' . $aws['time'] 
+            . '/' . $aws['venue'] . ": " . $res['msg']);
     }
 }
 

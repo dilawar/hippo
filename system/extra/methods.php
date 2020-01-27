@@ -40,7 +40,7 @@ function getUserIpAddr()
 function whoAmI( )
 {
     // Return the login name.
-    $me = __get__($_SESSION, 'WHOAMI', 'UNKNOWN');
+    $me = $_SESSION['WHOAMI'] ?? 'UNKNOWN';
     return explode('@', $me)[0];
 }
 
@@ -1974,10 +1974,9 @@ function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
     return $form;
 }
 
-function bookVenue( string $venue, string $date, string $startTime, string $endTime
+function bookThisVenue( string $venue, string $date, string $startTime, string $endTime
     , string $class = 'UNKNOWN', string $title = '', string $desc = '')
 {
-
     $gid = 1 + intval(getUniqueFieldValue( 'bookmyvenue_requests', 'gid' ));
     $rid = 0;
     $data = array(
@@ -1992,9 +1991,10 @@ function bookVenue( string $venue, string $date, string $startTime, string $endT
         , 'created_by' => 'HIPPO'
         , 'last_modified_on' => dbDateTime( 'now' )
     );
-    $gid = submitRequest( $data );
-    if( $gid > 0 )
-        approveRequest( $gid, $rid, 'APPROVED' );
+    $res = submitRequest1( $data );
+    if($res['success'])
+        return approveRequest( $gid, $rid, 'APPROVED' );
+    return $res;
 }
 
 /* --------------------------------------------------------------------------*/

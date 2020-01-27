@@ -847,6 +847,83 @@ function getUniqueID( $tablename )
 }
 
 /**
+    * @brief Sunmit a request for review. Return array as output.
+    *
+    * @param $request
+    *
+    * @return  Group id of request.
+ */
+function submitRequest1(array $request) : array
+{
+    $hippoDB = initDB();;
+    $collision = false;
+    $result = ['msg'=>'', 'success'=>false];
+
+    if( ! whoAmI() )
+    {
+        $result['msg'] .= printErrorSevere( "Error: I could not determine the name of user" );
+        return $result;
+    }
+
+    $request[ 'created_by' ] = whoAmI();
+    $repeatPat = __get__( $request, 'repeat_pat', '' );
+
+    if( strlen( $repeatPat ) > 0 )
+        $days = repeatPatToDays( $repeatPat, $request[ 'date' ] );
+    else
+        $days = Array( $request['date'] );
+
+    if( count( $days ) < 1 )
+    {
+        $result['msg'] .= minionEmbarrassed( "I could not generate list of slots for you reuqest" );
+        return $result;
+    }
+
+    $rid = 0;
+    $res = $hippoDB->query( 'SELECT MAX(gid) AS gid FROM bookmyvenue_requests' );
+    $prevGid = $res->fetch( PDO::FETCH_ASSOC);
+    $gid = intval( $prevGid['gid'] ) + 1;
+
+    $errorMsg = '';
+    foreach( $days as $day )
+    {
+        $rid += 1;
+        $request[ 'gid' ] = $gid;
+        $request[ 'rid' ] = $rid;
+        $request[ 'date' ] = $day;
+
+        $collideWith = checkCollision( $request );
+        $hide = 'rid,external_id,description,is_public_event,url,modified_by';
+
+        if( $collideWith )
+        {
+            $errorMsg .= 'Collision with following event/request';
+            foreach( $collideWith as $ev )
+                $errorMsg .= arrayToTableHTML( $ev, 'events', $hide );
+            $collision = true;
+            continue;
+        }
+
+        $request[ 'timestamp' ] = dbDateTime( 'now' );
+        $res = insertIntoTable( 'bookmyvenue_requests'
+            , 'gid,rid,external_id,created_by,venue,title,description' .
+                ',date,start_time,end_time,timestamp,is_public_event,class'
+            , $request
+        );
+
+        if( is_null($res) )
+        {
+            $errorMsg .= p("Could not submit request id $gid");
+            $result['msg'] .= $errorMsg;
+            return $result;
+        }
+    }
+    $result['success'] = true;
+    return $result;
+}
+
+
+/**
     * @brief Sunmit a request for review.
     *
     * @param $request

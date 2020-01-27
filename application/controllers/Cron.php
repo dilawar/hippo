@@ -83,7 +83,7 @@ class Cron extends CI_Controller {
         if( trueOnGivenDayAndTime( 'this monday', '11:00' ) )
             notifyAcadOfficeUnassignedSlot();
 
-        if( trueOnGivenDayAndTime( 'this monday', '8:00' ) )
+        if( trueOnGivenDayAndTime( 'this monday', '13:30' ) )
             bookVenueForAWS();
     }
 

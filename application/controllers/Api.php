@@ -57,7 +57,9 @@ function getKey()
 
 function getLogin()
 {
-    return __get__($_POST, 'login', getHeader('login'));
+    if(isset($_POST))
+        return __get__($_POST, 'login', getHeader('login'));
+    return whoAmI();
 }
 
 
