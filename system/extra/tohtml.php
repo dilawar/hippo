@@ -1854,16 +1854,28 @@ function arrayToName( $arr, $with_email = false )
     return speakerName( $arr, $with_email );
 }
 
-function talkToHTMLLarge( $talk, $with_picture = true ) : string
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Convert talk to HTML.
+    *
+    * @Param $talk
+    *   array: Talk data.
+    * @Param $with_picture
+    *   Show pictures or not.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function talkToHTMLLarge( $talk, $with_picture=true, string $header='') : string
 {
-    $speakerId = intval( $talk[ 'speaker_id' ] );
+    $speakerId = intval($talk['speaker_id']);
 
     // If speaker id is > 0, then use it to fetch the entry. If not use the
     // speaker name. There was a design problem in the begining, some speakers
     // do not have unique id but only email. This has to be fixed.
     if( $speakerId > 0 )
     {
-        $speakerArr = getTableEntry( 'speakers', 'id', array( 'id' => $speakerId ) );
+        $speakerArr = getTableEntry('speakers', 'id', array( 'id' => $speakerId ));
         $speakerName = speakerName( $speakerId );
     }
     else
@@ -1872,7 +1884,7 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
         $speakerName = speakerName( $speakerArr );
     }
 
-    $coordinator = __get__( $talk, 'coordinator', '' );
+    $coordinator = __get__($talk, 'coordinator', '');
     $hostEmail = $talk[ 'host' ];
 
     // Either NCBS or InSTEM.
@@ -1887,10 +1899,9 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
     $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
 
     $pic = '';
-    if( $with_picture )
-    {
-        $imgpath = getSpeakerPicturePath( $speakerId );
-        $pic = showImage( $imgpath, 'auto', '200px' );
+    if($with_picture) {
+        $imgpath = getSpeakerPicturePath($speakerId);
+        $pic = showImage($imgpath, 'auto', '200px');
     }
 
     // Speaker info
@@ -1930,7 +1941,11 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
     $talkHTML = '<div class="">' . fixHTML( $talk['description'] ) . '</div>';
 
     // Final HTML.
-    $html = "<details> <summary> <div class='h3'> $title </div> </summary>";
+    $html = "<details> 
+        <summary>
+            <div class='small font-weight-bold text-uppercase'> $header </div>
+            <div class='h4'> $title </div> 
+        </summary>";
     $html .= "<div> $infoTable </div> <div> $talkHTML </div>";
     $html .= "</details>";
     return $html;
