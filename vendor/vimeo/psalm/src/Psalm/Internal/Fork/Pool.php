@@ -72,7 +72,7 @@ class Pool
     public const MAC_PCRE_MESSAGE = 'Mac users: pcre.jit is set to 1 in your PHP config.' . PHP_EOL
         . 'The pcre jit is known to cause segfaults in PHP 7.3 on Macs, and Psalm' . PHP_EOL
         . 'will not execute in threaded mode to avoid indecipherable errors.' . PHP_EOL
-        . 'Consider adding pcre.jit=0 to your PHP config.' . PHP_EOL
+        . 'Consider adding pcre.jit=0 to your PHP config, or upgrade to PHP 7.4.' . PHP_EOL
         . 'Relevant info: https://bugs.php.net/bug.php?id=77260';
 
     /**
@@ -106,9 +106,9 @@ class Pool
             'The pool size must be >= 2 to use the fork pool.'
         );
 
-        if (!extension_loaded('pcntl')) {
+        if (!extension_loaded('pcntl') || !extension_loaded('posix')) {
             echo
-                'The pcntl extension must be loaded in order for Psalm to be able to use multiple processes.'
+                'The pcntl & posix extensions must be loaded in order for Psalm to be able to use multiple processes.'
                 . PHP_EOL;
             exit(1);
         }
@@ -116,6 +116,7 @@ class Pool
         if (ini_get('pcre.jit') === '1'
             && \PHP_OS === 'Darwin'
             && version_compare(PHP_VERSION, '7.3.0') >= 0
+            && version_compare(PHP_VERSION, '7.4.0') < 0
         ) {
             die(
                 self::MAC_PCRE_MESSAGE . PHP_EOL
@@ -286,7 +287,6 @@ class Pool
 
         // Create an array for the content received on each stream,
         // indexed by resource id.
-        /** @var array<int, string> $content */
         $content = array_fill_keys(array_keys($streams), '');
 
         $terminationMessages = [];

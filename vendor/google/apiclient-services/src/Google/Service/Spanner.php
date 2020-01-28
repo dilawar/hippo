@@ -43,6 +43,8 @@ class Google_Service_Spanner extends Google_Service
 
   public $projects_instanceConfigs;
   public $projects_instances;
+  public $projects_instances_backups;
+  public $projects_instances_backups_operations;
   public $projects_instances_databases;
   public $projects_instances_databases_operations;
   public $projects_instances_databases_sessions;
@@ -136,6 +138,10 @@ class Google_Service_Spanner extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'fieldMask' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
               ),
             ),'getIamPolicy' => array(
               'path' => 'v1/{+resource}:getIamPolicy',
@@ -156,6 +162,10 @@ class Google_Service_Spanner extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -163,10 +173,6 @@ class Google_Service_Spanner extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
               ),
             ),'patch' => array(
@@ -197,6 +203,108 @@ class Google_Service_Spanner extends Google_Service
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->projects_instances_backups = new Google_Service_Spanner_Resource_ProjectsInstancesBackups(
+        $this,
+        $this->serviceName,
+        'backups',
+        array(
+          'methods' => array(
+            'getIamPolicy' => array(
+              'path' => 'v1/{+resource}:getIamPolicy',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'resource' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'setIamPolicy' => array(
+              'path' => 'v1/{+resource}:setIamPolicy',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'resource' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'testIamPermissions' => array(
+              'path' => 'v1/{+resource}:testIamPermissions',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'resource' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->projects_instances_backups_operations = new Google_Service_Spanner_Resource_ProjectsInstancesBackupsOperations(
+        $this,
+        $this->serviceName,
+        'operations',
+        array(
+          'methods' => array(
+            'cancel' => array(
+              'path' => 'v1/{+name}:cancel',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'delete' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'get' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'list' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),
@@ -356,10 +464,6 @@ class Google_Service_Spanner extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -367,6 +471,10 @@ class Google_Service_Spanner extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
+                ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),
@@ -379,7 +487,17 @@ class Google_Service_Spanner extends Google_Service
         'sessions',
         array(
           'methods' => array(
-            'beginTransaction' => array(
+            'batchCreate' => array(
+              'path' => 'v1/{+database}/sessions:batchCreate',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'database' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'beginTransaction' => array(
               'path' => 'v1/{+session}:beginTransaction',
               'httpMethod' => 'POST',
               'parameters' => array(
@@ -580,6 +698,10 @@ class Google_Service_Spanner extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -587,10 +709,6 @@ class Google_Service_Spanner extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
               ),
             ),

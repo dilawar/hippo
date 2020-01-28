@@ -251,7 +251,9 @@ class Google_Service_Compute_Resource_Subnetworks extends Google_Service_Resourc
     return $this->call('list', array($params), "Google_Service_Compute_SubnetworkList");
   }
   /**
-   * Retrieves an aggregated list of usable subnetworks. (subnetworks.listUsable)
+   * Retrieves an aggregated list of all usable subnetworks in the project. The
+   * list contains all of the subnetworks in the project and the subnetworks that
+   * were shared by a Shared VPC host project. (subnetworks.listUsable)
    *
    * @param string $project Project ID for this request.
    * @param array $optParams Optional parameters.
@@ -314,6 +316,14 @@ class Google_Service_Compute_Resource_Subnetworks extends Google_Service_Resourc
    * @param Google_Service_Compute_Subnetwork $postBody
    * @param array $optParams Optional parameters.
    *
+   * @opt_param int drainTimeoutSeconds The drain timeout specifies the upper
+   * bound in seconds on the amount of time allowed to drain connections from the
+   * current ACTIVE subnetwork to the current BACKUP subnetwork. The drain timeout
+   * is only applicable when the following conditions are true: - the subnetwork
+   * being patched has purpose = INTERNAL_HTTPS_LOAD_BALANCER - the subnetwork
+   * being patched has role = BACKUP - the patch request is setting the role to
+   * ACTIVE. Note that after this patch operation the roles of the ACTIVE and
+   * BACKUP subnetworks will be swapped.
    * @opt_param string requestId An optional request ID to identify requests.
    * Specify a unique request ID so that if you must retry your request, the
    * server will know to ignore the request if it has already been completed.

@@ -244,6 +244,28 @@ class Google_Service_FirebaseHosting extends Google_Service
                   'required' => true,
                 ),
               ),
+            ),'list' => array(
+              'path' => 'v1beta1/{+parent}/versions',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'parent' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'pageToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
+                ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
             ),'patch' => array(
               'path' => 'v1beta1/{+name}',
               'httpMethod' => 'PATCH',

@@ -15,13 +15,18 @@
  * the License.
  */
 
-class Google_Service_DataFusion_Instance extends Google_Model
+class Google_Service_DataFusion_Instance extends Google_Collection
 {
+  protected $collection_key = 'availableVersion';
+  public $apiEndpoint;
+  protected $availableVersionType = 'Google_Service_DataFusion_Version';
+  protected $availableVersionDataType = 'array';
   public $createTime;
   public $description;
   public $displayName;
   public $enableStackdriverLogging;
   public $enableStackdriverMonitoring;
+  public $gcsBucket;
   public $labels;
   public $name;
   protected $networkConfigType = 'Google_Service_DataFusion_NetworkConfig';
@@ -37,6 +42,28 @@ class Google_Service_DataFusion_Instance extends Google_Model
   public $version;
   public $zone;
 
+  public function setApiEndpoint($apiEndpoint)
+  {
+    $this->apiEndpoint = $apiEndpoint;
+  }
+  public function getApiEndpoint()
+  {
+    return $this->apiEndpoint;
+  }
+  /**
+   * @param Google_Service_DataFusion_Version
+   */
+  public function setAvailableVersion($availableVersion)
+  {
+    $this->availableVersion = $availableVersion;
+  }
+  /**
+   * @return Google_Service_DataFusion_Version
+   */
+  public function getAvailableVersion()
+  {
+    return $this->availableVersion;
+  }
   public function setCreateTime($createTime)
   {
     $this->createTime = $createTime;
@@ -76,6 +103,14 @@ class Google_Service_DataFusion_Instance extends Google_Model
   public function getEnableStackdriverMonitoring()
   {
     return $this->enableStackdriverMonitoring;
+  }
+  public function setGcsBucket($gcsBucket)
+  {
+    $this->gcsBucket = $gcsBucket;
+  }
+  public function getGcsBucket()
+  {
+    return $this->gcsBucket;
   }
   public function setLabels($labels)
   {

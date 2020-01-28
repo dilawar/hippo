@@ -22,6 +22,7 @@ class Google_Service_CloudBuild_RepoSource extends Google_Model
   public $dir;
   public $projectId;
   public $repoName;
+  public $substitutions;
   public $tagName;
 
   public function setBranchName($branchName)
@@ -63,6 +64,14 @@ class Google_Service_CloudBuild_RepoSource extends Google_Model
   public function getRepoName()
   {
     return $this->repoName;
+  }
+  public function setSubstitutions($substitutions)
+  {
+    $this->substitutions = $substitutions;
+  }
+  public function getSubstitutions()
+  {
+    return $this->substitutions;
   }
   public function setTagName($tagName)
   {

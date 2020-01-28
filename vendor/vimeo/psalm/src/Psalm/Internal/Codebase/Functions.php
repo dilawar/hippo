@@ -154,6 +154,14 @@ class Functions
     }
 
     /**
+     * @return array<string, FunctionLikeStorage>
+     */
+    public function getAllStubbedFunctions()
+    {
+        return self::$stubbed_functions;
+    }
+
+    /**
      * @return bool
      */
     public function functionExists(
@@ -282,7 +290,7 @@ class Functions
             'chdir', 'chgrp', 'chmod', 'chown', 'chroot', 'closedir', 'copy', 'file_put_contents',
             'fopen', 'fread', 'fwrite', 'fclose', 'touch', 'fpassthru', 'fputs', 'fscanf', 'fseek',
             'ftruncate', 'fprintf', 'symlink', 'mkdir', 'unlink', 'rename', 'rmdir', 'popen', 'pclose',
-            'fputcsv', 'umask', 'finfo_close',
+            'fputcsv', 'umask', 'finfo_close', 'readline_add_history', 'stream_set_timeout',
 
             // stream/socket io
             'stream_context_set_option', 'socket_write', 'stream_set_blocking', 'socket_close',
@@ -296,6 +304,10 @@ class Functions
 
             // output buffer
             'ob_start', 'ob_end_clean', 'readfile', 'printf', 'var_dump', 'phpinfo',
+            'ob_implicit_flush',
+
+            // mcrypt
+            'mcrypt_generic_init', 'mcrypt_generic_deinit', 'mcrypt_module_close',
 
             // internal optimisation
             'opcache_compile_file', 'clearstatcache',
@@ -324,9 +336,10 @@ class Functions
             'shell_exec', 'exec', 'system', 'passthru', 'pcntl_exec',
 
             // well-known functions
-            'libxml_use_internal_errors', 'curl_exec',
-            'mt_srand', 'openssl_pkcs7_sign', 'preg_replace_callback',
-            'mt_rand', 'rand',
+            'libxml_use_internal_errors', 'libxml_disable_entity_loader', 'curl_exec',
+            'mt_srand', 'openssl_pkcs7_sign',
+            'mt_rand', 'rand', 'wincache_ucache_delete', 'wincache_ucache_set', 'wincache_ucache_inc',
+            'class_alias',
 
             // php environment
             'ini_set', 'sleep', 'usleep', 'register_shutdown_function',
@@ -340,13 +353,14 @@ class Functions
             'openlog', 'syslog', 'error_log', 'define_syslog_variables',
 
             // session
-            'session_id', 'session_name', 'session_set_cookie_params',
+            'session_id', 'session_name', 'session_set_cookie_params', 'session_set_save_handler',
+            'session_regenerate_id', 'mb_internal_encoding',
 
             // ldap
             'ldap_set_option',
 
             // iterators
-            'rewind',
+            'rewind', 'iterator_apply',
 
             // mysqli
             'mysqli_select_db', 'mysqli_dump_debug_info', 'mysqli_kill', 'mysqli_multi_query',
@@ -374,10 +388,14 @@ class Functions
         $function_callable = \Psalm\Internal\Codebase\CallMap::getCallableFromCallMapById(
             $codebase,
             $function_id,
-            $args ?: []
+            $args ?: [],
+            null
         );
 
-        if (!$function_callable->params || ($args !== null && \count($args) === 0)) {
+        if (!$function_callable->params
+            || ($args !== null && \count($args) === 0)
+            || ($function_callable->return_type && $function_callable->return_type->isVoid())
+        ) {
             return false;
         }
 
@@ -386,7 +404,7 @@ class Functions
 
         foreach ($function_callable->params as $i => $param) {
             if ($param->type && $param->type->hasCallableType() && isset($args[$i])) {
-                foreach ($param->type->getTypes() as $possible_callable) {
+                foreach ($param->type->getAtomicTypes() as $possible_callable) {
                     $possible_callable = \Psalm\Internal\Analyzer\TypeAnalyzer::getCallableFromAtomic(
                         $codebase,
                         $possible_callable

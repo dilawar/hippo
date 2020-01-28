@@ -19,6 +19,8 @@ class Google_Service_YouTube_MembershipsDetails extends Google_Collection
 {
   protected $collection_key = 'accessibleLevels';
   public $accessibleLevels;
+  public $highestAccessibleLevel;
+  public $highestAccessibleLevelDisplayName;
   public $memberSince;
   public $memberSinceCurrentLevel;
   public $memberTotalDuration;
@@ -32,6 +34,22 @@ class Google_Service_YouTube_MembershipsDetails extends Google_Collection
   public function getAccessibleLevels()
   {
     return $this->accessibleLevels;
+  }
+  public function setHighestAccessibleLevel($highestAccessibleLevel)
+  {
+    $this->highestAccessibleLevel = $highestAccessibleLevel;
+  }
+  public function getHighestAccessibleLevel()
+  {
+    return $this->highestAccessibleLevel;
+  }
+  public function setHighestAccessibleLevelDisplayName($highestAccessibleLevelDisplayName)
+  {
+    $this->highestAccessibleLevelDisplayName = $highestAccessibleLevelDisplayName;
+  }
+  public function getHighestAccessibleLevelDisplayName()
+  {
+    return $this->highestAccessibleLevelDisplayName;
   }
   public function setMemberSince($memberSince)
   {

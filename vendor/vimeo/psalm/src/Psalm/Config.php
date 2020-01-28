@@ -1031,11 +1031,14 @@ class Config
     {
         $codebase = $project_analyzer->getCodebase();
 
+        $project_analyzer->progress->debug('Initializing plugins...' . PHP_EOL);
+
         $socket = new PluginRegistrationSocket($this, $codebase);
         // initialize plugin classes earlier to let them hook into subsequent load process
         foreach ($this->plugin_classes as $plugin_class_entry) {
             $plugin_class_name = $plugin_class_entry['class'];
             $plugin_config = $plugin_class_entry['config'];
+
             try {
                 // Below will attempt to load plugins from the project directory first.
                 // Failing that, it will use registered autoload chain, which will load
@@ -1045,6 +1048,10 @@ class Config
                 if ($this->composer_class_loader
                     && ($plugin_class_path = $this->composer_class_loader->findFile($plugin_class_name))
                 ) {
+                    $project_analyzer->progress->debug(
+                        'Loading plugin ' . $plugin_class_name . ' via require'. PHP_EOL
+                    );
+
                     /** @psalm-suppress UnresolvableInclude */
                     require_once($plugin_class_path);
                 } else {
@@ -1063,6 +1070,8 @@ class Config
             } catch (\Throwable $e) {
                 throw new ConfigException('Failed to load plugin ' . $plugin_class_name, 0, $e);
             }
+
+            $project_analyzer->progress->debug('Loaded plugin ' . $plugin_class_name . ' successfully'. PHP_EOL);
         }
 
         foreach ($this->filetype_scanner_paths as $extension => $path) {
@@ -1272,6 +1281,12 @@ class Config
      */
     public static function getParentIssueType($issue_type)
     {
+        if ($issue_type === 'PossiblyUndefinedIntArrayOffset'
+            || $issue_type === 'PossiblyUndefinedStringArrayOffset'
+        ) {
+            return 'PossiblyUndefinedArrayOffset';
+        }
+
         if (strpos($issue_type, 'Possibly') === 0) {
             $stripped_issue_type = preg_replace('/^Possibly(False|Null)?/', '', $issue_type);
 
@@ -1287,6 +1302,18 @@ class Config
         }
 
         if ($issue_type === 'UndefinedInterfaceMethod') {
+            return 'UndefinedMethod';
+        }
+
+        if ($issue_type === 'UndefinedMagicPropertyFetch') {
+            return 'UndefinedPropertyFetch';
+        }
+
+        if ($issue_type === 'UndefinedMagicPropertyAssignment') {
+            return 'UndefinedPropertyAssignment';
+        }
+
+        if ($issue_type === 'UndefinedMagicMethod') {
             return 'UndefinedMethod';
         }
 
@@ -1517,7 +1544,19 @@ class Config
             throw new \UnexpectedValueException('Cannot locate core generic classes');
         }
 
-        $stub_files = array_merge([$generic_stubs_path, $generic_classes_path], $this->stub_files);
+        $core_generic_files = [$generic_stubs_path, $generic_classes_path];
+
+        if (\extension_loaded('ds')) {
+            $ext_ds_path = __DIR__ . '/Internal/Stubs/ext-ds.php';
+
+            if (!file_exists($ext_ds_path)) {
+                throw new \UnexpectedValueException('Cannot locate core generic classes');
+            }
+
+            $core_generic_files[] = $ext_ds_path;
+        }
+
+        $stub_files = array_merge($core_generic_files, $this->stub_files);
 
         $phpstorm_meta_path = $this->base_dir . DIRECTORY_SEPARATOR . '.phpstorm.meta.php';
 

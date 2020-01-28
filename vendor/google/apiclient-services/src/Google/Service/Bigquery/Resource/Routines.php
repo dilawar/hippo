@@ -29,9 +29,9 @@ class Google_Service_Bigquery_Resource_Routines extends Google_Service_Resource
    * Deletes the routine specified by routineId from the dataset.
    * (routines.delete)
    *
-   * @param string $projectId Project ID of the routine to delete
-   * @param string $datasetId Dataset ID of the routine to delete
-   * @param string $routineId Routine ID of the routine to delete
+   * @param string $projectId Required. Project ID of the routine to delete
+   * @param string $datasetId Required. Dataset ID of the routine to delete
+   * @param string $routineId Required. Routine ID of the routine to delete
    * @param array $optParams Optional parameters.
    */
   public function delete($projectId, $datasetId, $routineId, $optParams = array())
@@ -43,12 +43,12 @@ class Google_Service_Bigquery_Resource_Routines extends Google_Service_Resource
   /**
    * Gets the specified routine resource by routine ID. (routines.get)
    *
-   * @param string $projectId Project ID of the requested routine
-   * @param string $datasetId Dataset ID of the requested routine
-   * @param string $routineId Routine ID of the requested routine
+   * @param string $projectId Required. Project ID of the requested routine
+   * @param string $datasetId Required. Dataset ID of the requested routine
+   * @param string $routineId Required. Routine ID of the requested routine
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string fieldMask If set, only the Routine fields in the field mask
+   * @opt_param string readMask If set, only the Routine fields in the field mask
    * are returned in the response. If unset, all Routine fields are returned.
    * @return Google_Service_Bigquery_Routine
    */
@@ -61,8 +61,8 @@ class Google_Service_Bigquery_Resource_Routines extends Google_Service_Resource
   /**
    * Creates a new routine in the dataset. (routines.insert)
    *
-   * @param string $projectId Project ID of the new routine
-   * @param string $datasetId Dataset ID of the new routine
+   * @param string $projectId Required. Project ID of the new routine
+   * @param string $datasetId Required. Dataset ID of the new routine
    * @param Google_Service_Bigquery_Routine $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Bigquery_Routine
@@ -77,15 +77,24 @@ class Google_Service_Bigquery_Resource_Routines extends Google_Service_Resource
    * Lists all routines in the specified dataset. Requires the READER dataset
    * role. (routines.listRoutines)
    *
-   * @param string $projectId Project ID of the routines to list
-   * @param string $datasetId Dataset ID of the routines to list
+   * @param string $projectId Required. Project ID of the routines to list
+   * @param string $datasetId Required. Dataset ID of the routines to list
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string filter If set, then only the Routines matching this filter
+   * are returned. The current supported form is either "routine_type:" or
+   * "routineType:", where  is a RoutineType enum. Example:
+   * "routineType:SCALAR_FUNCTION".
    * @opt_param string pageToken Page token, returned by a previous call, to
    * request the next page of results
    * @opt_param string maxResults The maximum number of results to return in a
    * single response page. Leverage the page tokens to iterate through the entire
    * collection.
+   * @opt_param string readMask If set, then only the Routine fields in the field
+   * mask, as well as project_id, dataset_id and routine_id, are returned in the
+   * response. If unset, then the following Routine fields are returned: etag,
+   * project_id, dataset_id, routine_id, routine_type, creation_time,
+   * last_modified_time, and language.
    * @return Google_Service_Bigquery_ListRoutinesResponse
    */
   public function listRoutines($projectId, $datasetId, $optParams = array())
@@ -98,9 +107,9 @@ class Google_Service_Bigquery_Resource_Routines extends Google_Service_Resource
    * Updates information in an existing routine. The update method replaces the
    * entire Routine resource. (routines.update)
    *
-   * @param string $projectId Project ID of the routine to update
-   * @param string $datasetId Dataset ID of the routine to update
-   * @param string $routineId Routine ID of the routine to update
+   * @param string $projectId Required. Project ID of the routine to update
+   * @param string $datasetId Required. Dataset ID of the routine to update
+   * @param string $routineId Required. Routine ID of the routine to update
    * @param Google_Service_Bigquery_Routine $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Bigquery_Routine

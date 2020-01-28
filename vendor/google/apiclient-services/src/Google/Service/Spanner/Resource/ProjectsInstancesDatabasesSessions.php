@@ -26,6 +26,25 @@
 class Google_Service_Spanner_Resource_ProjectsInstancesDatabasesSessions extends Google_Service_Resource
 {
   /**
+   * Creates multiple new sessions.
+   *
+   * This API can be used to initialize a session cache on the clients. See
+   * https://goo.gl/TgSFN2 for best practices on session cache management.
+   * (sessions.batchCreate)
+   *
+   * @param string $database Required. The database in which the new sessions are
+   * created.
+   * @param Google_Service_Spanner_BatchCreateSessionsRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_Spanner_BatchCreateSessionsResponse
+   */
+  public function batchCreate($database, Google_Service_Spanner_BatchCreateSessionsRequest $postBody, $optParams = array())
+  {
+    $params = array('database' => $database, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('batchCreate', array($params), "Google_Service_Spanner_BatchCreateSessionsResponse");
+  }
+  /**
    * Begins a new transaction. This step can often be skipped: Read, ExecuteSql
    * and Commit can begin a new transaction as a side-effect.
    * (sessions.beginTransaction)

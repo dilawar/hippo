@@ -47,10 +47,18 @@ class Shepherd implements \Psalm\Plugin\Hook\AfterAnalysisInterface
             return;
         }
 
-        if ($source_control_info instanceof \Psalm\SourceControl\Git\GitInfo && $build_info) {
+        $source_control_data = $source_control_info ? $source_control_info->toArray() : [];
+
+        if (!$source_control_data && isset($build_info['git']) && \is_array($build_info['git'])) {
+            $source_control_data = $build_info['git'];
+        }
+
+        unset($build_info['git']);
+
+        if ($build_info) {
             $data = [
                 'build' => $build_info,
-                'git' => $source_control_info->toArray(),
+                'git' => $source_control_data,
                 'issues' => array_filter(
                     $issues,
                     /**
@@ -98,9 +106,17 @@ class Shepherd implements \Psalm\Plugin\Hook\AfterAnalysisInterface
                     fwrite(STDERR, self::getCurlErrorMessage($ch) . PHP_EOL);
                 } else {
                     echo $return . PHP_EOL;
-                    echo 'Git args: ' . var_export($source_control_info->toArray(), true) . PHP_EOL;
-                    echo 'CI args: ' . var_export($build_info, true) . PHP_EOL;
+                    echo 'Git args: '
+                        . var_export($source_control_data, true)
+                        . PHP_EOL;
+                    echo 'CI args: '
+                        . var_export($build_info, true)
+                        . PHP_EOL;
                 }
+            } else {
+                $short_address = \str_replace('https://', '', $base_address);
+
+                echo "🐑 results sent to $short_address 🐑" . PHP_EOL;
             }
 
             // Close cURL session handle
@@ -116,7 +132,9 @@ class Shepherd implements \Psalm\Plugin\Hook\AfterAnalysisInterface
         /** @var array */
         $curl_info = curl_getinfo($ch);
 
-        if (($curl_info['ssl_verify_result'] ?? 0) !== 0) {
+        if (isset($curl_info['ssl_verify_result'])
+            && $curl_info['ssl_verify_result'] !== 0
+        ) {
             switch ($curl_info['ssl_verify_result']) {
                 case 2:
                     return 'unable to get issuer certificate';

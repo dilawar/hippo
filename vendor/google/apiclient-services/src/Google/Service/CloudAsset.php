@@ -23,7 +23,7 @@
  *
  * <p>
  * For more information about this service, see the API
- * <a href="https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/quickstart-cloud-asset-inventory" target="_blank">Documentation</a>
+ * <a href="https://cloud.google.com/asset-inventory/docs/quickstart" target="_blank">Documentation</a>
  * </p>
  *
  * @author Google, Inc.
@@ -34,6 +34,7 @@ class Google_Service_CloudAsset extends Google_Service
   const CLOUD_PLATFORM =
       "https://www.googleapis.com/auth/cloud-platform";
 
+  public $feeds;
   public $operations;
   public $v1;
   
@@ -52,6 +53,66 @@ class Google_Service_CloudAsset extends Google_Service
     $this->version = 'v1';
     $this->serviceName = 'cloudasset';
 
+    $this->feeds = new Google_Service_CloudAsset_Resource_Feeds(
+        $this,
+        $this->serviceName,
+        'feeds',
+        array(
+          'methods' => array(
+            'create' => array(
+              'path' => 'v1/{+parent}/feeds',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'parent' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'delete' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'get' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'list' => array(
+              'path' => 'v1/{+parent}/feeds',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'parent' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'patch' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
     $this->operations = new Google_Service_CloudAsset_Resource_Operations(
         $this,
         $this->serviceName,

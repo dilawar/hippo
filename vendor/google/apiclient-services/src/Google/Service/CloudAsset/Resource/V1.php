@@ -39,7 +39,7 @@ class Google_Service_CloudAsset_Resource_V1 extends Google_Service_Resource
    * "projects/12345").
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string contentType Required. The content type.
+   * @opt_param string contentType Optional. The content type.
    * @opt_param string readTimeWindow.endTime End time of the time window
    * (inclusive). Current timestamp if not specified.
    * @opt_param string readTimeWindow.startTime Start time of the time window
@@ -48,8 +48,8 @@ class Google_Service_CloudAsset_Resource_V1 extends Google_Service_Resource
    * example: `//compute.googleapis.com/projects/my_project_123/zones/zone1/instan
    * ces/instance1`. See [Resource Names](https://cloud.google.com/apis/design/res
    * ource_names#full_resource_name) and [Resource Name
-   * Format](https://cloud.google.com/resource-manager/docs/cloud-asset-inventory
-   * /resource-name-format) for more info.
+   * Format](https://cloud.google.com/asset-inventory/docs/resource-name-format)
+   * for more info.
    *
    * The request becomes a no-op if the asset name list is empty, and the max size
    * of the asset name list is 100 in one request.

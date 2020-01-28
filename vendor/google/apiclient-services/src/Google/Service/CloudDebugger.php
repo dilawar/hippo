@@ -87,13 +87,13 @@ class Google_Service_CloudDebugger extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'waitToken' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
                 'successOnTimeout' => array(
                   'location' => 'query',
                   'type' => 'boolean',
+                ),
+                'waitToken' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),'update' => array(

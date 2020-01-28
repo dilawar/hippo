@@ -75,6 +75,7 @@ class SwitchAnalyzer
 
             $case_actions = $case_action_map[$i] = ScopeAnalyzer::getFinalControlActions(
                 $case->stmts,
+                $statements_analyzer->node_data,
                 $config->exit_functions,
                 true
             );
@@ -93,6 +94,10 @@ class SwitchAnalyzer
         }
 
         $switch_scope = new SwitchScope();
+
+        $was_caching_assertions = $statements_analyzer->node_data->cache_assertions;
+
+        $statements_analyzer->node_data->cache_assertions = false;
 
         for ($i = 0, $l = count($stmt->cases); $i < $l; $i++) {
             $case = $stmt->cases[$i];
@@ -143,6 +148,7 @@ class SwitchAnalyzer
                 $case_vars_in_scope_reconciled =
                     Reconciler::reconcileKeyedTypes(
                         $reconcilable_if_types,
+                        [],
                         $original_context->vars_in_scope,
                         $changed_var_ids,
                         [],
@@ -157,6 +163,10 @@ class SwitchAnalyzer
                     $all_options_matched = true;
                 }
             }
+        }
+
+        if ($was_caching_assertions) {
+            $statements_analyzer->node_data->cache_assertions = true;
         }
 
         // only update vars if there is a default or all possible cases accounted for
@@ -250,13 +260,14 @@ class SwitchAnalyzer
         }
 
         $case_context->parent_context = $context;
-        $case_scope = $case_context->case_scope = new CaseScope();
-
-        $case_scope->parent_context = $case_context;
+        $case_scope = $case_context->case_scope = new CaseScope($case_context);
 
         $case_equality_expr = null;
 
+        $old_node_data = $statements_analyzer->node_data;
+
         if ($case->cond) {
+            $was_inside_conditional = $case_context->inside_conditional;
             $case_context->inside_conditional = true;
 
             if (ExpressionAnalyzer::analyze($statements_analyzer, $case->cond, $case_context) === false) {
@@ -268,9 +279,21 @@ class SwitchAnalyzer
                 return false;
             }
 
-            $case_context->inside_conditional = false;
+            if (!$was_inside_conditional) {
+                $case_context->inside_conditional = false;
+            }
 
-            $switch_condition = clone $stmt->cond;
+            $statements_analyzer->node_data = clone $statements_analyzer->node_data;
+
+            $traverser = new PhpParser\NodeTraverser;
+            $traverser->addVisitor(
+                new \Psalm\Internal\Visitor\ConditionCloningVisitor(
+                    $statements_analyzer->node_data
+                )
+            );
+
+            /** @var PhpParser\Node\Expr */
+            $switch_condition = $traverser->traverse([$stmt->cond])[0];
 
             if ($switch_condition instanceof PhpParser\Node\Expr\Variable
                 && is_string($switch_condition->name)
@@ -280,7 +303,7 @@ class SwitchAnalyzer
 
                 $type_statements = [];
 
-                foreach ($switch_var_type->getTypes() as $type) {
+                foreach ($switch_var_type->getAtomicTypes() as $type) {
                     if ($type instanceof Type\Atomic\GetClassT) {
                         $type_statements[] = new PhpParser\Node\Expr\FuncCall(
                             new PhpParser\Node\Name(['get_class']),
@@ -310,11 +333,11 @@ class SwitchAnalyzer
                 }
             }
 
-            if (isset($switch_condition->inferredType)
-                && isset($case->cond->inferredType)
-                && (($switch_condition->inferredType->isString() && $case->cond->inferredType->isString())
-                    || ($switch_condition->inferredType->isInt() && $case->cond->inferredType->isInt())
-                    || ($switch_condition->inferredType->isFloat() && $case->cond->inferredType->isFloat())
+            if (($switch_condition_type = $statements_analyzer->node_data->getType($switch_condition))
+                && ($case_cond_type = $statements_analyzer->node_data->getType($case->cond))
+                && (($switch_condition_type->isString() && $case_cond_type->isString())
+                    || ($switch_condition_type->isInt() && $case_cond_type->isInt())
+                    || ($switch_condition_type->isFloat() && $case_cond_type->isFloat())
                 )
             ) {
                 $case_equality_expr = new PhpParser\Node\Expr\BinaryOp\Identical(
@@ -379,6 +402,8 @@ class SwitchAnalyzer
             $case_context->case_scope = null;
             $case_context->parent_context = null;
 
+            $statements_analyzer->node_data = $old_node_data;
+
             return;
         }
 
@@ -412,10 +437,13 @@ class SwitchAnalyzer
 
         if ($case_equality_expr) {
             $case_clauses = Algebra::getFormula(
+                \spl_object_id($case_equality_expr),
                 $case_equality_expr,
                 $context->self,
                 $statements_analyzer,
-                $codebase
+                $codebase,
+                false,
+                false
             );
         }
 
@@ -464,6 +492,7 @@ class SwitchAnalyzer
             $case_vars_in_scope_reconciled =
                 Reconciler::reconcileKeyedTypes(
                     $reconcilable_if_types,
+                    [],
                     $case_context->vars_in_scope,
                     $changed_var_ids,
                     $case->cond && $switch_var_id ? [$switch_var_id => true] : [],
@@ -491,7 +520,7 @@ class SwitchAnalyzer
             }
 
             if ($changed_var_ids) {
-                $case_context->removeReconciledClauses($changed_var_ids);
+                $case_context->clauses = Context::removeReconciledClauses($case_context->clauses, $changed_var_ids)[0];
             }
         }
 
@@ -509,6 +538,18 @@ class SwitchAnalyzer
         $case_context->assigned_var_ids = [];
 
         $statements_analyzer->analyze($case_stmts, $case_context);
+
+        $traverser = new PhpParser\NodeTraverser;
+        $traverser->addVisitor(
+            new \Psalm\Internal\Visitor\TypeMappingVisitor(
+                $statements_analyzer->node_data,
+                $old_node_data
+            )
+        );
+
+        $traverser->traverse([$case]);
+
+        $statements_analyzer->node_data = $old_node_data;
 
         /** @var array<string, bool> */
         $new_case_assigned_var_ids = $case_context->assigned_var_ids;

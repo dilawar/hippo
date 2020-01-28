@@ -145,6 +145,7 @@ class Google_Service_Compute_Resource_InterconnectAttachments extends Google_Ser
    *
    * The request ID must be a valid UUID with the exception that zero UUID is not
    * supported (00000000-0000-0000-0000-000000000000).
+   * @opt_param bool validateOnly If true, the request will not be committed.
    * @return Google_Service_Compute_Operation
    */
   public function insert($project, $region, Google_Service_Compute_InterconnectAttachment $postBody, $optParams = array())

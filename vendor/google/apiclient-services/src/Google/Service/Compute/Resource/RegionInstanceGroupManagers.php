@@ -69,6 +69,41 @@ class Google_Service_Compute_Resource_RegionInstanceGroupManagers extends Google
     return $this->call('abandonInstances', array($params), "Google_Service_Compute_Operation");
   }
   /**
+   * Creates instances with per-instance configs in this regional managed instance
+   * group. Instances are created using the current instance template. The create
+   * instances operation is marked DONE if the createInstances request is
+   * successful. The underlying actions take additional time. You must separately
+   * verify the status of the creating or actions with the listmanagedinstances
+   * method. (regionInstanceGroupManagers.createInstances)
+   *
+   * @param string $project Project ID for this request.
+   * @param string $region The name of the region where the managed instance group
+   * is located. It should conform to RFC1035.
+   * @param string $instanceGroupManager The name of the managed instance group.
+   * It should conform to RFC1035.
+   * @param Google_Service_Compute_RegionInstanceGroupManagersCreateInstancesRequest $postBody
+   * @param array $optParams Optional parameters.
+   *
+   * @opt_param string requestId An optional request ID to identify requests.
+   * Specify a unique request ID so that if you must retry your request, the
+   * server will know to ignore the request if it has already been completed.
+   *
+   * For example, consider a situation where you make an initial request and the
+   * request times out. If you make the request again with the same request ID,
+   * the server can check if original operation with the same request ID was
+   * received, and if so, will ignore the second request.
+   *
+   * The request ID must be a valid UUID with the exception that zero UUID is not
+   * supported (00000000-0000-0000-0000-000000000000).
+   * @return Google_Service_Compute_Operation
+   */
+  public function createInstances($project, $region, $instanceGroupManager, Google_Service_Compute_RegionInstanceGroupManagersCreateInstancesRequest $postBody, $optParams = array())
+  {
+    $params = array('project' => $project, 'region' => $region, 'instanceGroupManager' => $instanceGroupManager, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('createInstances', array($params), "Google_Service_Compute_Operation");
+  }
+  /**
    * Deletes the specified managed instance group and all of the instances in that
    * group. (regionInstanceGroupManagers.delete)
    *

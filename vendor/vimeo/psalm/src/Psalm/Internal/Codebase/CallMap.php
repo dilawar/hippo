@@ -4,6 +4,7 @@ namespace Psalm\Internal\Codebase;
 use function array_shift;
 use function assert;
 use function count;
+use function file_exists;
 use PhpParser;
 use Psalm\Codebase;
 use Psalm\Internal\Analyzer\ProjectAnalyzer;
@@ -13,6 +14,7 @@ use Psalm\Type;
 use Psalm\Type\Atomic\TCallable;
 use function strtolower;
 use function substr;
+use function version_compare;
 
 /**
  * @internal
@@ -23,6 +25,7 @@ class CallMap
 {
     const PHP_MAJOR_VERSION = 7;
     const PHP_MINOR_VERSION = 3;
+    const LOWEST_AVAILABLE_DELTA = 71;
 
     /**
      * @var ?int
@@ -34,7 +37,7 @@ class CallMap
     private static $loaded_php_minor_version = null;
 
     /**
-     * @var array<array<string,string>>|null
+     * @var array<array<int|string,string>>|null
      */
     private static $call_map = null;
 
@@ -49,8 +52,12 @@ class CallMap
      *
      * @return TCallable
      */
-    public static function getCallableFromCallMapById(Codebase $codebase, $method_id, array $args)
-    {
+    public static function getCallableFromCallMapById(
+        Codebase $codebase,
+        $method_id,
+        array $args,
+        ?\Psalm\Internal\Provider\NodeDataProvider $nodes
+    ) {
         $possible_callables = self::getCallablesFromCallMap($method_id);
 
         if ($possible_callables === null) {
@@ -59,7 +66,12 @@ class CallMap
             );
         }
 
-        return self::getMatchingCallableFromCallMapOptions($codebase, $possible_callables, $args);
+        return self::getMatchingCallableFromCallMapOptions(
+            $codebase,
+            $possible_callables,
+            $args,
+            $nodes
+        );
     }
 
     /**
@@ -71,7 +83,8 @@ class CallMap
     public static function getMatchingCallableFromCallMapOptions(
         Codebase $codebase,
         array $callables,
-        array $args
+        array $args,
+        ?\Psalm\NodeTypeProvider $nodes
     ) {
         if (count($callables) === 1) {
             return $callables[0];
@@ -121,11 +134,13 @@ class CallMap
                     continue;
                 }
 
-                if (!isset($arg->value->inferredType)) {
+                $arg_type = null;
+
+                if (!$nodes
+                    || !($arg_type = $nodes->getType($arg->value))
+                ) {
                     continue;
                 }
-
-                $arg_type = $arg->value->inferredType;
 
                 if ($arg_type->hasMixed()) {
                     continue;
@@ -134,10 +149,10 @@ class CallMap
                 if ($arg->unpack && !$function_param->is_variadic) {
                     if ($arg_type->hasArray()) {
                         /**
-                         * @psalm-suppress PossiblyUndefinedArrayOffset
+                         * @psalm-suppress PossiblyUndefinedStringArrayOffset
                          * @var Type\Atomic\TArray|Type\Atomic\ObjectLike|Type\Atomic\TList
                          */
-                        $array_atomic_type = $arg_type->getTypes()['array'];
+                        $array_atomic_type = $arg_type->getAtomicTypes()['array'];
 
                         if ($array_atomic_type instanceof Type\Atomic\ObjectLike) {
                             $arg_type = $array_atomic_type->getGenericValueType();
@@ -274,6 +289,12 @@ class CallMap
                     $function_param->sink = Type\Union::TAINTED_INPUT_SHELL;
                 }
 
+                if ($arg_offset === 0
+                    && ($function_id === 'print_r')
+                ) {
+                    $function_param->sink = Type\Union::TAINTED_INPUT_HTML;
+                }
+
                 $function_param->signature_type = null;
 
                 $function_params[] = $function_param;
@@ -303,6 +324,12 @@ class CallMap
         $analyzer_major_version = $codebase->php_major_version;
         $analyzer_minor_version = $codebase->php_minor_version;
 
+        $analyzer_version = $analyzer_major_version . '.' . $analyzer_minor_version;
+        $current_version = self::PHP_MAJOR_VERSION . '.' . self::PHP_MINOR_VERSION;
+
+        $analyzer_version_int = (int) ($analyzer_major_version . $analyzer_minor_version);
+        $current_version_int = (int) (self::PHP_MAJOR_VERSION . self::PHP_MINOR_VERSION);
+
         if (self::$call_map !== null
             && $analyzer_major_version === self::$loaded_php_major_version
             && $analyzer_minor_version === self::$loaded_php_minor_version
@@ -320,8 +347,13 @@ class CallMap
             self::$call_map[$cased_key] = $value;
         }
 
-        if ($analyzer_minor_version < self::PHP_MINOR_VERSION) {
-            for ($i = self::PHP_MINOR_VERSION; $i > $analyzer_minor_version; --$i) {
+        if (version_compare($analyzer_version, $current_version, '<')) {
+            // the following assumes both minor and major versions a single digits
+            for ($i = $current_version_int; $i > $analyzer_version_int && $i >= self::LOWEST_AVAILABLE_DELTA; --$i) {
+                $delta_file = __DIR__ . '/../CallMap_' . $i . '_delta.php';
+                if (!file_exists($delta_file)) {
+                    continue;
+                }
                 /**
                  * @var array{
                  *     old: array<string, array<int|string, string>>,
@@ -329,7 +361,7 @@ class CallMap
                  * }
                  * @psalm-suppress UnresolvableInclude
                  */
-                $diff_call_map = require(__DIR__ . '/../CallMap_7' . $i . '_delta.php');
+                $diff_call_map = require($delta_file);
 
                 foreach ($diff_call_map['new'] as $key => $_) {
                     $cased_key = strtolower($key);

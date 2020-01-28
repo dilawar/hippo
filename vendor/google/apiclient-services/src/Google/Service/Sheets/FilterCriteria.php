@@ -21,6 +21,10 @@ class Google_Service_Sheets_FilterCriteria extends Google_Collection
   protected $conditionType = 'Google_Service_Sheets_BooleanCondition';
   protected $conditionDataType = '';
   public $hiddenValues;
+  protected $visibleBackgroundColorType = 'Google_Service_Sheets_Color';
+  protected $visibleBackgroundColorDataType = '';
+  protected $visibleForegroundColorType = 'Google_Service_Sheets_Color';
+  protected $visibleForegroundColorDataType = '';
 
   /**
    * @param Google_Service_Sheets_BooleanCondition
@@ -43,5 +47,33 @@ class Google_Service_Sheets_FilterCriteria extends Google_Collection
   public function getHiddenValues()
   {
     return $this->hiddenValues;
+  }
+  /**
+   * @param Google_Service_Sheets_Color
+   */
+  public function setVisibleBackgroundColor(Google_Service_Sheets_Color $visibleBackgroundColor)
+  {
+    $this->visibleBackgroundColor = $visibleBackgroundColor;
+  }
+  /**
+   * @return Google_Service_Sheets_Color
+   */
+  public function getVisibleBackgroundColor()
+  {
+    return $this->visibleBackgroundColor;
+  }
+  /**
+   * @param Google_Service_Sheets_Color
+   */
+  public function setVisibleForegroundColor(Google_Service_Sheets_Color $visibleForegroundColor)
+  {
+    $this->visibleForegroundColor = $visibleForegroundColor;
+  }
+  /**
+   * @return Google_Service_Sheets_Color
+   */
+  public function getVisibleForegroundColor()
+  {
+    return $this->visibleForegroundColor;
   }
 }

@@ -70,6 +70,7 @@ class LoopAnalyzer
                 $pre_condition_clauses = array_merge(
                     $pre_condition_clauses,
                     Algebra::getFormula(
+                        \spl_object_id($pre_condition),
                         $pre_condition,
                         $loop_scope->loop_context->self,
                         $statements_analyzer,
@@ -84,7 +85,12 @@ class LoopAnalyzer
             );
         }
 
-        $final_actions = ScopeAnalyzer::getFinalControlActions($stmts, Config::getInstance()->exit_functions);
+        $final_actions = ScopeAnalyzer::getFinalControlActions(
+            $stmts,
+            $statements_analyzer->node_data,
+            Config::getInstance()->exit_functions
+        );
+
         $does_always_break = $final_actions === [ScopeAnalyzer::ACTION_BREAK];
 
         if ($assignment_map) {
@@ -110,16 +116,15 @@ class LoopAnalyzer
             $old_referenced_var_ids = $inner_context->referenced_var_ids;
             $inner_context->referenced_var_ids = [];
 
-            if (!$is_do) {
-                foreach ($pre_conditions as $pre_condition) {
-                    self::applyPreConditionToLoopContext(
-                        $statements_analyzer,
-                        $pre_condition,
-                        $pre_condition_clauses,
-                        $inner_context,
-                        $loop_scope->loop_parent_context
-                    );
-                }
+            foreach ($pre_conditions as $pre_condition) {
+                self::applyPreConditionToLoopContext(
+                    $statements_analyzer,
+                    $pre_condition,
+                    $pre_condition_clauses,
+                    $inner_context,
+                    $loop_scope->loop_parent_context,
+                    $is_do
+                );
             }
 
             $inner_context->protected_var_ids = $loop_scope->protected_var_ids;
@@ -154,19 +159,18 @@ class LoopAnalyzer
 
             IssueBuffer::startRecording();
 
-            if (!$is_do) {
-                foreach ($pre_conditions as $pre_condition) {
-                    $asserted_var_ids = array_merge(
-                        self::applyPreConditionToLoopContext(
-                            $statements_analyzer,
-                            $pre_condition,
-                            $pre_condition_clauses,
-                            $loop_scope->loop_context,
-                            $loop_scope->loop_parent_context
-                        ),
-                        $asserted_var_ids
-                    );
-                }
+            foreach ($pre_conditions as $pre_condition) {
+                $asserted_var_ids = array_merge(
+                    self::applyPreConditionToLoopContext(
+                        $statements_analyzer,
+                        $pre_condition,
+                        $pre_condition_clauses,
+                        $loop_scope->loop_context,
+                        $loop_scope->loop_parent_context,
+                        $is_do
+                    ),
+                    $asserted_var_ids
+                );
             }
 
             // record all the vars that existed before we did the first pass through the loop
@@ -306,6 +310,8 @@ class LoopAnalyzer
                     unset($inner_context->vars_in_scope[$var_id]);
                 }
 
+                $inner_context->clauses = $pre_loop_context->clauses;
+
                 $analyzer->setMixedCountsForFile($statements_analyzer->getFilePath(), $original_mixed_counts);
                 IssueBuffer::startRecording();
 
@@ -315,7 +321,8 @@ class LoopAnalyzer
                         $pre_condition,
                         $pre_condition_clauses,
                         $inner_context,
-                        $loop_scope->loop_parent_context
+                        $loop_scope->loop_parent_context,
+                        false
                     );
                 }
 
@@ -336,7 +343,11 @@ class LoopAnalyzer
 
                 $traverser = new PhpParser\NodeTraverser;
 
-                $traverser->addVisitor(new \Psalm\Internal\Visitor\NodeCleanerVisitor());
+                $traverser->addVisitor(
+                    new \Psalm\Internal\Visitor\NodeCleanerVisitor(
+                        $statements_analyzer->node_data
+                    )
+                );
                 $traverser->traverse($stmts);
 
                 $statements_analyzer->analyze($stmts, $inner_context);
@@ -430,6 +441,7 @@ class LoopAnalyzer
 
                 $vars_in_scope_reconciled = Reconciler::reconcileKeyedTypes(
                     $negated_pre_condition_types,
+                    [],
                     $inner_context->vars_in_scope,
                     $changed_var_ids,
                     [],
@@ -439,7 +451,7 @@ class LoopAnalyzer
                     new CodeLocation($statements_analyzer->getSource(), $pre_conditions[0])
                 );
 
-                foreach ($changed_var_ids as $var_id) {
+                foreach ($changed_var_ids as $var_id => $_) {
                     if (isset($vars_in_scope_reconciled[$var_id])
                         && isset($loop_scope->loop_parent_context->vars_in_scope[$var_id])
                     ) {
@@ -482,10 +494,14 @@ class LoopAnalyzer
             }
 
             foreach ($loop_scope->unreferenced_vars as $var_id => $locations) {
-                if (!isset($loop_scope->loop_context->unreferenced_vars[$var_id])) {
-                    $loop_scope->loop_context->unreferenced_vars[$var_id] = $locations;
+                if (isset($loop_scope->referenced_var_ids[$var_id])) {
+                    $statements_analyzer->registerVariableUses($locations);
                 } else {
-                    $loop_scope->loop_context->unreferenced_vars[$var_id] += $locations;
+                    if (!isset($loop_scope->loop_context->unreferenced_vars[$var_id])) {
+                        $loop_scope->loop_context->unreferenced_vars[$var_id] = $locations;
+                    } else {
+                        $loop_scope->loop_context->unreferenced_vars[$var_id] += $locations;
+                    }
                 }
             }
         }
@@ -547,12 +563,27 @@ class LoopAnalyzer
         PhpParser\Node\Expr $pre_condition,
         array $pre_condition_clauses,
         Context $loop_context,
-        Context $outer_context
+        Context $outer_context,
+        bool $is_do
     ) {
         $pre_referenced_var_ids = $loop_context->referenced_var_ids;
         $loop_context->referenced_var_ids = [];
 
         $loop_context->inside_conditional = true;
+
+        $suppressed_issues = $statements_analyzer->getSuppressedIssues();
+
+        if ($is_do) {
+            if (!in_array('RedundantCondition', $suppressed_issues, true)) {
+                $statements_analyzer->addSuppressedIssues(['RedundantCondition']);
+            }
+            if (!in_array('RedundantConditionGivenDocblockType', $suppressed_issues, true)) {
+                $statements_analyzer->addSuppressedIssues(['RedundantConditionGivenDocblockType']);
+            }
+            if (!in_array('TypeDoesNotContainType', $suppressed_issues, true)) {
+                $statements_analyzer->addSuppressedIssues(['TypeDoesNotContainType']);
+            }
+        }
 
         if (ExpressionAnalyzer::analyze($statements_analyzer, $pre_condition, $loop_context) === false) {
             return [];
@@ -569,8 +600,11 @@ class LoopAnalyzer
             array_merge($outer_context->clauses, $pre_condition_clauses)
         );
 
+        $active_while_types = [];
+
         $reconcilable_while_types = Algebra::getTruthsFromFormula(
             $loop_context->clauses,
+            \spl_object_id($pre_condition),
             $new_referenced_var_ids
         );
 
@@ -579,6 +613,7 @@ class LoopAnalyzer
         if ($reconcilable_while_types) {
             $pre_condition_vars_in_scope_reconciled = Reconciler::reconcileKeyedTypes(
                 $reconcilable_while_types,
+                $active_while_types,
                 $loop_context->vars_in_scope,
                 $changed_var_ids,
                 $new_referenced_var_ids,
@@ -589,6 +624,22 @@ class LoopAnalyzer
             );
 
             $loop_context->vars_in_scope = $pre_condition_vars_in_scope_reconciled;
+        }
+
+        if ($is_do) {
+            if (!in_array('RedundantCondition', $suppressed_issues, true)) {
+                $statements_analyzer->removeSuppressedIssues(['RedundantCondition']);
+            }
+            if (!in_array('RedundantConditionGivenDocblockType', $suppressed_issues, true)) {
+                $statements_analyzer->removeSuppressedIssues(['RedundantConditionGivenDocblockType']);
+            }
+            if (!in_array('TypeDoesNotContainType', $suppressed_issues, true)) {
+                $statements_analyzer->removeSuppressedIssues(['TypeDoesNotContainType']);
+            }
+        }
+
+        if ($is_do) {
+            return [];
         }
 
         foreach ($asserted_var_ids as $var_id) {

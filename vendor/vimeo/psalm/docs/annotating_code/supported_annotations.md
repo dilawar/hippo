@@ -91,6 +91,8 @@ function addString(?string $s) {
 }
 ```
 
+`@psalm-suppress all` can be used to suppress all issues instead of listing them individually.
+
 ### `@psalm-assert`, `@psalm-assert-if-true` and `@psalm-assert-if-false`
 
 See [Adding assertions](adding_assertions.md).
@@ -256,6 +258,44 @@ class E {
 ### `@psalm-immutable`
 
 Used to annotate a class where every property is treated by consumers as `@psalm-readonly` and every instance method is treated as `@psalm-mutation-free`.
+
+```php
+/**
+ * @psalm-immutable
+ */
+abstract class Foo
+{
+    public string $baz;
+  
+    abstract public function bar(): int;
+}
+
+/**
+ * @psalm-immutable
+ */
+final class ChildClass extends Foo
+{
+    public function __construct(string $baz)
+    {
+        $this->baz = $baz;
+    }
+  
+    public function bar(): int
+    {
+        return 0;
+    }
+}
+
+$anonymous = new /** @psalm-immutable */ class extends Foo
+{
+    public string $baz = "B";
+  
+    public function bar(): int
+    {
+        return 1;
+    }
+};
+```
 
 ### `@psalm-pure`
 

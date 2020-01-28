@@ -8,6 +8,7 @@ use Psalm\Config;
 use Psalm\IssueBuffer;
 use Psalm\Progress\DebugProgress;
 use Psalm\Progress\DefaultProgress;
+use Psalm\Progress\LongProgress;
 use Psalm\Progress\VoidProgress;
 
 // show all errors
@@ -34,6 +35,7 @@ $valid_long_options = [
     'disable-extension:',
     'find-dead-code::',
     'find-unused-code::',
+    'find-unused-variables',
     'find-references-to:',
     'help',
     'ignore-baseline',
@@ -56,11 +58,14 @@ $valid_long_options = [
     'version',
     'php-version:',
     'generate-json-map:',
+    'generate-stubs:',
     'alter',
     'language-server',
     'refactor',
     'shepherd::',
     'no-progress',
+    'long-progress',
+    'no-suggestions',
     'include-php-versions', // used for baseline
     'track-tainted-input',
     'find-unused-psalm-suppress',
@@ -89,6 +94,8 @@ if (isset($options['refactor'])) {
     exit;
 }
 
+require_once __DIR__ . '/Psalm/Internal/exception_handler.php';
+
 array_map(
     /**
      * @param string $arg
@@ -110,7 +117,7 @@ array_map(
                 );
                 exit(1);
             }
-        } elseif (substr($arg, 0, 2) === '-' && $arg !== '-' && $arg !== '--') {
+        } elseif (substr($arg, 0, 1) === '-' && $arg !== '-' && $arg !== '--') {
             $arg_name = preg_replace('/=.*$/', '', substr($arg, 1));
 
             if (!in_array($arg_name, $valid_short_options) && !in_array($arg_name . ':', $valid_short_options)) {
@@ -247,8 +254,10 @@ if (isset($options['i'])) {
         $source_dir = $args[0];
     }
 
+    $vendor_dir = getVendorDir($current_dir);
+
     try {
-        $template_contents = Psalm\Config\Creator::getContents($current_dir, $source_dir, $level);
+        $template_contents = Psalm\Config\Creator::getContents($current_dir, $source_dir, $level, $vendor_dir);
     } catch (Psalm\Exception\ConfigCreationException $e) {
         die($e->getMessage() . PHP_EOL);
     }
@@ -278,6 +287,7 @@ if ($threads === 1
     && ini_get('pcre.jit') === '1'
     && PHP_OS === 'Darwin'
     && version_compare(PHP_VERSION, '7.3.0') >= 0
+    && version_compare(PHP_VERSION, '7.4.0') < 0
 ) {
     echo(
         'If you want to run Psalm as a language server, or run Psalm with' . PHP_EOL
@@ -311,6 +321,12 @@ $type_map_location = null;
 
 if (isset($options['generate-json-map']) && is_string($options['generate-json-map'])) {
     $type_map_location = $options['generate-json-map'];
+}
+
+$stubs_location = null;
+
+if (isset($options['generate-stubs']) && is_string($options['generate-stubs'])) {
+    $stubs_location = $options['generate-stubs'];
 }
 
 // If Xdebug is enabled, restart without it
@@ -362,6 +378,8 @@ if (isset($options['find-unused-code'])) {
     }
 }
 
+$find_unused_variables = isset($options['find-unused-variables']);
+
 $find_references_to = isset($options['find-references-to']) && is_string($options['find-references-to'])
     ? $options['find-references-to']
     : null;
@@ -409,7 +427,7 @@ if (isset($_SERVER['TRAVIS'])
     || isset($_SERVER['GITLAB_CI'])
     || isset($_SERVER['GITHUB_WORKFLOW'])
 ) {
-    $options['no-progress'] = true;
+    $options['long-progress'] = true;
 }
 
 $debug = array_key_exists('debug', $options) || array_key_exists('debug-by-line', $options);
@@ -420,7 +438,11 @@ if ($debug) {
     $progress = new VoidProgress();
 } else {
     $show_errors = !$config->error_baseline || isset($options['ignore-baseline']);
-    $progress = new DefaultProgress($show_errors, $show_info);
+    if (isset($options['long-progress'])) {
+        $progress = new LongProgress($show_errors, $show_info);
+    } else {
+        $progress = new DefaultProgress($show_errors, $show_info);
+    }
 }
 
 if (isset($options['no-cache'])) {
@@ -450,6 +472,7 @@ if (isset($options['no-cache'])) {
 $stdout_report_options = new \Psalm\Report\ReportOptions();
 $stdout_report_options->use_color = !array_key_exists('m', $options);
 $stdout_report_options->show_info = $show_info;
+$stdout_report_options->show_suggestions = !array_key_exists('no-suggestions', $options);
 /**
  * @psalm-suppress PropertyTypeCoercion
  */
@@ -484,7 +507,6 @@ if ($type_map_location) {
     $project_analyzer->getCodebase()->store_node_types = true;
 }
 
-
 $start_time = microtime(true);
 
 $config->visitComposerAutoloadFiles($project_analyzer, $progress);
@@ -510,7 +532,7 @@ if ($find_unused_code) {
     $project_analyzer->getCodebase()->reportUnusedCode($find_unused_code);
 }
 
-if ($config->find_unused_variables) {
+if ($config->find_unused_variables || $find_unused_variables) {
     $project_analyzer->getCodebase()->reportUnusedVariables();
 }
 
@@ -678,6 +700,17 @@ if ($type_map_location) {
     $providers->file_provider->setContents(
         $type_map_location,
         $type_map_string
+    );
+}
+
+if ($stubs_location) {
+    $providers->file_provider->setContents(
+        $stubs_location,
+        \Psalm\Internal\Stubs\Generator\StubsGenerator::getAll(
+            $project_analyzer->getCodebase(),
+            $providers->classlike_storage_provider,
+            $providers->file_storage_provider
+        )
     );
 }
 

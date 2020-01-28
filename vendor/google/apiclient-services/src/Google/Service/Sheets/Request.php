@@ -33,6 +33,8 @@ class Google_Service_Sheets_Request extends Google_Model
   protected $addProtectedRangeDataType = '';
   protected $addSheetType = 'Google_Service_Sheets_AddSheetRequest';
   protected $addSheetDataType = '';
+  protected $addSlicerType = 'Google_Service_Sheets_AddSlicerRequest';
+  protected $addSlicerDataType = '';
   protected $appendCellsType = 'Google_Service_Sheets_AppendCellsRequest';
   protected $appendCellsDataType = '';
   protected $appendDimensionType = 'Google_Service_Sheets_AppendDimensionRequest';
@@ -131,6 +133,8 @@ class Google_Service_Sheets_Request extends Google_Model
   protected $updateProtectedRangeDataType = '';
   protected $updateSheetPropertiesType = 'Google_Service_Sheets_UpdateSheetPropertiesRequest';
   protected $updateSheetPropertiesDataType = '';
+  protected $updateSlicerSpecType = 'Google_Service_Sheets_UpdateSlicerSpecRequest';
+  protected $updateSlicerSpecDataType = '';
   protected $updateSpreadsheetPropertiesType = 'Google_Service_Sheets_UpdateSpreadsheetPropertiesRequest';
   protected $updateSpreadsheetPropertiesDataType = '';
 
@@ -245,6 +249,20 @@ class Google_Service_Sheets_Request extends Google_Model
   public function getAddSheet()
   {
     return $this->addSheet;
+  }
+  /**
+   * @param Google_Service_Sheets_AddSlicerRequest
+   */
+  public function setAddSlicer(Google_Service_Sheets_AddSlicerRequest $addSlicer)
+  {
+    $this->addSlicer = $addSlicer;
+  }
+  /**
+   * @return Google_Service_Sheets_AddSlicerRequest
+   */
+  public function getAddSlicer()
+  {
+    return $this->addSlicer;
   }
   /**
    * @param Google_Service_Sheets_AppendCellsRequest
@@ -931,6 +949,20 @@ class Google_Service_Sheets_Request extends Google_Model
   public function getUpdateSheetProperties()
   {
     return $this->updateSheetProperties;
+  }
+  /**
+   * @param Google_Service_Sheets_UpdateSlicerSpecRequest
+   */
+  public function setUpdateSlicerSpec(Google_Service_Sheets_UpdateSlicerSpecRequest $updateSlicerSpec)
+  {
+    $this->updateSlicerSpec = $updateSlicerSpec;
+  }
+  /**
+   * @return Google_Service_Sheets_UpdateSlicerSpecRequest
+   */
+  public function getUpdateSlicerSpec()
+  {
+    return $this->updateSlicerSpec;
   }
   /**
    * @param Google_Service_Sheets_UpdateSpreadsheetPropertiesRequest

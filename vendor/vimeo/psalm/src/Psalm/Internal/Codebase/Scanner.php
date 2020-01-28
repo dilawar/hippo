@@ -38,7 +38,8 @@ use function substr;
  *     snippet_from: int,
  *     snippet_to: int,
  *     column_from: int,
- *     column_to: int
+ *     column_to: int,
+ *     selected_text: string
  * }
  *
  * @psalm-type  PoolData = array{
@@ -638,8 +639,13 @@ class Scanner
 
             if ($this->codebase->register_autoload_files) {
                 foreach ($file_storage->functions as $function_storage) {
-                    if (!$this->codebase->functions->hasStubbedFunction($function_storage->cased_name)) {
-                        $this->codebase->functions->addGlobalFunction($function_storage->cased_name, $function_storage);
+                    if ($function_storage->cased_name
+                        && !$this->codebase->functions->hasStubbedFunction($function_storage->cased_name)
+                    ) {
+                        $this->codebase->functions->addGlobalFunction(
+                            $function_storage->cased_name,
+                            $function_storage
+                        );
                     }
                 }
 

@@ -19,6 +19,8 @@ class Google_Service_SecurityCommandCenter_ListFindingsResult extends Google_Mod
 {
   protected $findingType = 'Google_Service_SecurityCommandCenter_Finding';
   protected $findingDataType = '';
+  protected $resourceType = 'Google_Service_SecurityCommandCenter_SecuritycenterResource';
+  protected $resourceDataType = '';
   public $stateChange;
 
   /**
@@ -34,6 +36,20 @@ class Google_Service_SecurityCommandCenter_ListFindingsResult extends Google_Mod
   public function getFinding()
   {
     return $this->finding;
+  }
+  /**
+   * @param Google_Service_SecurityCommandCenter_SecuritycenterResource
+   */
+  public function setResource(Google_Service_SecurityCommandCenter_SecuritycenterResource $resource)
+  {
+    $this->resource = $resource;
+  }
+  /**
+   * @return Google_Service_SecurityCommandCenter_SecuritycenterResource
+   */
+  public function getResource()
+  {
+    return $this->resource;
   }
   public function setStateChange($stateChange)
   {

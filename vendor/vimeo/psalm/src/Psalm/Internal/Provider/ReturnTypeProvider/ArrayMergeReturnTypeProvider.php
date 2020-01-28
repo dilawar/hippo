@@ -14,7 +14,7 @@ class ArrayMergeReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionReturnT
 {
     public static function getFunctionIds() : array
     {
-        return ['array_merge'];
+        return ['array_merge', 'array_replace'];
     }
 
     /**
@@ -27,21 +27,25 @@ class ArrayMergeReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionReturnT
         Context $context,
         CodeLocation $code_location
     ) : Type\Union {
+        if (!$statements_source instanceof \Psalm\Internal\Analyzer\StatementsAnalyzer) {
+            return Type::getMixed();
+        }
+
         $inner_value_types = [];
         $inner_key_types = [];
 
         $codebase = $statements_source->getCodebase();
 
         $generic_properties = [];
-        $all_lists = true;
+        $all_int_offsets = true;
         $all_nonempty_lists = true;
 
         foreach ($call_args as $call_arg) {
-            if (!isset($call_arg->value->inferredType)) {
+            if (!($call_arg_type = $statements_source->node_data->getType($call_arg->value))) {
                 return Type::getArray();
             }
 
-            foreach ($call_arg->value->inferredType->getTypes() as $type_part) {
+            foreach ($call_arg_type->getAtomicTypes() as $type_part) {
                 if ($call_arg->unpack) {
                     if (!$type_part instanceof Type\Atomic\TArray) {
                         if ($type_part instanceof Type\Atomic\ObjectLike) {
@@ -57,7 +61,7 @@ class ArrayMergeReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionReturnT
 
                     $unpacked_type_parts = [];
 
-                    foreach ($type_part_value_type->getTypes() as $value_type_part) {
+                    foreach ($type_part_value_type->getAtomicTypes() as $value_type_part) {
                         $unpacked_type_parts[] = $value_type_part;
                     }
                 } else {
@@ -102,20 +106,22 @@ class ArrayMergeReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionReturnT
                             continue;
                         }
 
-                        $all_lists = false;
+                        if (!$unpacked_type_part->type_params[0]->isInt()) {
+                            $all_int_offsets = false;
+                        }
                     }
 
                     $inner_key_types = array_merge(
                         $inner_key_types,
                         $unpacked_type_part instanceof Type\Atomic\TList
                             ? [new Type\Atomic\TInt()]
-                            : array_values($unpacked_type_part->type_params[0]->getTypes())
+                            : array_values($unpacked_type_part->type_params[0]->getAtomicTypes())
                     );
                     $inner_value_types = array_merge(
                         $inner_value_types,
                         $unpacked_type_part instanceof Type\Atomic\TList
-                            ? array_values($unpacked_type_part->type_param->getTypes())
-                            : array_values($unpacked_type_part->type_params[1]->getTypes())
+                            ? array_values($unpacked_type_part->type_param->getAtomicTypes())
+                            : array_values($unpacked_type_part->type_params[1]->getAtomicTypes())
                     );
                 }
             }
@@ -130,7 +136,7 @@ class ArrayMergeReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionReturnT
         if ($inner_value_types) {
             $inner_value_type = TypeCombination::combineTypes($inner_value_types, $codebase, true);
 
-            if ($all_lists) {
+            if ($all_int_offsets) {
                 if ($all_nonempty_lists) {
                     return new Type\Union([
                         new Type\Atomic\TNonEmptyList($inner_value_type),

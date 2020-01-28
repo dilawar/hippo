@@ -34,6 +34,9 @@ class Google_Service_AndroidManagement_Resource_EnterprisesDevices extends Googl
    *
    * @opt_param string wipeDataFlags Optional flags that control the device wiping
    * behavior.
+   * @opt_param string wipeReasonMessage Optional short message displayed to the
+   * user before wiping the work profile on personal devices. This has no effect
+   * on company owned devices. The maximum message length is 200 characters.
    * @return Google_Service_AndroidManagement_AndroidmanagementEmpty
    */
   public function delete($name, $optParams = array())

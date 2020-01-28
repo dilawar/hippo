@@ -29,8 +29,8 @@ class Google_Service_IAMCredentials_Resource_ProjectsServiceAccounts extends Goo
    * Generates an OAuth 2.0 access token for a service account.
    * (serviceAccounts.generateAccessToken)
    *
-   * @param string $name The resource name of the service account for which the
-   * credentials are requested, in the following format:
+   * @param string $name Required. The resource name of the service account for
+   * which the credentials are requested, in the following format:
    * `projects/-/serviceAccounts/{ACCOUNT_EMAIL_OR_UNIQUEID}`. The `-` wildcard
    * character is required; replacing it with a project ID is invalid.
    * @param Google_Service_IAMCredentials_GenerateAccessTokenRequest $postBody
@@ -47,8 +47,8 @@ class Google_Service_IAMCredentials_Resource_ProjectsServiceAccounts extends Goo
    * Generates an OpenID Connect ID token for a service account.
    * (serviceAccounts.generateIdToken)
    *
-   * @param string $name The resource name of the service account for which the
-   * credentials are requested, in the following format:
+   * @param string $name Required. The resource name of the service account for
+   * which the credentials are requested, in the following format:
    * `projects/-/serviceAccounts/{ACCOUNT_EMAIL_OR_UNIQUEID}`. The `-` wildcard
    * character is required; replacing it with a project ID is invalid.
    * @param Google_Service_IAMCredentials_GenerateIdTokenRequest $postBody
@@ -65,8 +65,8 @@ class Google_Service_IAMCredentials_Resource_ProjectsServiceAccounts extends Goo
    * Signs a blob using a service account's system-managed private key.
    * (serviceAccounts.signBlob)
    *
-   * @param string $name The resource name of the service account for which the
-   * credentials are requested, in the following format:
+   * @param string $name Required. The resource name of the service account for
+   * which the credentials are requested, in the following format:
    * `projects/-/serviceAccounts/{ACCOUNT_EMAIL_OR_UNIQUEID}`. The `-` wildcard
    * character is required; replacing it with a project ID is invalid.
    * @param Google_Service_IAMCredentials_SignBlobRequest $postBody
@@ -83,8 +83,8 @@ class Google_Service_IAMCredentials_Resource_ProjectsServiceAccounts extends Goo
    * Signs a JWT using a service account's system-managed private key.
    * (serviceAccounts.signJwt)
    *
-   * @param string $name The resource name of the service account for which the
-   * credentials are requested, in the following format:
+   * @param string $name Required. The resource name of the service account for
+   * which the credentials are requested, in the following format:
    * `projects/-/serviceAccounts/{ACCOUNT_EMAIL_OR_UNIQUEID}`. The `-` wildcard
    * character is required; replacing it with a project ID is invalid.
    * @param Google_Service_IAMCredentials_SignJwtRequest $postBody

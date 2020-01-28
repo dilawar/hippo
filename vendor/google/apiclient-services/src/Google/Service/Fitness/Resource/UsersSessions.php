@@ -49,6 +49,8 @@ class Google_Service_Fitness_Resource_UsersSessions extends Google_Service_Resou
    * indicate the authenticated user. Only me is supported at this time.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param int activityType If non-empty, only sessions with these activity
+   * types should be returned.
    * @opt_param string endTime An RFC3339 timestamp. Only sessions ending between
    * the start and end times will be included in the response.
    * @opt_param bool includeDeleted If true, deleted sessions will be returned.

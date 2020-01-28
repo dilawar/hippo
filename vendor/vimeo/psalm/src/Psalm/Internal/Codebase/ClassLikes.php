@@ -247,8 +247,6 @@ class ClassLikes
      */
     public function addFullyQualifiedClassLikeName($fq_class_name_lc, $file_path = null)
     {
-        $this->existing_classlikes_lc[$fq_class_name_lc] = true;
-
         if ($file_path) {
             $this->scanner->setClassLikeFilePath($fq_class_name_lc, $file_path);
         }
@@ -729,7 +727,7 @@ class ClassLikes
     /**
      * @return void
      */
-    public function checkClassReferences(Methods $methods, Progress $progress = null)
+    public function consolidateAnalyzedData(Methods $methods, ?Progress $progress, bool $find_unused_code)
     {
         if ($progress === null) {
             $progress = new VoidProgress();
@@ -748,21 +746,25 @@ class ClassLikes
                 && $this->config->isInProjectDirs($classlike_storage->location->file_path)
                 && !$classlike_storage->is_trait
             ) {
-                if (!$this->file_reference_provider->isClassReferenced($fq_class_name_lc)) {
-                    if (IssueBuffer::accepts(
-                        new UnusedClass(
-                            'Class ' . $classlike_storage->name . ' is never used',
-                            $classlike_storage->location,
-                            $classlike_storage->name
-                        ),
-                        $classlike_storage->suppressed_issues
-                    )) {
-                        // fall through
+                if ($find_unused_code) {
+                    if (!$this->file_reference_provider->isClassReferenced($fq_class_name_lc)) {
+                        if (IssueBuffer::accepts(
+                            new UnusedClass(
+                                'Class ' . $classlike_storage->name . ' is never used',
+                                $classlike_storage->location,
+                                $classlike_storage->name
+                            ),
+                            $classlike_storage->suppressed_issues
+                        )) {
+                            // fall through
+                        }
+                    } else {
+                        $this->checkMethodReferences($classlike_storage, $methods);
+                        $this->checkPropertyReferences($classlike_storage);
                     }
-                } else {
-                    $this->checkMethodReferences($classlike_storage, $methods);
-                    $this->checkPropertyReferences($classlike_storage);
                 }
+
+                $this->findPossibleMethodParamTypes($classlike_storage);
             }
         }
     }
@@ -1026,18 +1028,19 @@ class ClassLikes
         \Psalm\StatementsSource $source,
         PhpParser\Node $class_name_node,
         string $fq_class_name,
-        ?string $calling_method_id,
-        bool $force_change = false
+        ?string $calling_function_id,
+        bool $force_change = false,
+        bool $was_self = false
     ) : bool {
         $calling_fq_class_name = $source->getFQCLN();
 
         // if we're inside a moved class static method
         if ($codebase->methods_to_move
             && $calling_fq_class_name
-            && $calling_method_id
-            && isset($codebase->methods_to_move[strtolower($calling_method_id)])
+            && $calling_function_id
+            && isset($codebase->methods_to_move[strtolower($calling_function_id)])
         ) {
-            $destination_class = explode('::', $codebase->methods_to_move[strtolower($calling_method_id)])[0];
+            $destination_class = explode('::', $codebase->methods_to_move[strtolower($calling_function_id)])[0];
 
             $intended_fq_class_name = strtolower($calling_fq_class_name) === strtolower($fq_class_name)
                 && isset($codebase->classes_to_move[strtolower($calling_fq_class_name)])
@@ -1050,7 +1053,8 @@ class ClassLikes
                 $source->getFilePath(),
                 (int) $class_name_node->getAttribute('startFilePos'),
                 (int) $class_name_node->getAttribute('endFilePos') + 1,
-                $class_name_node instanceof PhpParser\Node\Scalar\MagicConst\Class_
+                $class_name_node instanceof PhpParser\Node\Scalar\MagicConst\Class_,
+                $was_self
             );
 
             return true;
@@ -1120,7 +1124,8 @@ class ClassLikes
                     $new_fq_class_name,
                     $source_namespace,
                     $uses_flipped,
-                    $migrated_source_fqcln
+                    $migrated_source_fqcln,
+                    $was_self
                 )
                     . ($class_name_node instanceof PhpParser\Node\Scalar\MagicConst\Class_ ? '::class' : '')
             );
@@ -1203,7 +1208,7 @@ class ClassLikes
         \Psalm\StatementsSource $source,
         Type\Union $type,
         CodeLocation $type_location,
-        ?string $calling_method_id
+        ?string $calling_function_id
     ) : void {
         $calling_fq_class_name = $source->getFQCLN();
 
@@ -1212,12 +1217,12 @@ class ClassLikes
         // if we're inside a moved class static method
         if ($codebase->methods_to_move
             && $calling_fq_class_name
-            && $calling_method_id
-            && isset($codebase->methods_to_move[strtolower($calling_method_id)])
+            && $calling_function_id
+            && isset($codebase->methods_to_move[strtolower($calling_function_id)])
         ) {
             $bounds = $type_location->getSelectionBounds();
 
-            $destination_class = explode('::', $codebase->methods_to_move[strtolower($calling_method_id)])[0];
+            $destination_class = explode('::', $codebase->methods_to_move[strtolower($calling_function_id)])[0];
 
             $this->airliftClassDefinedDocblockType(
                 $type,
@@ -1330,7 +1335,8 @@ class ClassLikes
         string $source_file_path,
         int $source_start,
         int $source_end,
-        bool $add_class_constant = false
+        bool $add_class_constant = false,
+        bool $allow_self = false
     ) : void {
         $project_analyzer = \Psalm\Internal\Analyzer\ProjectAnalyzer::getInstance();
         $codebase = $project_analyzer->getCodebase();
@@ -1350,7 +1356,8 @@ class ClassLikes
                 $fq_class_name,
                 $destination_class_storage->aliases->namespace,
                 $destination_class_storage->aliases->uses_flipped,
-                $destination_class_storage->name
+                $destination_class_storage->name,
+                $allow_self
             ) . ($add_class_constant ? '::class' : '')
         );
 
@@ -1433,10 +1440,10 @@ class ClassLikes
         string $class_name,
         string $constant_name,
         int $visibility,
-        ?\Psalm\Internal\Analyzer\StatementsAnalyzer $statements_analyzer = null
+        ?\Psalm\Internal\Analyzer\StatementsAnalyzer $statements_analyzer = null,
+        array $visited_constant_ids = []
     ) : ?Type\Union {
         $class_name = strtolower($class_name);
-
         $storage = $this->classlike_storage_provider->get($class_name);
 
         if ($visibility === ReflectionProperty::IS_PUBLIC) {
@@ -1474,7 +1481,13 @@ class ClassLikes
         }
 
         if (isset($fallbacks[$constant_name])) {
-            return new Type\Union([$this->resolveConstantType($fallbacks[$constant_name], $statements_analyzer)]);
+            return new Type\Union([
+                $this->resolveConstantType(
+                    $fallbacks[$constant_name],
+                    $statements_analyzer,
+                    $visited_constant_ids
+                )
+            ]);
         }
 
         return null;
@@ -1502,15 +1515,30 @@ class ClassLikes
 
     private function resolveConstantType(
         \Psalm\Internal\Scanner\UnresolvedConstantComponent $c,
-        \Psalm\Internal\Analyzer\StatementsAnalyzer $statements_analyzer = null
+        \Psalm\Internal\Analyzer\StatementsAnalyzer $statements_analyzer = null,
+        array $visited_constant_ids = []
     ) : Type\Atomic {
+        $c_id = \spl_object_id($c);
+
+        if (isset($visited_constant_ids[$c_id])) {
+            throw new \Psalm\Exception\CircularReferenceException('Found a circular reference');
+        }
+
         if ($c instanceof UnresolvedConstant\ScalarValue) {
             return self::getLiteralTypeFromScalarValue($c->value);
         }
 
         if ($c instanceof UnresolvedConstant\UnresolvedBinaryOp) {
-            $left = $this->resolveConstantType($c->left, $statements_analyzer);
-            $right = $this->resolveConstantType($c->right, $statements_analyzer);
+            $left = $this->resolveConstantType(
+                $c->left,
+                $statements_analyzer,
+                $visited_constant_ids + [$c_id => true]
+            );
+            $right = $this->resolveConstantType(
+                $c->right,
+                $statements_analyzer,
+                $visited_constant_ids + [$c_id => true]
+            );
 
             if ($left instanceof Type\Atomic\TMixed || $right instanceof Type\Atomic\TMixed) {
                 return new Type\Atomic\TMixed;
@@ -1559,9 +1587,21 @@ class ClassLikes
         }
 
         if ($c instanceof UnresolvedConstant\UnresolvedTernary) {
-            $cond = $this->resolveConstantType($c->cond, $statements_analyzer);
-            $if = $c->if ? $this->resolveConstantType($c->if, $statements_analyzer) : null;
-            $else = $this->resolveConstantType($c->else, $statements_analyzer);
+            $cond = $this->resolveConstantType(
+                $c->cond,
+                $statements_analyzer,
+                $visited_constant_ids + [$c_id => true]
+            );
+            $if = $c->if ? $this->resolveConstantType(
+                $c->if,
+                $statements_analyzer,
+                $visited_constant_ids + [$c_id => true]
+            ) : null;
+            $else = $this->resolveConstantType(
+                $c->else,
+                $statements_analyzer,
+                $visited_constant_ids + [$c_id => true]
+            );
 
             if ($cond instanceof Type\Atomic\TLiteralFloat
                 || $cond instanceof Type\Atomic\TLiteralInt
@@ -1586,7 +1626,11 @@ class ClassLikes
 
             foreach ($c->entries as $i => $entry) {
                 if ($entry->key) {
-                    $key_type = $this->resolveConstantType($entry->key, $statements_analyzer);
+                    $key_type = $this->resolveConstantType(
+                        $entry->key,
+                        $statements_analyzer,
+                        $visited_constant_ids + [$c_id => true]
+                    );
                 } else {
                     $key_type = new Type\Atomic\TLiteralInt($i);
                 }
@@ -1599,7 +1643,11 @@ class ClassLikes
                     return new Type\Atomic\TArray([Type::getArrayKey(), Type::getMixed()]);
                 }
 
-                $value_type = new Type\Union([$this->resolveConstantType($entry->value, $statements_analyzer)]);
+                $value_type = new Type\Union([$this->resolveConstantType(
+                    $entry->value,
+                    $statements_analyzer,
+                    $visited_constant_ids + [$c_id => true]
+                )]);
 
                 $properties[$key_value] = $value_type;
             }
@@ -1608,15 +1656,20 @@ class ClassLikes
         }
 
         if ($c instanceof UnresolvedConstant\ClassConstant) {
+            if ($c->name === 'class') {
+                return new Type\Atomic\TLiteralClassString($c->fqcln);
+            }
+
             $found_type = $this->getConstantForClass(
                 $c->fqcln,
                 $c->name,
                 ReflectionProperty::IS_PRIVATE,
-                $statements_analyzer
+                $statements_analyzer,
+                $visited_constant_ids + [$c_id => true]
             );
 
             if ($found_type) {
-                return \array_values($found_type->getTypes())[0];
+                return \array_values($found_type->getAtomicTypes())[0];
             }
         }
 
@@ -1629,7 +1682,7 @@ class ClassLikes
                 );
 
                 if ($found_type) {
-                    return \array_values($found_type->getTypes())[0];
+                    return \array_values($found_type->getAtomicTypes())[0];
                 }
             }
         }
@@ -1720,6 +1773,12 @@ class ClassLikes
 
                     $has_parent_references = false;
 
+                    if ($codebase->classImplements($classlike_storage->name, 'Serializable')
+                        && ($method_name === 'serialize' || $method_name === 'unserialize')
+                    ) {
+                        continue;
+                    }
+
                     $has_variable_calls = $codebase->analyzer->hasMixedMemberName(strtolower($method_name))
                         || $codebase->analyzer->hasMixedMemberName(strtolower($classlike_storage->name . '::'));
 
@@ -1802,7 +1861,10 @@ class ClassLikes
                             }
                         } elseif (IssueBuffer::accepts(
                             $issue,
-                            $method_storage->suppressed_issues
+                            $method_storage->suppressed_issues,
+                            $method_storage->stmt_location
+                                && !$declaring_classlike_storage->is_trait
+                                && !$has_variable_calls
                         )) {
                             // fall through
                         }
@@ -1835,55 +1897,15 @@ class ClassLikes
                         }
                     } elseif (IssueBuffer::accepts(
                         $issue,
-                        $method_storage->suppressed_issues
+                        $method_storage->suppressed_issues,
+                        $method_storage->stmt_location
+                            && !$declaring_classlike_storage->is_trait
+                            && !$has_variable_calls
                     )) {
                         // fall through
                     }
                 }
             } else {
-                if ($codebase->alter_code
-                    && isset($project_analyzer->getIssuesToFix()['MissingParamType'])
-                    && isset($codebase->analyzer->possible_method_param_types[strtolower($method_id)])
-                ) {
-                    if ($method_storage->location) {
-                        $function_analyzer = $project_analyzer->getFunctionLikeAnalyzer(
-                            $method_id,
-                            $method_storage->location->file_path
-                        );
-
-                        $possible_param_types
-                            = $codebase->analyzer->possible_method_param_types[strtolower($method_id)];
-
-                        if ($function_analyzer && $possible_param_types) {
-                            foreach ($possible_param_types as $offset => $possible_type) {
-                                if (!isset($method_storage->params[$offset])) {
-                                    continue;
-                                }
-
-                                $param_name = $method_storage->params[$offset]->name;
-
-                                if ($possible_type->hasMixed() || $possible_type->isNull()) {
-                                    continue;
-                                }
-
-                                if ($method_storage->params[$offset]->default_type) {
-                                    $possible_type = \Psalm\Type::combineUnionTypes(
-                                        $possible_type,
-                                        $method_storage->params[$offset]->default_type
-                                    );
-                                }
-
-                                $function_analyzer->addOrUpdateParamType(
-                                    $project_analyzer,
-                                    $param_name,
-                                    $possible_type,
-                                    true
-                                );
-                            }
-                        }
-                    }
-                }
-
                 if ($method_storage->visibility !== ClassLikeAnalyzer::VISIBILITY_PRIVATE
                     && !$classlike_storage->is_interface
                 ) {
@@ -1899,6 +1921,115 @@ class ClassLikes
                                 $method_storage->suppressed_issues
                             )) {
                                 // fall through
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function findPossibleMethodParamTypes(ClassLikeStorage $classlike_storage)
+    {
+        $project_analyzer = \Psalm\Internal\Analyzer\ProjectAnalyzer::getInstance();
+        $codebase = $project_analyzer->getCodebase();
+
+        foreach ($classlike_storage->appearing_method_ids as $method_name => $appearing_method_id) {
+            list($appearing_fq_classlike_name) = explode('::', $appearing_method_id);
+
+            if ($appearing_fq_classlike_name !== $classlike_storage->name) {
+                continue;
+            }
+
+            $method_id = $appearing_method_id;
+
+            $declaring_classlike_storage = $classlike_storage;
+
+            if (isset($classlike_storage->methods[$method_name])) {
+                $method_storage = $classlike_storage->methods[$method_name];
+            } else {
+                $declaring_method_id = $classlike_storage->declaring_method_ids[$method_name];
+
+                list($declaring_fq_classlike_name, $declaring_method_name) = explode('::', $declaring_method_id);
+
+                try {
+                    $declaring_classlike_storage = $this->classlike_storage_provider->get($declaring_fq_classlike_name);
+                } catch (\InvalidArgumentException $e) {
+                    continue;
+                }
+
+                $method_storage = $declaring_classlike_storage->methods[$declaring_method_name];
+                $method_id = $declaring_method_id;
+            }
+
+            if ($method_storage->location
+                && !$project_analyzer->canReportIssues($method_storage->location->file_path)
+                && !$codebase->analyzer->canReportIssues($method_storage->location->file_path)
+            ) {
+                continue;
+            }
+
+            if ($declaring_classlike_storage->is_trait) {
+                continue;
+            }
+
+            if (isset($codebase->analyzer->possible_method_param_types[strtolower($method_id)])) {
+                if ($method_storage->location) {
+                    $possible_param_types
+                        = $codebase->analyzer->possible_method_param_types[strtolower($method_id)];
+
+                    if ($possible_param_types) {
+                        foreach ($possible_param_types as $offset => $possible_type) {
+                            if (!isset($method_storage->params[$offset])) {
+                                continue;
+                            }
+
+                            $param_name = $method_storage->params[$offset]->name;
+
+                            if ($possible_type->hasMixed() || $possible_type->isNull()) {
+                                continue;
+                            }
+
+                            if ($method_storage->params[$offset]->default_type) {
+                                $possible_type = \Psalm\Type::combineUnionTypes(
+                                    $possible_type,
+                                    $method_storage->params[$offset]->default_type
+                                );
+                            }
+
+                            if ($codebase->alter_code
+                                && isset($project_analyzer->getIssuesToFix()['MissingParamType'])
+                            ) {
+                                $function_analyzer = $project_analyzer->getFunctionLikeAnalyzer(
+                                    $method_id,
+                                    $method_storage->location->file_path
+                                );
+
+                                $has_variable_calls = $codebase->analyzer->hasMixedMemberName(
+                                    strtolower($method_name)
+                                )
+                                    || $codebase->analyzer->hasMixedMemberName(
+                                        strtolower($classlike_storage->name . '::')
+                                    );
+
+                                if ($has_variable_calls) {
+                                    $possible_type->from_docblock = true;
+                                }
+
+                                if ($function_analyzer) {
+                                    $function_analyzer->addOrUpdateParamType(
+                                        $project_analyzer,
+                                        $param_name,
+                                        $possible_type,
+                                        $possible_type->from_docblock
+                                            && $project_analyzer->only_replace_php_types_with_non_docblock_types
+                                    );
+                                }
+                            } else {
+                                IssueBuffer::addFixableIssue('MissingParamType');
                             }
                         }
                     }

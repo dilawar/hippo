@@ -71,18 +71,18 @@ class Google_Service_CloudIdentity_Resource_Groups extends Google_Service_Resour
     return $this->call('get', array($params), "Google_Service_CloudIdentity_Group");
   }
   /**
-   * List groups within a customer or a domain. (groups.listGroups)
+   * Lists groups within a customer or a domain. (groups.listGroups)
    *
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string pageToken The next_page_token value returned from a
-   * previous list request, if any.
-   * @opt_param int pageSize The default page size is 200 (max 1000) for the BASIC
-   * view, and 50 (max 500) for the FULL view.
    * @opt_param string view Group resource view to be returned. Defaults to
    * [View.BASIC]().
    * @opt_param string parent `Required`. May be made Optional in the future.
    * Customer ID to list all groups from.
+   * @opt_param string pageToken The next_page_token value returned from a
+   * previous list request, if any.
+   * @opt_param int pageSize The default page size is 200 (max 1000) for the BASIC
+   * view, and 50 (max 500) for the FULL view.
    * @return Google_Service_CloudIdentity_ListGroupsResponse
    */
   public function listGroups($optParams = array())
@@ -97,14 +97,14 @@ class Google_Service_CloudIdentity_Resource_Groups extends Google_Service_Resour
    *
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string groupKey.id The ID of the entity within the given
-   * namespace. The ID must be unique within its namespace.
    * @opt_param string groupKey.namespace Namespaces provide isolation for IDs, so
    * an ID only needs to be unique within its namespace.
    *
    * Namespaces are currently only created as part of IdentitySource creation from
    * Admin Console. A namespace `"identitysources/{identity_source_id}"` is
    * created corresponding to every Identity Source `identity_source_id`.
+   * @opt_param string groupKey.id The ID of the entity within the given
+   * namespace. The ID must be unique within its namespace.
    * @return Google_Service_CloudIdentity_LookupGroupNameResponse
    */
   public function lookup($optParams = array())
@@ -116,7 +116,7 @@ class Google_Service_CloudIdentity_Resource_Groups extends Google_Service_Resour
   /**
    * Updates a Group. (groups.patch)
    *
-   * @param string $name [Resource
+   * @param string $name Output only. [Resource
    * name](https://cloud.google.com/apis/design/resource_names) of the Group in
    * the format: `groups/{group_id}`, where group_id is the unique ID assigned to
    * the Group.
@@ -139,16 +139,16 @@ class Google_Service_CloudIdentity_Resource_Groups extends Google_Service_Resour
    *
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string pageToken The next_page_token value returned from a
-   * previous search request, if any.
-   * @opt_param int pageSize The default page size is 200 (max 1000) for the BASIC
-   * view, and 50 (max 500) for the FULL view.
    * @opt_param string query `Required`. Query string for performing search on
    * groups. Users can search on parent and label attributes of groups. EXACT
    * match ('==') is supported on parent, and CONTAINS match ('in') is supported
    * on labels.
    * @opt_param string view Group resource view to be returned. Defaults to
    * [View.BASIC]().
+   * @opt_param string pageToken The next_page_token value returned from a
+   * previous search request, if any.
+   * @opt_param int pageSize The default page size is 200 (max 1000) for the BASIC
+   * view, and 50 (max 500) for the FULL view.
    * @return Google_Service_CloudIdentity_SearchGroupsResponse
    */
   public function search($optParams = array())

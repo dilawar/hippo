@@ -120,6 +120,7 @@ class StatementsProvider
 
             $existing_statements = $this->parser_cache_provider->loadExistingStatementsFromCache($file_path);
 
+            /** @psalm-suppress DocblockTypeContradiction */
             if ($existing_statements && !$existing_statements[0] instanceof PhpParser\Node\Stmt) {
                 $existing_statements = null;
             }
@@ -372,7 +373,7 @@ class StatementsProvider
         ];
 
         if (!self::$lexer) {
-            self::$lexer = new PhpParser\Lexer(['usedAttributes' => $attributes]);
+            self::$lexer = new PhpParser\Lexer\Emulative(['usedAttributes' => $attributes]);
         }
 
         if (!self::$parser) {

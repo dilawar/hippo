@@ -155,6 +155,10 @@ class Google_Service_AndroidManagement extends Google_Service
                   'type' => 'string',
                   'repeated' => true,
                 ),
+                'wipeReasonMessage' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
               ),
             ),'get' => array(
               'path' => 'v1/{+name}',

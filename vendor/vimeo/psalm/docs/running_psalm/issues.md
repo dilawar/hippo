@@ -717,6 +717,15 @@ Emitted when a function parameter default clashes with the type Psalm expects th
 function foo(int $i = false) : void {}
 ```
 
+### InvalidParent
+
+Emitted when a function return type is `parent`, but there's no parent class
+```php
+class Foo {
+    public function f(): parent {}
+}
+```
+
 ### InvalidPassByReference
 
 Emitted when passing a non-variable to a function that expects a by-ref variable
@@ -1106,12 +1115,22 @@ extending all its template params.
 
 ```php
 /**
- * @template-implements IteratorAggregate<int>
+ * @template-implements ArrayAccess<int>
  */
-class SomeIterator implements IteratorAggregate
+class SomeIterator implements ArrayAccess
 {
-    public function getIterator() {
-        yield 5;
+    public function offsetSet($offset, $value) {
+    }
+
+    public function offsetExists($offset) {
+        return false;
+    }
+
+    public function offsetUnset($offset) {
+    }
+
+    public function offsetGet($offset) {
+        return null;
     }
 }
 ```
@@ -1932,6 +1951,32 @@ echo $arr["b"];
 
 ```
 
+### PossiblyUndefinedIntArrayOffset
+
+Emitted when the config flag `ensureArrayIntOffsetsExist` is set to `true` and an integer-keyed offset is not checked for existence
+
+```php
+/**
+ * @param array<int, string> $arr
+ */
+function foo(array $arr) : void {
+    echo $arr[0];
+}
+```
+
+### PossiblyUndefinedStringArrayOffset
+
+Emitted when the config flag `ensureArrayStringOffsetsExist` is set to `true` and an integer-keyed offset is not checked for existence
+
+```php
+/**
+ * @param array<string, string> $arr
+ */
+function foo(array $arr) : void {
+    echo $arr["hello"];
+}
+```
+
 ### PossiblyUndefinedGlobalVariable
 
 Emitted when trying to access a variable in the global scope that may not be defined
@@ -2257,6 +2302,55 @@ Emitted when referencing an interface that doesn’t exist but does have an iden
 class C {}
 
 interface I extends C {}
+```
+
+### UndefinedMagicMethod
+
+Emitted when calling a magic method that doesn’t exist
+
+```php
+/**
+ * @method bar():string
+ */
+class A {
+    public function __call(string $name, array $args) {
+        return "cool";
+    }
+}
+(new A)->foo();
+```
+
+### UndefinedMagicPropertyAssignment
+
+Emitted when assigning a property on an object that doesn’t have that magic property defined
+
+```php
+/**
+ * @property string $bar
+ */
+class A {
+    /** @param mixed $value */
+    public function __set(string $name, $value) {}
+}
+$a = new A();
+$a->foo = "bar";
+```
+
+### UndefinedMagicPropertyFetch
+
+Emitted when getting a property on an object that doesn’t have that magic property defined
+
+```php
+/**
+ * @property string $bar
+ */
+class A {
+    public function __get(string $name) {
+        return "cool";
+    }
+}
+$a = new A();
+echo $a->foo;
 ```
 
 ### UndefinedMethod
