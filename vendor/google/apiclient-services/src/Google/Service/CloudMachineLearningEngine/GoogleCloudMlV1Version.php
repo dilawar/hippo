@@ -18,6 +18,8 @@
 class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Version extends Google_Collection
 {
   protected $collection_key = 'packageUris';
+  protected $acceleratorConfigType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1AcceleratorConfig';
+  protected $acceleratorConfigDataType = '';
   protected $autoScalingType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1AutoScaling';
   protected $autoScalingDataType = '';
   public $createTime;
@@ -25,6 +27,8 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Version extends G
   public $description;
   public $errorMessage;
   public $etag;
+  protected $explanationConfigType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ExplanationConfig';
+  protected $explanationConfigDataType = '';
   public $framework;
   public $isDefault;
   public $labels;
@@ -42,6 +46,20 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Version extends G
   public $serviceAccount;
   public $state;
 
+  /**
+   * @param Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1AcceleratorConfig
+   */
+  public function setAcceleratorConfig(Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1AcceleratorConfig $acceleratorConfig)
+  {
+    $this->acceleratorConfig = $acceleratorConfig;
+  }
+  /**
+   * @return Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1AcceleratorConfig
+   */
+  public function getAcceleratorConfig()
+  {
+    return $this->acceleratorConfig;
+  }
   /**
    * @param Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1AutoScaling
    */
@@ -95,6 +113,20 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Version extends G
   public function getEtag()
   {
     return $this->etag;
+  }
+  /**
+   * @param Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ExplanationConfig
+   */
+  public function setExplanationConfig(Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ExplanationConfig $explanationConfig)
+  {
+    $this->explanationConfig = $explanationConfig;
+  }
+  /**
+   * @return Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ExplanationConfig
+   */
+  public function getExplanationConfig()
+  {
+    return $this->explanationConfig;
   }
   public function setFramework($framework)
   {

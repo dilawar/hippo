@@ -44,7 +44,9 @@ class Google_Service_CloudSearch_Resource_Media extends Google_Service_Resource
    *
    * For additional information, see [Create a content connector using the REST
    * API](https://developers.google.com/cloud-search/docs/guides/content-
-   * connector#rest). (media.upload)
+   * connector#rest).
+   *
+   *   **Note:** This API requires a service account to execute. (media.upload)
    *
    * @param string $resourceName Name of the media that is being downloaded.  See
    * ReadRequest.resource_name.

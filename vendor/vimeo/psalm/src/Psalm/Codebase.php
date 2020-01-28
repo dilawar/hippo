@@ -131,11 +131,6 @@ class Codebase
     public $find_unused_variables = false;
 
     /**
-     * @var Internal\Codebase\Reflection
-     */
-    private $reflection;
-
-    /**
      * @var Internal\Codebase\Scanner
      */
     public $scanner;
@@ -296,21 +291,21 @@ class Codebase
 
         self::$stubbed_constants = [];
 
-        $this->reflection = new Internal\Codebase\Reflection($providers->classlike_storage_provider, $this);
+        $reflection = new Internal\Codebase\Reflection($providers->classlike_storage_provider, $this);
 
         $this->scanner = new Internal\Codebase\Scanner(
             $this,
             $config,
             $providers->file_storage_provider,
             $providers->file_provider,
-            $this->reflection,
+            $reflection,
             $providers->file_reference_provider,
             $progress
         );
 
         $this->loadAnalyzer();
 
-        $this->functions = new Internal\Codebase\Functions($providers->file_storage_provider, $this->reflection);
+        $this->functions = new Internal\Codebase\Functions($providers->file_storage_provider, $reflection);
 
         $this->properties = new Internal\Codebase\Properties(
             $providers->classlike_storage_provider,
@@ -671,6 +666,14 @@ class Codebase
     }
 
     /**
+     * @return array<string, Type\Union>
+     */
+    public function getAllStubbedConstants()
+    {
+        return self::$stubbed_constants;
+    }
+
+    /**
      * @param  string $file_path
      *
      * @return bool
@@ -774,7 +777,7 @@ class Codebase
      */
     public function getParentInterfaces($fq_interface_name)
     {
-        return $this->classlikes->getParentInterfaces($fq_interface_name);
+        return $this->classlikes->getParentInterfaces($this->classlikes->getUnAliasedName($fq_interface_name));
     }
 
     /**
@@ -814,19 +817,19 @@ class Codebase
      *
      * @param  string       $method_id
      * @param  CodeLocation|null $code_location
-     * @param  string       $calling_method_id
+     * @param  string       $calling_function_id
      *
      * @return bool
      */
     public function methodExists(
         string $method_id,
         CodeLocation $code_location = null,
-        $calling_method_id = null,
+        $calling_function_id = null,
         string $file_path = null
     ) {
         return $this->methods->methodExists(
             $method_id,
-            $calling_method_id,
+            $calling_function_id,
             $code_location,
             null,
             $file_path
@@ -862,7 +865,7 @@ class Codebase
      */
     public function getMethodReturnType($method_id, &$self_class, array $call_args = [])
     {
-        return $this->methods->getMethodReturnType($method_id, $self_class);
+        return $this->methods->getMethodReturnType($method_id, $self_class, null, $call_args);
     }
 
     /**
@@ -1217,8 +1220,6 @@ class Codebase
      */
     public function getSignatureInformation(string $function_symbol) : ?\LanguageServerProtocol\SignatureInformation
     {
-        $params = null;
-
         if (strpos($function_symbol, '::') !== false) {
             $declaring_method_id = $this->methods->getDeclaringMethodId($function_symbol);
 
@@ -1347,7 +1348,7 @@ class Codebase
 
         $type = Type::parseString($type_string);
 
-        foreach ($type->getTypes() as $atomic_type) {
+        foreach ($type->getAtomicTypes() as $atomic_type) {
             if ($atomic_type instanceof Type\Atomic\TNamedObject) {
                 try {
                     $class_storage = $this->classlike_storage_provider->get($atomic_type->value);

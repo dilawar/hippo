@@ -45,7 +45,7 @@ class EnableCommand extends Command
     }
 
     /**
-     * @return null|int
+     * @return int
      */
     protected function execute(InputInterface $i, OutputInterface $o)
     {
@@ -60,10 +60,11 @@ class EnableCommand extends Command
 
         $plugin_list = ($this->plugin_list_factory)($current_dir, $config_file_path);
 
-        try {
-            $plugin_name = $i->getArgument('pluginName');
-            assert(is_string($plugin_name));
+        $plugin_name = $i->getArgument('pluginName');
 
+        assert(is_string($plugin_name));
+
+        try {
             $plugin_class = $plugin_list->resolvePluginClass($plugin_name);
         } catch (InvalidArgumentException $e) {
             $io->error('Unknown plugin class ' . $plugin_name);
@@ -79,5 +80,7 @@ class EnableCommand extends Command
 
         $plugin_list->enable($plugin_class);
         $io->success('Plugin enabled');
+
+        return 0;
     }
 }

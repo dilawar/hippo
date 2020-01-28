@@ -38,6 +38,8 @@ class Google_Service_Dataproc_Job extends Google_Collection
   protected $schedulingDataType = '';
   protected $sparkJobType = 'Google_Service_Dataproc_SparkJob';
   protected $sparkJobDataType = '';
+  protected $sparkRJobType = 'Google_Service_Dataproc_SparkRJob';
+  protected $sparkRJobDataType = '';
   protected $sparkSqlJobType = 'Google_Service_Dataproc_SparkSqlJob';
   protected $sparkSqlJobDataType = '';
   protected $statusType = 'Google_Service_Dataproc_JobStatus';
@@ -190,6 +192,20 @@ class Google_Service_Dataproc_Job extends Google_Collection
   public function getSparkJob()
   {
     return $this->sparkJob;
+  }
+  /**
+   * @param Google_Service_Dataproc_SparkRJob
+   */
+  public function setSparkRJob(Google_Service_Dataproc_SparkRJob $sparkRJob)
+  {
+    $this->sparkRJob = $sparkRJob;
+  }
+  /**
+   * @return Google_Service_Dataproc_SparkRJob
+   */
+  public function getSparkRJob()
+  {
+    return $this->sparkRJob;
   }
   /**
    * @param Google_Service_Dataproc_SparkSqlJob

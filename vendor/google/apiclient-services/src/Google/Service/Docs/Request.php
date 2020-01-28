@@ -17,12 +17,22 @@
 
 class Google_Service_Docs_Request extends Google_Model
 {
+  protected $createFooterType = 'Google_Service_Docs_CreateFooterRequest';
+  protected $createFooterDataType = '';
+  protected $createFootnoteType = 'Google_Service_Docs_CreateFootnoteRequest';
+  protected $createFootnoteDataType = '';
+  protected $createHeaderType = 'Google_Service_Docs_CreateHeaderRequest';
+  protected $createHeaderDataType = '';
   protected $createNamedRangeType = 'Google_Service_Docs_CreateNamedRangeRequest';
   protected $createNamedRangeDataType = '';
   protected $createParagraphBulletsType = 'Google_Service_Docs_CreateParagraphBulletsRequest';
   protected $createParagraphBulletsDataType = '';
   protected $deleteContentRangeType = 'Google_Service_Docs_DeleteContentRangeRequest';
   protected $deleteContentRangeDataType = '';
+  protected $deleteFooterType = 'Google_Service_Docs_DeleteFooterRequest';
+  protected $deleteFooterDataType = '';
+  protected $deleteHeaderType = 'Google_Service_Docs_DeleteHeaderRequest';
+  protected $deleteHeaderDataType = '';
   protected $deleteNamedRangeType = 'Google_Service_Docs_DeleteNamedRangeRequest';
   protected $deleteNamedRangeDataType = '';
   protected $deleteParagraphBulletsType = 'Google_Service_Docs_DeleteParagraphBulletsRequest';
@@ -37,6 +47,8 @@ class Google_Service_Docs_Request extends Google_Model
   protected $insertInlineImageDataType = '';
   protected $insertPageBreakType = 'Google_Service_Docs_InsertPageBreakRequest';
   protected $insertPageBreakDataType = '';
+  protected $insertSectionBreakType = 'Google_Service_Docs_InsertSectionBreakRequest';
+  protected $insertSectionBreakDataType = '';
   protected $insertTableType = 'Google_Service_Docs_InsertTableRequest';
   protected $insertTableDataType = '';
   protected $insertTableColumnType = 'Google_Service_Docs_InsertTableColumnRequest';
@@ -45,12 +57,22 @@ class Google_Service_Docs_Request extends Google_Model
   protected $insertTableRowDataType = '';
   protected $insertTextType = 'Google_Service_Docs_InsertTextRequest';
   protected $insertTextDataType = '';
+  protected $mergeTableCellsType = 'Google_Service_Docs_MergeTableCellsRequest';
+  protected $mergeTableCellsDataType = '';
   protected $replaceAllTextType = 'Google_Service_Docs_ReplaceAllTextRequest';
   protected $replaceAllTextDataType = '';
+  protected $replaceImageType = 'Google_Service_Docs_ReplaceImageRequest';
+  protected $replaceImageDataType = '';
+  protected $replaceNamedRangeContentType = 'Google_Service_Docs_ReplaceNamedRangeContentRequest';
+  protected $replaceNamedRangeContentDataType = '';
+  protected $unmergeTableCellsType = 'Google_Service_Docs_UnmergeTableCellsRequest';
+  protected $unmergeTableCellsDataType = '';
   protected $updateDocumentStyleType = 'Google_Service_Docs_UpdateDocumentStyleRequest';
   protected $updateDocumentStyleDataType = '';
   protected $updateParagraphStyleType = 'Google_Service_Docs_UpdateParagraphStyleRequest';
   protected $updateParagraphStyleDataType = '';
+  protected $updateSectionStyleType = 'Google_Service_Docs_UpdateSectionStyleRequest';
+  protected $updateSectionStyleDataType = '';
   protected $updateTableCellStyleType = 'Google_Service_Docs_UpdateTableCellStyleRequest';
   protected $updateTableCellStyleDataType = '';
   protected $updateTableColumnPropertiesType = 'Google_Service_Docs_UpdateTableColumnPropertiesRequest';
@@ -60,6 +82,48 @@ class Google_Service_Docs_Request extends Google_Model
   protected $updateTextStyleType = 'Google_Service_Docs_UpdateTextStyleRequest';
   protected $updateTextStyleDataType = '';
 
+  /**
+   * @param Google_Service_Docs_CreateFooterRequest
+   */
+  public function setCreateFooter(Google_Service_Docs_CreateFooterRequest $createFooter)
+  {
+    $this->createFooter = $createFooter;
+  }
+  /**
+   * @return Google_Service_Docs_CreateFooterRequest
+   */
+  public function getCreateFooter()
+  {
+    return $this->createFooter;
+  }
+  /**
+   * @param Google_Service_Docs_CreateFootnoteRequest
+   */
+  public function setCreateFootnote(Google_Service_Docs_CreateFootnoteRequest $createFootnote)
+  {
+    $this->createFootnote = $createFootnote;
+  }
+  /**
+   * @return Google_Service_Docs_CreateFootnoteRequest
+   */
+  public function getCreateFootnote()
+  {
+    return $this->createFootnote;
+  }
+  /**
+   * @param Google_Service_Docs_CreateHeaderRequest
+   */
+  public function setCreateHeader(Google_Service_Docs_CreateHeaderRequest $createHeader)
+  {
+    $this->createHeader = $createHeader;
+  }
+  /**
+   * @return Google_Service_Docs_CreateHeaderRequest
+   */
+  public function getCreateHeader()
+  {
+    return $this->createHeader;
+  }
   /**
    * @param Google_Service_Docs_CreateNamedRangeRequest
    */
@@ -101,6 +165,34 @@ class Google_Service_Docs_Request extends Google_Model
   public function getDeleteContentRange()
   {
     return $this->deleteContentRange;
+  }
+  /**
+   * @param Google_Service_Docs_DeleteFooterRequest
+   */
+  public function setDeleteFooter(Google_Service_Docs_DeleteFooterRequest $deleteFooter)
+  {
+    $this->deleteFooter = $deleteFooter;
+  }
+  /**
+   * @return Google_Service_Docs_DeleteFooterRequest
+   */
+  public function getDeleteFooter()
+  {
+    return $this->deleteFooter;
+  }
+  /**
+   * @param Google_Service_Docs_DeleteHeaderRequest
+   */
+  public function setDeleteHeader(Google_Service_Docs_DeleteHeaderRequest $deleteHeader)
+  {
+    $this->deleteHeader = $deleteHeader;
+  }
+  /**
+   * @return Google_Service_Docs_DeleteHeaderRequest
+   */
+  public function getDeleteHeader()
+  {
+    return $this->deleteHeader;
   }
   /**
    * @param Google_Service_Docs_DeleteNamedRangeRequest
@@ -201,6 +293,20 @@ class Google_Service_Docs_Request extends Google_Model
     return $this->insertPageBreak;
   }
   /**
+   * @param Google_Service_Docs_InsertSectionBreakRequest
+   */
+  public function setInsertSectionBreak(Google_Service_Docs_InsertSectionBreakRequest $insertSectionBreak)
+  {
+    $this->insertSectionBreak = $insertSectionBreak;
+  }
+  /**
+   * @return Google_Service_Docs_InsertSectionBreakRequest
+   */
+  public function getInsertSectionBreak()
+  {
+    return $this->insertSectionBreak;
+  }
+  /**
    * @param Google_Service_Docs_InsertTableRequest
    */
   public function setInsertTable(Google_Service_Docs_InsertTableRequest $insertTable)
@@ -257,6 +363,20 @@ class Google_Service_Docs_Request extends Google_Model
     return $this->insertText;
   }
   /**
+   * @param Google_Service_Docs_MergeTableCellsRequest
+   */
+  public function setMergeTableCells(Google_Service_Docs_MergeTableCellsRequest $mergeTableCells)
+  {
+    $this->mergeTableCells = $mergeTableCells;
+  }
+  /**
+   * @return Google_Service_Docs_MergeTableCellsRequest
+   */
+  public function getMergeTableCells()
+  {
+    return $this->mergeTableCells;
+  }
+  /**
    * @param Google_Service_Docs_ReplaceAllTextRequest
    */
   public function setReplaceAllText(Google_Service_Docs_ReplaceAllTextRequest $replaceAllText)
@@ -269,6 +389,48 @@ class Google_Service_Docs_Request extends Google_Model
   public function getReplaceAllText()
   {
     return $this->replaceAllText;
+  }
+  /**
+   * @param Google_Service_Docs_ReplaceImageRequest
+   */
+  public function setReplaceImage(Google_Service_Docs_ReplaceImageRequest $replaceImage)
+  {
+    $this->replaceImage = $replaceImage;
+  }
+  /**
+   * @return Google_Service_Docs_ReplaceImageRequest
+   */
+  public function getReplaceImage()
+  {
+    return $this->replaceImage;
+  }
+  /**
+   * @param Google_Service_Docs_ReplaceNamedRangeContentRequest
+   */
+  public function setReplaceNamedRangeContent(Google_Service_Docs_ReplaceNamedRangeContentRequest $replaceNamedRangeContent)
+  {
+    $this->replaceNamedRangeContent = $replaceNamedRangeContent;
+  }
+  /**
+   * @return Google_Service_Docs_ReplaceNamedRangeContentRequest
+   */
+  public function getReplaceNamedRangeContent()
+  {
+    return $this->replaceNamedRangeContent;
+  }
+  /**
+   * @param Google_Service_Docs_UnmergeTableCellsRequest
+   */
+  public function setUnmergeTableCells(Google_Service_Docs_UnmergeTableCellsRequest $unmergeTableCells)
+  {
+    $this->unmergeTableCells = $unmergeTableCells;
+  }
+  /**
+   * @return Google_Service_Docs_UnmergeTableCellsRequest
+   */
+  public function getUnmergeTableCells()
+  {
+    return $this->unmergeTableCells;
   }
   /**
    * @param Google_Service_Docs_UpdateDocumentStyleRequest
@@ -297,6 +459,20 @@ class Google_Service_Docs_Request extends Google_Model
   public function getUpdateParagraphStyle()
   {
     return $this->updateParagraphStyle;
+  }
+  /**
+   * @param Google_Service_Docs_UpdateSectionStyleRequest
+   */
+  public function setUpdateSectionStyle(Google_Service_Docs_UpdateSectionStyleRequest $updateSectionStyle)
+  {
+    $this->updateSectionStyle = $updateSectionStyle;
+  }
+  /**
+   * @return Google_Service_Docs_UpdateSectionStyleRequest
+   */
+  public function getUpdateSectionStyle()
+  {
+    return $this->updateSectionStyle;
   }
   /**
    * @param Google_Service_Docs_UpdateTableCellStyleRequest

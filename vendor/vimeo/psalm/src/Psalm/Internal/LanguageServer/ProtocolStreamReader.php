@@ -48,10 +48,17 @@ class ProtocolStreamReader implements ProtocolReader
         asyncCall(
             /**
              * @return \Generator<int, string, string, void>
+             * @psalm-suppress MixedReturnTypeCoercion
              */
             function () use ($input) : \Generator {
-                while ($this->is_accepting_new_requests && ($chunk = yield $input->read()) !== null) {
-                    /** @var string $chunk */
+                while ($this->is_accepting_new_requests) {
+                    /** @var ?string $chunk */
+                    $chunk = yield $input->read();
+
+                    if ($chunk === null) {
+                        break;
+                    }
+
                     if ($this->readMessages($chunk) > 0) {
                         $this->emit('readMessageGroup');
                     }

@@ -18,15 +18,33 @@
 class Google_Service_AndroidPublisher_TrackRelease extends Google_Collection
 {
   protected $collection_key = 'versionCodes';
+  protected $controlsType = 'Google_Service_AndroidPublisher_Control';
+  protected $controlsDataType = 'array';
   protected $countryTargetingType = 'Google_Service_AndroidPublisher_CountryTargeting';
   protected $countryTargetingDataType = '';
   public $name;
   protected $releaseNotesType = 'Google_Service_AndroidPublisher_LocalizedText';
   protected $releaseNotesDataType = 'array';
+  protected $samplingType = 'Google_Service_AndroidPublisher_Sampling';
+  protected $samplingDataType = '';
   public $status;
   public $userFraction;
   public $versionCodes;
 
+  /**
+   * @param Google_Service_AndroidPublisher_Control
+   */
+  public function setControls($controls)
+  {
+    $this->controls = $controls;
+  }
+  /**
+   * @return Google_Service_AndroidPublisher_Control
+   */
+  public function getControls()
+  {
+    return $this->controls;
+  }
   /**
    * @param Google_Service_AndroidPublisher_CountryTargeting
    */
@@ -62,6 +80,20 @@ class Google_Service_AndroidPublisher_TrackRelease extends Google_Collection
   public function getReleaseNotes()
   {
     return $this->releaseNotes;
+  }
+  /**
+   * @param Google_Service_AndroidPublisher_Sampling
+   */
+  public function setSampling(Google_Service_AndroidPublisher_Sampling $sampling)
+  {
+    $this->sampling = $sampling;
+  }
+  /**
+   * @return Google_Service_AndroidPublisher_Sampling
+   */
+  public function getSampling()
+  {
+    return $this->sampling;
   }
   public function setStatus($status)
   {

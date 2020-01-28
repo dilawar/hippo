@@ -141,14 +141,18 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
      */
     private $fake_this_class = null;
 
+    /** @var \Psalm\Internal\Provider\NodeDataProvider */
+    public $node_data;
+
     /**
      * @param SourceAnalyzer $source
      */
-    public function __construct(SourceAnalyzer $source)
+    public function __construct(SourceAnalyzer $source, \Psalm\Internal\Provider\NodeDataProvider $node_data)
     {
         $this->source = $source;
         $this->file_analyzer = $source->getFileAnalyzer();
         $this->codebase = $source->getCodebase();
+        $this->node_data = $node_data;
     }
 
     /**
@@ -190,7 +194,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     foreach ($stmt->consts as $const) {
                         $this->setConstType(
                             $const->name->name,
-                            self::getSimpleType($codebase, $const->value, $this->getAliases(), $this)
+                            self::getSimpleType($codebase, $this->node_data, $const->value, $this->getAliases(), $this)
                                 ?: Type::getMixed(),
                             $context
                         );
@@ -201,12 +205,23 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     && $stmt->expr->name->parts === ['define']
                     && isset($stmt->expr->args[1])
                 ) {
-                    $const_name = static::getConstName($stmt->expr->args[0]->value, $codebase, $this->getAliases());
+                    $const_name = static::getConstName(
+                        $stmt->expr->args[0]->value,
+                        $this->node_data,
+                        $codebase,
+                        $this->getAliases()
+                    );
+
                     if ($const_name !== null) {
                         $this->setConstType(
                             $const_name,
-                            self::getSimpleType($codebase, $stmt->expr->args[1]->value, $this->getAliases(), $this)
-                                ?: Type::getMixed(),
+                            self::getSimpleType(
+                                $codebase,
+                                $this->node_data,
+                                $stmt->expr->args[1]->value,
+                                $this->getAliases(),
+                                $this
+                            ) ?: Type::getMixed(),
                             $context
                         );
                     }
@@ -425,6 +440,8 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                                 $loop_scope->unreferenced_vars[$var_id] = $locations;
                             }
                         }
+
+                        $loop_scope->referenced_var_ids += $context->referenced_var_ids;
                     }
                 }
 
@@ -523,6 +540,8 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                                 $loop_scope->possibly_unreferenced_vars[$var_id] = $locations;
                             }
                         }
+
+                        $loop_scope->referenced_var_ids += $context->referenced_var_ids;
                     }
                 }
 
@@ -555,10 +574,10 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     ExpressionAnalyzer::analyze($this, $expr, $context);
                     $context->inside_call = false;
 
-                    if (isset($expr->inferredType)) {
+                    if ($expr_type = $this->node_data->getType($expr)) {
                         if (CallAnalyzer::checkFunctionArgumentType(
                             $this,
-                            $expr->inferredType,
+                            $expr_type,
                             Type::getString(),
                             null,
                             'echo',
@@ -627,7 +646,11 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     $function_context->collect_exceptions = $config->check_for_throws_docblock;
 
                     if (isset($this->function_analyzers[$function_id])) {
-                        $this->function_analyzers[$function_id]->analyze($function_context, $context);
+                        $this->function_analyzers[$function_id]->analyze(
+                            $function_context,
+                            $this->node_data,
+                            $context
+                        );
 
                         if ($config->reportIssueInFile('InvalidReturnType', $this->getFilePath())) {
                             $method_id = $this->function_analyzers[$function_id]->getMethodId();
@@ -641,6 +664,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                             $return_type_location = $function_storage->return_type_location;
 
                             $this->function_analyzers[$function_id]->verifyReturnType(
+                                $stmt->getStmts(),
                                 $this,
                                 $return_type,
                                 $this->getFQCLN(),
@@ -650,7 +674,14 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     }
                 }
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Expression) {
-                if (ExpressionAnalyzer::analyze($this, $stmt->expr, $context, false, $global_context) === false) {
+                if (ExpressionAnalyzer::analyze(
+                    $this,
+                    $stmt->expr,
+                    $context,
+                    false,
+                    $global_context,
+                    true
+                ) === false) {
                     return false;
                 }
             } elseif ($stmt instanceof PhpParser\Node\Stmt\InlineHTML) {
@@ -699,13 +730,13 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     if ($prop->default) {
                         ExpressionAnalyzer::analyze($this, $prop->default, $context);
 
-                        if (isset($prop->default->inferredType)) {
+                        if ($prop_default_type = $this->node_data->getType($prop->default)) {
                             if (PropertyAssignmentAnalyzer::analyzeInstance(
                                 $this,
                                 $prop,
                                 $prop->name->name,
                                 $prop->default,
-                                $prop->default->inferredType,
+                                $prop_default_type,
                                 $context
                             ) === false) {
                                 // fall through
@@ -727,11 +758,13 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 foreach ($stmt->consts as $const) {
                     ExpressionAnalyzer::analyze($this, $const->value, $context);
 
-                    if (isset($const->value->inferredType) && !$const->value->inferredType->hasMixed()) {
+                    if (($const_type = $this->node_data->getType($const->value))
+                        && !$const_type->hasMixed()
+                    ) {
                         $codebase->classlikes->setConstantType(
                             (string)$this->getFQCLN(),
                             $const->name->name,
-                            $const->value->inferredType,
+                            $const_type,
                             $const_visibility
                         );
                     }
@@ -824,7 +857,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     if ($plugin_fq_class_name::afterStatementAnalysis(
                         $stmt,
                         $context,
-                        $this->getSource(),
+                        $this,
                         $codebase,
                         $file_manipulations
                     ) === false) {
@@ -1005,10 +1038,12 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
         $assign_exp_found = false;
 
         $i = 0;
-        while ($i<count($stmts) && !$assign_exp_found) {
+
+        while ($i < count($stmts) && !$assign_exp_found) {
             $stmt = $stmts[$i];
             if ($stmt instanceof PhpParser\Node\Stmt\Expression) {
                 $search_result = $this->findAssignExp($stmt->expr, $var_id, $original_location->raw_file_start);
+
                 $target_exp = $search_result[0];
                 $levels_taken = $search_result[1];
 
@@ -1017,8 +1052,65 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     $assign_exp = $target_exp;
                     $assign_stmt = $levels_taken === 1 ? $stmt : null;
                 }
+            } elseif ($stmt instanceof PhpParser\Node\Stmt\TryCatch) {
+                $search_result = $this->findAssignStmt($stmt->stmts, $var_id, $original_location);
+
+                if ($search_result[0] && $search_result[1]) {
+                    return $search_result;
+                }
+
+                foreach ($stmt->catches as $catch_stmt) {
+                    $search_result = $this->findAssignStmt($catch_stmt->stmts, $var_id, $original_location);
+
+                    if ($search_result[0] && $search_result[1]) {
+                        return $search_result;
+                    }
+                }
+            } elseif ($stmt instanceof PhpParser\Node\Stmt\Do_
+                || $stmt instanceof PhpParser\Node\Stmt\While_
+            ) {
+                $search_result = $this->findAssignStmt($stmt->stmts, $var_id, $original_location);
+
+                if ($search_result[0] && $search_result[1]) {
+                    return $search_result;
+                }
+            } elseif ($stmt instanceof PhpParser\Node\Stmt\Foreach_) {
+                $search_result = $this->findAssignStmt($stmt->stmts, $var_id, $original_location);
+
+                if ($search_result[0] && $search_result[1]) {
+                    return $search_result;
+                }
+            } elseif ($stmt instanceof PhpParser\Node\Stmt\For_) {
+                $search_result = $this->findAssignStmt($stmt->stmts, $var_id, $original_location);
+
+                if ($search_result[0] && $search_result[1]) {
+                    return $search_result;
+                }
+            } elseif ($stmt instanceof PhpParser\Node\Stmt\If_) {
+                $search_result = $this->findAssignStmt($stmt->stmts, $var_id, $original_location);
+
+                if ($search_result[0] && $search_result[1]) {
+                    return $search_result;
+                }
+
+                foreach ($stmt->elseifs as $elseif_stmt) {
+                    $search_result = $this->findAssignStmt($elseif_stmt->stmts, $var_id, $original_location);
+
+                    if ($search_result[0] && $search_result[1]) {
+                        return $search_result;
+                    }
+                }
+
+                if ($stmt->else) {
+                    $search_result = $this->findAssignStmt($stmt->else->stmts, $var_id, $original_location);
+
+                    if ($search_result[0] && $search_result[1]) {
+                        return $search_result;
+                    }
+                }
             }
-            $i+=1;
+
+            $i++;
         }
 
         return [$assign_stmt, $assign_exp];
@@ -1082,7 +1174,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
         $function_storage = $source instanceof FunctionLikeAnalyzer ? $source->getFunctionLikeStorage($this) : null;
         if ($codebase->alter_code) {
             // Reverse array to deal with chain of assignments
-            $this->unused_var_locations = array_reverse($this->unused_var_locations);
+            $this->unused_var_locations = array_reverse($this->unused_var_locations, true);
         }
         $var_list = array_column($this->unused_var_locations, 0);
         $loc_list = array_column($this->unused_var_locations, 1);
@@ -1091,7 +1183,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
         $project_analyzer = $this->getProjectAnalyzer();
 
         foreach ($this->unused_var_locations as $hash => list($var_id, $original_location)) {
-            if ($var_id === '$_' || isset($this->used_var_locations[$hash])) {
+            if (substr($var_id, 0, 2) === '$_' || isset($this->used_var_locations[$hash])) {
                 continue;
             }
 
@@ -1189,7 +1281,8 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
 
                 if (IssueBuffer::accepts(
                     $issue,
-                    $this->getSuppressedIssues()
+                    $this->getSuppressedIssues(),
+                    true
                 )) {
                     // fall through
                 }
@@ -1227,7 +1320,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 if ($root_var_id && isset($context->vars_in_scope[$root_var_id])) {
                     $root_type = clone $context->vars_in_scope[$root_var_id];
 
-                    foreach ($root_type->getTypes() as $atomic_root_type) {
+                    foreach ($root_type->getAtomicTypes() as $atomic_root_type) {
                         if ($atomic_root_type instanceof Type\Atomic\ObjectLike) {
                             if ($var->dim instanceof PhpParser\Node\Scalar\String_
                                 || $var->dim instanceof PhpParser\Node\Scalar\LNumber
@@ -1397,7 +1490,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                                 $this,
                                 $var_comment_type,
                                 $type_location,
-                                $context->calling_method_id
+                                $context->calling_function_id
                             );
                         }
 
@@ -1430,17 +1523,17 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 }
 
                 if ($comment_type
-                    && isset($var->default->inferredType)
+                    && ($var_default_type = $this->node_data->getType($var->default))
                     && !TypeAnalyzer::isContainedBy(
                         $codebase,
-                        $var->default->inferredType,
+                        $var_default_type,
                         $comment_type
                     )
                 ) {
                     if (IssueBuffer::accepts(
                         new \Psalm\Issue\ReferenceConstraintViolation(
                             $var_id . ' of type ' . $comment_type->getId() . ' cannot be assigned type '
-                                . $var->default->inferredType->getId(),
+                                . $var_default_type->getId(),
                             new CodeLocation($this, $var)
                         )
                     )) {
@@ -1481,6 +1574,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
      */
     public static function getSimpleType(
         \Psalm\Codebase $codebase,
+        \Psalm\Internal\Provider\NodeDataProvider $nodes,
         PhpParser\Node\Expr $stmt,
         \Psalm\Aliases $aliases,
         \Psalm\FileSource $file_source = null,
@@ -1491,6 +1585,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
             if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Concat) {
                 $left = self::getSimpleType(
                     $codebase,
+                    $nodes,
                     $stmt->left,
                     $aliases,
                     $file_source,
@@ -1499,6 +1594,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 );
                 $right = self::getSimpleType(
                     $codebase,
+                    $nodes,
                     $stmt->right,
                     $aliases,
                     $file_source,
@@ -1545,16 +1641,19 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 return Type::getInt();
             }
 
-            $stmt->left->inferredType = self::getSimpleType(
+            $stmt_left_type = self::getSimpleType(
                 $codebase,
+                $nodes,
                 $stmt->left,
                 $aliases,
                 $file_source,
                 $existing_class_constants,
                 $fq_classlike_name
             );
-            $stmt->right->inferredType = self::getSimpleType(
+
+            $stmt_right_type = self::getSimpleType(
                 $codebase,
+                $nodes,
                 $stmt->right,
                 $aliases,
                 $file_source,
@@ -1562,18 +1661,29 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 $fq_classlike_name
             );
 
-            if (!$stmt->left->inferredType || !$stmt->right->inferredType) {
+            if (!$stmt_left_type || !$stmt_right_type) {
                 return null;
             }
 
-            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Plus ||
-                $stmt instanceof PhpParser\Node\Expr\BinaryOp\Minus ||
-                $stmt instanceof PhpParser\Node\Expr\BinaryOp\Mod ||
-                $stmt instanceof PhpParser\Node\Expr\BinaryOp\Mul ||
-                $stmt instanceof PhpParser\Node\Expr\BinaryOp\Pow
+            $nodes->setType(
+                $stmt->left,
+                $stmt_left_type
+            );
+
+            $nodes->setType(
+                $stmt->right,
+                $stmt_right_type
+            );
+
+            if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Plus
+                || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Minus
+                || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Mod
+                || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Mul
+                || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Pow
             ) {
                 BinaryOpAnalyzer::analyzeNonDivArithmeticOp(
                     $file_source instanceof StatementsSource ? $file_source : null,
+                    $nodes,
                     $stmt->left,
                     $stmt->right,
                     $stmt,
@@ -1588,8 +1698,8 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
             }
 
             if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Div
-                && ($stmt->left->inferredType->hasInt() || $stmt->left->inferredType->hasFloat())
-                && ($stmt->right->inferredType->hasInt() || $stmt->right->inferredType->hasFloat())
+                && ($stmt_left_type->hasInt() || $stmt_left_type->hasFloat())
+                && ($stmt_right_type->hasInt() || $stmt_right_type->hasFloat())
             ) {
                 return Type::combineUnionTypes(Type::getFloat(), Type::getInt());
             }
@@ -1663,6 +1773,8 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                         return null;
                     } catch (\InvalidArgumentException $e) {
                         return null;
+                    } catch (\Psalm\Exception\CircularReferenceException $e) {
+                        return null;
                     }
                 }
             }
@@ -1699,6 +1811,8 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
 
             $can_create_objectlike = true;
 
+            $is_list = true;
+
             foreach ($stmt->items as $int_offset => $item) {
                 if ($item === null) {
                     continue;
@@ -1709,6 +1823,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 if ($item->key) {
                     $single_item_key_type = self::getSimpleType(
                         $codebase,
+                        $nodes,
                         $item->key,
                         $aliases,
                         $file_source,
@@ -1740,6 +1855,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
 
                 $single_item_value_type = self::getSimpleType(
                     $codebase,
+                    $nodes,
                     $item->value,
                     $aliases,
                     $file_source,
@@ -1760,14 +1876,22 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     } else {
                         $can_create_objectlike = false;
                     }
+
+                    if ($item->key
+                        && (!$item->key instanceof PhpParser\Node\Scalar\LNumber
+                            || $item->key->value !== $int_offset)
+                    ) {
+                        $is_list = false;
+                    }
                 } else {
+                    $is_list = false;
                     $dim_type = $single_item_key_type;
 
                     if (!$dim_type) {
                         return null;
                     }
 
-                    $dim_atomic_types = $dim_type->getTypes();
+                    $dim_atomic_types = $dim_type->getAtomicTypes();
 
                     if (count($dim_atomic_types) > 1 || $dim_type->hasMixed() || count($property_types) > 50) {
                         $can_create_objectlike = false;
@@ -1810,6 +1934,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
             ) {
                 $objectlike = new Type\Atomic\ObjectLike($property_types, $class_strings);
                 $objectlike->sealed = true;
+                $objectlike->is_list = $is_list;
                 return new Type\Union([$objectlike]);
             }
 
@@ -1852,6 +1977,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
         if ($stmt instanceof PhpParser\Node\Expr\UnaryMinus || $stmt instanceof PhpParser\Node\Expr\UnaryPlus) {
             $type_to_invert = self::getSimpleType(
                 $codebase,
+                $nodes,
                 $stmt->expr,
                 $aliases,
                 $file_source,
@@ -1863,7 +1989,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 return null;
             }
 
-            foreach ($type_to_invert->getTypes() as $type_part) {
+            foreach ($type_to_invert->getAtomicTypes() as $type_part) {
                 if ($type_part instanceof Type\Atomic\TLiteralInt
                     && $stmt instanceof PhpParser\Node\Expr\UnaryMinus
                 ) {
@@ -1894,7 +2020,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
 
             $this->setConstType(
                 $const->name->name,
-                isset($const->value->inferredType) ? $const->value->inferredType : Type::getMixed(),
+                $this->node_data->getType($const->value) ?: Type::getMixed(),
                 $context
             );
         }
@@ -2095,18 +2221,22 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
      *
      * @return null|string
      */
-    public static function getConstName($first_arg_value, Codebase $codebase, Aliases $aliases)
-    {
+    public static function getConstName(
+        $first_arg_value,
+        \Psalm\Internal\Provider\NodeDataProvider $type_provider,
+        Codebase $codebase,
+        Aliases $aliases
+    ) {
         $const_name = null;
 
         if ($first_arg_value instanceof PhpParser\Node\Scalar\String_) {
             $const_name = $first_arg_value->value;
-        } elseif (isset($first_arg_value->inferredType)) {
-            if ($first_arg_value->inferredType->isSingleStringLiteral()) {
-                $const_name = $first_arg_value->inferredType->getSingleStringLiteral()->value;
+        } elseif ($first_arg_type = $type_provider->getType($first_arg_value)) {
+            if ($first_arg_type->isSingleStringLiteral()) {
+                $const_name = $first_arg_type->getSingleStringLiteral()->value;
             }
         } else {
-            $simple_type = self::getSimpleType($codebase, $first_arg_value, $aliases);
+            $simple_type = self::getSimpleType($codebase, $type_provider, $first_arg_value, $aliases);
             if ($simple_type && $simple_type->isSingleStringLiteral()) {
                 $const_name = $simple_type->getSingleStringLiteral()->value;
             }
@@ -2154,7 +2284,9 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
         }
 
         if ($this->isSuperGlobal($var_id)) {
-            return Type::getArray();
+            $type = Type::getArray();
+
+            return $type;
         }
 
         return Type::getMixed();
@@ -2198,7 +2330,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     $is_expected = false;
 
                     foreach ($ignored_exceptions_and_descendants as $expected_exception => $_) {
-                        if ($expected_exception === $possibly_thrown_exception
+                        if ($expected_exception === strtolower($possibly_thrown_exception)
                             || $this->codebase->classExtends($possibly_thrown_exception, $expected_exception)
                         ) {
                             $is_expected = true;
@@ -2236,5 +2368,10 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
     public function setFQCLN(string $fake_this_class) : void
     {
         $this->fake_this_class = $fake_this_class;
+    }
+
+    public function getNodeTypeProvider() : \Psalm\NodeTypeProvider
+    {
+        return $this->node_data;
     }
 }

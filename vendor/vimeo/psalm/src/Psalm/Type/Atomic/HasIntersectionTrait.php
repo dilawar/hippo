@@ -84,11 +84,11 @@ trait HasIntersectionTrait
 
         foreach ($this->extra_types as $extra_type) {
             if ($extra_type instanceof TTemplateParam
-                && isset($template_types[$extra_type->param_name][$extra_type->defining_class ?: ''])
+                && isset($template_types[$extra_type->param_name][$extra_type->defining_class])
             ) {
-                $template_type = clone $template_types[$extra_type->param_name][$extra_type->defining_class ?: ''][0];
+                $template_type = clone $template_types[$extra_type->param_name][$extra_type->defining_class][0];
 
-                foreach ($template_type->getTypes() as $template_type_part) {
+                foreach ($template_type->getAtomicTypes() as $template_type_part) {
                     if ($template_type_part instanceof TNamedObject) {
                         $new_types[$template_type_part->getKey()] = $template_type_part;
                     }
@@ -100,6 +100,22 @@ trait HasIntersectionTrait
         }
 
         $this->extra_types = $new_types;
+    }
+
+    /**
+     * @return list<Type\Atomic\TTemplateParam>
+     */
+    public function getIntersectionTemplateTypes() : array
+    {
+        $template_types = [];
+
+        if ($this->extra_types) {
+            foreach ($this->extra_types as $extra_type) {
+                $template_types = \array_merge($template_types, $extra_type->getTemplateTypes());
+            }
+        }
+
+        return $template_types;
     }
 
     /**

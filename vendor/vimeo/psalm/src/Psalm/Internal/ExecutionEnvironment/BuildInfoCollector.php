@@ -1,6 +1,8 @@
 <?php
 namespace Psalm\Internal\ExecutionEnvironment;
 
+use Psalm\SourceControl\Git\CommitInfo;
+use Psalm\SourceControl\Git\GitInfo;
 use function explode;
 
 /**
@@ -45,7 +47,8 @@ class BuildInfoCollector
             ->fillCircleCi()
             ->fillAppVeyor()
             ->fillJenkins()
-            ->fillScrutinizer();
+            ->fillScrutinizer()
+            ->fillGithubActions();
 
         return $this->readEnv;
     }
@@ -58,7 +61,7 @@ class BuildInfoCollector
      * "TRAVIS", "TRAVIS_JOB_ID" must be set.
      *
      * @return $this
-     * @psalm-suppress PossiblyUndefinedArrayOffset
+     * @psalm-suppress PossiblyUndefinedStringArrayOffset
      */
     protected function fillTravisCi() : self
     {
@@ -134,7 +137,7 @@ class BuildInfoCollector
      * "APPVEYOR", "APPVEYOR_BUILD_NUMBER" must be set.
      *
      * @return $this
-     * @psalm-suppress PossiblyUndefinedArrayOffset
+     * @psalm-suppress PossiblyUndefinedStringArrayOffset
      */
     protected function fillAppVeyor() : self
     {
@@ -206,7 +209,7 @@ class BuildInfoCollector
      * "JENKINS_URL", "BUILD_NUMBER" must be set.
      *
      * @return $this
-     * @psalm-suppress PossiblyUndefinedArrayOffset
+     * @psalm-suppress PossiblyUndefinedStringArrayOffset
      */
     protected function fillScrutinizer() : self
     {
@@ -233,6 +236,77 @@ class BuildInfoCollector
             }
         }
 
+        return $this;
+    }
+
+    /**
+     * Fill Github Actions environment variables.
+     *
+     * @return $this
+     * @psalm-suppress PossiblyUndefinedStringArrayOffset
+     */
+    protected function fillGithubActions()
+    {
+        if (isset($this->env['GITHUB_ACTIONS'])) {
+            $this->env['CI_NAME'] = 'github-actions';
+            $this->env['CI_JOB_ID'] = $this->env['GITHUB_ACTIONS'];
+
+            $githubRef = (string) $this->env['GITHUB_REF'];
+            if (\strpos($githubRef, 'refs/heads/') !== false) {
+                $githubRef = \str_replace('refs/heads/', '', $githubRef);
+            } elseif (\strpos($githubRef, 'refs/tags/') !== false) {
+                $githubRef = \str_replace('refs/tags/', '', $githubRef);
+            }
+
+            $this->env['CI_BRANCH'] = $githubRef;
+
+            $this->readEnv['GITHUB_ACTIONS'] = $this->env['GITHUB_ACTIONS'];
+            $this->readEnv['GITHUB_REF'] = $this->env['GITHUB_REF'];
+            $this->readEnv['CI_NAME'] = $this->env['CI_NAME'];
+            $this->readEnv['CI_BRANCH'] = $this->env['CI_BRANCH'];
+
+            $slug_parts = explode('/', (string) $this->env['GITHUB_REPOSITORY']);
+
+            $this->readEnv['CI_REPO_OWNER'] = $slug_parts[0];
+            $this->readEnv['CI_REPO_NAME'] = $slug_parts[1];
+
+            if (isset($this->env['GITHUB_EVENT_PATH'])) {
+                $event_json = \file_get_contents((string) $this->env['GITHUB_EVENT_PATH']);
+                /** @var array */
+                $event_data = \json_decode($event_json, true);
+
+                if (isset($event_data['head_commit'])) {
+                    /**
+                     * @var array{
+                     *    id: string,
+                     *    author: array{name: string, email: string},
+                     *    committer: array{name: string, email: string},
+                     *    message: string,
+                     *    timestamp: string
+                     * }
+                     */
+                    $head_commit_data = $event_data['head_commit'];
+                    $gitinfo = new GitInfo(
+                        $githubRef,
+                        (new CommitInfo())
+                            ->setId($head_commit_data['id'])
+                            ->setAuthorName($head_commit_data['author']['name'])
+                            ->setAuthorEmail($head_commit_data['author']['email'])
+                            ->setCommitterName($head_commit_data['committer']['name'])
+                            ->setCommitterEmail($head_commit_data['committer']['email'])
+                            ->setMessage($head_commit_data['message'])
+                            ->setDate(\strtotime($head_commit_data['timestamp'])),
+                        []
+                    );
+
+                    $this->readEnv['git'] = $gitinfo->toArray();
+                }
+
+                if ($this->env['GITHUB_EVENT_PATH'] === 'pull_request') {
+                    $this->readEnv['CI_PR_NUMBER'] = $event_data['number'];
+                }
+            }
+        }
         return $this;
     }
 }

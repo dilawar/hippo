@@ -25,6 +25,8 @@ class Google_Service_DLP_GooglePrivacyDlpV2Action extends Google_Model
   protected $publishFindingsToCloudDataCatalogDataType = '';
   protected $publishSummaryToCsccType = 'Google_Service_DLP_GooglePrivacyDlpV2PublishSummaryToCscc';
   protected $publishSummaryToCsccDataType = '';
+  protected $publishToStackdriverType = 'Google_Service_DLP_GooglePrivacyDlpV2PublishToStackdriver';
+  protected $publishToStackdriverDataType = '';
   protected $saveFindingsType = 'Google_Service_DLP_GooglePrivacyDlpV2SaveFindings';
   protected $saveFindingsDataType = '';
 
@@ -83,6 +85,20 @@ class Google_Service_DLP_GooglePrivacyDlpV2Action extends Google_Model
   public function getPublishSummaryToCscc()
   {
     return $this->publishSummaryToCscc;
+  }
+  /**
+   * @param Google_Service_DLP_GooglePrivacyDlpV2PublishToStackdriver
+   */
+  public function setPublishToStackdriver(Google_Service_DLP_GooglePrivacyDlpV2PublishToStackdriver $publishToStackdriver)
+  {
+    $this->publishToStackdriver = $publishToStackdriver;
+  }
+  /**
+   * @return Google_Service_DLP_GooglePrivacyDlpV2PublishToStackdriver
+   */
+  public function getPublishToStackdriver()
+  {
+    return $this->publishToStackdriver;
   }
   /**
    * @param Google_Service_DLP_GooglePrivacyDlpV2SaveFindings

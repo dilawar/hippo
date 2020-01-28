@@ -109,8 +109,8 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     return Type::getArray();
 
                 case 'count':
-                    if (isset($call_args[0]->value->inferredType)) {
-                        $atomic_types = $call_args[0]->value->inferredType->getTypes();
+                    if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))) {
+                        $atomic_types = $first_arg_type->getAtomicTypes();
 
                         if (count($atomic_types) === 1) {
                             if (isset($atomic_types['array'])) {
@@ -146,10 +146,10 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                 case 'var_export':
                 case 'highlight_string':
                 case 'highlight_file':
-                    if (isset($call_args[1]->value->inferredType)) {
-                        $subject_type = $call_args[1]->value->inferredType;
-
-                        if ((string) $subject_type === 'true') {
+                    if (isset($call_args[1])
+                        && ($second_arg_type = $statements_analyzer->node_data->getType($call_args[1]->value))
+                    ) {
+                        if ((string) $second_arg_type === 'true') {
                             return Type::getString();
                         }
 
@@ -162,10 +162,10 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     return $call_map_key === 'var_export' ? Type::getVoid() : Type::getBool();
 
                 case 'print_r':
-                    if (isset($call_args[1]->value->inferredType)) {
-                        $subject_type = $call_args[1]->value->inferredType;
-
-                        if ((string) $subject_type === 'true') {
+                    if (isset($call_args[1])
+                        && ($second_arg_type = $statements_analyzer->node_data->getType($call_args[1]->value))
+                    ) {
+                        if ((string) $second_arg_type === 'true') {
                             return Type::getString();
                         }
                     }
@@ -176,14 +176,12 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     ]);
 
                 case 'microtime':
-                    if (isset($call_args[0]->value->inferredType)) {
-                        $subject_type = $call_args[0]->value->inferredType;
-
-                        if ((string) $subject_type === 'true') {
+                    if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))) {
+                        if ((string) $first_arg_type === 'true') {
                             return Type::getFloat();
                         }
 
-                        if ((string) $subject_type === 'false') {
+                        if ((string) $first_arg_type === 'false') {
                             return Type::getString();
                         }
                     }
@@ -194,16 +192,14 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     ]);
 
                 case 'hrtime':
-                    if (isset($call_args[0]->value->inferredType)) {
-                        $subject_type = $call_args[0]->value->inferredType;
-
-                        if ((string) $subject_type === 'true') {
+                    if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))) {
+                        if ((string) $first_arg_type === 'true') {
                             $int = Type::getInt();
                             $int->from_calculation = true;
                             return $int;
                         }
 
-                        if ((string) $subject_type === 'false') {
+                        if ((string) $first_arg_type === 'false') {
                             return new Type\Union([
                                 new Type\Atomic\ObjectLike([
                                     Type::getInt(),
@@ -229,14 +225,12 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     return new Type\Union([new Type\Atomic\TString, new Type\Atomic\TFalse]);
 
                 case 'gettimeofday':
-                    if (isset($call_args[0]->value->inferredType)) {
-                        $subject_type = $call_args[0]->value->inferredType;
-
-                        if ((string) $subject_type === 'true') {
+                    if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))) {
+                        if ((string) $first_arg_type === 'true') {
                             return Type::getFloat();
                         }
 
-                        if ((string) $subject_type === 'false') {
+                        if ((string) $first_arg_type === 'false') {
                             return new Type\Union([
                                 new Type\Atomic\TArray([
                                     Type::getString(),
@@ -248,42 +242,14 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
 
                     break;
 
-                case 'explode':
-                    if (count($call_args) === 2) {
-                        if ($call_args[0]->value instanceof PhpParser\Node\Scalar\String_) {
-                            if ($call_args[0]->value->value === '') {
-                                return Type::getFalse();
-                            }
-
-                            return new Type\Union([
-                                new Type\Atomic\TNonEmptyList(Type::getString())
-                            ]);
-                        } elseif (isset($call_args[0]->value->inferredType)
-                            && $call_args[0]->value->inferredType->hasString()
-                        ) {
-                            $falsable_array = new Type\Union([
-                                new Type\Atomic\TNonEmptyList(Type::getString()),
-                                new Type\Atomic\TFalse
-                            ]);
-
-                            if ($codebase->config->ignore_internal_falsable_issues) {
-                                $falsable_array->ignore_falsable_issues = true;
-                            }
-
-                            return $falsable_array;
-                        }
-                    }
-
-                    break;
-
                 case 'abs':
                     if (isset($call_args[0]->value)) {
                         $first_arg = $call_args[0]->value;
 
-                        if (isset($first_arg->inferredType)) {
+                        if ($first_arg_type = $statements_analyzer->node_data->getType($first_arg)) {
                             $numeric_types = [];
 
-                            foreach ($first_arg->inferredType->getTypes() as $inner_type) {
+                            foreach ($first_arg_type->getAtomicTypes() as $inner_type) {
                                 if ($inner_type->isNumericType()) {
                                     $numeric_types[] = $inner_type;
                                 }
@@ -302,10 +268,10 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     if (isset($call_args[0])) {
                         $first_arg = $call_args[0]->value;
 
-                        if (isset($first_arg->inferredType)) {
-                            if ($first_arg->inferredType->hasArray()) {
-                                /** @psalm-suppress PossiblyUndefinedArrayOffset */
-                                $array_type = $first_arg->inferredType->getTypes()['array'];
+                        if ($first_arg_type = $statements_analyzer->node_data->getType($first_arg)) {
+                            if ($first_arg_type->hasArray()) {
+                                /** @psalm-suppress PossiblyUndefinedStringArrayOffset */
+                                $array_type = $first_arg_type->getAtomicTypes()['array'];
                                 if ($array_type instanceof Type\Atomic\ObjectLike) {
                                     return $array_type->getGenericValueType();
                                 }
@@ -317,13 +283,13 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                                 if ($array_type instanceof Type\Atomic\TList) {
                                     return clone $array_type->type_param;
                                 }
-                            } elseif ($first_arg->inferredType->hasScalarType() &&
-                                isset($call_args[1]) &&
-                                ($second_arg = $call_args[1]->value) &&
-                                isset($second_arg->inferredType) &&
-                                $second_arg->inferredType->hasScalarType()
+                            } elseif ($first_arg_type->hasScalarType()
+                                && isset($call_args[1])
+                                && ($second_arg = $call_args[1]->value)
+                                && ($second_arg_type = $statements_analyzer->node_data->getType($second_arg))
+                                && $second_arg_type->hasScalarType()
                             ) {
-                                return Type::combineUnionTypes($first_arg->inferredType, $second_arg->inferredType);
+                                return Type::combineUnionTypes($first_arg_type, $second_arg_type);
                             }
                         }
                     }
@@ -334,10 +300,10 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     if (isset($call_args[1])) {
                         $second_arg = $call_args[1]->value;
 
-                        if (isset($second_arg->inferredType)
-                            && $second_arg->inferredType->isSingleIntLiteral()
+                        if (($second_arg_type = $statements_analyzer->node_data->getType($second_arg))
+                            && $second_arg_type->isSingleIntLiteral()
                         ) {
-                            switch ($second_arg->inferredType->getSingleIntLiteral()->value) {
+                            switch ($second_arg_type->getSingleIntLiteral()->value) {
                                 case 0:
                                     return Type::getInt(true);
                                 default:
@@ -412,13 +378,13 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
 
         switch ($function_id) {
             case 'htmlspecialchars':
-                if (isset($call_args[0]->value->inferredType)
-                    && $call_args[0]->value->inferredType->tainted
+                if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))
+                    && $first_arg_type->tainted
                 ) {
                     // input is now safe from tainted sql and html
-                    $return_type->tainted = $call_args[0]->value->inferredType->tainted
+                    $return_type->tainted = $first_arg_type->tainted
                         & ~(Type\Union::TAINTED_INPUT_SQL | Type\Union::TAINTED_INPUT_HTML);
-                    $return_type->sources = $call_args[0]->value->inferredType->sources;
+                    $return_type->sources = $first_arg_type->sources;
                 }
                 break;
 
@@ -427,35 +393,38 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
             case 'sprintf':
             case 'preg_quote':
             case 'substr':
-                if (isset($call_args[0]->value->inferredType)
-                    && $call_args[0]->value->inferredType->tainted
+                if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))
+                    && $first_arg_type->tainted
                 ) {
-                    $return_type->tainted = $call_args[0]->value->inferredType->tainted;
-                    $return_type->sources = $call_args[0]->value->inferredType->sources;
+                    $return_type->tainted = $first_arg_type->tainted;
+                    $return_type->sources = $first_arg_type->sources;
                 }
 
                 break;
 
             case 'str_replace':
             case 'preg_replace':
-                $first_arg_taint = $call_args[0]->value->inferredType->tainted ?? 0;
-                $third_arg_taint = $call_args[2]->value->inferredType->tainted ?? 0;
+                $first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value);
+                $third_arg_type = $statements_analyzer->node_data->getType($call_args[2]->value);
+
+                $first_arg_taint = $first_arg_type->tainted ?? 0;
+                $third_arg_taint = $third_arg_type->tainted ?? 0;
                 if ($first_arg_taint || $third_arg_taint) {
                     $return_type->tainted = $first_arg_taint | $third_arg_taint;
-                    $return_type->sources = $call_args[0]->value->inferredType->sources;
+                    $return_type->sources = $first_arg_type->sources ?? [];
                 }
 
                 break;
 
             case 'htmlentities':
             case 'striptags':
-                if (isset($call_args[0]->value->inferredType)
-                    && $call_args[0]->value->inferredType->tainted
+                if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))
+                    && $first_arg_type->tainted
                 ) {
                     // input is now safe from tainted html
-                    $return_type->tainted = $call_args[0]->value->inferredType->tainted
+                    $return_type->tainted = $first_arg_type->tainted
                         & ~Type\Union::TAINTED_INPUT_HTML;
-                    $return_type->sources = $call_args[0]->value->inferredType->sources;
+                    $return_type->sources = $first_arg_type->sources;
                 }
                 break;
         }

@@ -4,6 +4,9 @@ namespace Psalm\Internal\Codebase;
 
 use Psalm\CodeLocation;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
+use Psalm\Internal\Provider\ClassLikeStorageProvider;
+use Psalm\Internal\Provider\FileReferenceProvider;
+use Psalm\Internal\Provider\FileStorageProvider;
 use Psalm\Internal\Taint\Sink;
 use Psalm\Internal\Taint\Source;
 use Psalm\Internal\Taint\Taintable;
@@ -69,6 +72,16 @@ class Taint
         return self::$archived_sources[$source->id] ?? null;
     }
 
+    public function hasNewOrExistingSink(Taintable $sink) : ?Sink
+    {
+        return $this->new_sinks[$sink->id] ?? self::$archived_sinks[$sink->id] ?? null;
+    }
+
+    public function hasNewOrExistingSource(Taintable $source) : ?Source
+    {
+        return $this->new_sources[$source->id] ?? self::$archived_sources[$source->id] ?? null;
+    }
+
     /**
      * @param ?array<string> $suffixes
      */
@@ -95,10 +108,11 @@ class Taint
     public function hasPreviousSource(Source $source, ?array &$suffixes = null) : ?Source
     {
         if (isset($this->specializations[$source->id])) {
-            $suffixes = $this->specializations[$source->id];
+            $candidate_suffixes = $this->specializations[$source->id];
 
-            foreach ($suffixes as $suffix) {
+            foreach ($candidate_suffixes as $suffix) {
                 if (isset(self::$previous_sources[$source->id . '-' . $suffix])) {
+                    $suffixes = [$suffix];
                     return self::$previous_sources[$source->id . '-' . $suffix];
                 }
             }
@@ -112,7 +126,7 @@ class Taint
     public function addSpecialization(string $base_id, string $suffix) : void
     {
         if (isset($this->specializations[$base_id])) {
-            if (!\in_array($suffix, $this->specializations)) {
+            if (!\in_array($suffix, $this->specializations[$base_id])) {
                 $this->specializations[$base_id][] = $suffix;
             }
         } else {
@@ -124,7 +138,6 @@ class Taint
      * @param array<Source> $sources
      */
     public function addSources(
-        StatementsAnalyzer $statements_analyzer,
         array $sources
     ) : void {
         foreach ($sources as $source) {
@@ -132,28 +145,8 @@ class Taint
                 continue;
             }
 
-            if (($existing_sink = $this->hasExistingSink($source)) && $source->code_location) {
-                $last_location = $existing_sink;
-
-                while ($last_location->children) {
-                    $first_child = \reset($last_location->children);
-                    if (!$first_child->code_location) {
-                        break;
-                    }
-
-                    $last_location = $first_child;
-                }
-
-                if (IssueBuffer::accepts(
-                    new TaintedInput(
-                        'in path ' . $this->getPredecessorPath($source)
-                            . ' out path ' . $this->getSuccessorPath($existing_sink),
-                        $last_location->code_location ?: $source->code_location
-                    ),
-                    $statements_analyzer->getSuppressedIssues()
-                )) {
-                    // fall through
-                }
+            if ($this->hasExistingSink($source) && $source->code_location) {
+                // do nothing
             }
 
             $this->new_sources[$source->id] = $source;
@@ -164,7 +157,6 @@ class Taint
      * @param array<Sink> $sinks
      */
     public function addSinks(
-        StatementsAnalyzer $statements_analyzer,
         array $sinks
     ) : void {
         foreach ($sinks as $sink) {
@@ -172,28 +164,8 @@ class Taint
                 continue;
             }
 
-            if (($existing_source = $this->hasExistingSource($sink)) && $sink->code_location) {
-                $last_location = $sink;
-
-                while ($last_location->children) {
-                    $first_child = \reset($last_location->children);
-                    if (!$first_child->code_location) {
-                        break;
-                    }
-
-                    $last_location = $first_child;
-                }
-
-                if (IssueBuffer::accepts(
-                    new TaintedInput(
-                        'in path ' . $this->getPredecessorPath($existing_source)
-                            . ' out path ' . $this->getSuccessorPath($sink),
-                        $last_location->code_location ?: $sink->code_location
-                    ),
-                    $statements_analyzer->getSuppressedIssues()
-                )) {
-                    // fall through
-                }
+            if ($this->hasExistingSource($sink) && $sink->code_location) {
+                // do nothing
             }
 
             $this->new_sinks[$sink->id] = $sink;
@@ -208,7 +180,7 @@ class Taint
         $location_summary = '';
 
         if ($source->code_location) {
-            $location_summary = $source->code_location->getQuickSummary();
+            $location_summary = $source->code_location->getShortSummary();
         }
 
         if (isset($visited_paths[$source->id . ' ' . $location_summary])) {
@@ -217,7 +189,7 @@ class Taint
 
         $visited_paths[$source->id . ' ' . $location_summary] = true;
 
-        $source_descriptor = $source->id . ($location_summary ? ' (' . $location_summary . ')' : '');
+        $source_descriptor = $source->label . ($location_summary ? ' (' . $location_summary . ')' : '');
 
         $previous_source = $source->parents[0] ?? null;
 
@@ -240,7 +212,7 @@ class Taint
         $location_summary = '';
 
         if ($sink->code_location) {
-            $location_summary = $sink->code_location->getQuickSummary();
+            $location_summary = $sink->code_location->getShortSummary();
         }
 
         if (isset($visited_paths[$sink->id . ' ' . $location_summary])) {
@@ -249,7 +221,7 @@ class Taint
 
         $visited_paths[$sink->id . ' ' . $location_summary] = true;
 
-        $sink_descriptor = $sink->id . ($location_summary ? ' (' . $location_summary . ')' : '');
+        $sink_descriptor = $sink->label . ($location_summary ? ' (' . $location_summary . ')' : '');
 
         $next_sink = $sink->children[0] ?? null;
 
@@ -266,6 +238,60 @@ class Taint
 
     public function hasNewSinksAndSources() : bool
     {
+        foreach ($this->new_sinks as $sink) {
+            if ($sink && ($existing_source = $this->hasNewOrExistingSource($sink)) && $sink->code_location) {
+                $last_location = $sink;
+
+                while ($last_location->children) {
+                    $first_child = \reset($last_location->children);
+                    if (!$first_child->code_location) {
+                        break;
+                    }
+
+                    $last_location = $first_child;
+                }
+
+                if (IssueBuffer::accepts(
+                    new TaintedInput(
+                        'path: ' . $this->getPredecessorPath($existing_source)
+                            . ' -> ' . $this->getSuccessorPath($sink),
+                        $last_location->code_location ?: $sink->code_location
+                    )
+                )) {
+                    // fall through
+                }
+            }
+        }
+
+        foreach ($this->new_sources as $source) {
+            if ($source && ($existing_sink = $this->hasNewOrExistingSink($source)) && $source->code_location) {
+                $last_location = $existing_sink;
+
+                while ($last_location->children) {
+                    $first_child = \reset($last_location->children);
+                    if (!$first_child->code_location) {
+                        break;
+                    }
+
+                    $last_location = $first_child;
+                }
+
+                if (IssueBuffer::accepts(
+                    new TaintedInput(
+                        'path: ' . $this->getPredecessorPath($source)
+                            . ' -> ' . $this->getSuccessorPath($existing_sink),
+                        $last_location->code_location ?: $source->code_location
+                    )
+                )) {
+                    // fall through
+                }
+            }
+        }
+
+        if (!self::$archived_sources && !$this->new_sources) {
+            return false;
+        }
+
         return $this->new_sinks || $this->new_sources;
     }
 
@@ -290,6 +316,63 @@ class Taint
                 );
             }
         }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getFilesToAnalyze(
+        FileReferenceProvider $reference_provider,
+        FileStorageProvider $file_storage_provider,
+        ClassLikeStorageProvider $classlike_storage_provider,
+        \Psalm\Config $config
+    ) : array {
+        $files = [];
+
+        $new_sink_file_paths = [];
+
+        foreach ($this->new_sinks as $new_sink) {
+            if ($new_sink && $new_sink->code_location) {
+                $new_sink_file_paths[$new_sink->code_location->file_path] = $new_sink->code_location->file_path;
+            }
+        }
+
+        foreach ($new_sink_file_paths as $file_path) {
+            $files_referencing_file = $reference_provider->getFilesReferencingFile($file_path);
+
+            $files = array_merge($files_referencing_file, $files);
+        }
+
+        $new_source_file_paths = [];
+
+        foreach ($this->new_sources as $new_source) {
+            if ($new_source && $new_source->code_location) {
+                $new_source_file_paths[$new_source->code_location->file_path] = $new_source->code_location->file_path;
+            }
+        }
+
+        foreach ($new_source_file_paths as $file_path) {
+            $classlikes = $file_storage_provider->get($file_path)->classlikes_in_file;
+
+            foreach ($classlikes as $classlike) {
+                $class_storage = $classlike_storage_provider->get($classlike);
+
+                if ($class_storage->location) {
+                    $files[] = $class_storage->location->file_path;
+                }
+            }
+        }
+
+        $files = \array_filter(
+            $files,
+            function ($file) use ($config) {
+                return $config->isInProjectDirs($file);
+            }
+        );
+
+        $arr = \array_values($files);
+
+        return \array_combine($arr, $arr);
     }
 
     public function clearNewSinksAndSources() : void

@@ -23,7 +23,9 @@ class Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdmi
   public $diskType;
   public $labels;
   public $machineType;
+  public $maxConcurrentActions;
   public $minCpuPlatform;
+  public $networkAccess;
   public $reserved;
 
   /**
@@ -72,6 +74,14 @@ class Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdmi
   {
     return $this->machineType;
   }
+  public function setMaxConcurrentActions($maxConcurrentActions)
+  {
+    $this->maxConcurrentActions = $maxConcurrentActions;
+  }
+  public function getMaxConcurrentActions()
+  {
+    return $this->maxConcurrentActions;
+  }
   public function setMinCpuPlatform($minCpuPlatform)
   {
     $this->minCpuPlatform = $minCpuPlatform;
@@ -79,6 +89,14 @@ class Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdmi
   public function getMinCpuPlatform()
   {
     return $this->minCpuPlatform;
+  }
+  public function setNetworkAccess($networkAccess)
+  {
+    $this->networkAccess = $networkAccess;
+  }
+  public function getNetworkAccess()
+  {
+    return $this->networkAccess;
   }
   public function setReserved($reserved)
   {

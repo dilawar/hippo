@@ -63,12 +63,12 @@ class Google_Service_Dataflow_Resource_ProjectsJobs extends Google_Service_Resou
    * @param Google_Service_Dataflow_Job $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string location The [regional endpoint]
-   * (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints) that
-   * contains this job.
    * @opt_param string replaceJobId Deprecated. This field is now in the Job
    * message.
    * @opt_param string view The level of information requested in response.
+   * @opt_param string location The [regional endpoint]
+   * (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints) that
+   * contains this job.
    * @return Google_Service_Dataflow_Job
    */
   public function create($projectId, Google_Service_Dataflow_Job $postBody, $optParams = array())

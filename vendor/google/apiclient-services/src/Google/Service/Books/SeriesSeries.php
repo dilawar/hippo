@@ -18,9 +18,12 @@
 class Google_Service_Books_SeriesSeries extends Google_Model
 {
   public $bannerImageUrl;
+  public $eligibleForSubscription;
   public $imageUrl;
+  public $isComplete;
   public $seriesId;
   public $seriesType;
+  public $subscriptionId;
   public $title;
 
   public function setBannerImageUrl($bannerImageUrl)
@@ -31,6 +34,14 @@ class Google_Service_Books_SeriesSeries extends Google_Model
   {
     return $this->bannerImageUrl;
   }
+  public function setEligibleForSubscription($eligibleForSubscription)
+  {
+    $this->eligibleForSubscription = $eligibleForSubscription;
+  }
+  public function getEligibleForSubscription()
+  {
+    return $this->eligibleForSubscription;
+  }
   public function setImageUrl($imageUrl)
   {
     $this->imageUrl = $imageUrl;
@@ -38,6 +49,14 @@ class Google_Service_Books_SeriesSeries extends Google_Model
   public function getImageUrl()
   {
     return $this->imageUrl;
+  }
+  public function setIsComplete($isComplete)
+  {
+    $this->isComplete = $isComplete;
+  }
+  public function getIsComplete()
+  {
+    return $this->isComplete;
   }
   public function setSeriesId($seriesId)
   {
@@ -54,6 +73,14 @@ class Google_Service_Books_SeriesSeries extends Google_Model
   public function getSeriesType()
   {
     return $this->seriesType;
+  }
+  public function setSubscriptionId($subscriptionId)
+  {
+    $this->subscriptionId = $subscriptionId;
+  }
+  public function getSubscriptionId()
+  {
+    return $this->subscriptionId;
   }
   public function setTitle($title)
   {

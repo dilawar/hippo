@@ -29,10 +29,19 @@ class Google_Service_CloudIot_Resource_ProjectsLocationsRegistriesGroupsDevices 
    * List devices in a device registry.
    * (devices.listProjectsLocationsRegistriesGroupsDevices)
    *
-   * @param string $parent The device registry path. Required. For example,
-   * `projects/my-project/locations/us-central1/registries/my-registry`.
+   * @param string $parent Required. The device registry path. Required. For
+   * example, `projects/my-project/locations/us-central1/registries/my-registry`.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string gatewayListOptions.gatewayType If `GATEWAY` is specified,
+   * only gateways are returned. If `NON_GATEWAY` is specified, only non-gateway
+   * devices are returned. If `GATEWAY_TYPE_UNSPECIFIED` is specified, all devices
+   * are returned.
+   * @opt_param string gatewayListOptions.associationsGatewayId If set, only
+   * devices associated with the specified gateway are returned. The gateway ID
+   * can be numeric (`num_id`) or the user-defined string (`id`). For example, if
+   * `123` is specified, only devices bound to the gateway with `num_id` 123 are
+   * returned.
    * @opt_param string pageToken The value returned by the last
    * `ListDevicesResponse`; indicates that this is a continuation of a prior
    * `ListDevices` call and the system should return the next page of data.
@@ -53,15 +62,6 @@ class Google_Service_CloudIot_Resource_ProjectsLocationsRegistriesGroupsDevices 
    * ID can be numeric (`num_id`) or the user-defined string (`id`). For example,
    * if `456` is specified, returns only the gateways to which the device with
    * `num_id` 456 is bound.
-   * @opt_param string gatewayListOptions.gatewayType If `GATEWAY` is specified,
-   * only gateways are returned. If `NON_GATEWAY` is specified, only non-gateway
-   * devices are returned. If `GATEWAY_TYPE_UNSPECIFIED` is specified, all devices
-   * are returned.
-   * @opt_param string gatewayListOptions.associationsGatewayId If set, only
-   * devices associated with the specified gateway are returned. The gateway ID
-   * can be numeric (`num_id`) or the user-defined string (`id`). For example, if
-   * `123` is specified, only devices bound to the gateway with `num_id` 123 are
-   * returned.
    * @return Google_Service_CloudIot_ListDevicesResponse
    */
   public function listProjectsLocationsRegistriesGroupsDevices($parent, $optParams = array())

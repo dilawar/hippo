@@ -30,6 +30,7 @@ use Psalm\Type\Atomic\TArrayKey;
 use Psalm\Type\Atomic\TBool;
 use Psalm\Type\Atomic\TCallable;
 use Psalm\Type\Atomic\TClassString;
+use Psalm\Type\Atomic\TClassStringMap;
 use Psalm\Type\Atomic\TEmpty;
 use Psalm\Type\Atomic\TFalse;
 use Psalm\Type\Atomic\TFloat;
@@ -49,6 +50,7 @@ use Psalm\Type\Atomic\TNumeric;
 use Psalm\Type\Atomic\TObject;
 use Psalm\Type\Atomic\TObjectWithProperties;
 use Psalm\Type\Atomic\TResource;
+use Psalm\Type\Atomic\TScalar;
 use Psalm\Type\Atomic\TSingleLetter;
 use Psalm\Type\Atomic\TString;
 use Psalm\Type\Atomic\TTemplateParam;
@@ -79,12 +81,14 @@ abstract class Type
         'callable' => true,
         'array' => true,
         'non-empty-array' => true,
+        'non-empty-string' => true,
         'iterable' => true,
         'null' => true,
         'mixed' => true,
         'numeric-string' => true,
         'class-string' => true,
         'callable-string' => true,
+        'callable-array' => true,
         'trait-string' => true,
         'mysql-escaped-string' => true,
         'html-escaped-string' => true,
@@ -107,10 +111,11 @@ abstract class Type
         'non-empty-countable' => true,
         'list' => true,
         'non-empty-list' => true,
+        'class-string-map' => true,
     ];
 
     /**
-     * @var array<string, array<int, array{0: string, 1: int}>>
+     * @var array<string, list<array{0: string, 1: int}>>
      */
     private static $memoized_tokens = [];
 
@@ -134,7 +139,7 @@ abstract class Type
     /**
      * Parses a string type representation
      *
-     * @param  array<int, array{0: string, 1: int}> $type_tokens
+     * @param  list<array{0: string, 1: int}> $type_tokens
      * @param  array{int,int}|null   $php_version
      * @param  array<string, array<string, array{Type\Union}>> $template_type_map
      *
@@ -150,16 +155,21 @@ abstract class Type
 
             // Note: valid identifiers can include class names or $this
             if (!preg_match('@^(\$this|\\\\?[a-zA-Z_\x7f-\xff][\\\\\-0-9a-zA-Z_\x7f-\xff]*)$@', $only_token[0])) {
-                throw new TypeParseTreeException("Invalid type '$only_token[0]'");
+                if (!\is_numeric($only_token[0])
+                    && strpos($only_token[0], '\'') !== false
+                    && strpos($only_token[0], '"') !== false
+                ) {
+                    throw new TypeParseTreeException("Invalid type '$only_token[0]'");
+                }
+            } else {
+                $only_token[0] = self::fixScalarTerms($only_token[0], $php_version);
+
+                $atomic = Atomic::create($only_token[0], $php_version, $template_type_map);
+                $atomic->offset_start = 0;
+                $atomic->offset_end = strlen($only_token[0]);
+
+                return new Union([$atomic]);
             }
-
-            $only_token[0] = self::fixScalarTerms($only_token[0], $php_version);
-
-            $atomic = Atomic::create($only_token[0], $php_version, $template_type_map);
-            $atomic->offset_start = 0;
-            $atomic->offset_end = strlen($only_token[0]);
-
-            return new Union([$atomic]);
         }
 
         $parse_tree = ParseTree::createFromTokens($type_tokens);
@@ -222,7 +232,7 @@ abstract class Type
      * @param  array{int,int}|null   $php_version
      * @param  array<string, array<string, array{Type\Union}>> $template_type_map
      *
-     * @return  Atomic|TArray|TGenericObject|ObjectLike|Union
+     * @return  Atomic|Union
      */
     public static function getTypeFromTree(
         ParseTree $parse_tree,
@@ -232,25 +242,33 @@ abstract class Type
         if ($parse_tree instanceof ParseTree\GenericTree) {
             $generic_type = $parse_tree->value;
 
-            $generic_params = array_map(
-                /**
-                 * @return Union
-                 */
-                function (ParseTree $child_tree) use ($template_type_map) {
-                    $tree_type = self::getTypeFromTree($child_tree, null, $template_type_map);
+            $generic_params = [];
 
-                    return $tree_type instanceof Union ? $tree_type : new Union([$tree_type]);
-                },
-                $parse_tree->children
-            );
+            foreach ($parse_tree->children as $i => $child_tree) {
+                $tree_type = self::getTypeFromTree($child_tree, null, $template_type_map);
+
+                if ($generic_type === 'class-string-map'
+                    && $i === 0
+                ) {
+                    if ($tree_type instanceof TTemplateParam) {
+                        $template_type_map[$tree_type->param_name] = ['class-string-map' => [$tree_type->as]];
+                    } elseif ($tree_type instanceof TNamedObject) {
+                        $template_type_map[$tree_type->value] = ['class-string-map' => [self::getObject()]];
+                    }
+                }
+
+                $generic_params[] = $tree_type instanceof Union ? $tree_type : new Union([$tree_type]);
+            }
 
             $generic_type_value = self::fixScalarTerms($generic_type);
 
-            if (($generic_type_value === 'array' || $generic_type_value === 'non-empty-array')
+            if (($generic_type_value === 'array'
+                    || $generic_type_value === 'non-empty-array'
+                    || $generic_type_value === 'associative-array')
                 && count($generic_params) === 1
             ) {
                 array_unshift($generic_params, new Union([new TArrayKey]));
-            } elseif (($generic_type_value === 'iterable' || $generic_type_value === 'Traversable')
+            } elseif (in_array($generic_type_value, ['iterable', 'Traversable', 'Iterator', 'IteratorAggregate'], true)
                 && count($generic_params) === 1
             ) {
                 array_unshift($generic_params, new Union([new TMixed]));
@@ -268,7 +286,7 @@ abstract class Type
                 throw new TypeParseTreeException('No generic params provided for type');
             }
 
-            if ($generic_type_value === 'array') {
+            if ($generic_type_value === 'array' || $generic_type_value === 'associative-array') {
                 return new TArray($generic_params);
             }
 
@@ -301,7 +319,7 @@ abstract class Type
                     );
                 }
 
-                $param_union_types = array_values($generic_params[0]->getTypes());
+                $param_union_types = array_values($generic_params[0]->getAtomicTypes());
 
                 if (count($param_union_types) > 1) {
                     throw new TypeParseTreeException('Union types are not allowed in class string param');
@@ -312,6 +330,44 @@ abstract class Type
                 }
 
                 return new TClassString($class_name, $param_union_types[0]);
+            }
+
+            if ($generic_type_value === 'class-string-map') {
+                if (count($generic_params) !== 2) {
+                    throw new TypeParseTreeException(
+                        'There should only be two params for class-string-map, '
+                            . count($generic_params) . ' provided'
+                    );
+                }
+
+                $template_marker_parts = array_values($generic_params[0]->getAtomicTypes());
+
+                $template_marker = $template_marker_parts[0];
+
+                $template_as_type = null;
+
+                if ($template_marker instanceof TNamedObject) {
+                    $template_param_name = $template_marker->value;
+                } elseif ($template_marker instanceof Atomic\TTemplateParam) {
+                    $template_param_name = $template_marker->param_name;
+                    $template_as_type = array_values($template_marker->as->getAtomicTypes())[0];
+
+                    if (!$template_as_type instanceof TNamedObject) {
+                        throw new TypeParseTreeException(
+                            'Unrecognised as type'
+                        );
+                    }
+                } else {
+                    throw new TypeParseTreeException(
+                        'Unrecognised class-string-map templated param'
+                    );
+                }
+
+                return new TClassStringMap(
+                    $template_param_name,
+                    $template_as_type,
+                    $generic_params[1]
+                );
             }
 
             if ($generic_type_value === 'key-of') {
@@ -326,7 +382,7 @@ abstract class Type
                     );
                 }
 
-                $param_union_types = array_values($generic_params[0]->getTypes());
+                $param_union_types = array_values($generic_params[0]->getAtomicTypes());
 
                 if (count($param_union_types) > 1) {
                     throw new TypeParseTreeException('Union types are not allowed in key-of type');
@@ -356,7 +412,7 @@ abstract class Type
                     );
                 }
 
-                $param_union_types = array_values($generic_params[0]->getTypes());
+                $param_union_types = array_values($generic_params[0]->getAtomicTypes());
 
                 if (count($param_union_types) > 1) {
                     throw new TypeParseTreeException('Union types are not allowed in value-of type');
@@ -398,7 +454,7 @@ abstract class Type
                 }
 
                 if ($atomic_type instanceof Union) {
-                    foreach ($atomic_type->getTypes() as $type) {
+                    foreach ($atomic_type->getAtomicTypes() as $type) {
                         $atomic_types[] = $type;
                     }
 
@@ -591,16 +647,10 @@ abstract class Type
                 return $non_nullable_type;
             }
 
-            if ($non_nullable_type instanceof Atomic) {
-                return TypeCombination::combineTypes([
-                    new TNull,
-                    $non_nullable_type,
-                ]);
-            }
-
-            throw new \UnexpectedValueException(
-                'Was expecting an atomic or union type, got ' . get_class($non_nullable_type)
-            );
+            return TypeCombination::combineTypes([
+                new TNull,
+                $non_nullable_type,
+            ]);
         }
 
         if ($parse_tree instanceof ParseTree\MethodTree
@@ -633,7 +683,7 @@ abstract class Type
                 && isset($offset_template_data[''])
                 && $offset_template_data[''][0]->isSingle()
             ) {
-                $offset_template_type = array_values($offset_template_data[''][0]->getTypes())[0];
+                $offset_template_type = array_values($offset_template_data[''][0]->getAtomicTypes())[0];
 
                 if ($offset_template_type instanceof Type\Atomic\TTemplateKeyOf) {
                     $offset_defining_class = (string) $offset_template_type->defining_class;
@@ -642,7 +692,9 @@ abstract class Type
 
             $array_defining_class = array_keys($template_type_map[$array_param_name])[0];
 
-            if ($offset_defining_class !== $array_defining_class) {
+            if ($offset_defining_class !== $array_defining_class
+                && substr($offset_defining_class, 0, 3) !== 'fn-'
+            ) {
                 throw new TypeParseTreeException('Template params are defined in different locations');
             }
 
@@ -650,6 +702,14 @@ abstract class Type
                 $array_param_name,
                 $offset_param_name,
                 $array_defining_class
+            );
+        }
+
+        if ($parse_tree instanceof ParseTree\TemplateAsTree) {
+            return new Atomic\TTemplateParam(
+                $parse_tree->param_name,
+                new Union([new TNamedObject($parse_tree->as)]),
+                'class-string-map'
             );
         }
 
@@ -706,7 +766,7 @@ abstract class Type
     private static function getGenericParamClass(
         string $param_name,
         Union $as,
-        string $defining_class = null
+        string $defining_class
     ) : Atomic\TTemplateParamClass {
         if ($as->hasMixed()) {
             return new Atomic\TTemplateParamClass(
@@ -723,7 +783,7 @@ abstract class Type
             );
         }
 
-        foreach ($as->getTypes() as $t) {
+        foreach ($as->getAtomicTypes() as $t) {
             if ($t instanceof TObject) {
                 return new Atomic\TTemplateParamClass(
                     $param_name,
@@ -770,7 +830,7 @@ abstract class Type
      * @param  string $string_type
      * @param  bool   $ignore_space
      *
-     * @return array<int, array{0: string, 1: int}>
+     * @return list<array{0: string, 1: int}>
      */
     public static function tokenize($string_type, $ignore_space = true)
     {
@@ -797,15 +857,29 @@ abstract class Type
                 continue;
             }
 
-            if ($was_space && ($char === '$' || $char === '.')) {
+            if ($was_space
+                && ($char === '$'
+                    || ($char === '.'
+                        && ($chars[$i + 1] ?? null) === '.'
+                        && ($chars[$i + 2] ?? null) === '.'
+                        && ($chars[$i + 3] ?? null) === '$'))
+            ) {
                 $type_tokens[++$rtc] = [' ', $i - 1];
                 $type_tokens[++$rtc] = ['', $i];
+            } elseif ($was_space
+                && $char === 'a'
+                && ($chars[$i + 1] ?? null) === 's'
+                && ($chars[$i + 2] ?? null) === ' '
+            ) {
+                $type_tokens[++$rtc] = ['as', $i - 1];
+                $type_tokens[++$rtc] = ['', ++$i];
+                continue;
             } elseif ($was_char) {
                 $type_tokens[++$rtc] = ['', $i];
             }
 
             if ($quote_char) {
-                if ($char === $quote_char && $i > 1 && !$escaped) {
+                if ($char === $quote_char && $i > 0 && !$escaped) {
                     $quote_char = null;
 
                     $type_tokens[$rtc][0] .= $char;
@@ -938,6 +1012,7 @@ abstract class Type
             $was_space = false;
         }
 
+        /** @var list<array{0: string, 1: int}> $type_tokens */
         self::$memoized_tokens[$string_type] = $type_tokens;
 
         return $type_tokens;
@@ -947,7 +1022,7 @@ abstract class Type
      * @param  array<string, mixed>|null    $template_type_map
      * @param  array<string, array<int, array{0: string, 1: int}>>|null   $type_aliases
      *
-     * @return array<int, array{0: string, 1: int}>
+     * @return list<array{0: string, 1: int}>
      */
     public static function fixUpLocalType(
         string $string_type,
@@ -955,7 +1030,8 @@ abstract class Type
         array $template_type_map = null,
         array $type_aliases = null,
         ?string $self_fqcln = null,
-        ?string $parent_fqcln = null
+        ?string $parent_fqcln = null,
+        bool $allow_assertions = false
     ) {
         $type_tokens = self::tokenize($string_type);
 
@@ -965,7 +1041,7 @@ abstract class Type
             if (in_array(
                 $string_type_token[0],
                 [
-                    '<', '>', '|', '?', ',', '{', '}', ':', '::', '[', ']', '(', ')', '&', '=', '...',
+                    '<', '>', '|', '?', ',', '{', '}', ':', '::', '[', ']', '(', ')', '&', '=', '...', 'as',
                 ],
                 true
             )) {
@@ -998,9 +1074,12 @@ abstract class Type
                 $string_type_token[0] = preg_replace('/(.+)\$.*/', '$1', $string_type_token[0]);
             }
 
-            $type_tokens[$i][0]
-                = $string_type_token[0]
-                = self::fixScalarTerms($string_type_token[0]);
+            $fixed_token = !isset($type_tokens[$i + 1]) || $type_tokens[$i + 1][0] !== '('
+                ? self::fixScalarTerms($string_type_token[0])
+                : $string_type_token[0];
+
+            $type_tokens[$i][0] = $fixed_token;
+            $string_type_token[0] = $fixed_token;
 
             if ($string_type_token[0] === 'self' && $self_fqcln) {
                 $type_tokens[$i][0] = $self_fqcln;
@@ -1020,6 +1099,14 @@ abstract class Type
                 continue;
             }
 
+            if ($i > 1
+                && ($type_tokens[$i - 2][0] === 'class-string-map')
+                && ($type_tokens[$i - 1][0] === '<')
+            ) {
+                $template_type_map[$string_type_token[0]] = true;
+                continue;
+            }
+
             if (isset($type_tokens[$i + 1])) {
                 $next_char = $type_tokens[$i + 1][0];
                 if ($next_char === ':') {
@@ -1036,6 +1123,11 @@ abstract class Type
             }
 
             if (isset($type_tokens[$i + 1]) && $type_tokens[$i + 1][0] === '(') {
+                continue;
+            }
+
+            if ($allow_assertions && $string_type_token[0] === 'falsy') {
+                $type_tokens[$i][0] = 'false-y';
                 continue;
             }
 
@@ -1059,6 +1151,7 @@ abstract class Type
             }
         }
 
+        /** @var list<array{0: string, 1: int}> */
         return $type_tokens;
     }
 
@@ -1099,9 +1192,10 @@ abstract class Type
         string $value,
         ?string $namespace,
         array $aliased_classes,
-        ?string $this_class
+        ?string $this_class,
+        bool $allow_self = false
     ) : string {
-        if ($value === $this_class) {
+        if ($allow_self && $value === $this_class) {
             return 'self';
         }
 
@@ -1262,6 +1356,16 @@ abstract class Type
     public static function getMixed($from_loop_isset = false)
     {
         $type = new TMixed($from_loop_isset);
+
+        return new Union([$type]);
+    }
+
+    /**
+     * @return Type\Union
+     */
+    public static function getScalar()
+    {
+        $type = new TScalar();
 
         return new Union([$type]);
     }
@@ -1451,8 +1555,8 @@ abstract class Type
 
             $combined_type = TypeCombination::combineTypes(
                 array_merge(
-                    array_values($type_1->getTypes()),
-                    array_values($type_2->getTypes())
+                    array_values($type_1->getAtomicTypes()),
+                    array_values($type_2->getAtomicTypes())
                 ),
                 $codebase,
                 $overwrite_empty_array,
@@ -1520,12 +1624,14 @@ abstract class Type
      * @param  Union  $type_1
      * @param  Union  $type_2
      *
-     * @return Union
+     * @return ?Union
      */
     public static function intersectUnionTypes(
         Union $type_1,
         Union $type_2
     ) {
+        $intersection_performed = false;
+
         if ($type_1->isMixed() && $type_2->isMixed()) {
             $combined_type = Type::getMixed();
         } else {
@@ -1543,13 +1649,15 @@ abstract class Type
 
             if ($type_1->isMixed() && !$type_2->isMixed()) {
                 $combined_type = clone $type_2;
+                $intersection_performed = true;
             } elseif (!$type_1->isMixed() && $type_2->isMixed()) {
                 $combined_type = clone $type_1;
+                $intersection_performed = true;
             } else {
                 $combined_type = clone $type_1;
 
-                foreach ($combined_type->getTypes() as $t1_key => $type_1_atomic) {
-                    foreach ($type_2->getTypes() as $type_2_atomic) {
+                foreach ($combined_type->getAtomicTypes() as $t1_key => $type_1_atomic) {
+                    foreach ($type_2->getAtomicTypes() as $t2_key => $type_2_atomic) {
                         if (($type_1_atomic instanceof TIterable
                                 || $type_1_atomic instanceof TNamedObject
                                 || $type_1_atomic instanceof TTemplateParam
@@ -1562,6 +1670,8 @@ abstract class Type
                             if (!$type_1_atomic->extra_types) {
                                 $type_1_atomic->extra_types = [];
                             }
+
+                            $intersection_performed = true;
 
                             $type_2_atomic_clone = clone $type_2_atomic;
 
@@ -1582,6 +1692,11 @@ abstract class Type
                         if ($type_1_atomic instanceof TObject && $type_2_atomic instanceof TNamedObject) {
                             $combined_type->removeType($t1_key);
                             $combined_type->addType(clone $type_2_atomic);
+                            $intersection_performed = true;
+                        } elseif ($type_2_atomic instanceof TObject && $type_1_atomic instanceof TNamedObject) {
+                            $combined_type->removeType($t2_key);
+                            $combined_type->addType(clone $type_1_atomic);
+                            $intersection_performed = true;
                         }
                     }
                 }
@@ -1614,6 +1729,10 @@ abstract class Type
             if ($both_failed_reconciliation) {
                 $combined_type->failed_reconciliation = true;
             }
+        }
+
+        if (!$intersection_performed && $type_1->getId() !== $type_2->getId()) {
+            return null;
         }
 
         if ($type_1->possibly_undefined && $type_2->possibly_undefined) {

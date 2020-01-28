@@ -5,6 +5,8 @@ use function get_class;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\StatementsSource;
+use Psalm\Internal\Type\TemplateResult;
+use Psalm\Internal\Type\UnionTemplateHandler;
 use Psalm\Type;
 use Psalm\Type\Atomic;
 use Psalm\Type\Union;
@@ -109,26 +111,22 @@ class TList extends \Psalm\Type\Atomic
     public function setFromDocblock()
     {
         $this->from_docblock = true;
-        $this->type_param->from_docblock = true;
+        $this->type_param->setFromDocblock();
     }
 
-    /**
-     * @param  array<string, array<string, array{Type\Union}>>    $template_types
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>     $generic_params
-     * @param  Atomic|null              $input_type
-     *
-     * @return void
-     */
     public function replaceTemplateTypesWithStandins(
-        array &$template_types,
-        array &$generic_params,
+        TemplateResult $template_result,
         Codebase $codebase = null,
         Atomic $input_type = null,
+        ?string $calling_class = null,
+        ?string $calling_function = null,
         bool $replace = true,
         bool $add_upper_bound = false,
         int $depth = 0
-    ) {
-        foreach ([Type::getInt(), $this->type_param] as $offset => $type_param) {
+    ) : Atomic {
+        $list = clone $this;
+
+        foreach ([Type::getInt(), $list->type_param] as $offset => $type_param) {
             $input_type_param = null;
 
             if (($input_type instanceof Atomic\TGenericObject
@@ -144,18 +142,32 @@ class TList extends \Psalm\Type\Atomic
                 } else {
                     $input_type_param = $input_type->getGenericValueType();
                 }
+            } elseif ($input_type instanceof Atomic\TList) {
+                if ($offset === 0) {
+                    continue;
+                }
+
+                $input_type_param = clone $input_type->type_param;
             }
 
-            $type_param->replaceTemplateTypesWithStandins(
-                $template_types,
-                $generic_params,
+            $type_param = UnionTemplateHandler::replaceTemplateTypesWithStandins(
+                $type_param,
+                $template_result,
                 $codebase,
                 $input_type_param,
+                $calling_class,
+                $calling_function,
                 $replace,
                 $add_upper_bound,
                 $depth + 1
             );
+
+            if ($offset === 1) {
+                $list->type_param = $type_param;
+            }
         }
+
+        return $list;
     }
 
     /**
@@ -166,6 +178,14 @@ class TList extends \Psalm\Type\Atomic
     public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
     {
         $this->type_param->replaceTemplateTypesWithArgTypes($template_types);
+    }
+
+    /**
+     * @return list<Type\Atomic\TTemplateParam>
+     */
+    public function getTemplateTypes() : array
+    {
+        return $this->type_param->getTemplateTypes();
     }
 
     /**
@@ -189,7 +209,7 @@ class TList extends \Psalm\Type\Atomic
      */
     public function getAssertionString()
     {
-        return $this->getKey();
+        return 'list';
     }
 
     /**

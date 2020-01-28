@@ -19,6 +19,7 @@ class Google_Service_FirebaseCloudMessaging_AndroidConfig extends Google_Model
 {
   public $collapseKey;
   public $data;
+  public $directBootOk;
   protected $fcmOptionsType = 'Google_Service_FirebaseCloudMessaging_AndroidFcmOptions';
   protected $fcmOptionsDataType = '';
   protected $notificationType = 'Google_Service_FirebaseCloudMessaging_AndroidNotification';
@@ -42,6 +43,14 @@ class Google_Service_FirebaseCloudMessaging_AndroidConfig extends Google_Model
   public function getData()
   {
     return $this->data;
+  }
+  public function setDirectBootOk($directBootOk)
+  {
+    $this->directBootOk = $directBootOk;
+  }
+  public function getDirectBootOk()
+  {
+    return $this->directBootOk;
   }
   /**
    * @param Google_Service_FirebaseCloudMessaging_AndroidFcmOptions

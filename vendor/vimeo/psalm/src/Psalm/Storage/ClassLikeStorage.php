@@ -97,6 +97,11 @@ class ClassLikeStorage
     public $psalm_internal = null;
 
     /**
+     * @var null|string
+     */
+    public $mixin_fqcln = null;
+
+    /**
      * @var array<string, bool>
      */
     public $deprecated_constants = [];
@@ -139,11 +144,25 @@ class ClassLikeStorage
     public $user_defined = false;
 
     /**
-     * Interfaces this class implements
+     * Interfaces this class implements directly
+     *
+     * @var array<string, string>
+     */
+    public $direct_class_interfaces = [];
+
+    /**
+     * Interfaces this class implements explicitly and implicitly
      *
      * @var array<string, string>
      */
     public $class_implements = [];
+
+    /**
+     * Parent interfaces listed explicitly
+     *
+     * @var array<string, string>
+     */
+    public $direct_interface_parents = [];
 
     /**
      * Parent interfaces
@@ -260,11 +279,6 @@ class ClassLikeStorage
      * @var array<string, string>
      */
     public $documenting_method_ids = [];
-
-    /**
-     * @var array<string, array<string>>
-     */
-    public $interface_method_ids = [];
 
     /**
      * @var array<string, string>

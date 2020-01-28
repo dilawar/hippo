@@ -18,6 +18,8 @@
 class Google_Service_Compute_InstanceGroupManagerStatus extends Google_Model
 {
   public $isStable;
+  protected $versionTargetType = 'Google_Service_Compute_InstanceGroupManagerStatusVersionTarget';
+  protected $versionTargetDataType = '';
 
   public function setIsStable($isStable)
   {
@@ -26,5 +28,19 @@ class Google_Service_Compute_InstanceGroupManagerStatus extends Google_Model
   public function getIsStable()
   {
     return $this->isStable;
+  }
+  /**
+   * @param Google_Service_Compute_InstanceGroupManagerStatusVersionTarget
+   */
+  public function setVersionTarget(Google_Service_Compute_InstanceGroupManagerStatusVersionTarget $versionTarget)
+  {
+    $this->versionTarget = $versionTarget;
+  }
+  /**
+   * @return Google_Service_Compute_InstanceGroupManagerStatusVersionTarget
+   */
+  public function getVersionTarget()
+  {
+    return $this->versionTarget;
   }
 }

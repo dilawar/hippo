@@ -17,9 +17,36 @@
 
 class Google_Service_SQLAdmin_OnPremisesConfiguration extends Google_Model
 {
+  public $caCertificate;
+  public $clientCertificate;
+  public $clientKey;
   public $hostPort;
   public $kind;
 
+  public function setCaCertificate($caCertificate)
+  {
+    $this->caCertificate = $caCertificate;
+  }
+  public function getCaCertificate()
+  {
+    return $this->caCertificate;
+  }
+  public function setClientCertificate($clientCertificate)
+  {
+    $this->clientCertificate = $clientCertificate;
+  }
+  public function getClientCertificate()
+  {
+    return $this->clientCertificate;
+  }
+  public function setClientKey($clientKey)
+  {
+    $this->clientKey = $clientKey;
+  }
+  public function getClientKey()
+  {
+    return $this->clientKey;
+  }
   public function setHostPort($hostPort)
   {
     $this->hostPort = $hostPort;

@@ -81,7 +81,7 @@ class Google_Service_CloudIdentity_Resource_GroupsMemberships extends Google_Ser
     return $this->call('get', array($params), "Google_Service_CloudIdentity_Membership");
   }
   /**
-   * List Memberships within a Group. (memberships.listGroupsMemberships)
+   * Lists Memberships within a Group. (memberships.listGroupsMemberships)
    *
    * @param string $parent [Resource
    * name](https://cloud.google.com/apis/design/resource_names) of the Group to

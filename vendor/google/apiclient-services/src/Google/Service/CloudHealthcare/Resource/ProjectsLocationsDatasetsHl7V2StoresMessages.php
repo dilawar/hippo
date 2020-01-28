@@ -63,8 +63,8 @@ class Google_Service_CloudHealthcare_Resource_ProjectsLocationsDatasetsHl7V2Stor
    * @param string $name The resource name of the HL7v2 message to retrieve.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string view Specifies which parts of the Message resource should
-   * be returned in the response.
+   * @opt_param string view Specifies which parts of the Message resource to
+   * return in the response. When unspecified, equivalent to FULL.
    * @return Google_Service_CloudHealthcare_Message
    */
   public function get($name, $optParams = array())
@@ -76,9 +76,7 @@ class Google_Service_CloudHealthcare_Resource_ProjectsLocationsDatasetsHl7V2Stor
   /**
    * Ingests a new HL7v2 message from the hospital and sends a notification to the
    * Cloud Pub/Sub topic. Return is an HL7v2 ACK message if the message was
-   * successfully stored. Otherwise an error is returned.  If an identical HL7v2
-   * message is created twice only one resource is created on the server and no
-   * error is reported. (messages.ingest)
+   * successfully stored. Otherwise an error is returned. (messages.ingest)
    *
    * @param string $parent The name of the HL7v2 store this message belongs to.
    * @param Google_Service_CloudHealthcare_IngestMessageRequest $postBody
@@ -107,39 +105,33 @@ class Google_Service_CloudHealthcare_Resource_ProjectsLocationsDatasetsHl7V2Stor
    *
    * Fields/functions available for filtering are:
    *
-   * *  `message_type`, from the MSH-9 segment; for example `NOT message_type =
-   * "ADT"` *  `send_date` or `sendDate`, the YYYY-MM-DD date the message was sent
-   * in the dataset's time_zone, from the MSH-7 segment; for example `send_date <
-   * "2017-01-02"` *  `send_time`, the timestamp when the message was sent, using
-   * the RFC3339 time format for comparisons, from the MSH-7 segment; for example
-   * `send_time < "2017-01-02T00:00:00-05:00"` *  `send_facility`, the care center
-   * that the message came from, from the MSH-4 segment; for example
-   * `send_facility = "ABC"` *  `HL7RegExp(expr)`, which does regular expression
-   * matching of `expr` against the message payload using re2
-   * (http://code.google.com/p/re2/) syntax; for example
-   * `HL7RegExp("^.*\|.*\|EMERG")` *  `PatientId(value, type)`, which matches if
-   * the message lists a patient having an ID of the given value and type in the
-   * PID-2, PID-3, or PID-4 segments; for example `PatientId("123456", "MRN")` *
-   * `labels.x`, a string value of the label with key `x` as set using the
-   * Message.labels map, for example `labels."priority"="high"`. The operator `:*`
-   * can be used to assert the existence of a label, for example
-   * `labels."priority":*`.
+   * *  `message_type`, from the MSH-9 segment. For example, `NOT message_type =
+   * "ADT"`. *  `send_date` or `sendDate`, the YYYY-MM-DD date the message was
+   * sent in the dataset's time_zone, from the MSH-7 segment. For example,
+   * `send_date < "2017-01-02"`. *  `send_time`, the timestamp when the message
+   * was sent, using the RFC3339 time format for comparisons, from the MSH-7
+   * segment. For example, `send_time < "2017-01-02T00:00:00-05:00"`. *
+   * `send_facility`, the care center that the message came from, from the MSH-4
+   * segment. For example, `send_facility = "ABC"`. *  `PatientId(value, type)`,
+   * which matches if the message lists a patient having an ID of the given value
+   * and type in the PID-2, PID-3, or PID-4 segments. For example,
+   * `PatientId("123456", "MRN")`. *  `labels.x`, a string value of the label with
+   * key `x` as set using the Message.labels map. For example,
+   * `labels."priority"="high"`. The operator `:*` can be used to assert the
+   * existence of a label. For example, `labels."priority":*`.
    *
    * Limitations on conjunctions:
    *
-   * *  Negation on the patient ID function or the labels field is not supported,
-   * for example these queries are invalid: `NOT PatientId("123456", "MRN")`, `NOT
-   * labels."tag1":*`, `NOT labels."tag2"="val2"`. *  Conjunction of multiple
+   * *  Negation on the patient ID function or the labels field is not supported.
+   * For example, these queries are invalid: `NOT PatientId("123456", "MRN")`,
+   * `NOT labels."tag1":*`, `NOT labels."tag2"="val2"`. *  Conjunction of multiple
    * patient ID functions is not supported, for example this query is invalid:
    * `PatientId("123456", "MRN") AND PatientId("456789", "MRN")`. *  Conjunction
    * of multiple labels fields is also not supported, for example this query is
    * invalid: `labels."tag1":* AND labels."tag2"="val2"`. *  Conjunction of one
    * patient ID function, one labels field and conditions on other fields is
-   * supported, for example this query is valid: `PatientId("123456", "MRN") AND
+   * supported. For example, this query is valid: `PatientId("123456", "MRN") AND
    * labels."tag1":* AND message_type = "ADT"`.
-   *
-   * The HasLabel(x) and Label(x) syntax from previous API versions are
-   * deprecated; replaced by the `labels.x` syntax.
    * @opt_param string pageToken The next_page_token value returned from the
    * previous List request, if any.
    * @opt_param string orderBy Orders messages returned by the specified order_by
@@ -160,7 +152,13 @@ class Google_Service_CloudHealthcare_Resource_ProjectsLocationsDatasetsHl7V2Stor
     return $this->call('list', array($params), "Google_Service_CloudHealthcare_ListMessagesResponse");
   }
   /**
-   * Update the message. (messages.patch)
+   * Update the message.
+   *
+   * The contents of the message in Message.data and data extracted from the
+   * contents such as Message.create_time cannot be altered. Only the
+   * Message.labels field is allowed to be updated. The labels in the request are
+   * merged with the existing set of labels. Existing labels with the same keys
+   * are updated. (messages.patch)
    *
    * @param string $name Resource name of the Message, of the form `projects/{proj
    * ect_id}/datasets/{dataset_id}/hl7V2Stores/{hl7_v2_store_id}/messages/{message
@@ -170,9 +168,7 @@ class Google_Service_CloudHealthcare_Resource_ProjectsLocationsDatasetsHl7V2Stor
    *
    * @opt_param string updateMask The update mask applies to the resource. For the
    * `FieldMask` definition, see https://developers.google.com/protocol-
-   * buffers/docs/reference/google.protobuf#fieldmask Only the `labels` field is
-   * allowed to be updated. The labels in the request will be merged with the
-   * existing set of labels. Existing labels with the same keys will be updated.
+   * buffers/docs/reference/google.protobuf#fieldmask
    * @return Google_Service_CloudHealthcare_Message
    */
   public function patch($name, Google_Service_CloudHealthcare_Message $postBody, $optParams = array())

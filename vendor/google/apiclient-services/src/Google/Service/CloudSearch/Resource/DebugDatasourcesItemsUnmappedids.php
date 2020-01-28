@@ -27,6 +27,8 @@ class Google_Service_CloudSearch_Resource_DebugDatasourcesItemsUnmappedids exten
 {
   /**
    * List all unmapped identities for a specific item.
+   *
+   * **Note:** This API requires an admin account to execute.
    * (unmappedids.listDebugDatasourcesItemsUnmappedids)
    *
    * @param string $parent The name of the item, in the following format:

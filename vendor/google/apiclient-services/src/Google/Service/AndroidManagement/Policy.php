@@ -21,6 +21,8 @@ class Google_Service_AndroidManagement_Policy extends Google_Collection
   public $accountTypesWithManagementDisabled;
   public $addUserDisabled;
   public $adjustVolumeDisabled;
+  protected $advancedSecurityOverridesType = 'Google_Service_AndroidManagement_AdvancedSecurityOverrides';
+  protected $advancedSecurityOverridesDataType = '';
   protected $alwaysOnVpnPackageType = 'Google_Service_AndroidManagement_AlwaysOnVpnPackage';
   protected $alwaysOnVpnPackageDataType = '';
   public $androidDevicePolicyTracks;
@@ -55,6 +57,8 @@ class Google_Service_AndroidManagement_Policy extends Google_Collection
   public $keyguardDisabled;
   public $keyguardDisabledFeatures;
   public $kioskCustomLauncherEnabled;
+  protected $kioskCustomizationType = 'Google_Service_AndroidManagement_KioskCustomization';
+  protected $kioskCustomizationDataType = '';
   public $locationMode;
   protected $longSupportMessageType = 'Google_Service_AndroidManagement_UserFacingMessage';
   protected $longSupportMessageDataType = '';
@@ -75,6 +79,8 @@ class Google_Service_AndroidManagement_Policy extends Google_Collection
   protected $passwordRequirementsDataType = '';
   protected $permissionGrantsType = 'Google_Service_AndroidManagement_PermissionGrant';
   protected $permissionGrantsDataType = 'array';
+  protected $permittedAccessibilityServicesType = 'Google_Service_AndroidManagement_PackageNameList';
+  protected $permittedAccessibilityServicesDataType = '';
   protected $permittedInputMethodsType = 'Google_Service_AndroidManagement_PackageNameList';
   protected $permittedInputMethodsDataType = '';
   protected $persistentPreferredActivitiesType = 'Google_Service_AndroidManagement_PersistentPreferredActivity';
@@ -136,6 +142,20 @@ class Google_Service_AndroidManagement_Policy extends Google_Collection
   public function getAdjustVolumeDisabled()
   {
     return $this->adjustVolumeDisabled;
+  }
+  /**
+   * @param Google_Service_AndroidManagement_AdvancedSecurityOverrides
+   */
+  public function setAdvancedSecurityOverrides(Google_Service_AndroidManagement_AdvancedSecurityOverrides $advancedSecurityOverrides)
+  {
+    $this->advancedSecurityOverrides = $advancedSecurityOverrides;
+  }
+  /**
+   * @return Google_Service_AndroidManagement_AdvancedSecurityOverrides
+   */
+  public function getAdvancedSecurityOverrides()
+  {
+    return $this->advancedSecurityOverrides;
   }
   /**
    * @param Google_Service_AndroidManagement_AlwaysOnVpnPackage
@@ -399,6 +419,20 @@ class Google_Service_AndroidManagement_Policy extends Google_Collection
   {
     return $this->kioskCustomLauncherEnabled;
   }
+  /**
+   * @param Google_Service_AndroidManagement_KioskCustomization
+   */
+  public function setKioskCustomization(Google_Service_AndroidManagement_KioskCustomization $kioskCustomization)
+  {
+    $this->kioskCustomization = $kioskCustomization;
+  }
+  /**
+   * @return Google_Service_AndroidManagement_KioskCustomization
+   */
+  public function getKioskCustomization()
+  {
+    return $this->kioskCustomization;
+  }
   public function setLocationMode($locationMode)
   {
     $this->locationMode = $locationMode;
@@ -550,6 +584,20 @@ class Google_Service_AndroidManagement_Policy extends Google_Collection
   public function getPermissionGrants()
   {
     return $this->permissionGrants;
+  }
+  /**
+   * @param Google_Service_AndroidManagement_PackageNameList
+   */
+  public function setPermittedAccessibilityServices(Google_Service_AndroidManagement_PackageNameList $permittedAccessibilityServices)
+  {
+    $this->permittedAccessibilityServices = $permittedAccessibilityServices;
+  }
+  /**
+   * @return Google_Service_AndroidManagement_PackageNameList
+   */
+  public function getPermittedAccessibilityServices()
+  {
+    return $this->permittedAccessibilityServices;
   }
   /**
    * @param Google_Service_AndroidManagement_PackageNameList

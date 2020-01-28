@@ -13,6 +13,7 @@ abstract class Report
     const TYPE_SONARQUBE = 'sonarqube';
     const TYPE_EMACS = 'emacs';
     const TYPE_XML = 'xml';
+    const TYPE_JUNIT = 'junit';
     const TYPE_CHECKSTYLE = 'checkstyle';
     const TYPE_TEXT = 'text';
 
@@ -25,6 +26,7 @@ abstract class Report
         self::TYPE_SONARQUBE,
         self::TYPE_EMACS,
         self::TYPE_XML,
+        self::TYPE_JUNIT,
         self::TYPE_CHECKSTYLE,
         self::TYPE_TEXT,
     ];
@@ -35,6 +37,9 @@ abstract class Report
      * snippet_from: int, snippet_to: int, column_from: int, column_to: int, selected_text: string}>
      */
     protected $issues_data;
+
+    /** @var array<string, int> */
+    protected $fixable_issue_counts;
 
     /** @var bool */
     protected $use_color;
@@ -55,12 +60,14 @@ abstract class Report
      * @param array<int, array{severity: string, line_from: int, line_to: int, type: string, message: string,
      *  file_name: string, file_path: string, snippet: string, from: int, to: int,
      *  snippet_from: int, snippet_to: int, column_from: int, column_to: int, selected_text: string}> $issues_data
+     * @param array<string, int> $fixable_issue_counts
      * @param bool $use_color
      * @param bool $show_snippet
      * @param bool $show_info
      */
     public function __construct(
         array $issues_data,
+        array $fixable_issue_counts,
         Report\ReportOptions $report_options,
         int $mixed_expression_count = 1,
         int $total_expression_count = 1
@@ -78,6 +85,7 @@ abstract class Report
         } else {
             $this->issues_data = $issues_data;
         }
+        $this->fixable_issue_counts = $fixable_issue_counts;
 
         $this->use_color = $report_options->use_color;
         $this->show_snippet = $report_options->show_snippet;

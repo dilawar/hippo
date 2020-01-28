@@ -17,6 +17,7 @@
 
 class Google_Service_Compute_InstanceGroupManagerUpdatePolicy extends Google_Model
 {
+  public $instanceRedistributionType;
   protected $maxSurgeType = 'Google_Service_Compute_FixedOrPercent';
   protected $maxSurgeDataType = '';
   protected $maxUnavailableType = 'Google_Service_Compute_FixedOrPercent';
@@ -24,6 +25,14 @@ class Google_Service_Compute_InstanceGroupManagerUpdatePolicy extends Google_Mod
   public $minimalAction;
   public $type;
 
+  public function setInstanceRedistributionType($instanceRedistributionType)
+  {
+    $this->instanceRedistributionType = $instanceRedistributionType;
+  }
+  public function getInstanceRedistributionType()
+  {
+    return $this->instanceRedistributionType;
+  }
   /**
    * @param Google_Service_Compute_FixedOrPercent
    */
