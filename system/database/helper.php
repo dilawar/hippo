@@ -101,10 +101,37 @@ function getTalkIDs( $start_date, $end_date )
 {
     return executeQuery( 
         "SELECT external_id, date, start_time, end_time, venue FROM events WHERE
-            status='VALID' AND date>'$start_date' AND date < '$end_date'
+            status='VALID' AND date>'$start_date' AND date<'$end_date'
             AND external_id LIKE 'talks.%'
         "
         );
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Find talks on a given date.
+    *
+    * @Param $date
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getTalksOnThisDay($date)
+{
+    $talkIDS = executeQuery( 
+        "SELECT external_id, date, start_time, end_time, venue FROM events WHERE
+            status='VALID' AND date='$date' AND external_id LIKE 'talks.%'
+        "
+        );
+    $results = array();
+    foreach( $talkIDS as $i => $tev )
+    {
+        $row = array();
+        $exID = explode( '.', $tev['external_id'])[1];
+        $talk = getTableEntry( 'talks', 'id', array( 'id' => $exID ) );
+        $results[] = ['talk'=>$talk, 'booking'=>$tev];
+    }
+    return $results;
 }
 
 function getTalksWithEvent( $start_date, $end_date )
