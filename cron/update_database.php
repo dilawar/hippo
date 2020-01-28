@@ -1,6 +1,29 @@
 <?php
 
-function cleanup_database_cron( )
+function update_publishing_database() 
+{
+    if(trueOnGivenDayAndTime('this tuesday', '19:30'))
+    {
+        echo "Updating database.";
+        $extra = 'datetype=pdat&reldate=14';
+        $url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
+            .  "db=pubmed&retmode=json&$extra" 
+            . "&term=national+centre+for+biological+sciences[Affiliation]";
+
+        $data = json_decode(file_get_contents($url, true));
+
+        $items = $data->esearchresult->idlist;
+        $idlist =  implode(",", $items);
+
+        $url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
+        $url .=  "esummary.fcgi?db=pubmed&id=$idlist&retmode=json";
+        $items = file_get_contents($url, true);
+        print_r($items);
+
+    }
+}
+
+function update_database_cron( )
 {
     /* Every monday, check students who are not eligible for AWS anymore */
     if( trueOnGivenDayAndTime( 'this monday', '7:00' ) )

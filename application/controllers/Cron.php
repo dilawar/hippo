@@ -1,6 +1,6 @@
 <?php
 require_once FCPATH . './cron/helper.php';
-require_once FCPATH . './cron/cleanup_database.php';
+require_once FCPATH . './cron/update_database.php';
 require_once FCPATH . './cron/aws_annoy.php';
 require_once FCPATH . './cron/aws_friday_notification.php';
 require_once FCPATH . './cron/aws_friday_notify_faculty.php';
@@ -21,7 +21,7 @@ class Cron extends CI_Controller {
     {
         // Execute all scripts in ./views/controller/cron folder.
         $tasks = array( 
-             'cleanup_database'
+             'update_database'
             , 'aws_annoy'
             , 'aws_friday_notification'
             , 'aws_friday_notify_faculty'
@@ -56,9 +56,10 @@ class Cron extends CI_Controller {
         }
     }
 
-    public function cleanup_database( )
+    public function update_database( )
     {
-        cleanup_database_cron();
+        update_database_cron();
+        update_publishing_database();
     }
 
     public function aws_annoy()
