@@ -38,66 +38,65 @@ if($scheduledAWS && $eligible)
 }
 else if($eligible)
 {
+    // // Here user can submit preferences.
+    // $prefs = getTableEntry( 'aws_scheduling_request', 'speaker,status'
+    //             , array( 'speaker' => $user
+    //                 , 'status' => 'PENDING' ) );
 
-    // Here user can submit preferences.
-    $prefs = getTableEntry( 'aws_scheduling_request', 'speaker,status'
-                , array( 'speaker' => $user
-                    , 'status' => 'PENDING' ) );
+    // $approved  = getTableEntry( 'aws_scheduling_request', 'speaker,status'
+    //             , array( 'speaker' => $user
+    //                 , 'status' => 'APPROVED' ) );
 
-    $approved  = getTableEntry( 'aws_scheduling_request', 'speaker,status'
-                , array( 'speaker' => $user
-                    , 'status' => 'APPROVED' ) );
+    // if( ! $prefs )
+    // {
+    //     echo printInfo(
+    //         "You can tell me know your preferred dates. I will try my best to
+    //         assign you on or very near to these dates (+/- 2 weeks). Make sure that
+    //         you are available at these dates.
+    //         "
+    //         );
 
-    if( ! $prefs )
-    {
-        echo printInfo(
-            "You can tell me know your preferred dates. I will try my best to
-            assign you on or very near to these dates (+/- 2 weeks). Make sure that
-            you are available at these dates.
-            "
-            );
+    //     echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/create' ) . '">';
+    //     echo '<button type="submit">Create preference</button>';
+    //     echo '<input type="hidden" name="speaker" value="' . $user . '">';
+    //     echo '</form>';
+    // }
+    // else if( $prefs[ 'status' ] == 'PENDING' )
+    // {
+    //     echo printInfo( "You preference for AWS schedule is pending. If you have
+    //         changed your mind, cancel it. After approval, you wont be able to modify
+    //         this request. " 
+    //         );
 
-        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/create' ) . '">';
-        echo '<button type="submit">Create preference</button>';
-        echo '<input type="hidden" name="speaker" value="' . $user . '">';
-        echo '</form>';
-    }
-    else if( $prefs[ 'status' ] == 'PENDING' )
-    {
-        echo printInfo( "You preference for AWS schedule is pending. If you have
-            changed your mind, cancel it. After approval, you wont be able to modify
-            this request. " 
-            );
+    //     echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest' ) . '">';
+    //     echo dbTableToHTMLTable( 'aws_scheduling_request', $prefs, '', 'edit' );
+    //     echo '<input type="hidden" name="created_on" value="' . dbDateTime( 'now' ) . '" >'; 
+    //     echo '</form>';
 
-        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest' ) . '">';
-        echo dbTableToHTMLTable( 'aws_scheduling_request', $prefs, '', 'edit' );
-        echo '<input type="hidden" name="created_on" value="' . dbDateTime( 'now' ) . '" >'; 
-        echo '</form>';
+    //     // Cancel goes directly to cancelling the request. Only non-approved
+    //     // requests can be cancelled.
+    //     echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/delete') . '">';
+    //     echo '<button onclick="AreYouSure(this)"
+    //             name="response" title="Cancel this request"
+    //             type="submit">  <i class="fa fa-trash "></i>
+    //               </button>';
+    //     echo '<input type="hidden" name="id" value="'. $prefs[ 'id' ].'">';
+    //     echo '</form>';
+    // }
 
-        // Cancel goes directly to cancelling the request. Only non-approved
-        // requests can be cancelled.
-        echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest/delete') . '">';
-        echo '<button onclick="AreYouSure(this)"
-                name="response" title="Cancel this request"
-                type="submit">  <i class="fa fa-trash "></i>
-                  </button>';
-        echo '<input type="hidden" name="id" value="'. $prefs[ 'id' ].'">';
-        echo '</form>';
-    }
+    // if( $approved )
+    // {
+    //     echo '<strong>You already have a request below.
+    //         Notice that request is only effective when its <tt>STATUS</tt> has
+    //         changed to <tt>APPROVED</tt>. </strong>';
 
-    if( $approved )
-    {
-        echo '<strong>You already have a request below.
-            Notice that request is only effective when its <tt>STATUS</tt> has
-            changed to <tt>APPROVED</tt>. </strong>';
-
-        // Form to revoke the approved preference.
-        echo ' <form method="post" action="' . site_url( 'user/aws/schedulingrequest/revoke' ) . '">';
-        echo arrayToTableHTML( $approved, 'info' );
-        echo '<button name="response" value="delete_preference">Revoke</button> ';
-        echo '<input type="hidden" name="id" value="' . $approved['id'] . '" />';
-        echo '</form>';
-    }
+    //     // Form to revoke the approved preference.
+    //     echo ' <form method="post" action="' . site_url( 'user/aws/schedulingrequest/revoke' ) . '">';
+    //     echo arrayToTableHTML( $approved, 'info' );
+    //     echo '<button name="response" value="delete_preference">Revoke</button> ';
+    //     echo '<input type="hidden" name="id" value="' . $approved['id'] . '" />';
+    //     echo '</form>';
+    // }
 }
 ?>
 
@@ -174,13 +173,14 @@ else if($eligible)
 <?=goBackToPageLink( "user/home", "Go back" )?>
 
 <h1>Past Annual Work Seminar</h1>
-<table>
-<tr><td>
+
+<div class="alert-warning ">
     If any of your AWSs is missing from the list below, please emails details to
-    <a href="mailto:officeacad@ncbs.res.in" target="_black">Academic Office</a>
-</td></tr>
-</table>
-<br />
+    <a href="mailto:officeacad@ncbs.res.in" target="_black">Academic Office</a>.
+    <br />
+    Your <tt>PRE SYNOPSIS SEMINARY</tt> may be 
+    <a href=" <?= site_url("info/talks") ?> ">in list of the talks</a>.
+</div>
 
 <?php foreach( $awses as $aws): ?>
     <?php $id = $aws['id']; ?>
