@@ -198,11 +198,9 @@ class Adminacad extends CI_Controller
         }
         elseif($response == 'delete' )
         {
-            $id = $_POST['id'];
-            $res = deleteFromTable( 'annual_work_seminars', 'id', $_POST );
+            $res = cancelAWS($_POST);
             if( $res )
                 flashMessage( "Successfully deleted AWS entry $id" );
-
             redirect( "adminaws/upcoming_aws");
             return;
         }

@@ -4,7 +4,7 @@ require_once FCPATH . './cron/cleanup_database.php';
 require_once FCPATH . './cron/aws_annoy.php';
 require_once FCPATH . './cron/aws_friday_notification.php';
 require_once FCPATH . './cron/aws_friday_notify_faculty.php';
-require_once FCPATH . './cron/aws_monday_morning.php';
+require_once FCPATH . './cron/aws_monday.php';
 require_once FCPATH . './cron/aws_schedule_fac_student.php';
 require_once FCPATH . './cron/booking_expiring_notice.php';
 require_once FCPATH . './cron/events_everyday_morning.php';
@@ -25,7 +25,7 @@ class Cron extends CI_Controller {
             , 'aws_annoy'
             , 'aws_friday_notification'
             , 'aws_friday_notify_faculty'
-            , 'aws_monday_morning'
+            , 'aws_monday'
             , 'aws_schedule_fac_student'
             , 'booking_expiring_notice'
             , 'events_everyday_morning'
@@ -76,14 +76,16 @@ class Cron extends CI_Controller {
         aws_friday_notify_faculty_cron();
     }
 
-    public function aws_monday_morning( )
+    public function aws_monday( )
     {
-        aws_monday_morning_cron();
+        if( trueOnGivenDayAndTime( 'this monday', '10:00' ) )
+            aws_monday_morning_cron();
 
         if( trueOnGivenDayAndTime( 'this monday', '11:00' ) )
             notifyAcadOfficeUnassignedSlot();
 
-        if( trueOnGivenDayAndTime( 'this monday', '8:00' ) )
+        // Try at 6pm.
+        if( trueOnGivenDayAndTime( 'this monday', '18:00' ) )
             bookVenueForAWS();
     }
 

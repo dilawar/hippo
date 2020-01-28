@@ -18,7 +18,7 @@ $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
 <?php if($nAWS > 0 || $eligibleForAWS): ?>
     <div class="col rounded menu-item m-3 p-2 text-left">
         <a class="fa fa-2x fa-graduation-cap" 
-            href="<?=site_url("/user/aws")?>"> My AWS</a> 
+            href="<?=site_url("/user/aws")?>">My AWS</a> 
         <br />
         See your previous AWSs. Check details of upcoming AWS. Provide preferred dates.
         <br />

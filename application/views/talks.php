@@ -11,14 +11,14 @@ $form = '
     <table class="table">
         <tr>
             <td><input class="datepicker" type="text" name="date" value="' .
-                    $default[ 'date' ] . '" ></td>
+                $default[ 'date' ] . '" ></td>
             <td><button class="btn btn-primary" type="submit" name="response"
                     title="Show events on this day"
                     value="show">Show Events This Day Onwards</button></td>
         </tr>
     </table>
-</form>
-    ';
+</form>'
+;
 
 echo "$form <br /> <br />";
 
@@ -43,23 +43,23 @@ else
         $talk = getTableEntry( 'talks', 'id', array( 'id' => $talkId ) );
         if( $talk )
         {
-            if( strtotime($event['date']) < strtotime( $whichDay) + 14*24*3600 )
+            if( strtotime($event['date']) < strtotime( $whichDay) + 28*24*3600 )
             {
-                $talkHtml .= '<div class="container">'; 
+                $talkHtml .= '<div class="card bg-white py-1 my-2">'; 
                 // This is the where-when line at the top. 
-                $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML( $event ) . '</p>';
-                $talkHtml .= talkToHTMLLarge( $talk, $with_picture = true );
-                $talkHtml .= '</div>'; $talkHtml .= "<br>";
+                $talkHtml .= talkToHTMLLarge($talk, $with_picture = true, $header=whereWhenHTML($event));
+                $talkHtml .= "<br>";
 
                 // Link to pdf file.
-                $talkHtml .= '<div class="div pull-right" style="margin-right:20px">';
-                $talkHtml .= '<a target="_blank" href="'
+                $talkHtml .= '<div class="my-1 small">';
+                $talkHtml .= '<a target="_blank" class="mx-2" href="'
                         . site_url("user/downloadtalk/".$default['date']."/$talkId") . '">
                         <i class="fa fa-download ">PDF</i></a>';
-                $talkHtml .= '<a target="_blank" href="'
+                $talkHtml .= '<a target="_blank" class="mx-2" href="'
                         . site_url("user/downloadtalkical/".$default['date']."/$talkId") . '">
                         <i class="fa fa-calendar ">iCal</i></a>';
                 $talkHtml .= '</div>';
+                $talkHtml .= '</div>'; 
             }
             else
             {

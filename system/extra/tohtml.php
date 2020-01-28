@@ -824,10 +824,7 @@ function arrayHeaderRow( $array, $tablename, $tobefilterd = '', $sort_button = f
     return $hrow;
 }
 
-function arrayToTHRow( array $array
-    , string $tablename
-    , $tobefilterd = ''
-    , bool $sort_button  = false ) : string
+function arrayToTHRow(array $array, string $tablename, $tobefilterd='', bool $sort_button=false) : string
 { 
     if( ! $array )
         return '';
@@ -836,8 +833,8 @@ function arrayToTHRow( array $array
 }
 
 // Convert an array to HTML
-function arrayToTableHTML( $array, $tablename, $background = ''
-        , $tobefilterd = '', $header = true )
+function arrayToTableHTML(array $array, string $tablename, string $background=''
+    , string $tobefilterd='', bool $header=true, string $class= '')
 {
     if( $background )
         $background = "style=\"background:$background;\"";
@@ -845,7 +842,7 @@ function arrayToTableHTML( $array, $tablename, $background = ''
     if( is_string( $tobefilterd ) )
         $tobefilterd = explode( ',', $tobefilterd );
 
-    $table = "<table class=\"show_$tablename\" $background>";
+    $table = "<table class=\"show_$tablename $class\" $background>";
     $keys = array_keys( $array );
     $toDisplay = Array();
     if( $header )
@@ -1008,8 +1005,6 @@ function venueSummary($venue, $withName=true)
 
     if(__get__($venue, 'type', ''))
         $res .= " [" . $venue['type'] . "]";
-    if( __get__($venue, 'building_name', ''))
-        $res .= ", " . $venue['building_name'];
     if( __get__($venue, 'institute', ''))
         $res .= ", " . $venue['institute'];
     return $res;
@@ -1829,7 +1824,7 @@ function speakerName($speaker, bool $with_email=false): string
     if( is_numeric( $speaker ) )                        // Got an id.
         $speaker = getTableEntry('speakers', 'id' , ['id' => $speaker]);
 
-    $name = __get__( $speaker, 'honorific', '' );
+    $name = __get__($speaker, 'honorific', '' );
     if( $name )
         $name .= ' ';
 
@@ -1859,16 +1854,28 @@ function arrayToName( $arr, $with_email = false )
     return speakerName( $arr, $with_email );
 }
 
-function talkToHTMLLarge( $talk, $with_picture = true ) : string
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Convert talk to HTML.
+    *
+    * @Param $talk
+    *   array: Talk data.
+    * @Param $with_picture
+    *   Show pictures or not.
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function talkToHTMLLarge( $talk, $with_picture=true, string $header='') : string
 {
-    $speakerId = intval( $talk[ 'speaker_id' ] );
+    $speakerId = intval($talk['speaker_id']);
 
     // If speaker id is > 0, then use it to fetch the entry. If not use the
     // speaker name. There was a design problem in the begining, some speakers
     // do not have unique id but only email. This has to be fixed.
     if( $speakerId > 0 )
     {
-        $speakerArr = getTableEntry( 'speakers', 'id', array( 'id' => $speakerId ) );
+        $speakerArr = getTableEntry('speakers', 'id', array( 'id' => $speakerId ));
         $speakerName = speakerName( $speakerId );
     }
     else
@@ -1877,7 +1884,7 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
         $speakerName = speakerName( $speakerArr );
     }
 
-    $coordinator = __get__( $talk, 'coordinator', '' );
+    $coordinator = __get__($talk, 'coordinator', '');
     $hostEmail = $talk[ 'host' ];
 
     // Either NCBS or InSTEM.
@@ -1892,10 +1899,9 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
     $title = '(' . __ucwords__($talk[ 'class' ]) . ') ' . $talk[ 'title' ];
 
     $pic = '';
-    if( $with_picture )
-    {
-        $imgpath = getSpeakerPicturePath( $speakerId );
-        $pic = showImage( $imgpath, 'auto', '200px' );
+    if($with_picture) {
+        $imgpath = getSpeakerPicturePath($speakerId);
+        $pic = showImage($imgpath, 'auto', '200px');
     }
 
     // Speaker info
@@ -1935,7 +1941,11 @@ function talkToHTMLLarge( $talk, $with_picture = true ) : string
     $talkHTML = '<div class="">' . fixHTML( $talk['description'] ) . '</div>';
 
     // Final HTML.
-    $html = "<details> <summary> <div class='h3'> $title </div> </summary>";
+    $html = "<details> 
+        <summary>
+            <div class='small font-weight-bold text-uppercase'> $header </div>
+            <div class='h4'> $title </div> 
+        </summary>";
     $html .= "<div> $infoTable </div> <div> $talkHTML </div>";
     $html .= "</details>";
     return $html;
@@ -2254,7 +2264,8 @@ function displayImage( $picpath, $height = 'auto', $width = 'auto', $usemap = ''
 function nullPicPath( $default = 'null' )
 {
     $conf = getConf( );
-    return FCPATH . "data/$default.png";
+    $datadir = $conf[ 'data' ]['user_imagedir'];
+    return $datadir . "/$default.png";
 }
 
 function inlineImageOfSpeakerId( $id, $height = 'auto', $width = 'auto')

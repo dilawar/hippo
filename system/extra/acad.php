@@ -12,10 +12,10 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
     if(! $venue)
         $venue = getDefaultAWSVenue($date);
 
-    if(  $speaker && getLoginInfo( $speaker ) && strtotime( $date ) > strtotime( '-7 day' ) )
+    if($speaker && getLoginInfo($speaker) && strtotime($date) > strtotime('-7 day'))
     {
-        $aws = getUpcomingAWSOfSpeaker( $speaker );
-        if( $aws )
+        $aws = getUpcomingAWSOfSpeaker($speaker);
+        if($aws)
         {
             $res['msg'] = "$speaker already has AWS scheduled. Doing nothing.";
             return $res;
@@ -26,6 +26,13 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
         {
             $res['success'] = true;
             $res['msg'] = "Successfully assigned. ";
+            // Create a booking.
+            $nAWS = getTotalUpcomingAWSOnThisMonday($date);
+
+            $aws = getTableEntry('upcoming_aws', 'id', ['id'=>$awsID]);
+            $aws['time'] = dbTime(strtotime($aws['time'])+($nAWS-1)*30*60);
+            $res2 = bookAVenueForThisAWS($aws, true);
+            $res['msg'] .= p($res2['msg']);
 
             // Don't rescheduleAWS. It will change the rest of the 
             // entries for the week.
@@ -60,22 +67,28 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
 /* ----------------------------------------------------------------------------*/
 function cancelAWS(array $data, string $bywhom='HIPPO') : array
 {
-    $speaker = $data['speaker'];
-    $date = $data['date'];
-    $reason = __get__($data, 'reason', 'None given. So rude!');
-    $aws = getTableEntry( 'upcoming_aws', 'speaker,date'
-        , ['speaker' => $speaker, 'date' => dbDate($date)]
-    );
-    $res = clearUpcomingAWS( $speaker, $date );
-    $piOrHost = getPIOrHost( $speaker );
-    $final = ['msg'=>'', 'status'=>false];
-
-    if( $res )
+    // If ID is given then fetch the aws.
+    if(__get__($data, 'id', ''))
+        $aws = getTableEntry( 'upcoming_aws', 'id', $data);
+    else 
     {
-        $final['msg'] = "Successfully cleared upcoming AWS of $speaker on $date.";
+        $speaker = $data['speaker'];
+        $date = $data['date'];
+        $reason = __get__($data, 'reason', 'None given. So rude!');
+        $aws = getTableEntry( 'upcoming_aws', 'speaker,date'
+            , ['speaker'=>$speaker, 'date'=>dbDate($date)]
+        );
+    }
+    $res = clearUpcomingAWS($aws['speaker'], $aws['date']);
+    $piOrHost = getPIOrHost($aws['speaker']);
+    $final = ['msg'=> $res['msg'], 'status'=>false];
 
-        $admin = whoAmI();
+    if($res)
+    {
+        $final['msg'] .= " Successfully cleared upcoming AWS of $speaker on $date.";
+
         // Notify the hippo list.
+        $admin = whoAmI();
         $msg = "<p>Hello " . loginToHTML( $data[ 'speaker' ] ) . "</p>";
         $msg .= "<p>
             Your upcoming AWS schedule has been removed by Hippo admin ($bywhom).
@@ -91,7 +104,7 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
             $cclist .= ",$piOrHost";
 
         sendHTMLEmail( $msg
-            , "Your ($speaker) AWS schedule has been removed from upcoming AWSs"
+            , "Your ($speaker) upcoming AWS has been removed."
             , $to = getLoginEmail( $data[ 'speaker' ] )
             , $cclist 
         );
@@ -101,18 +114,26 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
     return $final;
 }
 
-function updateAWS(array $data, string $by='HIPPO'): array
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Update a given AWS.
+    *
+    * @Param $data
+    * @Param $by
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function updateAWS(array $data, string $by='HIPPO') : array
 {
     $res = updateTable( 'upcoming_aws', 'id'
         , 'abstract,title,is_presynopsis_seminar,supervisor_1', $_POST );
 
-    if( $res )
+    if($res)
         return ['success'=>true
         , 'msg'=>"Successfully updated abstract of upcoming AWS entry"];
 
-    return ['msg'=>"I could not update title/abstract."
-        , 'success'=>false];
-
+    return ['msg'=>"I could not update title/abstract.", 'success'=>false];
 }
 
 /* --------------------------------------------------------------------------*/

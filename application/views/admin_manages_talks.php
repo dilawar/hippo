@@ -37,10 +37,45 @@ foreach( $talks as $t )
     array_push( $upcomingTalks, $t );
 }
 
-echo goBackToPageLink( "$ref/home", "Go back" );
+// A form to select a date and see the talks.
+$form =  '<form action="#" method="post" accept-charset="utf-8">';
+$form .= "<table>";
+$form .= "<tr>
+    <td> 
+        <input class='datepicker' placeholder='Select a date' name='date'/>
+    </td>
+    <td>
+        <button class='btn btn-primary'>Select</button>
+    </td>
+    </tr>";
+$form .= "</table>";
+$form .= '</form>';
+echo $form;
+
+// If we have a post request.
+if( __get__($_POST, 'date', ''))
+{
+    $date = $_POST['date'];
+    echo "<h3>Talks on $date</h3>";
+    $talksWithEvent = getTalksOnThisDay($date);
+    foreach($talksWithEvent as $entry ) {
+        $t = $entry['talk'];
+        $tid = $t['id'];
+        echo '<td>';
+        echo '<form method="post" action="'.site_url("$ref/updatetalk/$tid").'">';
+        echo arrayToVerticalTableHTML( $t, 'info', '', 'speaker_id');
+        echo '</form>';
+        // Put an edit button. 
+        echo '<form method="post" action="'.site_url("$ref/edittalk/$tid").'">';
+        echo '<button class="btn btn-primary" style="float:right" title="Edit this talk"
+                name="response" value="edit">' . $symbEdit . '</button>';
+        echo '</form>';
+    }
+    unset($_POST);
+}
+
 
 echo heading("Upcoming talks (Newest first)");
-
 // Show upcoming talks to user. She has edit, delete or schedule them.
 echo '<div style="font-size:x-small">';
 // Outer table
@@ -196,6 +231,7 @@ foreach( $upcomingTalks as $t )
 }
 echo '</table>';
 echo '</div>';
+
     
 echo goBackToPageLink( "$ref/home", "Go back" );
 
