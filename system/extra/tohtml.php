@@ -1824,7 +1824,7 @@ function speakerName($speaker, bool $with_email=false): string
     if( is_numeric( $speaker ) )                        // Got an id.
         $speaker = getTableEntry('speakers', 'id' , ['id' => $speaker]);
 
-    $name = __get__( $speaker, 'honorific', '' );
+    $name = __get__($speaker, 'honorific', '' );
     if( $name )
         $name .= ' ';
 

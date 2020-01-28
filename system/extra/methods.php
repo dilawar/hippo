@@ -25,19 +25,19 @@ $phpFileUploadErrors = array(
 function getUserIpAddr()
 {
     $ip = 'NA';
-    if(!empty($_SERVER['HTTP_CLIENT_IP'])){
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         //ip from share internet
         $ip = $_SERVER['HTTP_CLIENT_IP'];
-    }elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
         //ip pass from proxy
         $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-    }else{
+    } else {
         $ip = $_SERVER['REMOTE_ADDR'];
     }
     return $ip;
 }
 
-function whoAmI( )
+function whoAmI()
 {
     // Return the login name.
     $me = $_SESSION['WHOAMI'] ?? 'UNKNOWN';
@@ -61,8 +61,9 @@ function getHeader($key)
 
 function getLogin()
 {
-    if(isset($_POST))
+    if (isset($_POST)) {
         return __get__($_POST, 'login', getHeader('login'));
+    }
     return whoAmI();
 }
 
@@ -71,21 +72,22 @@ function getLogin()
     *
     * @param $text
     *
-    * @return 
+    * @return
  */
-function extract_emails_from( $text )
+function extract_emails_from($text)
 {
     preg_match_all("/[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i", $text, $matches);
-    $res =  implode( ',', $matches[0] );
+    $res =  implode(',', $matches[0]);
     return $res;
 }
 
 
-function authenticateUser(string $ldap, string $pass )
+function authenticateUser(string $ldap, string $pass)
 {
-    $auth = authenticateUsingLDAP( $ldap, $pass );
-    if(! $auth)
-        $auth = authenticateUsingIMAP( $ldap, $pass );
+    $auth = authenticateUsingLDAP($ldap, $pass);
+    if (! $auth) {
+        $auth = authenticateUsingIMAP($ldap, $pass);
+    }
     return $auth;
 }
 
@@ -100,10 +102,10 @@ function authenticateUser(string $ldap, string $pass )
     * month.
  */
 /* ----------------------------------------------------------------------------*/
-function dateDiffInMonths( $dateA, $dateB ) : float
+function dateDiffInMonths($dateA, $dateB) : float
 {
-    $dateA = new DateTime( dbDate( $dateA ) );
-    $dateB = new DateTime( dbDate( $dateB ) );
+    $dateA = new DateTime(dbDate($dateA));
+    $dateB = new DateTime(dbDate($dateB));
     $interval = $dateA->diff($dateB);
     $nMonths = $interval->y * 12 + $interval->m + $interval->d /30.0;
     return $nMonths;
@@ -116,23 +118,24 @@ function dateDiffInMonths( $dateA, $dateB ) : float
     *
     * @Param $text
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getLoginID( $text )
+function getLoginID($text)
 {
-    if( __substr__( '@', $text ) )
-        return explode( '@', extract_emails_from($text) )[0];
+    if (__substr__('@', $text)) {
+        return explode('@', extract_emails_from($text))[0];
+    }
     return $text;
 }
 
 // Form HERE: https://stackoverflow.com/a/25879953/180512://stackoverflow.com/a/25879953/1805129
 function hippo_shell_exec($cmd, &$stdout=null, &$stderr=null)
 {
-    $proc = proc_open($cmd,[
+    $proc = proc_open($cmd, [
         1 => ['pipe','w'],
         2 => ['pipe','w'],
-    ],$pipes);
+    ], $pipes);
 
     $stdout = stream_get_contents($pipes[1]);
     fclose($pipes[1]);
@@ -140,77 +143,90 @@ function hippo_shell_exec($cmd, &$stdout=null, &$stderr=null)
     $stderr = stream_get_contents($pipes[2]);
     fclose($pipes[2]);
 
-    if( $stderr && trim( $stderr ) )
-        printWarning( "There was an error executing <pre>$cmd</pre> $stderr. " );
+    if ($stderr && trim($stderr)) {
+        printWarning("There was an error executing <pre>$cmd</pre> $stderr. ");
+    }
 
     return proc_close($proc);
 }
 
-function authenticate( $ldap, $pass )
+function authenticate($ldap, $pass)
 {
     $auth = null;
-    if( ldapAlive( 'ldap.ncbs.res.in' ) )
-        $auth = @authenticateUsingLDAP( $ldap, $pass );
-    else
-    {
+    if (ldapAlive('ldap.ncbs.res.in')) {
+        $auth = @authenticateUsingLDAP($ldap, $pass);
+    } else {
         // Try login using IMAP.
-        $auth = @authenticateUsingIMAP( $ldap, $pass );
-        if( ! $auth )
+        $auth = @authenticateUsingIMAP($ldap, $pass);
+        if (! $auth) {
             $auth = null;
+        }
     }
     return $auth;
 }
 
-function venueToShortText( $venue )
+function venueToShortText($venue)
 {
-    if( is_string( $venue ) )
-        $venue = getVenueById( $venue );
+    if (is_string($venue)) {
+        $venue = getVenueById($venue);
+    }
     $txt = '';
     $txt .= $venue['name'];
     return $txt;
 }
 
-function venueToText($venue, $show_strength = true )
+function venueToText($venue, $show_strength = true)
 {
-    if( is_string( $venue ) )
-        $venue = getVenueById( $venue );
+    if (is_string($venue)) {
+        $venue = getVenueById($venue);
+    }
 
     $txt = '';
     $txt .= $venue['id'] . ' ';
 
-    if( $show_strength )
+    if ($show_strength) {
         $txt .= ' ' . $venue['strength'] . ' ';
+    }
 
     $txt .= '[' . $venue['type'] . ']' ;
     return $txt;
 }
 
-function sortByKey( &$arr, $key, $ascending = true )
+function sortByKey(&$arr, $key, $ascending = true)
 {
-    if( ! $arr )
+    if (! $arr) {
         return false;
+    }
 
-    if( ! array_key_exists( $key, $arr[0] ) )
+    if (! array_key_exists($key, $arr[0])) {
         return false;
+    }
 
-    if( $ascending )
-        usort( $arr , function( $x, $y ) {
-            global $key;
-            if( $key == 'date' or $key == 'time' )
-                return strtotime( $x[$key] ) < strtotime( $y[$key] );
-            else
-                return __get__( $x, $key, '') < __get__($y, $key, '' );
-        }
-    );
-    else
-        usort( $arr , function( $x, $y ) {
-            global $key;
-            if( $key == 'date' or $key == 'time' )
-                return strtotime( $x[$key] ) >= strtotime( $y[$key] );
-            else
-                return __get__( $x, $key, '') >= __get__($y, $key, '' );
-        }
-    );
+    if ($ascending) {
+        usort(
+            $arr,
+            function ($x, $y) {
+                global $key;
+                if ($key == 'date' or $key == 'time') {
+                    return strtotime($x[$key]) < strtotime($y[$key]);
+                } else {
+                    return __get__($x, $key, '') < __get__($y, $key, '');
+                }
+            }
+        );
+    } else {
+        usort(
+            $arr,
+            function ($x, $y) {
+                global $key;
+                if ($key == 'date' or $key == 'time') {
+                    return strtotime($x[$key]) >= strtotime($y[$key]);
+                } else {
+                    return __get__($x, $key, '') >= __get__($y, $key, '');
+                }
+            }
+        );
+    }
 
     return true;
 }
@@ -221,7 +237,7 @@ function toColor($n)
 {
     $n = crc32($n % 1000);
     $n &= 0xffffffff;
-    return("#".substr("000000".dechex($n),-6));
+    return("#".substr("000000".dechex($n), -6));
 }
 
 /**
@@ -229,7 +245,7 @@ function toColor($n)
     *
     * @return
  */
-function getDataDir( )
+function getDataDir()
 {
     return '/srv/hippo';
 }
@@ -242,11 +258,12 @@ function getDataDir( )
     * @Returns   getDataDir() / images
  */
 /* ----------------------------------------------------------------------------*/
-function getUploadDir( )
+function getUploadDir()
 {
     $dir = getDataDir() . '/images/';
-    if( ! is_dir($dir))
+    if (! is_dir($dir)) {
         mkdir($dir, 0700, true);
+    }
     return $dir;
 }
 
@@ -259,37 +276,42 @@ function getUploadDir( )
     *
     * @return
  */
-function venuesToHTMLSelect( $venues = null, $ismultiple = false
-    , $selectName = 'venue', $preSelected = array()
-    ) : string
-{
-    if( ! $venues )
-        $venues = getVenues( );
+function venuesToHTMLSelect(
+    $venues = null,
+    $ismultiple = false,
+    $selectName = 'venue',
+    $preSelected = array()
+) : string {
+    if (! $venues) {
+        $venues = getVenues();
+    }
 
     $multiple = '';
     $default = '-- select a venue --';
-    if( $ismultiple )
-    {
+    if ($ismultiple) {
         $multiple = 'multiple size="5"';
         $default = '-- select multiple venues --';
         $selectName .= "[]";
     }
 
     $html = "<select $multiple name=\"$selectName\" id=\"$selectName\">";
-    if( ! $ismultiple )
+    if (! $ismultiple) {
         $html .= "<option selected value>$default</option>";
+    }
 
-    foreach( $venues as $v )
-    {
+    foreach ($venues as $v) {
         $selected = '';
-        if( in_array( $v['id'], $preSelected ) )
+        if (in_array($v['id'], $preSelected)) {
             $selected = 'selected';
+        }
 
-        $text = venueToText( $v );
-        if( $v['suitable_for_conference'] == 'YES' )
+        $text = venueToText($v);
+        if ($v['suitable_for_conference'] == 'YES') {
             $text .= '<font color=\"blue\"> +C </font>';
-        if( $v['has_projector'] == 'YES' )
+        }
+        if ($v['has_projector'] == 'YES') {
             $text .= '<font color=\"blue\"> +P </font>';
+        }
 
         $venueid = $v['id'];
         $html .= "<option value=\"$venueid\" $selected> $text </option>";
@@ -309,12 +331,11 @@ function generateRandomString($length = 10)
     return $randomString;
 }
 
-function appRootDir( )
+function appRootDir()
 {
-    if(isset($_SERVER['HTTPS'])){
+    if (isset($_SERVER['HTTPS'])) {
         $protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
-    }
-    else{
+    } else {
         $protocol = 'http';
     }
     return $protocol . "://" . $_SERVER['HTTP_HOST'] . '/hippo';
@@ -326,7 +347,7 @@ function appRootDir( )
     *
     * @return
  */
-function appURL( )
+function appURL()
 {
     return "https://ncbs.res.in/hippo/";
 }
@@ -337,26 +358,24 @@ function goToPage($page="/welcome", $delay = 3)
     $url = site_url() . $page;
 
     // echo alertUser( "Sending you to $page... Please wait!" );
-    try 
-    {
+    try {
         header("Refresh: $delay, url=$url");
-    }
-    catch (Exception $e) 
-    {
-        echo printWarning( "Failed to redirect!" );
+    } catch (Exception $e) {
+        echo printWarning("Failed to redirect!");
     }
 }
 
-function __get__( array $arr, $what, $default = NULL )
+function __get__(array $arr, $what, $default = null)
 {
-    if( ! $arr )
+    if (! $arr) {
         return $default;
+    }
 
-    if( array_key_exists( $what, $arr ) )
-    {
-       $val = $arr[$what];
-       if( $val )
-           return $val;
+    if (array_key_exists($what, $arr)) {
+        $val = $arr[$what];
+        if ($val) {
+            return $val;
+        }
     }
     return $default;
 }
@@ -371,67 +390,66 @@ function __get__( array $arr, $what, $default = NULL )
     *
     * @return List of dates generated from this pattern.
  */
-function repeatPatToDays( string $pat, string $start_day='today'): array
+function repeatPatToDays(string $pat, string $start_day='today'): array
 {
-    if(trim($pat) == '')
+    if (trim($pat) == '') {
         return array();
+    }
     $pat = strtolower($pat);
-    $exploded = explode( ",", $pat);
+    $exploded = explode(",", $pat);
     $days = $exploded[0];
-    $weeks = __get__($exploded, 1, "all" );
+    $weeks = __get__($exploded, 1, "all");
     $durationInMonths = intval($exploded[2]);
-    if(! $durationInMonths)
+    if (! $durationInMonths) {
         $durationInMonths = 6;
+    }
 
-    if( $weeks == "all" )
+    if ($weeks == "all") {
         $weeks = "first/second/third/fourth/fifth";
+    }
 
-    $weeks = explode( "/", $weeks );
-    $days = explode( "/", $days );
+    $weeks = explode("/", $weeks);
+    $days = explode("/", $days);
 
     // Get the base day which is Sunday. If today is not sunday then previous
     // Sunday must be taken into account.
-    $baseDay = dbDate( $start_day );
+    $baseDay = dbDate($start_day);
     // echo( "BASEDAY $start_day $baseDay" );
 
     // Now fill the dates for given pattern.
     $dates = [];
 
-    $thisMonth = date( 'F', strtotime( $baseDay ) );
+    $thisMonth = date('F', strtotime($baseDay));
 
-    for( $i = 0; $i <= $durationInMonths;  $i ++ ) // Iterate of maximum duration.
-    {
-        $month = date( "F Y", strtotime( "+" . "$i months", strtotime($baseDay) ) );
-        foreach( $weeks as $w )
-        {
-            foreach( $days as $d )
-            {
+    for ($i = 0; $i <= $durationInMonths;  $i ++) { // Iterate of maximum duration.
+        $month = date("F Y", strtotime("+" . "$i months", strtotime($baseDay)));
+        foreach ($weeks as $w) {
+            foreach ($days as $d) {
                 $strDate = "$w $d of $month";
-                $date = dbDate( strtotime( $strDate ) );
+                $date = dbDate(strtotime($strDate));
 
-                if( (strtotime( $date ) >= strtotime( $start_day )) && 
-                    (dateDiffInMonths( $date, $start_day ) <= $durationInMonths) 
-                )
-                {
-                    if( ! in_array( $date, $dates ) )
+                if ((strtotime($date) >= strtotime($start_day)) &&
+                    (dateDiffInMonths($date, $start_day) <= $durationInMonths)
+                ) {
+                    if (! in_array($date, $dates)) {
                         $dates[] = $date;
+                    }
                 }
             }
         }
     }
-    sort( $dates );
+    sort($dates);
     return $dates;
 }
 
-function daysToDate( $ndays, $baseDay = NULL )
+function daysToDate($ndays, $baseDay = null)
 {
     $bd = date("l", $baseDay);
-    $result = Array( );
+    $result = array( );
     $baseDay = date("Y-m-d", $baseDay);
-    foreach( $ndays as $nd )
-    {
-        $date = date('Y-m-d', strtotime( $baseDay . ' + ' . $nd  . ' days'));
-        array_push( $result, $date );
+    foreach ($ndays as $nd) {
+        $date = date('Y-m-d', strtotime($baseDay . ' + ' . $nd  . ' days'));
+        array_push($result, $date);
     }
     return $result;
 }
@@ -442,70 +460,77 @@ function validateDate($date, $format = 'Y-m-d H:i:s')
     return $d && $d->format($format) == $date;
 }
 
-function humanReadableDate( $date, $with_day = true )
+function humanReadableDate($date, $with_day = true)
 {
     $fmt = 'l, M d, Y';
-    if(! $with_day )
+    if (! $with_day) {
         $fmt = 'M d, Y';
+    }
 
-    if( is_int( $date ) )
-        return date( $fmt, $date );
+    if (is_int($date)) {
+        return date($fmt, $date);
+    }
 
-    return date( $fmt, strtotime($date) );
+    return date($fmt, strtotime($date));
 }
 
-function humanReadableShortDate( $date )
+function humanReadableShortDate($date)
 {
-    if( is_int( $date ) )
-        return date( 'l, M d, Y', $date );
+    if (is_int($date)) {
+        return date('l, M d, Y', $date);
+    }
 
-    return date( 'D, M d', strtotime($date) );
+    return date('D, M d', strtotime($date));
 }
 
-function humanReadableTime( $time )
+function humanReadableTime($time)
 {
-    if( is_int( $time ) )
-        return date( 'h:i A', $time );
+    if (is_int($time)) {
+        return date('h:i A', $time);
+    }
 
-    return date( 'h:i A', strtotime($time) );
+    return date('h:i A', strtotime($time));
 }
 
 
 // Return a format date for mysql database.
-function dbDate( $date )
+function dbDate($date)
 {
-    if( is_int( $date ) )
-        return date( 'Y-m-d', $date );
+    if (is_int($date)) {
+        return date('Y-m-d', $date);
+    }
 
-    return date( 'Y-m-d', strtotime( $date ) );
+    return date('Y-m-d', strtotime($date));
 }
 
-function dbDateTime( $date )
+function dbDateTime($date)
 {
-    if( is_int( $date ) )
-        return date( 'Y-m-d H:i:s', $date );
+    if (is_int($date)) {
+        return date('Y-m-d H:i:s', $date);
+    }
 
-    return date( 'Y-m-d H:i:s', strtotime( $date ) );
+    return date('Y-m-d H:i:s', strtotime($date));
 }
 
-function dbTime( $time )
+function dbTime($time)
 {
-    if( is_int( $time ) )
-        return date( 'H:i', $time );
-    return date( 'H:i', strtotime( $time ) );
+    if (is_int($time)) {
+        return date('H:i', $time);
+    }
+    return date('H:i', strtotime($time));
 }
 
 // Return the name of the day for given date.
-function nameOfTheDay( $date )
+function nameOfTheDay($date)
 {
-    return date( 'l', strtotime( $date ) );
+    return date('l', strtotime($date));
 }
 
-function getNumDaysInBetween( $startDate, $endDate )
+function getNumDaysInBetween($startDate, $endDate)
 {
-    $start = new DateTime( $startDate );
-    $end = new DateTime( $endDate );
-    return intval($start->diff( $end )->format( "%R%a" ));
+    $start = new DateTime($startDate);
+    $end = new DateTime($endDate);
+    return intval($start->diff($end)->format("%R%a"));
 }
 
 /* --------------------------------------------------------------------------*/
@@ -519,11 +544,11 @@ function getNumDaysInBetween( $startDate, $endDate )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function dateTimeToGOOGLE( $date, $time )
+function dateTimeToGOOGLE($date, $time)
 {
     $offset = 5.5 * 3600;
     $format = 'Ymd\\THi00\\Z';
-    $timestamp = strtotime( $date . ' ' . $time ) - $offset;
+    $timestamp = strtotime($date . ' ' . $time) - $offset;
     $date = date($format, $timestamp);
     return $date;
 }
@@ -538,42 +563,42 @@ function dateTimeToGOOGLE( $date, $time )
     *
     * @return
  */
-function constructRepeatPattern( string $daypat, string $weekpat, string $durationInMonths):string
+function constructRepeatPattern(string $daypat, string $weekpat, string $durationInMonths):string
 {
+    $daypat = trim($daypat);
+    if (strlen($daypat) == 0) {
+        return '';
+    }
 
-   $daypat = trim( $daypat );
-   if( strlen( $daypat ) == 0 )
-       return '';
+    $repeatPat = '';
 
-   $repeatPat = '';
+    // Day pattern.
+    $daypat = trim(str_replace(",", " ", $daypat));
+    $daysArr = array( );
+    foreach (explode(" ", $daypat) as $day) {
+        $day = substr($day, 0, 3); // Trim to first 3 letters.
+        if (strlen($day) == 3) {
+            $daysArr[] = $day;
+        } else {
+            echo alertUser("Day $day is not 3 letter long. Ignored .. ");
+        }
+    }
 
-   // Day pattern.
-   $daypat = trim( str_replace( ",", " ", $daypat ));
-   $daysArr = array( );
-   foreach( explode( " ", $daypat ) as $day )
-   {
-       $day = substr( $day, 0, 3 ); // Trim to first 3 letters.
-       if( strlen( $day ) == 3 )
-           $daysArr[] = $day;
-       else
-           echo alertUser( "Day $day is not 3 letter long. Ignored .. " );
-   }
+    $days = array_map(function ($day) {
+        return date('D', strtotime($day));
+    }, $daysArr);
 
-   $days = array_map( function( $day ) { return date('D', strtotime( $day ) ); }
-                            , $daysArr );
+    $days = implode("/", $days);
 
-   $days = implode( "/", $days );
+    // Week pattern.
+    if (strlen(trim($weekpat)) < 1) {
+        $weeks = 'first/second/third/fourth/fifth';
+    } else {
+        $weekpat = str_replace(",", " ", trim($weekpat));
+        $weeks = str_replace(' ', '/', $weekpat);
+    }
 
-   // Week pattern.
-   if( strlen( trim( $weekpat ) ) < 1 )
-       $weeks = 'first/second/third/fourth/fifth';
-   else
-   {
-       $weekpat = str_replace( ",", " ", trim( $weekpat ) );
-       $weeks = str_replace( ' ', '/', $weekpat );
-   }
-
-   return "$days,$weeks,$durationInMonths";
+    return "$days,$weeks,$durationInMonths";
 }
 
 /**
@@ -593,19 +618,18 @@ function computeDiff($from, $to)
     $n1 = count($from);
     $n2 = count($to);
 
-    for ($j = -1; $j < $n2; $j++) $dm[-1][$j] = 0;
-    for ($i = -1; $i < $n1; $i++) $dm[$i][-1] = 0;
-    for ($i = 0; $i < $n1; $i++)
-    {
-        for ($j = 0; $j < $n2; $j++)
-        {
-            if ($from[$i] == $to[$j])
-            {
+    for ($j = -1; $j < $n2; $j++) {
+        $dm[-1][$j] = 0;
+    }
+    for ($i = -1; $i < $n1; $i++) {
+        $dm[$i][-1] = 0;
+    }
+    for ($i = 0; $i < $n1; $i++) {
+        for ($j = 0; $j < $n2; $j++) {
+            if ($from[$i] == $to[$j]) {
                 $ad = $dm[$i - 1][$j - 1];
                 $dm[$i][$j] = $ad + 1;
-            }
-            else
-            {
+            } else {
                 $a1 = $dm[$i - 1][$j];
                 $a2 = $dm[$i][$j - 1];
                 $dm[$i][$j] = max($a1, $a2);
@@ -615,22 +639,17 @@ function computeDiff($from, $to)
 
     $i = $n1 - 1;
     $j = $n2 - 1;
-    while (($i > -1) || ($j > -1))
-    {
-        if ($j > -1)
-        {
-            if ($dm[$i][$j - 1] == $dm[$i][$j])
-            {
+    while (($i > -1) || ($j > -1)) {
+        if ($j > -1) {
+            if ($dm[$i][$j - 1] == $dm[$i][$j]) {
                 $diffValues[] = $to[$j];
                 $diffMask[] = 1;
                 $j--;
                 continue;
             }
         }
-        if ($i > -1)
-        {
-            if ($dm[$i - 1][$j] == $dm[$i][$j])
-            {
+        if ($i > -1) {
+            if ($dm[$i - 1][$j] == $dm[$i][$j]) {
                 $diffValues[] = $from[$i];
                 $diffMask[] = -1;
                 $i--;
@@ -668,18 +687,14 @@ function diffline($line1, $line2)
     $n = count($diffval);
     $pmc = 0;
     $result = '';
-    for ($i = 0; $i < $n; $i++)
-    {
+    for ($i = 0; $i < $n; $i++) {
         $mc = $diffmask[$i];
-        if ($mc != $pmc)
-        {
-            switch ($pmc)
-            {
+        if ($mc != $pmc) {
+            switch ($pmc) {
                 case -1: $result .= '</del>'; break;
                 case 1: $result .= '</ins>'; break;
             }
-            switch ($mc)
-            {
+            switch ($mc) {
                 case -1: $result .= '<del>'; break;
                 case 1: $result .= '<ins>'; break;
             }
@@ -688,8 +703,7 @@ function diffline($line1, $line2)
 
         $pmc = $mc;
     }
-    switch ($pmc)
-    {
+    switch ($pmc) {
         case -1: $result .= '</del>'; break;
         case 1: $result .= '</ins>'; break;
     }
@@ -704,19 +718,20 @@ function diffline($line1, $line2)
     *
     * @return True if string is a date.
  */
-function isStringAValidDate( $date )
+function isStringAValidDate($date)
 {
-    $d = date_create_from_format( 'Y-m-d', $date );
-    if( ! $d )
+    $d = date_create_from_format('Y-m-d', $date);
+    if (! $d) {
         return false;
-    return (strcasecmp( $d->format( 'Y-m-d' ), $date ) == 0);
+    }
+    return (strcasecmp($d->format('Y-m-d'), $date) == 0);
 }
 
 function isMobile()
 {
     return preg_match(
-        "/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i"
-        , $_SERVER["HTTP_USER_AGENT"]
+        "/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i",
+        $_SERVER["HTTP_USER_AGENT"]
     );
 }
 
@@ -730,58 +745,61 @@ function isMobile()
     *
     * @return
  */
-function saveImageAsPNG($originalImage, $ext, $outputImage, $quality = 9 )
+function saveImageAsPNG($originalImage, $ext, $outputImage, $quality = 9)
 {
     // jpg, png, gif or bmp?
-    if (preg_match('/jpg|jpeg/i',$ext))
+    if (preg_match('/jpg|jpeg/i', $ext)) {
         $imageTmp=imagecreatefromjpeg($originalImage);
-    else if (preg_match('/png/i',$ext))
+    } elseif (preg_match('/png/i', $ext)) {
         $imageTmp=imagecreatefrompng($originalImage);
-    else if (preg_match('/gif/i',$ext))
+    } elseif (preg_match('/gif/i', $ext)) {
         $imageTmp=imagecreatefromgif($originalImage);
-    else if (preg_match('/bmp/i',$ext))
+    } elseif (preg_match('/bmp/i', $ext)) {
         $imageTmp=imagecreatefrombmp($originalImage);
-    else
+    } else {
         return false;
+    }
 
     // quality is a value from 0 (worst) to 10 (best)
-    $x = imagesx( $imageTmp );
-    $y = imagesy( $imageTmp );
+    $x = imagesx($imageTmp);
+    $y = imagesy($imageTmp);
 
     echo "$x and $y";
 
     // Keep the scaling.
-    $newW = 200; $newH = (int)( $newW * $y / $x );
-    $newImg = imagecreatetruecolor( $newW, $newH );
-    imagecopyresampled( $newImg, $imageTmp, 0, 0, 0, 0, $newW, $newH, $x, $y );
+    $newW = 200;
+    $newH = (int)($newW * $y / $x);
+    $newImg = imagecreatetruecolor($newW, $newH);
+    imagecopyresampled($newImg, $imageTmp, 0, 0, 0, 0, $newW, $newH, $x, $y);
 
     imagepng($newImg, $outputImage, $quality);
     imagedestroy($imageTmp);
     return true;
 }
 
-function saveImageAsJPEG($originalImage, $ext, $outputImage, $quality = 90 )
+function saveImageAsJPEG($originalImage, $ext, $outputImage, $quality = 90)
 {
     // Keep the scaling factor of original image. User ImageMagick.
-    $img = new Imagick( $originalImage );
-    $w = $img->getImageWidth( );
-    $h = $img->getImageHeight( );
-    $newW = 200; $newH = (int)( $newW * $h / $w );
-    $img->resizeImage( $newW, $newH, Imagick::FILTER_GAUSSIAN, 1);
+    $img = new Imagick($originalImage);
+    $w = $img->getImageWidth();
+    $h = $img->getImageHeight();
+    $newW = 200;
+    $newH = (int)($newW * $h / $w);
+    $img->resizeImage($newW, $newH, Imagick::FILTER_GAUSSIAN, 1);
 
     // Remove the old one.
-    if( file_exists( $outputImage ) )
-        unlink( $outputImage );
-
-    $img->writeImage( $outputImage );
-    if( file_exists( $outputImage ) )
-    {
-        $img->clear( );
-        $img->destroy( );
-        return true;
+    if (file_exists($outputImage)) {
+        unlink($outputImage);
     }
-    else
+
+    $img->writeImage($outputImage);
+    if (file_exists($outputImage)) {
+        $img->clear();
+        $img->destroy();
+        return true;
+    } else {
         return false;
+    }
 }
 
 /**
@@ -791,12 +809,12 @@ function saveImageAsJPEG($originalImage, $ext, $outputImage, $quality = 90 )
     *
     * @return
  */
-function getThumbnail( $originalImage )
+function getThumbnail($originalImage)
 {
     // Keep the scaling factor of original image. User ImageMagick.
 
-    $img = new Imagick( $originalImage );
-    $img->thumbnailImage( 200, 0 );
+    $img = new Imagick($originalImage);
+    $img->thumbnailImage(200, 0);
     $img->setImageBackgroundColor('#ffffff');
     // $img->setImageAlphaChannel(Imagick::ALPHACHANNEL_REMOVE);
     $img = $img->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
@@ -804,9 +822,9 @@ function getThumbnail( $originalImage )
     // Create thumbnain in temp dir.
     $outputImage = sys_get_temp_dir() . '/thumb.png';
     // echo "Creating $outputImage ";
-    $img->writeImage( $outputImage );
-    $img->clear( );
-    $img->destroy( );
+    $img->writeImage($outputImage);
+    $img->clear();
+    $img->destroy();
     return $outputImage;
 }
 
@@ -819,15 +837,16 @@ function getThumbnail( $originalImage )
  */
 function getLoginPicturePath($login, $default = 'hippo')
 {
-    $conf = getConf( );
+    $conf = getConf();
     $picPath = $conf['data']['user_imagedir'] . '/' . $login . '.jpg';
-    if( ! file_exists( $picPath ) )
-        $picPath = nullPicPath( $default );
+    if (! file_exists($picPath)) {
+        $picPath = nullPicPath($default);
+    }
 
     return $picPath;
 }
 
-function calendarUrl( )
+function calendarUrl()
 {
     return getConf()['data']['CALENDAR_URL'];
 }
@@ -840,11 +859,11 @@ function calendarUrl( )
     *
     * @return
  */
-function getUserPicture( $user, $default = 'null', $width='200px' )
+function getUserPicture($user, $default = 'null', $width='200px')
 {
-    $picPath = getLoginPicturePath( $user, $default );
+    $picPath = getLoginPicturePath($user, $default);
     $html ='<img class="login_picture" width="'. $width . '" height="auto"
-                src="' . dataURI( $picPath, 'image/jpg' ) . '" >';
+                src="' . dataURI($picPath, 'image/jpg') . '" >';
     return $html;
 }
 
@@ -857,30 +876,31 @@ function getUserPicturePath($user)
 
 function getSpeakerPicturePath($speaker)
 {
-    if(is_array($speaker))
+    if (is_array($speaker)) {
         $speaker = $speaker['id'];
-    $conf = getConf( );
+    }
+    $conf = getConf();
     $datadir = $conf[ 'data' ]['user_imagedir'];
-    if( is_numeric( $speaker ) && intval( $speaker ) > 0 )
-    {
+    if (is_numeric($speaker) && intval($speaker) > 0) {
         // The speaker may not be inserted in database yet. Just return the
         // image by id.
         $picPath = $datadir . '/' . $speaker . '.jpg';
-        if(! file_exists($picPath))
+        if (! file_exists($picPath)) {
             $picPath = nullPicPath('null');
+        }
         return $picPath;
     }
 
     $speaker = splitName($speaker);
     $filename = $speaker[ 'first_name' ] . $speaker[ 'middle_name' ] .
                 $speaker[ 'last_name' ] . '.jpg' ;
-    $filename = str_replace( ' ', '', $filename );
+    $filename = str_replace(' ', '', $filename);
     return $datadir . '/' . $filename;
 }
 
-function getSpeakerPicturePathById( $id )
+function getSpeakerPicturePathById($id)
 {
-    $conf = getConf( );
+    $conf = getConf();
     $datadir = $conf[ 'data' ]['user_imagedir'];
     return $datadir . '/' . $id . '.jpg';
 }
@@ -890,41 +910,39 @@ function getSpeakerPicturePathById( $id )
     *
     * @return
  */
-function rescheduleAWS( $method = 'reschedule_default' ) : array
+function rescheduleAWS($method = 'reschedule_default') : array
 {
-    if( $method == 'reschedule_default' )
+    if ($method == 'reschedule_default') {
         $scriptPath = FCPATH.'./scripts/schedule_notheme.sh';
-    else if( $method == 'reschedule_group_greedy' )
+    } elseif ($method == 'reschedule_group_greedy') {
         $scriptPath = FCPATH.'./scripts/schedule_aws_greedy_groupwise.py';
-    else if( $method == 'reschedule_group' )
+    } elseif ($method == 'reschedule_group') {
         $scriptPath = FCPATH.'./scripts/schedule_groupbytheme.sh';
-    else
+    } else {
         $scriptPath = FCPATH.'./scripts/schedule_notheme.sh';
+    }
 
     // echo("Executing $scriptPath with timeout 60 secs.");
     $command = "timeout 60 $scriptPath";
-    $res = @hippo_shell_exec( $command, $output, $err );
+    $res = @hippo_shell_exec($command, $output, $err);
     return [ 'status' => $res, 'stdout' => $err . $output ];
 }
 
-function html2Markdown( $html, $strip_inline_image = false ) : string
+function html2Markdown($html, $strip_inline_image = false) : string
 {
-    if( $strip_inline_image )
-    {
+    if ($strip_inline_image) {
         // remove img tag.
-        $html = preg_replace( '/<img[^>]+\>/i', '', $html );
+        $html = preg_replace('/<img[^>]+\>/i', '', $html);
     }
 
-    $outfile = tempnam( "/tmp", "HIPPO" );
-    file_put_contents( $outfile, $html );
-    if( file_exists( $outfile ) )
-    {
+    $outfile = tempnam("/tmp", "HIPPO");
+    file_put_contents($outfile, $html);
+    if (file_exists($outfile)) {
         $cmd = FCPATH."scripts/html2other.py $outfile md ";
         // echo printInfo( "Executing $cmd", false );
-        hippo_shell_exec( $cmd, $md, $stderr );
-        if( $stderr )
-        {
-            echo printErrorSevere( "Error: $stderr" );
+        hippo_shell_exec($cmd, $md, $stderr);
+        if ($stderr) {
+            echo printErrorSevere("Error: $stderr");
             return '';
         }
         return $md;
@@ -932,47 +950,50 @@ function html2Markdown( $html, $strip_inline_image = false ) : string
     return $html;
 }
 
-function html2Tex( $html, $strip_inline_image = false )
+function html2Tex($html, $strip_inline_image = false)
 {
     // remove img tag if user wants.
-    if( $strip_inline_image )
-        $html = preg_replace( '/<img[^>]+\>/i', '', $html );
-
-    $outfile = tempnam( '/tmp', 'html2tex' );
-    file_put_contents( $outfile, $html );
-
-    if( file_exists( $outfile ) )
-    {
-        $cmd = FCPATH."scripts/html2other.py $outfile tex ";
-        hippo_shell_exec( $cmd, $texfile, $stderr );
-        unlink( $outfile );
-        $tex = file_get_contents( trim($texfile) );
+    if ($strip_inline_image) {
+        $html = preg_replace('/<img[^>]+\>/i', '', $html);
     }
-    else
+
+    $outfile = tempnam('/tmp', 'html2tex');
+    file_put_contents($outfile, $html);
+
+    if (file_exists($outfile)) {
+        $cmd = FCPATH."scripts/html2other.py $outfile tex ";
+        hippo_shell_exec($cmd, $texfile, $stderr);
+        unlink($outfile);
+        $tex = file_get_contents(trim($texfile));
+    } else {
         $tex = 'FILE NOT FOUND';
+    }
     return $tex;
 }
 
-function saveDownloadableFile( string $filename, string $content ) : bool
+function saveDownloadableFile(string $filename, string $content) : bool
 {
     $filepath = sys_get_temp_dir(). "/$filename";
-    file_put_contents( $filepath, $content );
-    if( file_exists( $filepath ) )
+    file_put_contents($filepath, $content);
+    if (file_exists($filepath)) {
         return true;
-    else
-        echo printWarning( "Failed to save content to file $filepath" );
+    } else {
+        echo printWarning("Failed to save content to file $filepath");
+    }
 
     return false;
 }
 
-function getConf( )
+function getConf()
 {
     $inifile = '/etc/hipporc';
-    if(! isset($_SESSION))
-        return parse_ini_file( $inifile, $process_section = True );
+    if (! isset($_SESSION)) {
+        return parse_ini_file($inifile, $process_section = true);
+    }
 
-    if(! __get__($_SESSION, 'conf', []))
-        $_SESSION['conf'] = parse_ini_file( $inifile, $process_section = True );
+    if (! __get__($_SESSION, 'conf', [])) {
+        $_SESSION['conf'] = parse_ini_file($inifile, $process_section = true);
+    }
     return $_SESSION['conf'];
 }
 
@@ -985,29 +1006,33 @@ function getConf( )
     *
     * @return
  */
-function uploadImage( $pic, $filename )
+function uploadImage($pic, $filename)
 {
-    if( ! $pic )
+    if (! $pic) {
         return false;
+    }
 
     $tmpfile = $pic[ 'tmp_name' ];
-    if( ! $tmpfile )
+    if (! $tmpfile) {
         return false;
+    }
 
-    $type = explode( '/', $pic[ 'type' ] );
+    $type = explode('/', $pic[ 'type' ]);
     $ext = $type[1];
 
-    if( strlen( $tmpfile ) < 1 )
+    if (strlen($tmpfile) < 1) {
         return false;
+    }
 
-    $conf = getConf( );
+    $conf = getConf();
     $datadir = $conf[ 'data' ][ 'user_imagedir' ];
-    if( strpos( $filename, $datadir ) !== false )
+    if (strpos($filename, $datadir) !== false) {
         $picPath = $filename;
-    else
+    } else {
         $picPath = $conf[ 'data' ][ 'user_imagedir' ] . '/' . $filename ;
+    }
 
-    return saveImageAsJPEG( $tmpfile, $ext, $picPath );
+    return saveImageAsJPEG($tmpfile, $ext, $picPath);
 }
 
 /**
@@ -1018,18 +1043,17 @@ function uploadImage( $pic, $filename )
 *
 * @return
  */
-function isBookingRequestValid( $request )
+function isBookingRequestValid($request)
 {
     $date = $request[ 'date' ];
     $startT = $request[ 'start_time' ];
     $endT = $request[ 'end_time' ];
 
-    if( strtotime( $endT, strtotime( $date) ) -
-        strtotime( $startT, strtotime( $date ) )  < 15
-        )
-    {
-        echo printWarning( "Could not create booking request" );
-        echo printInfo( "\tThe duration of this event is less than 15 minutes" );
+    if (strtotime($endT, strtotime($date)) -
+        strtotime($startT, strtotime($date))  < 15
+        ) {
+        echo printWarning("Could not create booking request");
+        echo printInfo("\tThe duration of this event is less than 15 minutes");
         return false;
     }
 
@@ -1044,11 +1068,11 @@ function isBookingRequestValid( $request )
     *
     * @return
  */
-function saveDataFile( $filepath, $text )
+function saveDataFile($filepath, $text)
 {
     // $filepath = getDataDir( ) . '/' . $filename;
-    file_put_contents( $filepath, $text );
-    return file_exists( $filepath );
+    file_put_contents($filepath, $text);
+    return file_exists($filepath);
 }
 
 /**
@@ -1058,24 +1082,26 @@ function saveDataFile( $filepath, $text )
     *
     * @return
  */
-function nextMonday( $date )
+function nextMonday($date)
 {
-    if( ! $date )
+    if (! $date) {
         return null;
+    }
 
-    $date = dbDate( $date );
+    $date = dbDate($date);
     // check if dates are monday. If not assign next monday.
-    if( $date && date( 'D', strtotime($date) ) !== 'Mon' )
+    if ($date && date('D', strtotime($date)) !== 'Mon') {
         $date = dbDate(
-            strtotime( 'next monday', strtotime( $date ) )
-            );
+            strtotime('next monday', strtotime($date))
+        );
+    }
     return $date;
 }
 
-function slotGroupId( $id )
+function slotGroupId($id)
 {
     // Remove the last character, rest if group id.
-    return substr( $id, 0, -1 );
+    return substr($id, 0, -1);
 }
 
 /**
@@ -1085,14 +1111,14 @@ function slotGroupId( $id )
     *
     * @return 'VASANT' or 'MONSOON' depending on date.
  */
-function getSemester( $date )
+function getSemester($date)
 {
-    $month = intval( date( 'm', strtotime( $date) ) );
-    if( $month > 0 && $month < 7 )
+    $month = intval(date('m', strtotime($date)));
+    if ($month > 0 && $month < 7) {
         return 'SPRING';
-    else
+    } else {
         return 'AUTUMN';
-
+    }
 }
 
 
@@ -1105,25 +1131,27 @@ function getSemester( $date )
  */
 function getYear($date)
 {
-    return date( 'Y', strtotime( $date ) );
+    return date('Y', strtotime($date));
 }
 
-function getCurrentYear( )
+function getCurrentYear()
 {
-    return getYear( 'today' );
+    return getYear('today');
 }
 
-function getCurrentSemester( )
+function getCurrentSemester()
 {
-    return getSemester( 'today' );
+    return getSemester('today');
 }
 
-function getCourseInstanceId( $courseId, $sem = null, $year = null )
+function getCourseInstanceId($courseId, $sem = null, $year = null)
 {
-    if( ! $sem )
-        $sem = getCurrentSemester( );
-    if( ! $year )
-        $year = getCurrentYear( );
+    if (! $sem) {
+        $sem = getCurrentSemester();
+    }
+    if (! $year) {
+        $year = getCurrentYear();
+    }
     return "$courseId-$sem-$year";
 }
 
@@ -1134,24 +1162,25 @@ function getCourseInstanceId( $courseId, $sem = null, $year = null )
     *
     * @return
  */
-function isPublicEvent( $event )
+function isPublicEvent($event)
 {
-    return ( $event[ 'is_public_event' ] == 'YES' );
+    return ($event[ 'is_public_event' ] == 'YES');
 }
 
-function splitName( $name )
+function splitName($name)
 {
     $result = array();
-    $name = preg_replace( '/^(Dr|Prof|Mr|Mrs)\s*/', '', $name );
+    $name = preg_replace('/^(Dr|Prof|Mr|Mrs)\s*/', '', $name);
 
-    $name = explode( ' ', $name );
+    $name = explode(' ', $name);
     $result[ 'first_name' ] = $name[ 0 ];
-    $result[ 'last_name' ] = end( $name );
+    $result[ 'last_name' ] = end($name);
 
-    if( count( $name ) == 3 )
+    if (count($name) == 3) {
         $result[ 'middle_name' ] = $name[1];
-    else
+    } else {
         $result[ 'middle_name' ] = '';
+    }
 
     return $result;
 }
@@ -1162,15 +1191,15 @@ function splitName( $name )
     *
     * @Param $name
     *
-    * @Returns   
-    * 
+    * @Returns
+    *
     * TEST CASES.
  */
 /* ----------------------------------------------------------------------------*/
 function splitNameIntoParts(string $name) : array
 {
     $name = trim($name);
-    preg_match( '/^((?P<honorific>(Dr|Prof|Mr|Mrs))\.?\s+)?(?P<first_name>\S+)(\s+(?P<middle_name>\S+))?\s+(?P<last_name>\S+)?$/', $name, $matches);
+    preg_match('/^((?P<honorific>(Dr|Prof|Mr|Mrs))\.?\s+)?(?P<first_name>\S+)(\s+(?P<middle_name>\S+))?\s+(?P<last_name>\S+)?$/', $name, $matches);
     return $matches;
 }
 
@@ -1184,55 +1213,51 @@ function splitNameIntoParts(string $name) : array
     * @Returns  "OK" if booking request if fine. A detailed message otherwise.
  */
 /* ----------------------------------------------------------------------------*/
-function verifyRequest( array $request ) : string
+function verifyRequest(array $request) : string
 {
-    if( ! isset( $request ) )
+    if (! isset($request)) {
         return "Empty request";
+    }
 
-    foreach( array( "start_time", "end_time", "date", "venue" ) as $k )
-        if( ! isset( $request[$k] ) ) 
+    foreach (array( "start_time", "end_time", "date", "venue" ) as $k) {
+        if (! isset($request[$k])) {
             return "Neccessary value $k not found";
+        }
+    }
 
     // Check the end_time must be later than start_time .
     // At least 15 minutes event
-    if( strtotime( $request['end_time'] ) - strtotime( $request['start_time'] ) < 900 )
-    {
+    if (strtotime($request['end_time']) - strtotime($request['start_time']) < 900) {
         $msg = "$symbClock The event must be at least 15 minute long";
         $msg .= " Start time " . $request[ 'start_time' ] . " to end time " .
             $request[ 'end_time' ];
         return $msg;
     }
-    if( ! isset( $request['venue'] ) )
-    {
+    if (! isset($request['venue'])) {
         return "No venue found in your request. If you think this is a bug,
            please write to hippo@lists.ncbs.res.in " ;
     }
 
-    if( strlen( $request[ 'title' ] ) < 8 )
-    {
+    if (strlen($request[ 'title' ]) < 8) {
         return "Request 'TITLE' must have at least 8 characters. Got <pre>"
             . $request[ 'title' ] . "</pre>";
     }
 
     // Let admin override this condition.
-    if( ! anyOfTheseRoles(array('BOOKMYVENUE_ADMIN', 'ACAD_ADMIN', 'MEETINGS')))
-    {
-        if( strtotime( $request[ 'date' ] ) >= strtotime( 'now' ) + 60 * 24 * 3600 )
-        {
+    if (! anyOfTheseRoles(array('BOOKMYVENUE_ADMIN', 'ACAD_ADMIN', 'MEETINGS'))) {
+        if (strtotime($request[ 'date' ]) >= strtotime('now') + 60 * 24 * 3600) {
             return "You can not book more than 60 days in advance";
         }
     }
 
-    if( strtotime( $request[ 'date' ]. ' ' . $request[ 'start_time'] ) < strtotime( 'now' ) )
-    {
+    if (strtotime($request[ 'date' ]. ' ' . $request[ 'start_time']) < strtotime('now')) {
         $error = "You can not create request in the past";
         $error .= ". Got " . $request[ 'date' ] . ' ' . $request[ 'start_time' ];
-        $error .=  ", time now is "  . dbDateTime( 'now' );
+        $error .=  ", time now is "  . dbDateTime('now');
         return $error;
     }
 
-    if( "UNKNOWN" == $request[ 'class' ] )
-    {
+    if ("UNKNOWN" == $request[ 'class' ]) {
         $error = "
             You did not select appropriate <tt>CLASS</tt> for your booking
             request. By default it is set to <tt>UNKNOWN</tt> which is not
@@ -1252,34 +1277,36 @@ function verifyRequest( array $request ) : string
     *
     * @return
  */
-function emailInstitute( $email, $email2='', $format='html')
+function emailInstitute($email, $email2='', $format='html')
 {
     $ncbs = 'National Center For Biological Sciences (TIFR)';
     $instem = 'Institute for Stem Cell Science and Regenerative Medicine';
     $ccamp =  'Center for Cellular and Molecular Platforms';
 
-    if( $format == 'html' )
+    if ($format == 'html') {
         $break = '<br>';
-    else if( $format == 'latex' )
+    } elseif ($format == 'latex') {
         $break = '\linebreak ';
-    else
+    } else {
         $break = '\n';
+    }
 
     $res = $ncbs;
-    if( strpos( $email, 'instem.res.in' ) !== false )
+    if (strpos($email, 'instem.res.in') !== false) {
         $res = $instem;
-    else if( strpos( $email, 'ccamp.res.in' ) !== false )
+    } elseif (strpos($email, 'ccamp.res.in') !== false) {
         $res = $ncbs . $break . $ccamp;
+    }
 
-    if($email2)
-    {
+    if ($email2) {
         $res .= $break;
-        if( strpos( $email2, 'instem.res.in' ) !== false )
+        if (strpos($email2, 'instem.res.in') !== false) {
             $res .= $instem;
-        else if( strpos($email2, 'ccamp.res.in' ) !== false )
+        } elseif (strpos($email2, 'ccamp.res.in') !== false) {
             $res .= $ncbs . $break . $ccamp;
-        else
+        } else {
             $res .= $ncbs;
+        }
     }
     return $res;
 }
@@ -1291,11 +1318,11 @@ function emailInstitute( $email, $email2='', $format='html')
     *
     * @return
  */
-function fixName( $name )
+function fixName($name)
 {
-    $arrName = array_unique( explode( ' ', $name ) );
-    $name = implode( ' ', $arrName );
-    return __ucwords__( $name );
+    $arrName = array_unique(explode(' ', $name));
+    $name = implode(' ', $arrName);
+    return __ucwords__($name);
 }
 
 
@@ -1306,16 +1333,16 @@ function fixName( $name )
     *
     * @return
  */
-function talkToEventTitle( $talk )
+function talkToEventTitle($talk)
 {
-    $title = __ucwords__( $talk[ 'class' ] ) . " by " . fixName( $talk[ 'speaker' ] );
+    $title = __ucwords__($talk[ 'class' ]) . " by " . fixName($talk[ 'speaker' ]);
     $title .= " on '" . $talk[ 'title' ] . "'";
     return $title;
 }
 
-function talkToShortEventTitle( $talk )
+function talkToShortEventTitle($talk)
 {
-    $title = __ucwords__( $talk[ 'class' ] ) . " by " . fixName( $talk[ 'speaker' ] );
+    $title = __ucwords__($talk[ 'class' ]) . " by " . fixName($talk[ 'speaker' ]);
     return $title;
 }
 
@@ -1326,9 +1353,9 @@ function talkToShortEventTitle( $talk )
     *
     * @return
  */
-function fixTags( $tags )
+function fixTags($tags)
 {
-    $tags = preg_replace( '/([;]+\s*|[,]+\s*|\s+)/', ',', $tags );
+    $tags = preg_replace('/([;]+\s*|[,]+\s*|\s+)/', ',', $tags);
     return $tags;
 }
 
@@ -1342,22 +1369,24 @@ function fixTags( $tags )
     *
     * @return  Return true if there is overlap.
  */
-function isOverlappingTimeInterval( $start1, $end1, $start2, $end2 )
+function isOverlappingTimeInterval($start1, $end1, $start2, $end2)
 {
-    $s1 = strtotime( $start1 );
-    $e1 = strtotime( $end1 );
-    $s2 = strtotime( $start2 );
-    $e2 = strtotime( $end2 );
+    $s1 = strtotime($start1);
+    $e1 = strtotime($end1);
+    $s2 = strtotime($start2);
+    $e2 = strtotime($end2);
 
-    assert( $s1 < $e1 );
-    assert( $s2 < $e2 );
+    assert($s1 < $e1);
+    assert($s2 < $e2);
 
     $res = true;
-    if( $s1 < $s2 && $e1 <= $s2 )
+    if ($s1 < $s2 && $e1 <= $s2) {
         $res = false;
+    }
 
-    if( $s2 < $s1 && $e2 <= $s1 )
+    if ($s2 < $s1 && $e2 <= $s1) {
         $res = false;
+    }
 
     return $res;
 }
@@ -1370,11 +1399,11 @@ function isOverlappingTimeInterval( $start1, $end1, $start2, $end2 )
     *
     * @return
  */
-function nameArrayToText( $name )
+function nameArrayToText($name)
 {
-    $txt = __get__( $name, 'first_name', '' ) . ' '
-                . __get__( $name, 'middle_name', '' ) . ' '
-                . __get__( $name, 'last_name', '' );
+    $txt = __get__($name, 'first_name', '') . ' '
+                . __get__($name, 'middle_name', '') . ' '
+                . __get__($name, 'last_name', '');
     return $txt;
 }
 
@@ -1385,13 +1414,14 @@ function nameArrayToText( $name )
     *
     * @return "talks.$id"
  */
-function getTalkExternalId( $talk )
+function getTalkExternalId($talk)
 {
     $id = '';
-    if( is_array( $talk ) )
+    if (is_array($talk)) {
         $id = $talk[ 'id' ];
-    else if( is_string( $talk ) )
+    } elseif (is_string($talk)) {
         $id = $talk;
+    }
 
     return "talks.$id";
 }
@@ -1409,72 +1439,75 @@ function contains($needle, $haystack)
     *
     * @return
  */
-function isEventOfTalk( $event )
+function isEventOfTalk($event)
 {
-    $externalId = __get__( $event, 'external_id', 'SELF.-1' );
+    $externalId = __get__($event, 'external_id', 'SELF.-1');
 
     // This is valid id if there is an external talk.
-    if( preg_match( '/talks\.\d+/', $externalId ) )
+    if (preg_match('/talks\.\d+/', $externalId)) {
         return true;
+    }
 
     return false;
-
 }
 
-function getSlotIdOfTile( $tile )
+function getSlotIdOfTile($tile)
 {
-    preg_match_all( '!\d+!', $tile, $matches );
-    return implode( '', $matches[0] );
+    preg_match_all('!\d+!', $tile, $matches);
+    return implode('', $matches[0]);
 }
 
 
-function getSlotsAtThisDay( $day, $slots = null )
+function getSlotsAtThisDay($day, $slots = null)
 {
-    if( ! $slots )
-        $slots = getTableEntries( 'slots' );
+    if (! $slots) {
+        $slots = getTableEntries('slots');
+    }
 
     $res = array( );
-    foreach( $slots as $s )
-        if( strcasecmp( $s[ 'day' ], $day ) == 0 )
+    foreach ($slots as $s) {
+        if (strcasecmp($s[ 'day' ], $day) == 0) {
             $res[] = $s;
+        }
+    }
 
     return $res;
-
 }
 
-function getSlotAtThisTime( $day, $slot_time, $slots = null )
+function getSlotAtThisTime($day, $slot_time, $slots = null)
 {
-    if( ! $slots )
-        $slots = getTableEntries( 'slots' );
+    if (! $slots) {
+        $slots = getTableEntries('slots');
+    }
 
     $slot = null;
-    foreach( $slots as $s )
-    {
-        if( strcasecmp( $s[ 'day' ], $day ) == 0 )
-        {
-            if( dbTime( $s[ 'start_time' ]) == $slot_time )
+    foreach ($slots as $s) {
+        if (strcasecmp($s[ 'day' ], $day) == 0) {
+            if (dbTime($s[ 'start_time' ]) == $slot_time) {
                 return $s;
+            }
         }
     }
 
     return $slot;
 }
 
-function getNextSemester( $sem = null, $year = null )
+function getNextSemester($sem = null, $year = null)
 {
     $nextSem = array( );
-    if( ! $sem )
-        $sem = getCurrentSemester( );
-    if( ! $year )
-        $year = getCurrentYear( );
+    if (! $sem) {
+        $sem = getCurrentSemester();
+    }
+    if (! $year) {
+        $year = getCurrentYear();
+    }
 
     $nextSem[ 'semester' ] = 'AUTUMN';
     $nextSem[ 'year' ] = $year;
 
-    if( $sem == 'AUTUMN' )
-    {
+    if ($sem == 'AUTUMN') {
         $nextSem[ 'semester' ] = 'SPRING';
-        $nextSem[ 'year' ] = date( 'Y', strtotime( 'next year' ));
+        $nextSem[ 'year' ] = date('Y', strtotime('next year'));
     }
     return $nextSem;
 }
@@ -1490,19 +1523,20 @@ function getNextSemester( $sem = null, $year = null )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function __substr__( string $needle, string $haystack, bool $case_insensitive = false ) 
+function __substr__(string $needle, string $haystack, bool $case_insensitive = false)
 {
-    if( ! $needle )
+    if (! $needle) {
         return false;
-    if( ! $haystack )
-        return false;
-
-    if( $case_insensitive )
-    {
-        $needle = strtolower( $needle );
-        $haystack = strtolower( $haystack );
     }
-    return ( strpos( strtolower( $haystack ), strtolower( $needle) ) !== false );
+    if (! $haystack) {
+        return false;
+    }
+
+    if ($case_insensitive) {
+        $needle = strtolower($needle);
+        $haystack = strtolower($haystack);
+    }
+    return (strpos(strtolower($haystack), strtolower($needle)) !== false);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -1514,32 +1548,31 @@ function __substr__( string $needle, string $haystack, bool $case_insensitive = 
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function isImage( $url )
+function isImage($url)
 {
-     $params = array('http' => array(
+    $params = array('http' => array(
                   'method' => 'HEAD'
                ));
-     $ctx = stream_context_create($params);
-     $fp = @fopen($url, 'rb', false, $ctx);
-     if (!$fp)
-        return false;  // Problem with url
+    $ctx = stream_context_create($params);
+    $fp = @fopen($url, 'rb', false, $ctx);
+    if (!$fp) {
+        return false;
+    }  // Problem with url
 
     $meta = stream_get_meta_data($fp);
-    if ($meta === false)
-    {
+    if ($meta === false) {
         fclose($fp);
         return false;  // Problem reading data from url
     }
 
     $wrapper_data = $meta["wrapper_data"];
-    if(is_array($wrapper_data)){
-      foreach(array_keys($wrapper_data) as $hh){
-          if (substr($wrapper_data[$hh], 0, 19) == "Content-Type: image") // strlen("Content-Type: image") == 19
-          {
-            fclose($fp);
-            return true;
-          }
-      }
+    if (is_array($wrapper_data)) {
+        foreach (array_keys($wrapper_data) as $hh) {
+            if (substr($wrapper_data[$hh], 0, 19) == "Content-Type: image") { // strlen("Content-Type: image") == 19
+                fclose($fp);
+                return true;
+            }
+        }
     }
 
     fclose($fp);
@@ -1555,12 +1588,11 @@ function isImage( $url )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function random_jpeg( $dir )
+function random_jpeg($dir)
 {
-    $files = glob( "$dir/*.jpg" );
-    if( $files )
-    {
-        $idx = array_rand( $files );
+    $files = glob("$dir/*.jpg");
+    if ($files) {
+        $idx = array_rand($files);
         return $files[ $idx ];
     }
     return '';
@@ -1576,15 +1608,16 @@ function random_jpeg( $dir )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function isCourseActive( $course, $day = 'today' )
+function isCourseActive($course, $day = 'today')
 {
-    $date = strtotime( $day );
+    $date = strtotime($day);
 
-    $start = strtotime( $course[ 'start_date' ] );
-    $end = strtotime( $course[ 'end_date' ] );
+    $start = strtotime($course[ 'start_date' ]);
+    $end = strtotime($course[ 'end_date' ]);
 
-    if( $date >= $start && $date <= $end )
+    if ($date >= $start && $date <= $end) {
         return true;
+    }
 
     return false;
 }
@@ -1597,19 +1630,19 @@ function isCourseActive( $course, $day = 'today' )
     * @Param $evOrReq Event or request.
     * @Param $reason  Why?
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $reason)
 {
-
-    if(! $evOrReq)
+    if (! $evOrReq) {
         return;
+    }
     
     // Reuqest have rid while events have eid
     $isConfirmed = true;
     $what = 'confirmed booking';
-    if($evOrReq['rid'] ?? false) {
+    if ($evOrReq['rid'] ?? false) {
         $isConfirmed = false;
         $what = 'pending booking request';
     }
@@ -1618,13 +1651,13 @@ function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $rea
     $login = $evOrReq['created_by'];
     $gid = $evOrReq['gid'];
 
-    if($isConfirmed)
+    if ($isConfirmed) {
         $res = changeStatusOfEvent($gid, $evOrReq['eid'], $login, 'CANCELLED');
-    else
+    } else {
         $res = changeRequestStatus($gid, $evOrReq['rid'], $login, 'CANCELLED');
+    }
 
-    if($res)
-    {
+    if ($res) {
         // Nofity the user.
         $to = getLoginEmail($login);
         $cc = 'hippo@lists.ncbs.res.in';
@@ -1641,7 +1674,7 @@ function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $rea
             Please get in touch with appropriate person if this was a mistake or
             oversight.</small>
             ");
-        sendHTMLEmail($msg, $subject, $to, $cc );
+        sendHTMLEmail($msg, $subject, $to, $cc);
     }
 }
 
@@ -1657,14 +1690,12 @@ function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $rea
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function array_insert_at( $arr, $index, $key, $value )
+function array_insert_at($arr, $index, $key, $value)
 {
     $newarr = array( );
     $i = 0;
-    foreach( $arr as $k => $v )
-    {
-        if( $i == $index )
-        {
+    foreach ($arr as $k => $v) {
+        if ($i == $index) {
             $newarr[ $key ] = $value;
             $newarr[ $k ] = $v;
         }
@@ -1677,37 +1708,45 @@ function array_insert_at( $arr, $index, $key, $value )
 * @name Get the course code from a html string. It is usually in the front
 * of the string.
 */
-function getCourseCode( $cc, $delim = ':' )
+function getCourseCode($cc, $delim = ':')
 {
-    if( strlen( trim( $cc ) ) < 1 )
+    if (strlen(trim($cc)) < 1) {
         return '';
-    return trim( explode( $delim, $cc )[0] );
+    }
+    return trim(explode($delim, $cc)[0]);
 }
 
-function getValuesByKey( $arr, $key )
+function getValuesByKey($arr, $key)
 {
     $res = array( );
-    foreach( $arr as $row )
+    foreach ($arr as $row) {
         $res[] = $row[ $key ];
+    }
 
     return $res;
 }
 
-function diffDates( $date1, $date2, $unit = 'second' )
+function diffDates($date1, $date2, $unit = 'second')
 {
-    $d = abs(strtotime( $date1 ) - strtotime( $date2 ));
-    if( $unit == 'second' )
+    $d = abs(strtotime($date1) - strtotime($date2));
+    if ($unit == 'second') {
         return $d;
-    if( $unit == 'minute' )
+    }
+    if ($unit == 'minute') {
         return $d / 60;
-    if( $unit == 'hour' )
+    }
+    if ($unit == 'hour') {
         return $d / 3600;
-    if( $unit == 'day' )
+    }
+    if ($unit == 'day') {
         return $d / (24*3600);
-    if( $unit == 'week' )
+    }
+    if ($unit == 'week') {
         return $d / (7*24*3600);
-    if( $unit == 'month' )
-        return intval( $d / (30.41*24*3600));
+    }
+    if ($unit == 'month') {
+        return intval($d / (30.41*24*3600));
+    }
     return -1;
 }
 
@@ -1720,10 +1759,12 @@ function diffDates( $date1, $date2, $unit = 'second' )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function isHTML( $text )
+function isHTML($text)
 {
     $processed = htmlentities($text);
-    if( $processed == $text ) return false;
+    if ($processed == $text) {
+        return false;
+    }
 
     return true;
 }
@@ -1738,42 +1779,53 @@ function isHTML( $text )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function splitAtCommonDelimeters( $text, $ext = '')
+function splitAtCommonDelimeters($text, $ext = '')
 {
-    $res = preg_split( "/[\s,$ext]+/", $text );
+    $res = preg_split("/[\s,$ext]+/", $text);
     return $res;
 }
 
-function splitAt( string $text, string $delim ) : array
+function splitAt(string $text, string $delim) : array
 {
-    return explode( $delim, $text );
+    return explode($delim, $text);
 }
 
-function removeAWSSpeakerFromList(string $speaker, $reason=''): array
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Remove a speaker AWS.
+    *
+    * @Param $speaker
+    * @Param $reason
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function removeAWSSpeakerFromList(string $speaker, string $reason='') : array
 {
     $ret = ['success'=>false, 'msg'=>''];
 
-    if(! $reason)
+    if (! $reason) {
         $reason = p("No reason is given. So rude!");
+    }
 
     $data = ['eligible_for_aws' => 'NO', 'login' => $speaker];
-    $res = updateTable( 'logins', 'login', 'eligible_for_aws', $data );
-    if( $res )
-    {
+    $res = updateTable('logins', 'login', 'eligible_for_aws', $data);
+    if ($res) {
         $ret['success'] = true;
         $ret['msg'] .= "Successfully removed user $speaker from AWS list.";
 
         // Send email to speaker.
         $subject = "Your name has been removed from AWS list";
-        $msg = "<p>Dear " . loginToText( $speaker ) . " </p>";
+        $msg = "<p>Dear " . loginToText($speaker) . " </p>";
         $msg .= p("Your name has been removed from the Annual Work Seminar (AWS) 
             roster. $reason. If this is a mistake, please inform Academic 
             Office.");
 
         $to = getLoginEmail($speaker);
         $emailRes = sendHTMLEmail($msg, $subject, $to);
-        if(! $emailRes)
-            $ret['msg'] .=  p( "Could not notify user" );
+        if (! $emailRes) {
+            $ret['msg'] .=  p("Could not notify user");
+        }
     }
     return $ret;
 }
@@ -1782,23 +1834,23 @@ function addAWSSpeakerToList(string $speaker): array
 {
     $ret = ['success'=>false, 'msg'=>''];
     $data = ['eligible_for_aws' => 'YES', 'login' => $speaker];
-    $res = updateTable( 'logins', 'login', 'eligible_for_aws', $data );
-    if( $res )
-    {
+    $res = updateTable('logins', 'login', 'eligible_for_aws', $data);
+    if ($res) {
         $ret['success'] = true;
         $ret['msg'] .= "Successfully added user $speaker to AWS list.";
 
         // Send email to speaker.
         $subject = "Your name has been added to AWS roster";
-        $msg = "<p>Dear " . loginToText( $speaker ) . " </p>";
+        $msg = "<p>Dear " . loginToText($speaker) . " </p>";
         $msg .= p("Your name has been added to Annual Work Seminar (AWS) 
             roster. If this is a mistake, please inform Academic 
             Office.");
 
         $to = getLoginEmail($speaker);
         $emailRes = sendHTMLEmail($msg, $subject, $to);
-        if(! $emailRes)
-            $ret['msg'] .=  p( "Could not notify user" );
+        if (! $emailRes) {
+            $ret['msg'] .=  p("Could not notify user");
+        }
     }
     return $ret;
 }
@@ -1810,72 +1862,75 @@ function addAWSSpeakerToList(string $speaker): array
     *
     * @Param name
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getLoginInfoByName( string $name ) : array
+function getLoginInfoByName(string $name) : array
 {
-    $name = trim( $name );
-    if( ! $name )
+    $name = trim($name);
+    if (! $name) {
         return array();
+    }
 
-    preg_match( 
-        '/^((Mr|Ms|Mrs|Dr|Prof)\.?\s+)?(?P<first_name>\S+)\s+(?P<middle_name>\S+)?\s+(?P<last_name>\S+)$/i'
-        , $name 
-        , $match
+    preg_match(
+        '/^((Mr|Ms|Mrs|Dr|Prof)\.?\s+)?(?P<first_name>\S+)\s+(?P<middle_name>\S+)?\s+(?P<last_name>\S+)$/i',
+        $name,
+        $match
     );
 
-    if( __get__($match, 'first_name','') )
-        $info = getTableEntry( 'logins', 'first_name,last_name', $match );
-    else
+    if (__get__($match, 'first_name', '')) {
+        $info = getTableEntry('logins', 'first_name,last_name', $match);
+    } else {
         return array();
+    }
 
-    $login = __get__( $info, 'login', '' );
-    if( ! $login )
+    $login = __get__($info, 'login', '');
+    if (! $login) {
         return array();
+    }
 
-    return getLoginInfo( $login, true );
+    return getLoginInfo($login, true);
 }
 
-function isDateAndTimeIsInPast( $date, $time )
+function isDateAndTimeIsInPast($date, $time)
 {
-    if( strtotime( "$date $time" ) < strtotime( 'now' ) )
+    if (strtotime("$date $time") < strtotime('now')) {
         return true;
+    }
     return false;
 }
 
-function findIncompleteEntries( array $arr, string $keys ) : string
+function findIncompleteEntries(array $arr, string $keys) : string
 {
     $missing = array();
-    $keys = explode( ',', $keys );
-    foreach( $keys as $key )
-    {
-        if( ! __get__( $arr, $key, '') )
+    $keys = explode(',', $keys);
+    foreach ($keys as $key) {
+        if (! __get__($arr, $key, '')) {
             $missing[] = $key;
+        }
     }
-    return implode( ',', $missing );
+    return implode(',', $missing);
 }
 
 function generateAWSAbstractUsingAI() : string
 {
-    hippo_shell_exec( "cd " . FCPATH . "/hippo-ai && TERM=xterm make -s", $out, $err );
+    hippo_shell_exec("cd " . FCPATH . "/hippo-ai && TERM=xterm make -s", $out, $err);
 
-    if( $out )
-    {
-        $txtArr = explode( '.', $out);
-        $txtArr = array_slice( $txtArr, 1, count($txtArr)-2 );
-        $out = implode( '.', $txtArr);
-    }
-    else
+    if ($out) {
+        $txtArr = explode('.', $out);
+        $txtArr = array_slice($txtArr, 1, count($txtArr)-2);
+        $out = implode('.', $txtArr);
+    } else {
         $out = $err;
+    }
 
     // Now prepare a good looking HTML.
-    $out = html_purify( $out );
+    $out = html_purify($out);
 
     return $out;
 }
 
-function isDate( string $date, string $format = 'Y-m-d' ) : bool
+function isDate(string $date, string $format = 'Y-m-d') : bool
 {
     $d = DateTime::createFromFormat($format, $date);
     // The Y ( 4 digits year ) returns TRUE for any integer with any number of digits so changing the comparison from == to === fixes the issue.
@@ -1899,19 +1954,19 @@ function isDate( string $date, string $format = 'Y-m-d' ) : bool
  *
  * @see array_insert_after()
  */
-function array_insert_before($key, array &$array, $new_key, $new_value) 
+function array_insert_before($key, array &$array, $new_key, $new_value)
 {
-  if (array_key_exists($key, $array)) {
-    $new = array();
-    foreach ($array as $k => $value) {
-      if ($k === $key) {
-        $new[$new_key] = $new_value;
-      }
-      $new[$k] = $value;
+    if (array_key_exists($key, $array)) {
+        $new = array();
+        foreach ($array as $k => $value) {
+            if ($k === $key) {
+                $new[$new_key] = $new_value;
+            }
+            $new[$k] = $value;
+        }
+        return $new;
     }
-    return $new;
-  }
-  return FALSE;
+    return false;
 }
 
 /*
@@ -1931,19 +1986,19 @@ function array_insert_before($key, array &$array, $new_key, $new_value)
  *
  * @see array_insert_before()
  */
-function array_insert_after($key, array &$array, $new_key, $new_value) 
+function array_insert_after($key, array &$array, $new_key, $new_value)
 {
-  if (array_key_exists($key, $array)) {
-    $new = array();
-    foreach ($array as $k => $value) {
-      $new[$k] = $value;
-      if ($k === $key) {
-        $new[$new_key] = $new_value;
-      }
+    if (array_key_exists($key, $array)) {
+        $new = array();
+        foreach ($array as $k => $value) {
+            $new[$k] = $value;
+            if ($k === $key) {
+                $new[$new_key] = $new_value;
+            }
+        }
+        return $new;
     }
-    return $new;
-  }
-  return FALSE;
+    return false;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -1952,22 +2007,23 @@ function array_insert_after($key, array &$array, $new_key, $new_value)
     *
     * @Param $date
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getDefaultAWSVenue( string $date ) : string
+function getDefaultAWSVenue(string $date) : string
 {
     // Even of odd week of the year.
-    $day = intval( date('W', strtotime($date)) );
-    if($day  % 2 == 1 )
+    $day = intval(date('W', strtotime($date)));
+    if ($day  % 2 == 1) {
         return 'Haapus (LH1)';
-    else
+    } else {
         return 'InstemAuditorium100Seater';
+    }
 }
 
-function getAWSVenue( string $date ) : string
+function getAWSVenue(string $date) : string
 {
-    $res = getTableEntry( 'upcoming_aws', 'date', ['date'=>$date]);
+    $res = getTableEntry('upcoming_aws', 'date', ['date'=>$date]);
     return $res['venue'];
 }
 
@@ -1978,19 +2034,20 @@ function getAWSVenue( string $date ) : string
     * @Param $date
     * @Param $defaultVenue
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
+function getAWSVenueForm(string $date, string $defaultVenue = '') : string
 {
     $form = '<form action="'.site_url("adminacad/assign_aws_venue/$date").'" method="post" accept-charset="utf-8">';
 
-    $defaultVenue = trim( $defaultVenue );
-    if( strlen($defaultVenue)==0)
-        $defaultVenue = getDefaultAWSVenue( $date );
+    $defaultVenue = trim($defaultVenue);
+    if (strlen($defaultVenue)==0) {
+        $defaultVenue = getDefaultAWSVenue($date);
+    }
 
-    $venues = getVenuesByTypes( 'LECTURE HALL,AUDITORIUM' );
-    $form .= venuesToHTMLSelect( $venues, false, 'venue', [$defaultVenue] );
+    $venues = getVenuesByTypes('LECTURE HALL,AUDITORIUM');
+    $form .= venuesToHTMLSelect($venues, false, 'venue', [$defaultVenue]);
     $form .= "<button>Change</button>";
     $form .= '</form> ';
     return $form;
@@ -1998,40 +2055,52 @@ function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Book a venue for this AWS. 
+    * @Synopsis  Book a venue for this AWS.
     *
     * @Param $aws
     * @Param $removeCollision. If yes, remove any conflicting booking already
     * on the venue.
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
 {
     $result = ['msg'=>'', 'success'=>false, 'collision'=>[]];
     $extID = "upcoming_aws." . $aws['id'];
+    $title = 'AWS by ' . arrayToName((getLoginInfo($aws['speaker'])));
 
     $booking = getTableEntry('events', 'external_id', ['external_id'=>$extID]);
-    $request = getTableEntry('bookmyvenue_requests', 'external_id', ['external_id'=>$extID]);
+    if (! $booking) {
+        $booking = getTableEntry('bookmyvenue_requests', 'external_id', ['external_id'=>$extID]);
+    }
 
-    if($booking) { /* Update */
-        echo "TODO : update confirmed event.";
+    if ($booking) {
+        /* Update */
+
+        $booking['date'] = $aws['date'];
+        $booking['venue'] = $aws['venue'];
+        $booking['title'] = $title;
+        $booking['start_time'] = $aws['time'];
+        $booking['end_time'] = dbTime(strtotime($aws['time'])*30*60);
+        $booking['is_public_event'] = 'YES';
+        $booking['status'] = 'VALID';
+        $updatekeys = 'title,status,date,start_time,end_time,venue';
+        updateTable(__get__($booking, 'eid','')?'events':'bookmyvenue_requests'
+            , 'external_id', $updatekeys, $booking);
+
+        $result['success'] = true;
+        $result['msg'] .= "Already booked. Updated";
         return $result;
-    }
-    else if($request) { // Update
-        echo "TODO: Update request.";
-        return $result;
-    }
-    else { /* Create new */
+    } else { /* Create new */
         $data = ['external_id'=>$extID
             ,  'date'=>$aws['date']
             , 'start_time'=> $aws['time']
-            , 'end_time'=> dbTime( strtotime($aws['time'])+60*60)
+            , 'end_time'=> dbTime(strtotime($aws['time'])+30*60)
             , 'created_by'=>'HIPPO'
             , 'is_public_event' => 'YES'
             , 'class'=>'ANNUAL WORK SEMINAR'
-            , 'title'=> 'AWS by ' . $aws['speaker']
+            , 'title'=> $title
             , 'last_modified_on' => dbDateTime('now')
             , 'venue'=>$aws['venue']];
 
@@ -2040,22 +2109,22 @@ function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
         $res = submitRequestImproved($data, $removeCollision, $reason);
         $result['collision'] = $res['collision'];
 
-        if($res['success']) {
+        if ($res['success']) {
             // At least one of the request is approved. Call it success.
-            if(count($res['rid'])>0) {
+            if (count($res['rid'])>0) {
                 $result['success'] = true;
             }
 
-            foreach($res['rid'] as $rid) {
+            foreach ($res['rid'] as $rid) {
                 $gid = $res['gid'];
                 $res2 = approveRequest($gid, $rid, 'APPROVED');
-                if($res2['success'])
+                if ($res2['success']) {
                     $result['msg'] .= p("Successfully approved. $gid.$rid");
-                else
+                } else {
                     $result['msg'] .= p("Failed to approve $gid.$rid: " . $res2['msg']);
+                }
             }
-        }
-        else {
+        } else {
             // collision
             $result['request_response'] = $res;
             $result['msg'] .= $res['msg'];
@@ -2071,26 +2140,30 @@ function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
     *
     * @Param $id
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function inactiveAccounts( array $ids ) : bool
+function inactiveAccounts(array $ids) : bool
 {
-    if( !$ids)
+    if (!$ids) {
         return false;
+    }
 
     // Else remove the user.
-    foreach( $ids as $id )
-    {
-        if(! $id )
+    foreach ($ids as $id) {
+        if (! $id) {
             continue;
-        updateTable( 'logins', 'login', 'status,eligible_for_aws'
-            , ['login'=>$id, 'status'=>'INACTIVE', 'eligible_for_aws'=>'NO']
+        }
+        updateTable(
+            'logins',
+            'login',
+            'status,eligible_for_aws',
+            ['login'=>$id, 'status'=>'INACTIVE', 'eligible_for_aws'=>'NO']
         );
     }
 
-    $body = implode( "<br/>", $ids);
-    sendHTMLEmail( $body, "Some accounts have been deactivated.", "hippo@lists.ncbs.res.in");
+    $body = implode("<br/>", $ids);
+    sendHTMLEmail($body, "Some accounts have been deactivated.", "hippo@lists.ncbs.res.in");
     return true;
 }
 
@@ -2100,10 +2173,10 @@ function inactiveAccounts( array $ids ) : bool
     *
     * @Param $str
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function findEmailIdInParanthesis( string $str ) : string
+function findEmailIdInParanthesis(string $str) : string
 {
     preg_match("/\((.+?)\)/", $str, $res);
     return $res?$res[1]:"NA";
@@ -2116,22 +2189,24 @@ function findEmailIdInParanthesis( string $str ) : string
     * @Param $user Name of the users.
     * @Param $level (default -1, return all) else return key of that level.
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getUserKeys(string $login, int $level = -1) : array
 {
     $where = "login = '$login' OR login LIKE '$login@%'";
-    if($level > 0)
+    if ($level > 0) {
         $where .= " AND level='$level'";
+    }
     return getTableEntries('apikeys', 'timestamp', $where);
 }
 
 function getUserKey(string $login, int $level = -1) : array
 {
     $where = "login = '$login' OR login LIKE '$login@%'";
-    if($level > 0)
+    if ($level > 0) {
         $where .= " AND level='$level'";
+    }
     return getTableEntry('apikeys', 'login', ['login'=>$login]);
 }
 
@@ -2142,28 +2217,30 @@ function getUserKey(string $login, int $level = -1) : array
     * @Param $user
     * @Param $level
     *
-    * @Returns  
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function genererateNewKey(string $user, int $level = 0)
 {
     $newKey = generateRandomString(20);
-    $res = insertIntoTable( 'apikeys'
-        , "login,apikey,level"
-        , ['login'=> $user, 'apikey'=>$newKey, 'level'=>$level]
+    $res = insertIntoTable(
+        'apikeys',
+        "login,apikey,level",
+        ['login'=> $user, 'apikey'=>$newKey, 'level'=>$level]
     );
 
-    if($res)
+    if ($res) {
         return $newKey;
+    }
     return '';
 }
 
-function cmp( $a, $b )
+function cmp($a, $b)
 {
-    return strtotime( $a[ 'date' ] ) > strtotime( $b['date'] );
+    return strtotime($a[ 'date' ]) > strtotime($b['date']);
 }
 
-function cmp_datetime( $a, $b )
+function cmp_datetime($a, $b)
 {
     $fmt = 'Y-m-d H:i:s';
     $aa = DateTime::createFromFormat($fmt, $a['date'] . ' ' . $b['end_time']);
@@ -2177,8 +2254,7 @@ function getUpcomingPublicEventsFormatted(string $startDate, int $limit = 20, in
     $events = getPublicEventsNum($startDate, $limit, $offset);
 
     $all = [];
-    foreach( $events as $e )
-    {
+    foreach ($events as $e) {
         $ev = [];
         $date =  dbDate($e['date']);
         $ev['title'] = $e['title'];
@@ -2190,7 +2266,7 @@ function getUpcomingPublicEventsFormatted(string $startDate, int $limit = 20, in
         $ev['start'] = dbDateTime(strtotime($e['date'] . ' '. $e['start_time']));
         $ev['end'] = dbDateTime(strtotime($e['date'] . ' '. $e['end_time']));
         $ev['venue'] = venueToShortText($e['venue'], false);
-        $ev['description'] = __get__($e, 'description','');
+        $ev['description'] = __get__($e, 'description', '');
 
         // This is an abuse of RSS protocol.
         $ev['datetime'] = date('r', strtotime($e['date'] . ' ' . $e['start_time']));
@@ -2207,15 +2283,16 @@ function getUpcomingPublicEventsFormatted(string $startDate, int $limit = 20, in
     * @Param $width
     * @Param $height
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getBase64JPEG(string $filepath, int $width=0, int $height = 0) : string
 {
-    $i = new Imagick( $filepath );
-    $i->setImageFormat( "jpeg" );
-    if( $width > 0 || $height > 0)
+    $i = new Imagick($filepath);
+    $i->setImageFormat("jpeg");
+    if ($width > 0 || $height > 0) {
         $i->adaptiveResizeImage($width, $height);
+    }
     $bytes = $i->getImageBlob();
     return 'data:image/jpeg;base64, '.base64_encode($bytes);
 }
@@ -2223,13 +2300,12 @@ function getBase64JPEG(string $filepath, int $width=0, int $height = 0) : string
 function cancelThisJCRequest($data)
 {
     $data[ 'status' ] = 'CANCELLED';
-    $res = updateTable( 'jc_requests', 'id', 'status', $data);
-    if( $res )
-    {
-        $entry = getTableEntry( 'jc_requests', 'id', $_POST );
-        $presenter = getLoginInfo( $entry[ 'presenter' ] );
+    $res = updateTable('jc_requests', 'id', 'status', $data);
+    if ($res) {
+        $entry = getTableEntry('jc_requests', 'id', $_POST);
+        $presenter = getLoginInfo($entry[ 'presenter' ]);
         $entryHTML = arrayToVerticalTableHTML($entry, 'info');
-        $msg = "<p>Dear " . arrayToName( $presenter ) . "</p>";
+        $msg = "<p>Dear " . arrayToName($presenter) . "</p>";
         $msg .= "<p>Your presentation request has been cancelled by admin.
             the latest entry is following. </p>";
         $msg .= $entryHTML;
@@ -2237,8 +2313,7 @@ function cancelThisJCRequest($data)
         $subject = 'Your presentation request is CANCELLED by JC admin';
         $to = $presenter['email'];
         $cclist = 'jccoords@ncbs.res.in,hippo@lists.ncbs.res.in';
-        $res = sendHTMLEmail( $msg, $subject, $to, $cclist );
+        $res = sendHTMLEmail($msg, $subject, $to, $cclist);
     }
     return $res;
 }
-

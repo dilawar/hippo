@@ -83,14 +83,24 @@ function bookVenueForAWS()
     $today = dbDate('today');
     $upAWSs = getTableEntries('upcoming_aws', 'date', "status='VALID' AND date > '$today'");
     echo printInfo("Found total " . count($upAWSs) . " awses.");
+
+    $awsOnThisDay = [];
     foreach ($upAWSs as $aws) {
+
+        $naws = __get__($awsOnThisDay, $aws['date'], 0)+1;
+        $awsOnThisDay[$aws['date']] = $naws;
+
+        // Each AWS is 25 mins.
+        $aws['time'] = dbTime(strtotime($aws['time'])+($naws-1)*30*60);
+
         /* Book avenue for this AWS. Remove any colliding request/booking. Send
          * email to the booking party.
-        */
+         */
         $res = bookAVenueForThisAWS($aws, $removeCollision=true);
-        if (! $res['success']) {
-            echo p("Could not book. " . $res['msg']);
-        }
+        if (! $res['success']) 
+            echo p("Failure: " . $res['msg']);
+        else
+            echo p("Success: " . $res['msg']);
 
         foreach ($res['collision'] as $collision) {
             echo p("Colliding with.");

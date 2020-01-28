@@ -228,7 +228,6 @@ function executeQuery(string $query, $onlyOne = false)
     }
 
     $hippoDB = initDB();
-    ;
     $res = $hippoDB->query($query);
     $n = -1;
     if ($onlyOne) {
@@ -240,14 +239,12 @@ function executeQuery(string $query, $onlyOne = false)
 function executeQueryReadonly($query)
 {
     $hippoDB = initDB();
-    ;
-    $hippoDB->query($query);
+    return $hippoDB->query($query);
 }
 
 function executeURlQueries($query)
 {
     $hippoDB = initDB();
-    ;
     $res = $hippoDB->query($query);
     return $res;
 }
@@ -1867,9 +1864,8 @@ function getTableEntry(string $tablename, $whereKeys, array $data) : array
     }
 
     $where = array( );
-    foreach ($whereKeys as $key) {
-        array_push($where, "$key=:$key");
-    }
+    foreach ($whereKeys as $key)
+        $where[] = "$key=:$key";
 
     $where = implode(" AND ", $where);
 
@@ -2429,7 +2425,7 @@ function getTotalUpcomingAWSOnThisMonday(string $monday): int
     $date = dbDate($monday);
     $res = executeQuery("SELECT COUNT(*) as total FROM upcoming_aws 
         WHERE date='$date'", true);
-    return $res[0]['total'];
+    return intval($res[0]['total']);
 }
 
 function maxAWSAllowed(): int
@@ -2465,11 +2461,9 @@ function getUpcomingAWSOfSpeaker(string $speaker)
     *
     * @return
  */
-function acceptScheduleOfAWS($speaker, $date, string $venue='')
+function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : int
 {
     $hippoDB = initDB();
-    ;
-
     if (! $venue) {
         $venue = getDefaultAWSVenue($date);
     }
@@ -2488,7 +2482,7 @@ function acceptScheduleOfAWS($speaker, $date, string $venue='')
 
     if ($res) {
         echo printInfo("Already assigned for $speaker on $date on venue $venue.");
-        return $res[ 'id' ];
+        return intval($res['id']);
     }
 
     // Make sure that person is eligible for AWS. Usually she is some sometimes
@@ -2526,7 +2520,7 @@ function acceptScheduleOfAWS($speaker, $date, string $venue='')
         // If this happens, I must not commit the previous results into table.
         if (! $res) {
             $hippoDB->rollBack();
-            return false;
+            return 0;
         }
 
         // If successful add a query in queries to create a clickable query.
@@ -2543,10 +2537,10 @@ function acceptScheduleOfAWS($speaker, $date, string $venue='')
         echo minionEmbarrassed(
             "Failed to insert $speaker, $date into database: " . $e->getMessage()
         );
-        return false;
+        return 0;
     }
     $hippoDB->commit();
-    return $awsID;
+    return intval($awsID);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -2626,17 +2620,25 @@ function queryAWS($query)
     *
     * @return
  */
-function clearUpcomingAWS($speaker, $date)
+function clearUpcomingAWS($speaker, $date) : array
 {
-    $hippoDB = initDB();
-    ;
-    $stmt = $hippoDB->prepare(
-        "DELETE FROM upcoming_aws WHERE speaker=:speaker AND date=:date"
-    );
+    $result = [ 'msg'=>'', 'success'=>true];
+    $aws = getTableEntry('upcoming_aws', 'speaker,date'
+        , ['speaker'=>$speaker, 'date'=>$date]);
 
-    $stmt->bindValue(':speaker', $speaker);
-    $stmt->bindValue(':date', $date);
-    return $stmt->execute();
+    $res = executeQueryReadonly("DELETE FROM upcoming_aws 
+        WHERE speaker='$speaker' AND date='$date'");
+
+    // Remove this AWS related booking from the events..
+    if($res) {
+        $result['msg'] .= "Successfully deleted upcoming AWS. ";
+        $externalID = 'upcoming_aws.' + $aws['id'];
+        $res2 = updateTable('events', 'external_id', 'status'
+            , ['status'=>'INVALID', 'external_id'=>$external_id]);
+        if($res2)
+            $result['msg'] .= "Successfully removed event $external_id.";
+    }
+    return $result;
 }
 
 /**
@@ -3002,7 +3004,6 @@ function getActiveRecurrentEvents($day)
 function getLoginByName($name)
 {
     $hippoDB = initDB();
-    ;
     $name = explode(' ', $name);
     $fname = $name[ 0 ];
     $lname = end($name);
