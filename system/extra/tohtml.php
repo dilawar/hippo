@@ -1005,8 +1005,6 @@ function venueSummary($venue, $withName=true)
 
     if(__get__($venue, 'type', ''))
         $res .= " [" . $venue['type'] . "]";
-    if( __get__($venue, 'building_name', ''))
-        $res .= ", " . $venue['building_name'];
     if( __get__($venue, 'institute', ''))
         $res .= ", " . $venue['institute'];
     return $res;
