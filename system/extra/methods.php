@@ -2223,16 +2223,10 @@ function getUserKey(string $login, int $level = -1) : array
 function genererateNewKey(string $user, int $level = 1)
 {
     $newKey = generateRandomString(20);
-<<<<<<< HEAD
-    $res = insertIntoTable( 'apikeys'
-        , "login,apikey,level"
-        , ['login'=> $user, 'apikey'=>$newKey, 'level'=>"$level"]
-=======
     $res = insertIntoTable(
         'apikeys',
         "login,apikey,level",
         ['login'=> $user, 'apikey'=>$newKey, 'level'=>$level]
->>>>>>> devel
     );
 
     if ($res) {
