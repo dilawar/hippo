@@ -1602,21 +1602,26 @@ function isCourseActive( $course, $day = 'today' )
 /* ----------------------------------------------------------------------------*/
 function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $reason)
 {
+
+    if(! $evOrReq)
+        return;
+    
     // Reuqest have rid while events have eid
     $isConfirmed = true;
     $what = 'confirmed booking';
-    if(in_array('rid', $evOrReq)) {
+    if($evOrReq['rid'] ?? false) {
         $isConfirmed = false;
         $what = 'pending booking request';
     }
 
+    var_dump($evOrReq, $isConfirmed, $what);
     $login = $evOrReq['created_by'];
     $gid = $evOrReq['gid'];
 
-    if(! $isConfirmed)
-        $res = changeRequestStatus($gid, $evOrReq['rid'], $login, 'CANCELLED');
-    else
+    if($isConfirmed)
         $res = changeStatusOfEvent($gid, $evOrReq['eid'], $login, 'CANCELLED');
+    else
+        $res = changeRequestStatus($gid, $evOrReq['rid'], $login, 'CANCELLED');
 
     if($res)
     {
@@ -1993,14 +1998,16 @@ function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Book a venue for upcoming AWS.
+    * @Synopsis  Book a venue for this AWS. 
     *
-    * @Param array
+    * @Param $aws
+    * @Param $removeCollision. If yes, remove any conflicting booking already
+    * on the venue.
     *
     * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function bookAVenueForThisAWS(array $aws, bool $removeCollision=false): array
+function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
 {
     $result = ['msg'=>'', 'success'=>false, 'collision'=>[]];
     $extID = "upcoming_aws." . $aws['id'];
@@ -2029,7 +2036,8 @@ function bookAVenueForThisAWS(array $aws, bool $removeCollision=false): array
             , 'venue'=>$aws['venue']];
 
         // If external_id already in the requests or events then update else create.
-        $res = submitRequestImproved($data, true);
+        $reason = p("This venue/slot is reserved for AWS.");
+        $res = submitRequestImproved($data, $removeCollision, $reason);
         $result['collision'] = $res['collision'];
 
         if($res['success']) {

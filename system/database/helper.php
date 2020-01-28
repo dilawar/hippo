@@ -7,12 +7,12 @@ require_once BASEPATH. 'extra/me.php';
 require_once BASEPATH. 'extra/courses.php';
 
 // Construct the PDO
-$hippoDB = new BMVPDO( "localhost" );
-$hippoDB->initialize( );
+$hippoDB = new BMVPDO("localhost");
+$hippoDB->initialize();
 
 /**
  * Replaces any parameter placeholders in a query with the value of that
- * parameter. Useful for debugging. Assumes anonymous parameters from 
+ * parameter. Useful for debugging. Assumes anonymous parameters from
  * $params are are in the same order as specified in $query
  *
  * @param string $query The sql query with parameter placeholders
@@ -21,7 +21,7 @@ $hippoDB->initialize( );
  *
  * This is from https://stackoverflow.com/a/8403150/1805129
  */
-function interpolateQuery($query, $params) 
+function interpolateQuery($query, $params)
 {
     $keys = array();
 
@@ -42,14 +42,13 @@ function interpolateQuery($query, $params)
 }
 
 
-function initDB( )
+function initDB()
 {
     global $hippoDB;
-    if( ! $hippoDB )
-    {
+    if (! $hippoDB) {
         // Construct the PDO
-        $hippoDB = new BMVPDO( );
-        $hippoDB->initialize( );
+        $hippoDB = new BMVPDO();
+        $hippoDB->initialize();
     }
     return $hippoDB;
 }
@@ -64,47 +63,51 @@ function initDB( )
     *
     * @return
  */
-function getChoicesFromGlobalArray( $choices, $key, $default = 'UNKNOWN', $sorted = true )
+function getChoicesFromGlobalArray($choices, $key, $default = 'UNKNOWN', $sorted = true)
 {
-    $choicesSplit = array_filter( explode( ',', __get__( $choices, $key, '' )));
+    $choicesSplit = array_filter(explode(',', __get__($choices, $key, '')));
 
-    if( $sorted )
-        sort( $choicesSplit );
+    if ($sorted) {
+        sort($choicesSplit);
+    }
 
     // Remove the default one and add the default at the front.
-    $results = array_diff( $choicesSplit, array( $default ) );
-    array_unshift( $results, $default );
+    $results = array_diff($choicesSplit, array( $default ));
+    array_unshift($results, $default);
 
-    return array_unique( $results );
+    return array_unique($results);
 }
 
-function getEventsOfTalkId( $talkId )
+function getEventsOfTalkId($talkId)
 {
-    $externalId = getTalkExternalId( $talkId );
-    $entry = getTableEntry( 'events', 'external_id,status'
-        , array( 'external_id' => "$externalId" , 'status' => 'VALID' )
-        );
-    return $entry;
-}
-
-function getBookingRequestOfTalkId( $talkId )
-{
-    $externalId = getTalkExternalId( $talkId );
-    $entry = getTableEntry('bookmyvenue_requests'
-        , 'external_id,status'
-        , ['external_id'=>"$externalId", 'status'=>'PENDING']
+    $externalId = getTalkExternalId($talkId);
+    $entry = getTableEntry(
+        'events',
+        'external_id,status',
+        array( 'external_id' => "$externalId" , 'status' => 'VALID' )
     );
     return $entry;
 }
 
-function getTalkIDs( $start_date, $end_date )
+function getBookingRequestOfTalkId($talkId)
 {
-    return executeQuery( 
+    $externalId = getTalkExternalId($talkId);
+    $entry = getTableEntry(
+        'bookmyvenue_requests',
+        'external_id,status',
+        ['external_id'=>"$externalId", 'status'=>'PENDING']
+    );
+    return $entry;
+}
+
+function getTalkIDs($start_date, $end_date)
+{
+    return executeQuery(
         "SELECT external_id, date, start_time, end_time, venue FROM events WHERE
             status='VALID' AND date>'$start_date' AND date<'$end_date'
             AND external_id LIKE 'talks.%'
         "
-        );
+    );
 }
 
 /* --------------------------------------------------------------------------*/
@@ -113,36 +116,34 @@ function getTalkIDs( $start_date, $end_date )
     *
     * @Param $date
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getTalksOnThisDay($date)
 {
-    $talkIDS = executeQuery( 
+    $talkIDS = executeQuery(
         "SELECT external_id, date, start_time, end_time, venue FROM events WHERE
             status='VALID' AND date='$date' AND external_id LIKE 'talks.%'
         "
-        );
+    );
     $results = array();
-    foreach( $talkIDS as $i => $tev )
-    {
+    foreach ($talkIDS as $i => $tev) {
         $row = array();
-        $exID = explode( '.', $tev['external_id'])[1];
-        $talk = getTableEntry( 'talks', 'id', array( 'id' => $exID ) );
+        $exID = explode('.', $tev['external_id'])[1];
+        $talk = getTableEntry('talks', 'id', array( 'id' => $exID ));
         $results[] = ['talk'=>$talk, 'booking'=>$tev];
     }
     return $results;
 }
 
-function getTalksWithEvent( $start_date, $end_date )
+function getTalksWithEvent($start_date, $end_date)
 {
-    $talkIDS = getTalkIDs( $start_date, $end_date );
+    $talkIDS = getTalkIDs($start_date, $end_date);
     $results = array();
-    foreach( $talkIDS as $i => $tev )
-    {
+    foreach ($talkIDS as $i => $tev) {
         $row = array();
-        $exID = explode( '.', $tev['external_id'])[1];
-        $talk = getTableEntry( 'talks', 'id', array( 'id' => $exID ) );
+        $exID = explode('.', $tev['external_id'])[1];
+        $talk = getTableEntry('talks', 'id', array( 'id' => $exID ));
         $row = array_merge($row, $talk);
         $row['date'] = $tev['date'];
         $row['start_time'] = $tev['start_time'];
@@ -158,56 +159,56 @@ function getTalksWithEvent( $start_date, $end_date )
  *
  * @return
  */
-function doAWSHouseKeeping( )
+function doAWSHouseKeeping()
 {
-    $oldAws = getTableEntries( 'upcoming_aws' , 'date', "status='VALID' AND date < CURDATE( )");
+    $oldAws = getTableEntries('upcoming_aws', 'date', "status='VALID' AND date < CURDATE( )");
     $badEntries = array( );
-    foreach( $oldAws as $aws )
-    {
-        if( strlen( $aws[ 'title' ]) < 1 || strlen( $aws[ 'abstract' ] ) < 1)
-        {
-            array_push( $badEntries, $aws );
+    foreach ($oldAws as $aws) {
+        if (strlen($aws[ 'title' ]) < 1 || strlen($aws[ 'abstract' ]) < 1) {
+            array_push($badEntries, $aws);
             continue;
         }
 
-        $res1 = insertIntoTable( 'annual_work_seminars'
-            , 'speaker,date,time,supervisor_1,supervisor_2' .
+        $res1 = insertIntoTable(
+            'annual_work_seminars',
+            'speaker,date,time,supervisor_1,supervisor_2' .
                 ',tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4' .
-                ',title,abstract,is_presynopsis_seminar', $aws
-            );
+                ',title,abstract,is_presynopsis_seminar',
+            $aws
+        );
 
-        if( $res1 )
-        {
-            $res2 = deleteFromTable( 'upcoming_aws', 'id', $aws );
-            if( ! $res2 )
-                array_push( $badEntries, $aws );
-        }
-        else
-        {
+        if ($res1) {
+            $res2 = deleteFromTable('upcoming_aws', 'id', $aws);
+            if (! $res2) {
+                array_push($badEntries, $aws);
+            }
+        } else {
             $badEntries[] =  $aws;
-            echo printWarning( "Could not move entry to main AWS list" );
+            echo printWarning("Could not move entry to main AWS list");
         }
     }
     return $badEntries;
 }
 
-function getVenues($sortby = 'total_events DESC, id' )
+function getVenues($sortby = 'total_events DESC, id')
 {
     // Sort according to total_events hosted by venue
-    $res = executeQuery( "SELECT * FROM venues ORDER BY $sortby" );
+    $res = executeQuery("SELECT * FROM venues ORDER BY $sortby");
     return $res;
 }
 
 function getVenuesNames($type='')
 {
     $query = "SELECT id FROM venues ORDER BY id";
-    if($type)
+    if ($type) {
         $query .= " WHERE type='$type'";
+    }
 
-    $res = executeQuery( $query );
+    $res = executeQuery($query);
     $names = array();
-    foreach( $res as $v )
+    foreach ($res as $v) {
         $names[] = $v['id'];
+    }
     return $names;
 }
 
@@ -220,144 +221,161 @@ function getVenuesNames($type='')
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function executeQuery(string $query, $onlyOne = False)
+function executeQuery(string $query, $onlyOne = false)
 {
-    if(strlen(trim($query)) < 1)
+    if (strlen(trim($query)) < 1) {
         return [];
+    }
 
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( $query );
+    $hippoDB = initDB();
+    ;
+    $res = $hippoDB->query($query);
     $n = -1;
-    if($onlyOne)
+    if ($onlyOne) {
         $n = 1;
-    return fetchEntries( $res, $n  );
+    }
+    return fetchEntries($res, $n);
 }
 
-function executeQueryReadonly( $query )
+function executeQueryReadonly($query)
 {
-    $hippoDB = initDB();;
-    $hippoDB->query( $query );
+    $hippoDB = initDB();
+    ;
+    $hippoDB->query($query);
 }
 
-function executeURlQueries( $query )
+function executeURlQueries($query)
 {
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( $query );
+    $hippoDB = initDB();
+    ;
+    $res = $hippoDB->query($query);
     return $res;
 }
 
 function getVenuesByType($type)
 {
     $where = "type='$type'";
-    if($type === 'all')
+    if ($type === 'all') {
         $where = '';
+    }
     $venues = getTableEntries('venues', 'id', $where);
     $res = [];
-    foreach( $venues as $v)
-    {
+    foreach ($venues as $v) {
         $v['summary'] = venueSummary($v, false);
         $res[$v['id']] = $v;
     }
     return $res;
 }
 
-function getVenuesByTypes( string $csvtypes ) : array
+function getVenuesByTypes(string $csvtypes) : array
 {
     $res = [];
-    foreach( explode(',', $csvtypes) as $vtype )
+    foreach (explode(',', $csvtypes) as $vtype) {
         $res = array_merge($res, getVenuesByType($vtype));
+    }
     return $res;
 }
 
-function getTableSchema( $tableName )
+function getTableSchema($tableName)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "DESCRIBE $tableName" );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare("DESCRIBE $tableName");
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
-function getVenuesGroupsByType(  )
+function getVenuesGroupsByType()
 {
     // Sort according to total_events hosted by venue
-    $venues = getVenues( );
-    $newVenues = Array( );
-    foreach( $venues as $venue )
-    {
+    $venues = getVenues();
+    $newVenues = array( );
+    foreach ($venues as $venue) {
         $vtype = $venue['type'];
-        if( ! array_key_exists( $vtype, $newVenues ) )
-            $newVenues[ $vtype ] = Array();
-        array_push( $newVenues[$vtype], $venue );
+        if (! array_key_exists($vtype, $newVenues)) {
+            $newVenues[ $vtype ] = array();
+        }
+        array_push($newVenues[$vtype], $venue);
     }
     return $newVenues;
 }
 
 // Return the row representing venue for given venue id.
-function getVenueById( $venueid )
+function getVenueById($venueid)
 {
-    $hippoDB = initDB();;
-    $venueid = trim( $venueid );
-    $stmt = $hippoDB->prepare( "SELECT * FROM venues WHERE id=:id" );
-    $stmt->bindValue( ':id', $venueid );
-    $stmt->execute( );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+    $hippoDB = initDB();
+    ;
+    $venueid = trim($venueid);
+    $stmt = $hippoDB->prepare("SELECT * FROM venues WHERE id=:id");
+    $stmt->bindValue(':id', $venueid);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function getPendingRequestsOnThisDay( $date )
+function getPendingRequestsOnThisDay($date)
 {
-    $requests = getTableEntries( 'bookmyvenue_requests', 'date,start_time'
-            , "date='$date' AND status='PENDING'"
-        );
+    $requests = getTableEntries(
+        'bookmyvenue_requests',
+        'date,start_time',
+        "date='$date' AND status='PENDING'"
+    );
     return $requests;
 }
 
 // Get all requests which are pending for review.
-function getPendingRequestsGroupedByGID( )
+function getPendingRequestsGroupedByGID()
 {
-    return getRequestsGroupedByGID( 'PENDING' );
+    return getRequestsGroupedByGID('PENDING');
 }
 
 // Get all requests with given status.
 function getRequestsGroupedByGID($status='PENDING')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare('SELECT * FROM bookmyvenue_requests
-        WHERE status=:status AND date>=CURDATE() GROUP BY gid ORDER BY date,start_time' );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+        WHERE status=:status AND date>=CURDATE() GROUP BY gid ORDER BY date,start_time');
+    $stmt->bindValue(':status', $status);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 // Get all events with given status.
-function getEventsByGroupId( $gid, $status = NULL, $from='')
+function getEventsByGroupId($gid, $status = null, $from='')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = "SELECT * FROM events WHERE gid=:gid";
-    if( $status )
+    if ($status) {
         $query .= " AND status=:status ";
-    if( $from )
+    }
+    if ($from) {
         $query .= " AND date>=:date ";
+    }
     $query .= " ORDER BY date, start_time ";
 
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':gid', $gid );
-    if( $status )
-        $stmt->bindValue( ':status', $status );
-    if($from)
-        $stmt->bindValue( ':date', dbDate($from) );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':gid', $gid);
+    if ($status) {
+        $stmt->bindValue(':status', $status);
+    }
+    if ($from) {
+        $stmt->bindValue(':date', dbDate($from));
+    }
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 //  Get a event of given gid and eid. There is only one such event.
-function getEventsById( $gid, $eid )
+function getEventsById($gid, $eid)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( 'SELECT * FROM events WHERE gid=:gid AND eid=:eid' );
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->bindValue( ':eid', $eid );
-    $stmt->execute( );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare('SELECT * FROM events WHERE gid=:gid AND eid=:eid');
+    $stmt->bindValue(':gid', $gid);
+    $stmt->bindValue(':eid', $eid);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 /**
@@ -369,17 +387,19 @@ function getEventsById( $gid, $eid )
     *
     * @return
  */
-function getRequestOfUser( $userid, $status = 'PENDING' )
+function getRequestOfUser($userid, $status = 'PENDING')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare(
         'SELECT * FROM bookmyvenue_requests WHERE created_by=:created_by
         AND status=:status AND date >= CURDATE() - INTERVAL 2 DAY
-        ORDER BY date,start_time' );
-    $stmt->bindValue( ':created_by', $userid );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+        ORDER BY date,start_time'
+    );
+    $stmt->bindValue(':created_by', $userid);
+    $stmt->bindValue(':status', $status);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -389,35 +409,37 @@ function getRequestOfUser( $userid, $status = 'PENDING' )
     * @Param $userid
     * @Param $status
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getRequestOfUserGroupedAndWithCount( $userid, $status = 'PENDING' )
+function getRequestOfUserGroupedAndWithCount($userid, $status = 'PENDING')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare(
         'SELECT *, COUNT(*) AS total_events FROM bookmyvenue_requests WHERE created_by=:created_by
         AND status=:status AND date >= CURDATE() - INTERVAL 2 DAY
-        GROUP BY gid ORDER BY date,start_time' );
-    $stmt->bindValue( ':created_by', $userid );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+        GROUP BY gid ORDER BY date,start_time'
+    );
+    $stmt->bindValue(':created_by', $userid);
+    $stmt->bindValue(':status', $status);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 
-function getEventsOfUser( $userid, $from = 'today', $status = 'VALID' )
+function getEventsOfUser($userid, $from = 'today', $status = 'VALID')
 {
-    $hippoDB = initDB();;
-    $from = dbDate($from );
-    $stmt = $hippoDB->prepare( "SELECT * FROM events WHERE 
+    $hippoDB = initDB();
+    ;
+    $from = dbDate($from);
+    $stmt = $hippoDB->prepare("SELECT * FROM events WHERE 
         (created_by='$userid' OR created_by LIKE '$userid@%')
         AND date >= '$from'
         AND status='$status'
-        ORDER BY date,start_time" );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
-
+        ORDER BY date,start_time");
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -428,67 +450,68 @@ function getEventsOfUser( $userid, $from = 'today', $status = 'VALID' )
     *
     * @return
  */
-function getEventsBetween( $from , $duration )
+function getEventsBetween($from, $duration)
 {
-    $startDate = dbDate( $from );
-    $endDate = dbDate( strtotime( $duration, strtotime( $from ) ) );
+    $startDate = dbDate($from);
+    $endDate = dbDate(strtotime($duration, strtotime($from)));
     $whereExpr = "date >= '$startDate' AND date <= '$endDate'";
     $whereExpr .= " AND status='VALID' ";
-    return getTableEntries( 'events', 'date,start_time', $whereExpr );
+    return getTableEntries('events', 'date,start_time', $whereExpr);
 }
 
-function getEventsBetweenDates( $fromDate , $endDate )
+function getEventsBetweenDates($fromDate, $endDate)
 {
-    $startDate = dbDate( $fromDate );
-    $endDate = dbDate( $endDate );
+    $startDate = dbDate($fromDate);
+    $endDate = dbDate($endDate);
     $whereExpr = "date >= '$startDate' AND date <= '$endDate'";
     $whereExpr .= " AND status='VALID' ";
-    return getTableEntries( 'events', 'date,start_time', $whereExpr );
+    return getTableEntries('events', 'date,start_time', $whereExpr);
 }
 
 
 // Fetch entries from database response object
-function fetchEntries( $res, int $n = -1, $how = PDO::FETCH_ASSOC ) : array
+function fetchEntries($res, int $n = -1, $how = PDO::FETCH_ASSOC) : array
 {
-    $array = Array( );
-    if( $res ) 
-    {
-        while( $row = $res->fetch( $how ) )
-        {
+    $array = array( );
+    if ($res) {
+        while ($row = $res->fetch($how)) {
             $row = array_map('utf8_encode', $row);
             $array[] = $row;
-            if( count($array) == $n )
+            if (count($array) == $n) {
                 break;
+            }
         }
     }
     return $array;
 }
 
 // Get the request when group id and request id is given.
-function getRequestById( string $gid, string $rid ) : array
+function getRequestById(string $gid, string $rid) : array
 {
-    return getTableEntry('bookmyvenue_requests', 'gid,rid', ['gid'=>$gid, 'rid'=>$rid] );
+    return getTableEntry('bookmyvenue_requests', 'gid,rid', ['gid'=>$gid, 'rid'=>$rid]);
 }
 
 // Return a list of requested with same group id.
-function getRequestByGroupId( $gid )
+function getRequestByGroupId($gid)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( 'SELECT * FROM bookmyvenue_requests WHERE gid=:gid' );
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare('SELECT * FROM bookmyvenue_requests WHERE gid=:gid');
+    $stmt->bindValue(':gid', $gid);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 // Return a list of requested with same group id and status
-function getRequestByGroupIdAndStatus( $gid, $status )
+function getRequestByGroupIdAndStatus($gid, $status)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( 'SELECT * FROM bookmyvenue_requests WHERE gid=:gid AND status=:status' );
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare('SELECT * FROM bookmyvenue_requests WHERE gid=:gid AND status=:status');
+    $stmt->bindValue(':gid', $gid);
+    $stmt->bindValue(':status', $status);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -499,16 +522,18 @@ function getRequestByGroupIdAndStatus( $gid, $status )
     *
     * @return true on success, false otherwise.
  */
-function changeRequestStatus( $gid, $rid, $status )
+function changeRequestStatus($gid, $rid, $status)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "UPDATE bookmyvenue_requests SET
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare(
+        "UPDATE bookmyvenue_requests SET
         status=:status,last_modified_on=NOW() WHERE gid=:gid AND rid=:rid"
     );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->bindValue( ':rid', $rid );
-    return $stmt->execute( );
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':gid', $gid);
+    $stmt->bindValue(':rid', $rid);
+    return $stmt->execute();
 }
 
 /**
@@ -519,31 +544,36 @@ function changeRequestStatus( $gid, $rid, $status )
     *
     * @return
  */
-function changeStatusOfRequests( $gid, $status )
+function changeStatusOfRequests($gid, $status)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "UPDATE bookmyvenue_requests SET status=:status WHERE gid=:gid" );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':gid', $gid );
-    return $stmt->execute( );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare("UPDATE bookmyvenue_requests SET status=:status WHERE gid=:gid");
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':gid', $gid);
+    return $stmt->execute();
 }
 
-function changeStatusOfEventGroup( $gid, $user, $status )
+function changeStatusOfEventGroup($gid, $user, $status)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "UPDATE events SET status=:status WHERE
-        gid=:gid AND created_by=:created_by" );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->bindValue( ':created_by', $user );
-    return $stmt->execute( );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare("UPDATE events SET status=:status WHERE
+        gid=:gid AND created_by=:created_by");
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':gid', $gid);
+    $stmt->bindValue(':created_by', $user);
+    return $stmt->execute();
 }
 
-function changeStatusOfEvent( $gid, $eid, $user, $status )
+function changeStatusOfEvent($gid, $eid, $user, $status)
 {
-    $res = updateTable( 'events', 'gid,eid,created_by', 'status'
-        , array( 'gid' => $gid, 'eid' => $eid, 'status' => $status, 'created_by' => $user )
-        );
+    $res = updateTable(
+        'events',
+        'gid,eid,created_by',
+        'status',
+        array( 'gid' => $gid, 'eid' => $eid, 'status' => $status, 'created_by' => $user )
+    );
     return $res;
 }
 
@@ -553,9 +583,13 @@ function changeStatusOfEvent( $gid, $eid, $user, $status )
 function getEvents($from = 'today', $status = 'VALID', int $limit=-1, int $offset=-1)
 {
     $date = dbDate($from);
-    return getTableEntries('events', 'date,start_time'
-        , "date >= '$date' AND status='$status'"
-        , '*', $limit, $offset
+    return getTableEntries(
+        'events',
+        'date,start_time',
+        "date >= '$date' AND status='$status'",
+        '*',
+        $limit,
+        $offset
     );
 }
 
@@ -569,11 +603,10 @@ function getEvents($from = 'today', $status = 'VALID', int $limit=-1, int $offse
     * @Param $limit
     * @Param $offset
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getEventsGID(string $from='today', string $status='VALID'
-    , int $limit=-1, int $offset=-1)
+function getEventsGID(string $from='today', string $status='VALID', int $limit=-1, int $offset=-1)
 {
     $date = dbDate($from);
     $query = "SELECT *,count(eid) as total
@@ -582,63 +615,70 @@ function getEventsGID(string $from='today', string $status='VALID'
             GROUP BY gid
             ORDER BY date,start_time
         ";
-    if($limit > 0)
+    if ($limit > 0) {
         $query .= " LIMIT $limit";
-    if($offset >= 0)
+    }
+    if ($offset >= 0) {
         $query .= " OFFSET $offset";
+    }
     return executeQuery($query);
 }
 
 /**
   * @brief Get the list of upcoming events grouped by gid.
  */
-function getEventsGrouped( $sortby = '', $from = 'today', $status = 'VALID' )
+function getEventsGrouped($sortby = '', $from = 'today', $status = 'VALID')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $sortExpr = '';
 
-    $sortby = explode( ',', $sortby );
-    if( count($sortby) > 0 )
-        $sortExpr = 'ORDER BY ' . implode( ', ', $sortby);
+    $sortby = explode(',', $sortby);
+    if (count($sortby) > 0) {
+        $sortExpr = 'ORDER BY ' . implode(', ', $sortby);
+    }
 
-    $nowTime = dbTime( $from );
+    $nowTime = dbTime($from);
     $stmt = $hippoDB->prepare(
         "SELECT * COUNT(eid) as TOTAL FROM events WHERE date >= :date
             AND status=:status GROUP BY gid $sortExpr"
-        );
-    $stmt->bindValue( ':date', $nowTime );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    );
+    $stmt->bindValue(':date', $nowTime);
+    $stmt->bindValue(':status', $status);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
     * @brief Get the list of upcoming events.
  */
-function getPublicEvents( $from = 'today', $status = 'VALID', $ndays = 1 )
+function getPublicEvents($from = 'today', $status = 'VALID', $ndays = 1)
 {
-    $hippoDB = initDB();;
-    $from = dbDate( $from );
-    $end = dbDate( strtotime( $from . " +$ndays day" ) );
-    $stmt = $hippoDB->prepare( "SELECT * FROM events WHERE date >= :date AND
+    $hippoDB = initDB();
+    ;
+    $from = dbDate($from);
+    $end = dbDate(strtotime($from . " +$ndays day"));
+    $stmt = $hippoDB->prepare("SELECT * FROM events WHERE date >= :date AND
         date <= :end_date AND
-        status=:status AND is_public_event='YES' ORDER BY date,start_time" );
-    $stmt->bindValue( ':date', $from );
-    $stmt->bindValue( ':end_date', $end );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+        status=:status AND is_public_event='YES' ORDER BY date,start_time");
+    $stmt->bindValue(':date', $from);
+    $stmt->bindValue(':end_date', $end);
+    $stmt->bindValue(':status', $status);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 function getPublicEventsNum(string $from, int $limit=10, int $offset=0)
 {
-    $hippoDB = initDB();;
-    return getTableEntries('events'
-        , 'date,start_time'
-        , "date >= '$from' AND status='VALID' AND is_public_event='YES'"
-        , '*'
-        , $limit 
-        , $offset
+    $hippoDB = initDB();
+    ;
+    return getTableEntries(
+        'events',
+        'date,start_time',
+        "date >= '$from' AND status='VALID' AND is_public_event='YES'",
+        '*',
+        $limit,
+        $offset
     );
 }
 
@@ -650,41 +690,45 @@ function getPublicEventsNum(string $from, int $limit=10, int $offset=0)
     *
     * @return
  */
-function getPublicEventsOnThisDay( $date = 'today', $status = 'VALID' )
+function getPublicEventsOnThisDay($date = 'today', $status = 'VALID')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $date = dbDate($date);
-    $stmt = $hippoDB->prepare( "SELECT * FROM events WHERE date = :date AND
+    $stmt = $hippoDB->prepare(
+        "SELECT * FROM events WHERE date = :date AND
         status=:status AND is_public_event='YES' ORDER BY date,start_time"
-        );
-    $stmt->bindValue( ':date', $date );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    );
+    $stmt->bindValue(':date', $date);
+    $stmt->bindValue(':status', $status);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
-function getEventsOn( $day, $status = 'VALID')
+function getEventsOn($day, $status = 'VALID')
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "SELECT * FROM events
-        WHERE status=:status AND date = :date ORDER BY date,start_time" );
-    $stmt->bindValue( ':date', $day );
-    $stmt->bindValue( ':status', $status );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare("SELECT * FROM events
+        WHERE status=:status AND date = :date ORDER BY date,start_time");
+    $stmt->bindValue(':date', $day);
+    $stmt->bindValue(':status', $status);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
-function getEventsOnThisVenueOnThisday( $venue, $date, $status = 'VALID' )
+function getEventsOnThisVenueOnThisday($venue, $date, $status = 'VALID')
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "SELECT * FROM events
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare("SELECT * FROM events
         WHERE venue=:venue AND status=:status AND date=:date ORDER
-            BY date,start_time" );
-    $stmt->bindValue( ':date', $date );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':venue', $venue );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+            BY date,start_time");
+    $stmt->bindValue(':date', $date);
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':venue', $venue);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -698,11 +742,10 @@ function getEventsOnThisVenueOnThisday( $venue, $date, $status = 'VALID' )
     *
     * @return
  */
-function getEventsOnThisVenueBetweenTime( $venue, $date
-    , $start_time, $end_time
-   ,  $status = 'VALID'): array
+function getEventsOnThisVenueBetweenTime($venue, $date, $start_time, $end_time, $status = 'VALID'): array
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare(
         "SELECT * FROM events
         WHERE venue=:venue AND status=:status AND date=:date AND status='VALID'
@@ -712,31 +755,32 @@ function getEventsOnThisVenueBetweenTime( $venue, $date
             )
         "
     );
-    $stmt->bindValue( ':date', $date );
-    $stmt->bindValue( ':start_time', $start_time );
-    $stmt->bindValue( ':end_time', $end_time );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':venue', $venue );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt->bindValue(':date', $date);
+    $stmt->bindValue(':start_time', $start_time);
+    $stmt->bindValue(':end_time', $end_time);
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':venue', $venue);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
-function getRequestsOnThisVenueOnThisday( $venue, $date, $status = 'PENDING' )
+function getRequestsOnThisVenueOnThisday($venue, $date, $status = 'PENDING')
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "SELECT * FROM bookmyvenue_requests
-        WHERE venue=:venue AND status=:status AND date=:date" );
-    $stmt->bindValue( ':date', $date );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':venue', $venue );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare("SELECT * FROM bookmyvenue_requests
+        WHERE venue=:venue AND status=:status AND date=:date");
+    $stmt->bindValue(':date', $date);
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':venue', $venue);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
-function getRequestsOnThisVenueBetweenTime( $venue, $date
-    , $start_time, $end_time, $status='PENDING'): array
+function getRequestsOnThisVenueBetweenTime($venue, $date, $start_time, $end_time, $status='PENDING'): array
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare(
         "SELECT * FROM bookmyvenue_requests
         WHERE venue=:venue AND status=:status AND date=:date
@@ -744,14 +788,15 @@ function getRequestsOnThisVenueBetweenTime( $venue, $date
               OR ( start_time < :end_time AND end_time > :end_time )
               OR ( start_time >= :start_time AND end_time <= :end_time )
             )
-        " );
-    $stmt->bindValue( ':date', $date );
-    $stmt->bindValue( ':start_time', $start_time );
-    $stmt->bindValue( ':end_time', $end_time );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':venue', $venue );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+        "
+    );
+    $stmt->bindValue(':date', $date);
+    $stmt->bindValue(':start_time', $start_time);
+    $stmt->bindValue(':end_time', $end_time);
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':venue', $venue);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -767,46 +812,55 @@ function getRequestsOnThisVenueBetweenTime( $venue, $date
     * @Returns  List of requests and events.
  */
 /* ----------------------------------------------------------------------------*/
-function getAllBookingsBetweenTheseDays(string $from, string $to, $createdBy='', $venue='' )
+function getAllBookingsBetweenTheseDays(string $from, string $to, $createdBy='', $venue='')
 {
     $extra = '';
-    if(trim($venue))
+    if (trim($venue)) {
         $extra .= " AND venue='$venue' ";
-    if( trim($createdBy))
+    }
+    if (trim($createdBy)) {
         $extra .= " AND created_by='$createdBy' ";
+    }
 
-    $events = getTableEntries( 'events', 'date'
-        , "status='VALID' AND date >= '$from' AND date <= '$to'" . $extra
-        , "class,title,description,date,venue,created_by,start_time,end_time,url"
+    $events = getTableEntries(
+        'events',
+        'date',
+        "status='VALID' AND date >= '$from' AND date <= '$to'" . $extra,
+        "class,title,description,date,venue,created_by,start_time,end_time,url"
     );
 
-    $requests = getTableEntries( 'bookmyvenue_requests', 'date'
-        , "status='PENDING' AND date >= '$from' AND date <= '$to'" . $extra
-        , "class,title,status,description,date,venue,created_by,start_time,end_time,url"
+    $requests = getTableEntries(
+        'bookmyvenue_requests',
+        'date',
+        "status='PENDING' AND date >= '$from' AND date <= '$to'" . $extra,
+        "class,title,status,description,date,venue,created_by,start_time,end_time,url"
     );
     $events = array_merge($events, $requests);
     usort($events, 'cmp_datetime');
     return $events;
 }
 
-function getNumBookings(int $num, int $limit )
+function getNumBookings(int $num, int $limit)
 {
-
     $from = dbDate('today');
     $now = dbTime(strtotime('now'));
-    $events = getTableEntries( 'events'
-        , 'date,end_time' // we gonna usort is later
-        , "status='VALID' AND TIMESTAMP(date, end_time) >= NOW()"
-        , "class,title,status,description,date,venue,created_by,start_time,end_time,url"
-        , $num
-        , $limit
+    $events = getTableEntries(
+        'events',
+        'date,end_time' // we gonna usort is later
+        ,
+        "status='VALID' AND TIMESTAMP(date, end_time) >= NOW()",
+        "class,title,status,description,date,venue,created_by,start_time,end_time,url",
+        $num,
+        $limit
     );
-    $requests = getTableEntries( 'bookmyvenue_requests'
-        , 'date,end_time' // we gonna usort it later.
-        , "status='PENDING' AND TIMESTAMP(date, end_time) >= NOW()"
-        , "class,title,status,description,date,venue,created_by,start_time,end_time,url"
-        , $num 
-        , $limit
+    $requests = getTableEntries(
+        'bookmyvenue_requests',
+        'date,end_time' // we gonna usort it later.
+        ,
+        "status='PENDING' AND TIMESTAMP(date, end_time) >= NOW()",
+        "class,title,status,description,date,venue,created_by,start_time,end_time,url",
+        $num,
+        $limit
     );
     $events = array_merge($events, $requests);
     usort($events, 'cmp_datetime');
@@ -822,7 +876,7 @@ function getNumBookings(int $num, int $limit )
     * @Param $date
     * @Param $time
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getVenueBookingsOnDateTime($venue, $date, $time, $endTime)
@@ -840,19 +894,21 @@ function getVenueBookingsOnDateTime($venue, $date, $time, $endTime)
     *
     * @return
  */
-function getNumberOfEntries( $tablename, $column = 'id' )
+function getNumberOfEntries($tablename, $column = 'id')
 {
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( "SELECT MAX($column) AS $column FROM $tablename" );
-    return $res->fetch( PDO::FETCH_ASSOC );
+    $hippoDB = initDB();
+    ;
+    $res = $hippoDB->query("SELECT MAX($column) AS $column FROM $tablename");
+    return $res->fetch(PDO::FETCH_ASSOC);
 }
 
-function getUniqueFieldValue( $tablename, $column='id'): int
+function getUniqueFieldValue($tablename, $column='id'): int
 {
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( "SELECT MAX($column) AS $column FROM $tablename" );
+    $hippoDB = initDB();
+    ;
+    $res = $hippoDB->query("SELECT MAX($column) AS $column FROM $tablename");
     $res = $res->fetch(PDO::FETCH_ASSOC);
-    return intval(__get__($res, $column,-1))+1;
+    return intval(__get__($res, $column, -1))+1;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -864,36 +920,43 @@ function getUniqueFieldValue( $tablename, $column='id'): int
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getUniqueID( $tablename )
+function getUniqueID($tablename)
 {
     $column = 'id';
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( "SELECT MAX($column) AS $column FROM $tablename" );
-    $res = $res->fetch( PDO::FETCH_ASSOC );
-    return intval(__get__($res, $column ,0)) + 1;
+    $hippoDB = initDB();
+    $res = $hippoDB->query("SELECT MAX($column) AS $column FROM $tablename");
+    $res = $res->fetch(PDO::FETCH_ASSOC);
+    return intval(__get__($res, $column, 0)) + 1;
 }
 
+/* --------------------------------------------------------------------------*/
 /**
-    * @brief Sunmit a request for review. Return array as output.
+    * @Synopsis Submit a booking request. Optionally remove any collision.
     *
-    * @param $request
+    * @Param $request. Array representing request.
+    * @Param $removeCollision. 
+    *   If true, remove all collisions and notify the booking party.
+    * @Param $reason.
+    *    Reason when removing collision. This message will be sent to the 
+    *    booking party.
     *
-    * @return  Group id of request.
+    * @Returns
+    *    array: with `success`, `msg`, and `collision` keys.
  */
-function submitRequestImproved(array $request, bool $removeCollision=false) : array
+/* ----------------------------------------------------------------------------*/
+function submitRequestImproved(array $request, bool $removeCollision=false, string $reason='') : array
 {
-    $result = ['msg'=>'', 'success'=>false, 'collision'=>[]
-        ,  'gid'=>null, 'rid'=>[]];
+    $result = ['msg'=>'', 'success'=>false, 'collision'=>[], 'gid'=>null, 'rid'=>[]];
 
     $request['created_by'] = $request['created_by'] ?? whoAmI();
-    $repeatPat = __get__( $request, 'repeat_pat', '' );
-    if(strlen($repeatPat) > 0)
-        $days = repeatPatToDays( $repeatPat, $request[ 'date' ] );
-    else
+    $repeatPat = __get__($request, 'repeat_pat', '');
+    if (strlen($repeatPat) > 0) {
+        $days = repeatPatToDays($repeatPat, $request[ 'date' ]);
+    } else {
         $days = [$request['date']];
+    }
 
-    if(count($days) < 1)
-    {
+    if (count($days) < 1) {
         $result['msg'] .= p("I could not generate list of slots for you reuqest");
         return $result;
     }
@@ -902,8 +965,7 @@ function submitRequestImproved(array $request, bool $removeCollision=false) : ar
     $result['gid'] = $gid;
     $errorMsg = '';
     $rid = -1;
-    foreach($days as $day)
-    {
+    foreach ($days as $day) {
         $rid += 1;
         $request['gid'] = strval($gid);
         $request['rid'] = strval($rid);
@@ -912,19 +974,19 @@ function submitRequestImproved(array $request, bool $removeCollision=false) : ar
         $collideWith = checkCollision($request);
         $hide = 'rid,external_id,description,is_public_event,url,modified_by';
 
-        if($collideWith)
-        {
+        if ($collideWith) {
             // If $removeCollision is true then remove this request and send
             // email to the booking party.
-            $errorMsg .= 'Collision with following event/request';
-            foreach( $collideWith as $ev ) {
-                $errorMsg .= arrayToTableHTML( $ev, 'events', $hide );
-                if($removeCollision){
+            foreach ($collideWith as $ev) {
+                $errorMsg .= arrayToTableHTML($ev, 'events', $hide);
+                if ($removeCollision) {
                     cancelBookingOrRequestAndNotifyBookingParty($ev, $reason);
+                } else {
+                    $errorMsg .= p('Collision with following event/request');
+                    $result['collision'][] = $ev;
+                    continue;
                 }
-                $result['collision'][] = $ev; 
             }
-            continue;
         }
 
         $request['timestamp'] = dbDateTime('now');
@@ -934,17 +996,16 @@ function submitRequestImproved(array $request, bool $removeCollision=false) : ar
         $keys = 'gid,rid,external_id,created_by,venue,title,description' .
                 ',date,start_time,end_time,timestamp,is_public_event,class';
 
-        foreach(explode(',', $keys) as $k) {
-            if(! strlen($request[$k] ?? '') === 0) {
+        foreach (explode(',', $keys) as $k) {
+            if (! strlen($request[$k] ?? '') === 0) {
                 $errorMsg .= p("Empty value for '$k'. Fatal error.");
                 $result['msg'] .= $errorMsg;
                 return $result;
             }
         }
 
-        $res = insertIntoTable( 'bookmyvenue_requests', $keys, $request);
-        if( is_null($res) )
-        {
+        $res = insertIntoTable('bookmyvenue_requests', $keys, $request);
+        if (is_null($res)) {
             $errorMsg .= p("Could not submit request id $gid.");
             $result['msg'] .= $errorMsg;
             return $result;
@@ -955,7 +1016,7 @@ function submitRequestImproved(array $request, bool $removeCollision=false) : ar
     }
 
     // Some or all requests were successfully submitted.
-    if(count($result['rid']) > 0) {
+    if (count($result['rid']) > 0) {
         $result['msg'] .= "Successfully submitted requests $gid.$rid.";
         $result['success'] = true;
         return $result;
@@ -973,80 +1034,80 @@ function submitRequestImproved(array $request, bool $removeCollision=false) : ar
     *
     * @return  Group id of request.
  */
-function submitRequest( array $request )
+function submitRequest(array $request)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $collision = false;
 
-    if( ! whoAmI() )
-    {
-        echo printErrorSevere( "Error: I could not determine the name of user" );
+    if (! whoAmI()) {
+        echo printErrorSevere("Error: I could not determine the name of user");
         return false;
     }
 
     $request[ 'created_by' ] = whoAmI();
-    $repeatPat = __get__( $request, 'repeat_pat', '' );
+    $repeatPat = __get__($request, 'repeat_pat', '');
 
-    if( strlen( $repeatPat ) > 0 )
-        $days = repeatPatToDays( $repeatPat, $request[ 'date' ] );
-    else
-        $days = Array( $request['date'] );
+    if (strlen($repeatPat) > 0) {
+        $days = repeatPatToDays($repeatPat, $request[ 'date' ]);
+    } else {
+        $days = array( $request['date'] );
+    }
 
-    if( count( $days ) < 1 )
-    {
-        echo minionEmbarrassed( "I could not generate list of slots for you reuqest" );
+    if (count($days) < 1) {
+        echo minionEmbarrassed("I could not generate list of slots for you reuqest");
         return false;
     }
 
     $rid = 0;
-    $res = $hippoDB->query( 'SELECT MAX(gid) AS gid FROM bookmyvenue_requests' );
-    $prevGid = $res->fetch( PDO::FETCH_ASSOC);
-    $gid = intval( $prevGid['gid'] ) + 1;
+    $res = $hippoDB->query('SELECT MAX(gid) AS gid FROM bookmyvenue_requests');
+    $prevGid = $res->fetch(PDO::FETCH_ASSOC);
+    $gid = intval($prevGid['gid']) + 1;
 
     $errorMsg = '';
-    foreach( $days as $day )
-    {
+    foreach ($days as $day) {
         $rid += 1;
         $request[ 'gid' ] = $gid;
         $request[ 'rid' ] = $rid;
         $request[ 'date' ] = $day;
 
-        $collideWith = checkCollision( $request );
+        $collideWith = checkCollision($request);
         $hide = 'rid,external_id,description,is_public_event,url,modified_by';
 
-        if( $collideWith )
-        {
+        if ($collideWith) {
             $errorMsg .= 'Collision with following event/request';
-            foreach( $collideWith as $ev )
-                $errorMsg .= arrayToTableHTML( $ev, 'events', $hide );
+            foreach ($collideWith as $ev) {
+                $errorMsg .= arrayToTableHTML($ev, 'events', $hide);
+            }
             $collision = true;
             continue;
         }
 
-        $request[ 'timestamp' ] = dbDateTime( 'now' );
-        $res = insertIntoTable( 'bookmyvenue_requests'
-            , 'gid,rid,external_id,created_by,venue,title,description' .
-                ',date,start_time,end_time,timestamp,is_public_event,class'
-            , $request
+        $request[ 'timestamp' ] = dbDateTime('now');
+        $res = insertIntoTable(
+            'bookmyvenue_requests',
+            'gid,rid,external_id,created_by,venue,title,description' .
+                ',date,start_time,end_time,timestamp,is_public_event,class',
+            $request
         );
 
-        if( ! $res )
-        {
+        if (! $res) {
             $errorMsg .= "Could not submit request id $gid";
             return 0;
         }
     }
 
-    flashMessage( $errorMsg, 'warning' );
+    flashMessage($errorMsg, 'warning');
     return $gid;
 }
 
-function increaseEventHostedByVenueByOne( $venueId )
+function increaseEventHostedByVenueByOne($venueId)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( 'UPDATE venues SET total_events = total_events + 1 WHERE id=:id' );
-    $stmt->bindValue( ':id', $venueId );
-    $res = $stmt->execute( );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare('UPDATE venues SET total_events = total_events + 1 WHERE id=:id');
+    $stmt->bindValue(':id', $venueId);
+    $res = $stmt->execute();
     return $res;
 }
 
@@ -1061,24 +1122,29 @@ function checkCollision($request): array
 {
     // Make sure this request is not clashing with another event or request.
     $events = getEventsOnThisVenueBetweenTime(
-        $request[ 'venue' ] , $request[ 'date' ]
-        , $request[ 'start_time' ], $request[ 'end_time' ]
-        );
+        $request[ 'venue' ],
+        $request[ 'date' ],
+        $request[ 'start_time' ],
+        $request[ 'end_time' ]
+    );
 
     $reqs = getRequestsOnThisVenueBetweenTime(
-        $request[ 'venue' ] , $request[ 'date' ]
-        , $request[ 'start_time' ], $request[ 'end_time' ]
-        );
+        $request[ 'venue' ],
+        $request[ 'date' ],
+        $request[ 'start_time' ],
+        $request[ 'end_time' ]
+    );
 
     $all = array();
-    foreach($events as $ev)
+    foreach ($events as $ev) {
         $all[] = $ev;
-    foreach($reqs as $r)
-    {
+    }
+    foreach ($reqs as $r) {
         // Not the our request.
-        if(intval($r['gid']) == intval($request['gid']) 
-            && intval($r['rid']) == intval($request['rid']))
+        if (intval($r['gid']) == intval($request['gid'])
+            && intval($r['rid']) == intval($request['rid'])) {
             continue;
+        }
         $all[] = $r;
     }
     return $all;
@@ -1095,50 +1161,47 @@ function checkCollision($request): array
     *
     * @return
  */
-function approveRequest( string $gid, string $rid ): array
+function approveRequest(string $gid, string $rid): array
 {
-    $request = getRequestById( $gid, $rid );
+    $request = getRequestById($gid, $rid);
     $msg = '';
-    if(! $request )
-    {
-        $msg .= printWarning( "No request $gid.$rid found in my database." );
+    if (! $request) {
+        $msg .= printWarning("No request $gid.$rid found in my database.");
         return ['msg'=>$msg, 'success' => false];
     }
 
     global $hippoDB;
     $collideWith = checkCollision($request);
-    if($collideWith && count($collideWith) > 0)
-    {
+    if ($collideWith && count($collideWith) > 0) {
         $msg .= "Following request is colliding with another event or request. Rejecting it..";
-        $msg .= arrayToTableHTML( $collideWith[0], 'request' );
+        $msg .= arrayToTableHTML($collideWith[0], 'request');
         return ['msg'=>$msg, 'success'=>false, 'data'=>$collideWith];
     }
 
-    $stmt = $hippoDB->prepare( 'INSERT INTO events (
+    $stmt = $hippoDB->prepare('INSERT INTO events (
         gid, eid, class, external_id, title, description, date, venue, start_time, end_time
         , created_by, last_modified_on
     ) VALUES (
         :gid, :eid, :class, :external_id, :title, :description, :date, :venue, :start_time, :end_time
         , :created_by, NOW()
     )');
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->bindValue( ':eid', $rid );
-    $stmt->bindValue( ':class', $request[ 'class' ] );
-    $stmt->bindValue( ':external_id', $request[ 'external_id'] );
-    $stmt->bindValue( ':title', $request['title'] );
-    $stmt->bindValue( ':description', $request['description'] );
-    $stmt->bindValue( ':date', $request['date'] );
-    $stmt->bindValue( ':venue', $request['venue'] );
-    $stmt->bindValue( ':start_time', $request['start_time'] );
-    $stmt->bindValue( ':end_time', $request['end_time'] );
-    $stmt->bindValue( ':created_by', $request['created_by'] );
+    $stmt->bindValue(':gid', $gid);
+    $stmt->bindValue(':eid', $rid);
+    $stmt->bindValue(':class', $request[ 'class' ]);
+    $stmt->bindValue(':external_id', $request[ 'external_id']);
+    $stmt->bindValue(':title', $request['title']);
+    $stmt->bindValue(':description', $request['description']);
+    $stmt->bindValue(':date', $request['date']);
+    $stmt->bindValue(':venue', $request['venue']);
+    $stmt->bindValue(':start_time', $request['start_time']);
+    $stmt->bindValue(':end_time', $request['end_time']);
+    $stmt->bindValue(':created_by', $request['created_by']);
     $res = $stmt->execute();
 
-    if($res)
-    {
-        $res = changeRequestStatus( $gid, $rid, 'APPROVED' );
+    if ($res) {
+        $res = changeRequestStatus($gid, $rid, 'APPROVED');
         // And update the count of number of events hosted by this venue.
-        increaseEventHostedByVenueByOne( $request['venue'] );
+        increaseEventHostedByVenueByOne($request['venue']);
         return ['msg'=>$msg, 'success' => true];
     }
     return ['msg'=>$msg, 'success'=>false];
@@ -1146,7 +1209,7 @@ function approveRequest( string $gid, string $rid ): array
 
 function rejectRequest($gid, $rid)
 {
-    return changeRequestStatus( $gid, $rid, 'REJECTED' );
+    return changeRequestStatus($gid, $rid, 'REJECTED');
 }
 
 
@@ -1159,121 +1222,125 @@ function rejectRequest($gid, $rid)
     * @Param $whatToDo  APPPROVE/REJECT.
     * @Param $notify    SEND EMAIL.
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function actOnRequest(string $gid, string $rid, string $whatToDo
-    , bool $notify=false, array $request=[], string $byWhom=''
-) : array
-{
+function actOnRequest(
+    string $gid,
+    string $rid,
+    string $whatToDo,
+    bool $notify=false,
+    array $request=[],
+    string $byWhom=''
+) : array {
     $status = "";
-    if(! $byWhom)
+    if (! $byWhom) {
         $byWhom = whoAmI();
+    }
 
     $success = false;
-    if( $whatToDo === 'APPROVE' )
-    {
-        $res = approveRequest( $gid, $rid );
+    if ($whatToDo === 'APPROVE') {
+        $res = approveRequest($gid, $rid);
         $success = $res['success'];
-        if(! $success)
+        if (! $success) {
             return $res;
+        }
         $status = 'APPROVED';
-    }
-    elseif( $whatToDo === 'REJECT' )
-    {
-        $success = rejectRequest( $gid, $rid );
+    } elseif ($whatToDo === 'REJECT') {
+        $success = rejectRequest($gid, $rid);
         $status = 'REJECTED';
-    }
-    else
-    {
+    } else {
         return ['status'=>false
             , 'msg'=>"Unknown request " . $gid . '.' . $rid .  " or command: " . $whatToDo];
     }
 
-    if( $notify && $success )
-    {
-        if(! $request )
-            $request = getRequestById( $gid, $rid );
+    if ($notify && $success) {
+        if (! $request) {
+            $request = getRequestById($gid, $rid);
+        }
         $title = $req['title'];
         $subject = "Your booking request '$title' has been $status.";
         $msg  = '<p>The current status of your booking request is following.</p>';
-        $msg .=  arrayToVerticalTableHTML( $req, 'info' );
+        $msg .=  arrayToVerticalTableHTML($req, 'info');
         $msg .= "<p>If there is any mistake, please contact Dean's Office. 
             This request was acted upon by '$byWhom'</p>";
 
         $userEmail = getLoginEmail($request['created_by']);
-        if(! $userEmail)
-        {
+        if (! $userEmail) {
             $userEmail = 'hippo@lists.ncbs.res.in';
             $msg .=  p("Alert! Could not find any email for " . $req['created_by']);
         }
-        $res = sendHTMLEmail( $msg, $subject, $userEmail); 
+        $res = sendHTMLEmail($msg, $subject, $userEmail);
     }
     return ['success'=>$success, 'msg'=>"Successfully $status request $gid.$rid."];
 }
 
-function changeIfEventIsPublic( $gid, $eid, $status )
+function changeIfEventIsPublic($gid, $eid, $status)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "UPDATE events SET is_public_event=:status
-        WHERE gid=:gid AND eid=:eid" );
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':eid', $eid );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare("UPDATE events SET is_public_event=:status
+        WHERE gid=:gid AND eid=:eid");
+    $stmt->bindValue(':gid', $gid);
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':eid', $eid);
     return $stmt->execute();
 }
 
 // Fetch all events at given venue and given day-time.
-function eventsAtThisVenue( $venue, $date, $time )
+function eventsAtThisVenue($venue, $date, $time)
 {
-    $venue = trim( $venue );
-    $date = trim( $date );
-    $time = trim( $time );
+    $venue = trim($venue);
+    $date = trim($date);
+    $time = trim($time);
 
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     // Database reads in ISO format.
-    $hDate = dbDate( $date );
-    $clockT = date('H:i', $time );
+    $hDate = dbDate($date);
+    $clockT = date('H:i', $time);
 
     // NOTE: When people say 5pm to 7pm they usually don't want to keep 7pm slot
     // booked.
-    $stmt = $hippoDB->prepare( 'SELECT * FROM events WHERE
+    $stmt = $hippoDB->prepare('SELECT * FROM events WHERE
         status=:status AND date=:date AND
-        venue=:venue AND start_time <= :time AND end_time > :time' );
-    $stmt->bindValue( ':date', $hDate );
-    $stmt->bindValue( ':time', $clockT );
-    $stmt->bindValue( ':venue', $venue );
-    $stmt->bindValue( ':status', 'VALID' );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+        venue=:venue AND start_time <= :time AND end_time > :time');
+    $stmt->bindValue(':date', $hDate);
+    $stmt->bindValue(':time', $clockT);
+    $stmt->bindValue(':venue', $venue);
+    $stmt->bindValue(':status', 'VALID');
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 // Fetch all requests for given venue and given day-time.
-function requestsForThisVenue( $venue, $date, $time )
+function requestsForThisVenue($venue, $date, $time)
 {
-    $venue = trim( $venue );
-    $date = trim( $date );
-    $time = trim( $time );
+    $venue = trim($venue);
+    $date = trim($date);
+    $time = trim($time);
 
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     // Database reads in ISO format.
-    $hDate = dbDate( $date );
-    $clockT = date('H:i', $time );
+    $hDate = dbDate($date);
+    $clockT = date('H:i', $time);
     //echo "Looking for request at $venue on $hDate at $clockT ";
 
     // NOTE: When people say 5pm to 7pm they usually don't want to keep 7pm slot
     // booked.
-    $stmt = $hippoDB->prepare( 'SELECT * FROM bookmyvenue_requests WHERE
+    $stmt = $hippoDB->prepare(
+        'SELECT * FROM bookmyvenue_requests WHERE
         status=:status
         AND date=:date AND venue=:venue
         AND start_time <= :time AND end_time > :time'
     );
-    $stmt->bindValue( ':status', 'PENDING' );
-    $stmt->bindValue( ':date', $hDate );
-    $stmt->bindValue( ':time', $clockT );
-    $stmt->bindValue( ':venue', $venue );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt->bindValue(':status', 'PENDING');
+    $stmt->bindValue(':date', $hDate);
+    $stmt->bindValue(':time', $clockT);
+    $stmt->bindValue(':venue', $venue);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -1284,24 +1351,25 @@ function requestsForThisVenue( $venue, $date, $time )
     *
     * @return
  */
-function publicEvents( $date, $time )
+function publicEvents($date, $time)
 {
-    $date = trim( $date );
-    $time = trim( $time );
+    $date = trim($date);
+    $time = trim($time);
 
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     // Database reads in ISO format.
-    $hDate = dbDate( $date );
-    $clockT = date('H:i', $time );
+    $hDate = dbDate($date);
+    $clockT = date('H:i', $time);
 
     // NOTE: When people say 5pm to 7pm they usually don't want to keep 7pm slot
     // booked.
-    $stmt = $hippoDB->prepare( 'SELECT * FROM events WHERE
-        date=:date AND start_time <= :time AND end_time > :time' );
-    $stmt->bindValue( ':date', $hDate );
-    $stmt->bindValue( ':time', $clockT );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt = $hippoDB->prepare('SELECT * FROM events WHERE
+        date=:date AND start_time <= :time AND end_time > :time');
+    $stmt->bindValue(':date', $hDate);
+    $stmt->bindValue(':time', $clockT);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -1314,115 +1382,119 @@ function publicEvents( $date, $time )
     *
     * @return  On success True, else False.
  */
-function updateRequestGroup( $gid, $options )
+function updateRequestGroup($gid, $options)
 {
-    $hippoDB = initDB();;
-    $editable = Array( "title", "description", "is_public_event" );
-    $fields = Array( );
-    $placeholder = Array( );
-    foreach( array_keys($options) as $key )
-    {
-        if( in_array( $key, $editable ) )
-        {
-            array_push( $fields, $key );
-            array_push( $placeholder, "$key=:$key" );
+    $hippoDB = initDB();
+    ;
+    $editable = array( "title", "description", "is_public_event" );
+    $fields = array( );
+    $placeholder = array( );
+    foreach (array_keys($options) as $key) {
+        if (in_array($key, $editable)) {
+            array_push($fields, $key);
+            array_push($placeholder, "$key=:$key");
         }
     }
 
-    $placeholder = implode( ",", $placeholder );
+    $placeholder = implode(",", $placeholder);
     $query = "UPDATE bookmyvenue_requests SET $placeholder WHERE gid=:gid";
 
-    $stmt = $hippoDB->prepare( $query );
+    $stmt = $hippoDB->prepare($query);
 
-    foreach( $fields as $f )
-        $stmt->bindValue( ":$f", $options[ $f ] );
-
-    $stmt->bindValue( ':gid', $gid );
-    return $stmt->execute( );
-}
-
-function updateEventGroup( $gid, $options )
-{
-    $events = getEventsByGroupId( $gid );
-    $results = Array( );
-    foreach( $events as $event )
-    {
-        $res = updateEvent( $gid, $event['eid'], $options );
-        $eid = $event[ 'eid' ];
-        if( ! $res )
-            echo printWarning( "I could not update sub-event $eid" );
-        array_push( $results, $res );
+    foreach ($fields as $f) {
+        $stmt->bindValue(":$f", $options[ $f ]);
     }
-    return (! in_array( FALSE, $results ));
 
+    $stmt->bindValue(':gid', $gid);
+    return $stmt->execute();
 }
 
-function updateEvent( $gid, $eid, $options )
+function updateEventGroup($gid, $options)
 {
-    $hippoDB = initDB();;
-    $editable = Array( "title", "description", "is_public_event"
+    $events = getEventsByGroupId($gid);
+    $results = array( );
+    foreach ($events as $event) {
+        $res = updateEvent($gid, $event['eid'], $options);
+        $eid = $event[ 'eid' ];
+        if (! $res) {
+            echo printWarning("I could not update sub-event $eid");
+        }
+        array_push($results, $res);
+    }
+    return (! in_array(false, $results));
+}
+
+function updateEvent($gid, $eid, $options)
+{
+    $hippoDB = initDB();
+    ;
+    $editable = array( "title", "description", "is_public_event"
         , "status", "class" );
-    $fields = Array( );
-    $placeholder = Array( );
-    foreach( array_keys($options) as $key )
-    {
-        if( in_array( $key, $editable ) )
-        {
-            array_push( $fields, $key );
-            array_push( $placeholder, "$key=:$key" );
+    $fields = array( );
+    $placeholder = array( );
+    foreach (array_keys($options) as $key) {
+        if (in_array($key, $editable)) {
+            array_push($fields, $key);
+            array_push($placeholder, "$key=:$key");
         }
     }
 
-    $placeholder = implode( ",", $placeholder );
+    $placeholder = implode(",", $placeholder);
     $query = "UPDATE events SET $placeholder WHERE gid=:gid AND eid=:eid";
 
-    $stmt = $hippoDB->prepare( $query );
+    $stmt = $hippoDB->prepare($query);
 
-    foreach( $fields as $f )
-        $stmt->bindValue( ":$f", $options[ $f ] );
+    foreach ($fields as $f) {
+        $stmt->bindValue(":$f", $options[ $f ]);
+    }
 
-    $stmt->bindValue( ':gid', $gid );
-    $stmt->bindValue( ':eid', $eid );
-    return $stmt->execute( );
+    $stmt->bindValue(':gid', $gid);
+    $stmt->bindValue(':eid', $eid);
+    return $stmt->execute();
 }
 
 // Create user if does not exists and fill information form LDAP server.
-function createUserOrUpdateLogin( $userid, $ldapInfo = Array(), $db=NULL)
+function createUserOrUpdateLogin($userid, $ldapInfo = array(), $db=null)
 {
-    if( ! $db )
-        $db = initDB();;
+    if (! $db) {
+        $db = initDB();
+    };
 
-    if( ! $ldapInfo )
-        $ldapInfo = @getUserInfoFromLdap( $userid );
+    if (! $ldapInfo) {
+        $ldapInfo = @getUserInfoFromLdap($userid);
+    }
 
-    if( isset($ldapInfo['last_name']) )
-       if($ldapInfo[ 'last_name' ] == 'NA' )
-           $ldapInfo[ 'last_name' ] = '';
+    if (isset($ldapInfo['last_name'])) {
+        if ($ldapInfo[ 'last_name' ] == 'NA') {
+            $ldapInfo[ 'last_name' ] = '';
+        }
+    }
 
     $stmt = $db->prepare(
-       "INSERT IGNORE INTO logins
+        "INSERT IGNORE INTO logins
         (id, login, first_name, last_name, email, created_on, institute, laboffice)
             VALUES
             (:id, :login, :fname, :lname, :email,  NOW(), :institute, :laboffice)
         "
-        );
+    );
 
-    $institute = NULL;
-    if( count( $ldapInfo ) > 0 )
+    $institute = null;
+    if (count($ldapInfo) > 0) {
         $institute = 'NCBS Bangalore';
+    }
 
-    $stmt->bindValue( ':login', $userid );
-    $stmt->bindValue( ':id', __get__( $ldapInfo, "uid", NULL ));
-    $stmt->bindValue( ':fname', __get__( $ldapInfo, "first_name", NULL ));
-    $stmt->bindValue( ':lname', __get__( $ldapInfo, "last_name", NULL ));
-    $stmt->bindValue( ':email', __get__( $ldapInfo, 'email', NULL ));
-    $stmt->bindValue( ':laboffice', __get__( $ldapInfo, 'laboffice', NULL ));
-    $stmt->bindValue( ':institute', $institute );
-    $stmt->execute( );
+    $stmt->bindValue(':login', $userid);
+    $stmt->bindValue(':id', __get__($ldapInfo, "uid", null));
+    $stmt->bindValue(':fname', __get__($ldapInfo, "first_name", null));
+    $stmt->bindValue(':lname', __get__($ldapInfo, "last_name", null));
+    $stmt->bindValue(':email', __get__($ldapInfo, 'email', null));
+    $stmt->bindValue(':laboffice', __get__($ldapInfo, 'laboffice', null));
+    $stmt->bindValue(':institute', $institute);
+    $stmt->execute();
 
-    $stmt = $db->prepare( "UPDATE logins SET last_login=NOW() WHERE login=:login" );
-    $stmt->bindValue( ':login', $userid );
-    return $stmt->execute( );
+    $stmt = $db->prepare("UPDATE logins SET last_login=NOW() WHERE login=:login");
+    $stmt->bindValue(':login', $userid);
+    return $stmt->execute();
 }
 
 /**
@@ -1430,27 +1502,31 @@ function createUserOrUpdateLogin( $userid, $ldapInfo = Array(), $db=NULL)
     *
     * @return
  */
-function getLogins( $status = ''  )
+function getLogins($status = '')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $where = '';
-    if( $status )
+    if ($status) {
         $where = " WHERE status='$status' ";
+    }
     $query = "SELECT * FROM logins $where ORDER BY joined_on DESC";
-    $stmt = $hippoDB->query( $query );
-    $stmt->execute( );
-    return  fetchEntries( $stmt );
+    $stmt = $hippoDB->query($query);
+    $stmt->execute();
+    return  fetchEntries($stmt);
 }
 
-function getLoginIds( )
+function getLoginIds()
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( 'SELECT login FROM logins' );
-    $stmt->execute( );
-    $results =  fetchEntries( $stmt );
-    $logins = Array();
-    foreach( array_values($results) as $val )
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query('SELECT login FROM logins');
+    $stmt->execute();
+    $results =  fetchEntries($stmt);
+    $logins = array();
+    foreach (array_values($results) as $val) {
         $logins[] = $val['login'];
+    }
 
     return $logins;
 }
@@ -1462,141 +1538,145 @@ function getLoginIds( )
     *
     * @return Array.
  */
-function getUserInfo( string $user, bool $query_ldap = false, bool $search_everywhere = false ) : array
+function getUserInfo(string $user, bool $query_ldap = false, bool $search_everywhere = false) : array
 {
     $login = explode('@', $user)[0];
     $res = getTableEntry('logins', 'login', array( 'login' => $login));
     $title = '';
-    if( $res )
-        $title = __get__( $res, 'title', '' );
+    if ($res) {
+        $title = __get__($res, 'title', '');
+    }
 
     // Fetch ldap as well.
     $ldap = array( );
-    if( $query_ldap )
-        $ldap = @getUserInfoFromLdap( $login );
+    if ($query_ldap) {
+        $ldap = @getUserInfoFromLdap($login);
+    }
 
-    if(is_array($ldap) && is_array($res) && $ldap  )
-    {
-        foreach( $ldap as $key => $val )
-        {
-            if( $key == 'joined_on' && isDate( __get__($res,'joined_on','')) )
+    if (is_array($ldap) && is_array($res) && $ldap) {
+        foreach ($ldap as $key => $val) {
+            if ($key == 'joined_on' && isDate(__get__($res, 'joined_on', ''))) {
                 continue;
+            }
             $res[ $key ] = $val;
         }
     }
 
     // Still not foud, then search speakers.
-    if( ! $res && $search_everywhere )
-        $res = getTableEntry( 'speakers', 'email', [ 'email' => $user ] );
+    if (! $res && $search_everywhere) {
+        $res = getTableEntry('speakers', 'email', [ 'email' => $user ]);
+    }
 
     // If title was found in database, overwrite ldap info.
-    if( $title )
+    if ($title) {
         $res[ 'title' ] = $title;
+    }
 
     $res['login'] = $user;
 
     // If no email found, then it is not a valid userid. What a computer system
     // account without an email.
-    if(! __get__($res,'email', ''))
+    if (! __get__($res, 'email', '')) {
         $res = [];
+    }
     return $res;
 }
 
-function extractLoginName( string $emailOrLogin ) : string
+function extractLoginName(string $emailOrLogin) : string
 {
-    return explode( '@', $emailOrLogin )[0];
-
+    return explode('@', $emailOrLogin)[0];
 }
 
-function getLoginInfo( string $login_name, bool $query_ldap = false
-    , bool $search_everywhere = false ) : array
+function getLoginInfo(string $login_name, bool $query_ldap = false, bool $search_everywhere = false) : array
 {
     // Otherwise we may not be find by email.
-    if(! $search_everywhere )
-        $login_name = extractLoginName( $login_name );
-    return getUserInfo( $login_name, $query_ldap, $search_everywhere );
+    if (! $search_everywhere) {
+        $login_name = extractLoginName($login_name);
+    }
+    return getUserInfo($login_name, $query_ldap, $search_everywhere);
 }
 
 function getLoginByEmail(string $email) : string
 {
     $res = executeQuery("SELECT login FROM logins WHERE email='$email' AND login >''");
-    if(count($res) > 0)
+    if (count($res) > 0) {
         return $res[0]['login'];
+    }
     return '';
 }
 
 
-function getLoginEmail( string $login )
+function getLoginEmail(string $login)
 {
-    $login = explode( '@', $login )[0];
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "SELECT email FROM logins WHERE login=:login" );
-    $stmt->bindValue( ":login", $login );
-    $stmt->execute( );
-    $res = $stmt->fetch( PDO::FETCH_ASSOC );
+    $login = explode('@', $login)[0];
+    $res = executeQuery("SELECT email FROM logins WHERE login='$login'");
+    if(! $res)
+        $res = ['email'=>''];
 
-    if( strlen( trim($res[ 'email' ]) < 1 ) )
-    {
-        $info = @getUserInfoFromLdap( $login );
-        if( $info && array_key_exists( 'email', $info) && $info['email'] )
-        {
+    if (strlen(trim($res['email'] ?? '') < 1)) {
+        $info = @getUserInfoFromLdap($login);
+        if ($info && array_key_exists('email', $info) && $info['email']) {
             // Update user in database.
-            createUserOrUpdateLogin( $login, $info );
-            $alternativeEmail = __get__( $info, 'alternative_email', '' );
-            $res['email'] = __get__( $info, 'email', $alternativeEmail );
+            createUserOrUpdateLogin($login, $info);
+            $alternativeEmail = __get__($info, 'alternative_email', '');
+            $res['email'] = __get__($info, 'email', $alternativeEmail);
         }
     }
     return $res['email'];
 }
 
-function getRoles( string $user ) : array
+function getRoles(string $user) : array
 {
     // Turn email to username.
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( 'SELECT roles FROM logins WHERE login=:login OR email=:email' );
-    $stmt->bindValue( ':login', $user );
-    $stmt->bindValue( ':email', $user );
-    $stmt->execute( );
-    $res = $stmt->fetch( PDO::FETCH_ASSOC );
-    if(! $res)
+    $hippoDB = initDB();
+    $stmt = $hippoDB->prepare('SELECT roles FROM logins WHERE login=:login OR email=:email');
+    $stmt->bindValue(':login', $user);
+    $stmt->bindValue(':email', $user);
+    $stmt->execute();
+    $res = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (! $res) {
         return ['USER'];
-    return explode( ",", $res['roles'] );
+    }
+    return explode(",", $res['roles']);
 }
 
-function getMyAws( $user )
+function getMyAws($user)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
     $query = "SELECT * FROM annual_work_seminars WHERE speaker=:speaker
         ORDER BY date DESC ";
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':speaker', $user );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':speaker', $user);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 
-function getMyAwsOn( $user, $date )
+function getMyAwsOn($user, $date)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
     $query = "SELECT * FROM annual_work_seminars
         WHERE speaker=:speaker AND date=:date ORDER BY date DESC ";
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':speaker', $user );
-    $stmt->bindValue( ':date', $date );
-    $stmt->execute( );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':speaker', $user);
+    $stmt->bindValue(':date', $date);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function getAwsById( $awsID )
+function getAwsById($awsID)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = "SELECT * FROM annual_work_seminars WHERE id=:id";
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':id', $awsID );
-    $stmt->execute( );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':id', $awsID);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 /**
@@ -1606,17 +1686,17 @@ function getAwsById( $awsID )
     *
     * @return
  */
-function getLastAwsOfSpeaker( $speaker )
+function getLastAwsOfSpeaker($speaker)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = "SELECT * FROM annual_work_seminars WHERE speaker=:speaker
         ORDER BY date DESC LIMIT 1";
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':speaker', $speaker );
-    $stmt->execute( );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':speaker', $speaker);
+    $stmt->execute();
     # Only return the last one.
-    return $stmt->fetch( PDO::FETCH_ASSOC );
-
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 /**
@@ -1628,13 +1708,14 @@ function getLastAwsOfSpeaker( $speaker )
  */
 function getAwsOfSpeaker(string $speaker): array
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = "SELECT * FROM annual_work_seminars WHERE speaker=:speaker
         ORDER BY date DESC" ;
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':speaker', $speaker );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':speaker', $speaker);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -1643,32 +1724,35 @@ function getAwsOfSpeaker(string $speaker): array
     *
     * @Param $speaker
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getLatestAWSOfSpeaker(string $speaker): array
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = "SELECT * FROM annual_work_seminars WHERE speaker=:speaker
         ORDER BY date DESC LIMIT 1" ;
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':speaker', $speaker );
-    $stmt->execute( );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':speaker', $speaker);
+    $stmt->execute();
     return fetchEntry($stmt);
 }
 
-function getSupervisors( )
+function getSupervisors()
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     // First get all faculty members
-    $faculty = getFaculty( 'ACTIVE' );
+    $faculty = getFaculty('ACTIVE');
 
     // And then all supervisors.
-    $stmt = $hippoDB->query( 'SELECT * FROM supervisors ORDER BY first_name' );
-    $stmt->execute( );
-    $supervisors = fetchEntries( $stmt );
-    foreach( $supervisors as $super )
-        array_push( $faculty, $super );
+    $stmt = $hippoDB->query('SELECT * FROM supervisors ORDER BY first_name');
+    $stmt->execute();
+    $supervisors = fetchEntries($stmt);
+    foreach ($supervisors as $super) {
+        array_push($faculty, $super);
+    }
     return $faculty;
 }
 
@@ -1680,23 +1764,27 @@ function getSupervisors( )
     *
     * @return
  */
-function findAnyoneWithEmail( $email )
+function findAnyoneWithEmail($email)
 {
-    $res = getTableEntry( 'faculty', 'email', array( 'email' => $email ) );
-    if( ! $res )
-        $res = getTableEntry( 'supervisors', 'email', array('email' => $email));
-    if( ! $res )
-        $res = getTableEntry( 'speakers', 'email', array('email' => $email));
-    if( ! $res )
-        $res = getTableEntry( 'logins', 'email', array('email' => $email));
+    $res = getTableEntry('faculty', 'email', array( 'email' => $email ));
+    if (! $res) {
+        $res = getTableEntry('supervisors', 'email', array('email' => $email));
+    }
+    if (! $res) {
+        $res = getTableEntry('speakers', 'email', array('email' => $email));
+    }
+    if (! $res) {
+        $res = getTableEntry('logins', 'email', array('email' => $email));
+    }
     return $res;
 }
 
-function findAnyoneWithEmailOrLogin( $emailOrLogin )
+function findAnyoneWithEmailOrLogin($emailOrLogin)
 {
-    $res = getTableEntry( 'logins', 'login', array('login' => $loginOrEmail));
-    if(! $res)
+    $res = getTableEntry('logins', 'login', array('login' => $loginOrEmail));
+    if (! $res) {
         $res = findAnyoneWithEmail($emailOrLogin);
+    }
     return $res;
 }
 
@@ -1709,16 +1797,16 @@ function findAnyoneWithEmailOrLogin( $emailOrLogin )
     *
     * @return
  */
-function whereExpr( $keys, $data )
+function whereExpr($keys, $data)
 {
     $whereExpr = array( );
-    $keys = explode( ',', $keys );
+    $keys = explode(',', $keys);
 
-    foreach( $keys as $k )
+    foreach ($keys as $k) {
         $whereExpr[] = "$k='" . $data[ $k] . "'";
+    }
 
-    return implode( ' AND ', $whereExpr );
-
+    return implode(' AND ', $whereExpr);
 }
 
 /**
@@ -1731,26 +1819,30 @@ function whereExpr( $keys, $data )
     *
     * @return
  */
-function getTableEntries($tablename, $orderby='', $where='', $what='*'
-    , int $limit=0, int $offset=0) : array
+function getTableEntries($tablename, $orderby='', $where='', $what='*', int $limit=0, int $offset=0) : array
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = "SELECT $what FROM $tablename";
 
-    if( is_string( $where) && strlen( $where ) > 0 )
+    if (is_string($where) && strlen($where) > 0) {
         $query .= " WHERE $where ";
+    }
 
-    if( strlen($orderby) > 0 )
+    if (strlen($orderby) > 0) {
         $query .= " ORDER BY $orderby ";
+    }
 
-    if($limit > 0)
+    if ($limit > 0) {
         $query .= " LIMIT $offset, $limit";
+    }
 
-    $res = $hippoDB->query( $query );
-    $entries = fetchEntries( $res );
+    $res = $hippoDB->query($query);
+    $entries = fetchEntries($res);
 
-    if( ! $entries )
+    if (! $entries) {
         return array();
+    }
 
     return $entries;
 }
@@ -1766,35 +1858,37 @@ function getTableEntries($tablename, $orderby='', $where='', $what='*'
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getTableEntry( string $tablename, $whereKeys, array $data) : array
+function getTableEntry(string $tablename, $whereKeys, array $data) : array
 {
     $hippoDB = initDB();
 
-    if( is_string( $whereKeys ) )
-        $whereKeys = explode( ",", $whereKeys );
+    if (is_string($whereKeys)) {
+        $whereKeys = explode(",", $whereKeys);
+    }
 
     $where = array( );
-    foreach( $whereKeys as $key )
-        array_push( $where,  "$key=:$key" );
+    foreach ($whereKeys as $key) {
+        array_push($where, "$key=:$key");
+    }
 
-    $where = implode( " AND ", $where );
+    $where = implode(" AND ", $where);
 
     $query = "SELECT * FROM $tablename WHERE $where";
 
-    $stmt = $hippoDB->prepare( $query );
+    $stmt = $hippoDB->prepare($query);
 
-    foreach( $whereKeys as $key )
-        $stmt->bindValue( ":$key", $data[ $key ] );
+    foreach ($whereKeys as $key) {
+        $stmt->bindValue(":$key", $data[ $key ]);
+    }
 
     try {
-        $stmt->execute( );
-        $res = $stmt->fetch( PDO::FETCH_ASSOC );
-        if( $res )
+        $stmt->execute();
+        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($res) {
             return $res;
-
-    } catch (Exception $e) 
-    {
-        echo printWarning( "Failed to fetch. Error was " . $e->getMessage( ) );
+        }
+    } catch (Exception $e) {
+        echo printWarning("Failed to fetch. Error was " . $e->getMessage());
         return array();
     }
     return array();
@@ -1810,60 +1904,58 @@ function getTableEntry( string $tablename, $whereKeys, array $data) : array
     *
     * @return  The id of newly inserted entry on success. Null otherwise.
  */
-function insertIntoTable( $tablename, $keys, $data )
+function insertIntoTable($tablename, $keys, $data)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    if( is_string( $keys ) )
-        $keys = explode( ',', $keys );
+    if (is_string($keys)) {
+        $keys = explode(',', $keys);
+    }
 
-    $values = Array( );
-    $cols = Array( );
-    foreach( $keys as $k )
-    {
-        if( ! is_string( $k ) )
+    $values = array( );
+    $cols = array( );
+    foreach ($keys as $k) {
+        if (! is_string($k)) {
             continue;
+        }
 
         // If values for this key in $data is null then don't use it here.
-        if( __get__( $data, $k, '' ) )
-        {
-            array_push( $cols, "$k" );
-            array_push( $values, ":$k" );
+        if (__get__($data, $k, '')) {
+            array_push($cols, "$k");
+            array_push($values, ":$k");
         }
     }
 
-    $keysT = implode( ",", $cols );
-    $values = implode( ",", $values );
+    $keysT = implode(",", $cols);
+    $values = implode(",", $values);
 
     $query = "INSERT INTO $tablename ( $keysT ) VALUES ( $values )";
-    $stmt = $hippoDB->prepare( $query );
+    $stmt = $hippoDB->prepare($query);
 
-    foreach( $cols as $k )
-    {
+    foreach ($cols as $k) {
         $value = $data[$k];
-        if( is_array( $value ) )
-            $value = implode( ',', $value );
+        if (is_array($value)) {
+            $value = implode(',', $value);
+        }
 
-        $stmt->bindValue( ":$k", $value );
+        $stmt->bindValue(":$k", $value);
     }
 
-    try
-    {
-        $res = $stmt->execute( );
-    }
-    catch (Exception $e )
-    {
+    try {
+        $res = $stmt->execute();
+    } catch (Exception $e) {
         echo minionEmbarrassed(
-            "I failed to update my database. Error was " . $e->getMessage( ) );
+            "I failed to update my database. Error was " . $e->getMessage()
+        );
         return null;
     }
 
-    if( $res )
-    {
+    if ($res) {
         // When created return the id of table else return null;
-        $stmt = $hippoDB->query( "SELECT LAST_INSERT_ID() FROM $tablename" );
-        $stmt->execute( );
-        return $stmt->fetch( PDO::FETCH_ASSOC );
+        $stmt = $hippoDB->query("SELECT LAST_INSERT_ID() FROM $tablename");
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     return null;
 }
@@ -1878,84 +1970,85 @@ function insertIntoTable( $tablename, $keys, $data )
     *
     * @return The value of last updated row.
  */
-function insertOrUpdateTable( $tablename, $keys, $updatekeys, $data )
+function insertOrUpdateTable($tablename, $keys, $updatekeys, $data)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    if( is_string( $keys ) )
-        $keys = explode( ',', $keys );
+    if (is_string($keys)) {
+        $keys = explode(',', $keys);
+    }
 
-    if( is_string( $updatekeys ) )
-        $updatekeys = explode( ',', $updatekeys );
+    if (is_string($updatekeys)) {
+        $updatekeys = explode(',', $updatekeys);
+    }
 
-    $values = Array( );
-    $cols = Array( );
-    foreach( $keys as $k )
-    {
+    $values = array( );
+    $cols = array( );
+    foreach ($keys as $k) {
         // If values for this key in $data is null then don't use it here.
-        if( __get__($data, $k, '' ) )
-        {
-            array_push( $cols, "$k" );
-            array_push( $values, ":$k" );
+        if (__get__($data, $k, '')) {
+            array_push($cols, "$k");
+            array_push($values, ":$k");
         }
     }
 
-    $keysT = implode( ",", $cols );
-    $values = implode( ",", $values );
+    $keysT = implode(",", $cols);
+    $values = implode(",", $values);
 
     $updateExpr = '';
-    if( count( $updatekeys ) > 0 )
-    {
+    if (count($updatekeys) > 0) {
         $updateExpr .= ' ON DUPLICATE KEY UPDATE ';
-        foreach( $updatekeys as $k )
+        foreach ($updatekeys as $k) {
             // Update only if the new value is not empty.
-            if( strlen( $data[ $k ] ) > 0 )
-            {
+            if (strlen($data[ $k ]) > 0) {
                 $updateExpr .= "$k=:$k,";
-                array_push( $cols, $k );
+                array_push($cols, $k);
             }
+        }
 
         // Remove last ','
-        $updateExpr = rtrim( $updateExpr, "," );
+        $updateExpr = rtrim($updateExpr, ",");
     }
 
     $query = "INSERT INTO $tablename ( $keysT ) VALUES ( $values ) $updateExpr";
-    $stmt = $hippoDB->prepare( $query );
-    foreach( $cols as $k )
-    {
+    $stmt = $hippoDB->prepare($query);
+    foreach ($cols as $k) {
         $value = $data[$k];
-        if( is_array( $value ) )
-            $value = implode( ',', $value );
+        if (is_array($value)) {
+            $value = implode(',', $value);
+        }
 
-        $stmt->bindValue( ":$k", $value );
+        $stmt->bindValue(":$k", $value);
     }
 
-    $res = $stmt->execute( );
+    $res = $stmt->execute();
 
     // This is MYSQL specific. Only try this if table has an AUTO_INCREMENT
     // id field.
-    if(array_key_exists( 'id', $data) && $res)
-    {
+    if (array_key_exists('id', $data) && $res) {
         // When created return the id of table else return null;
-        $stmt = $hippoDB->query( "SELECT LAST_INSERT_ID() FROM $tablename" );
-        $stmt->execute( );
-        $res = $stmt->fetch( PDO::FETCH_ASSOC );
-        $lastInsertId = intval( __get__($res, 'LAST_INSERT_ID()', 0 ) );
+        $stmt = $hippoDB->query("SELECT LAST_INSERT_ID() FROM $tablename");
+        $stmt->execute();
+        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        $lastInsertId = intval(__get__($res, 'LAST_INSERT_ID()', 0));
 
         // Store the LAST_INSERT_ID if insertion happened else the id of update
         // execution.
-        if( $lastInsertId > 0 )
+        if ($lastInsertId > 0) {
             $res['id'] = $lastInsertId;
-        else
+        } else {
             $res['id' ] = $data[ 'id' ];
+        }
         return $res;
     }
     return $res;
 }
 
-function getTableUniqueIndices( $tableName )
+function getTableUniqueIndices($tableName)
 {
-    $res = executeQuery( "SELECT DISTINCT CONSTRAINT_NAME
+    $res = executeQuery(
+        "SELECT DISTINCT CONSTRAINT_NAME
         FROM information_schema.TABLE_CONSTRAINTS
         WHERE table_name = '$tableName' AND constraint_type = 'UNIQUE'"
     );
@@ -1971,40 +2064,43 @@ function getTableUniqueIndices( $tableName )
     *
     * @return Status of execute statement.
  */
-function deleteFromTable( $tablename, $keys, $data )
+function deleteFromTable($tablename, $keys, $data)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    if( gettype( $keys ) == "string" )
-        $keys = explode( ',', $keys );
+    if (gettype($keys) == "string") {
+        $keys = explode(',', $keys);
+    }
 
-    $values = Array( );
-    $cols = Array( );
-    foreach( $keys as $k )
-        if( $data[$k] )
-        {
-            array_push( $cols, "$k" );
-            array_push( $values, ":$k" );
+    $values = array( );
+    $cols = array( );
+    foreach ($keys as $k) {
+        if ($data[$k]) {
+            array_push($cols, "$k");
+            array_push($values, ":$k");
         }
+    }
 
-    $values = implode( ",", $values );
+    $values = implode(",", $values);
     $query = "DELETE FROM $tablename WHERE ";
 
     $whereClause = array( );
-    foreach( $cols as $k )
-        array_push( $whereClause, "$k=:$k" );
-
-    $query .= implode( " AND ", $whereClause );
-
-    $stmt = $hippoDB->prepare( $query );
-    foreach( $cols as $k )
-    {
-        $value = $data[$k];
-        if( gettype( $value ) == 'array' )
-            $value = implode( ',', $value );
-        $stmt->bindValue( ":$k", $value );
+    foreach ($cols as $k) {
+        array_push($whereClause, "$k=:$k");
     }
-    $res = $stmt->execute( );
+
+    $query .= implode(" AND ", $whereClause);
+
+    $stmt = $hippoDB->prepare($query);
+    foreach ($cols as $k) {
+        $value = $data[$k];
+        if (gettype($value) == 'array') {
+            $value = implode(',', $value);
+        }
+        $stmt->bindValue(":$k", $value);
+    }
+    $res = $stmt->execute();
     return $res;
 }
 
@@ -2020,11 +2116,10 @@ function deleteFromTable( $tablename, $keys, $data )
     *
     * @return
  */
-function updateTable( $tablename, $wherekeys, $keys, array $data )
+function updateTable($tablename, $wherekeys, $keys, array $data)
 {
-    if( ! $data )
-    {
-        echo printWarning( "Empty data." );
+    if (! $data) {
+        echo printWarning("Empty data.");
         return false;
     }
 
@@ -2033,48 +2128,53 @@ function updateTable( $tablename, $wherekeys, $keys, array $data )
 
     $query = "UPDATE $tablename SET ";
 
-    if( is_string( $wherekeys ) )
-        $wherekeys = explode( ",", $wherekeys );
+    if (is_string($wherekeys)) {
+        $wherekeys = explode(",", $wherekeys);
+    }
 
-    if( is_string( $keys ) )
-        $keys = explode(",",  $keys );
+    if (is_string($keys)) {
+        $keys = explode(",", $keys);
+    }
 
     $whereclause = array( );
-    foreach( $wherekeys as $wkey )
+    foreach ($wherekeys as $wkey) {
         $whereclause[] = "$wkey=:$wkey";
+    }
 
-    $whereclause = implode( " AND ", $whereclause );
+    $whereclause = implode(" AND ", $whereclause);
 
     $values = array( );
     $cols = array();
-    foreach( $keys as $k )
-    {
+    foreach ($keys as $k) {
         // If values for this key in $data is null then don't use it here.
-        if(null === $data[$k])
+        if (null === $data[$k]) {
             continue;
+        }
 
-        array_push( $cols, $k );
-        array_push( $values, "$k=:$k" );
+        array_push($cols, $k);
+        array_push($values, "$k=:$k");
     }
-    $values = implode( ",", $values );
+    $values = implode(",", $values);
     $query .= " $values WHERE $whereclause";
 
-    $stmt = $hippoDB->prepare( $query );
-    foreach( $cols as $k )
-    {
+    $stmt = $hippoDB->prepare($query);
+    foreach ($cols as $k) {
         $value = $data[$k];
-        if( is_array( $value ) )
-            $value = implode( ',', $value );
+        if (is_array($value)) {
+            $value = implode(',', $value);
+        }
 
-        $stmt->bindValue( ":$k", $value );
+        $stmt->bindValue(":$k", $value);
     }
 
-    foreach( $wherekeys as $wherekey )
-        $stmt->bindValue( ":$wherekey", $data[$wherekey] );
+    foreach ($wherekeys as $wherekey) {
+        $stmt->bindValue(":$wherekey", $data[$wherekey]);
+    }
 
-    $res = $stmt->execute( );
-    if( $res )
+    $res = $stmt->execute();
+    if ($res) {
         $hippoDB->commit();
+    }
 
     return true;
 }
@@ -2087,16 +2187,18 @@ function updateTable( $tablename, $wherekeys, $keys, array $data )
     *
     * @return  Array.
  */
-function  scheduledAWSInFuture( $speaker )
+function scheduledAWSInFuture($speaker)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare(
         "SELECT * FROM upcoming_aws WHERE
         speaker=:speaker AND date > CURDATE()
-        " );
-    $stmt->bindValue( ":speaker", $speaker );
-    $stmt->execute( );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+        "
+    );
+    $stmt->bindValue(":speaker", $speaker);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 /**
@@ -2106,16 +2208,18 @@ function  scheduledAWSInFuture( $speaker )
     *
     * @return
  */
-function temporaryAwsSchedule( $speaker )
+function temporaryAwsSchedule($speaker)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare(
         "SELECT * FROM aws_temp_schedule WHERE
         speaker=:speaker AND date > CURDATE()
-        " );
-    $stmt->bindValue( ":speaker", $speaker );
-    $stmt->execute( );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+        "
+    );
+    $stmt->bindValue(":speaker", $speaker);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 /**
@@ -2125,26 +2229,30 @@ function temporaryAwsSchedule( $speaker )
     *
     * @return
  */
-function getFaculty( $status = '', $order_by = 'first_name' )
+function getFaculty($status = '', $order_by = 'first_name')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = 'SELECT * FROM faculty';
     $whereExpr = " WHERE affiliation != 'OTHER' ";
-    if( $status )
+    if ($status) {
         $query .= " $whereExpr AND status=:status ";
-    else
+    } else {
         $query .= " $whereExpr AND status != 'INACTIVE' ";
+    }
 
-    if( $order_by )
+    if ($order_by) {
         $query .= " ORDER BY  '$order_by' ";
+    }
 
-    $stmt = $hippoDB->prepare( $query );
+    $stmt = $hippoDB->prepare($query);
 
-    if( $status )
-        $stmt->bindValue( ':status', $status );
+    if ($status) {
+        $stmt->bindValue(':status', $status);
+    }
 
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -2155,41 +2263,45 @@ function getFaculty( $status = '', $order_by = 'first_name' )
     *
     * @return
  */
-function getAwsRequestsByUser( $user, $status = 'PENDING' )
+function getAwsRequestsByUser($user, $status = 'PENDING')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = "SELECT * FROM aws_requests WHERE status=:status AND speaker=:speaker";
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':status', $status );
-    $stmt->bindValue( ':speaker', $user );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':status', $status);
+    $stmt->bindValue(':speaker', $user);
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
-function getAwsRequestById( $id )
+function getAwsRequestById($id)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $query = "SELECT * FROM aws_requests WHERE id=:id";
-    $stmt = $hippoDB->prepare( $query );
-    $stmt->bindValue( ':id', $id );
-    $stmt->execute( );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+    $stmt = $hippoDB->prepare($query);
+    $stmt->bindValue(':id', $id);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function getPendingAWSRequests( )
+function getPendingAWSRequests()
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM aws_requests WHERE status='PENDING'" );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query("SELECT * FROM aws_requests WHERE status='PENDING'");
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
-function getAllAWS( )
+function getAllAWS()
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM annual_work_seminars ORDER BY date DESC"  );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query("SELECT * FROM annual_work_seminars ORDER BY date DESC");
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -2199,24 +2311,27 @@ function getAllAWS( )
     *
     * @return  Array of events.
  */
-function getAWSFromPast( $from  )
+function getAWSFromPast($from)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM annual_work_seminars
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query("SELECT * FROM annual_work_seminars
         WHERE date >= '$from' ORDER BY date DESC, speaker
-    " );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    ");
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
-function isEligibleForAWS( $speaker )
+function isEligibleForAWS($speaker)
 {
-    $res = executeQuery( "SELECT login FROM logins WHERE login='$speaker' AND eligible_for_aws='YES' AND status='ACTIVE'" );
-    if( ! $res )
+    $res = executeQuery("SELECT login FROM logins WHERE login='$speaker' AND eligible_for_aws='YES' AND status='ACTIVE'");
+    if (! $res) {
         return false;
+    }
 
-    if(count($res) == 0 )
+    if (count($res) == 0) {
         return false;
+    }
 
     return true;
 }
@@ -2227,21 +2342,24 @@ function isEligibleForAWS( $speaker )
     *
     * @return Array containing AWS speakers.
  */
-function getAWSSpeakers( $sortby = '', $where_extra = '' )
+function getAWSSpeakers($sortby = '', $where_extra = '')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
     $sortExpr = '';
-    if( $sortby )
+    if ($sortby) {
         $sortExpr = " ORDER BY '$sortby'";
+    }
 
     $whereExpr = "status='ACTIVE' AND eligible_for_aws='YES'";
-    if( $where_extra )
+    if ($where_extra) {
         $whereExpr .= " AND $where_extra";
+    }
 
-    $stmt = $hippoDB->query( "SELECT * FROM logins WHERE $whereExpr $sortExpr " );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt = $hippoDB->query("SELECT * FROM logins WHERE $whereExpr $sortExpr ");
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -2250,7 +2368,7 @@ function getAWSSpeakers( $sortby = '', $where_extra = '' )
     *
     * @Param int Number of AWS.
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function numberOfAWSGivenBySpeaker($speaker): int
@@ -2267,18 +2385,18 @@ function numberOfAWSGivenBySpeaker($speaker): int
     *
     * @return
  */
-function getTentativeAWSSchedule( $monday = null )
+function getTentativeAWSSchedule($monday = null)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $whereExpr = '';
-    if( $monday )
-    {
-        $date = dbDate( $monday );
+    if ($monday) {
+        $date = dbDate($monday);
         $whereExpr = " WHERE date='$date' ";
     }
-    $stmt = $hippoDB->query( "SELECT * FROM aws_temp_schedule $whereExpr ORDER BY date" );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt = $hippoDB->query("SELECT * FROM aws_temp_schedule $whereExpr ORDER BY date");
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -2286,26 +2404,23 @@ function getTentativeAWSSchedule( $monday = null )
     *
     * @return Array of upcming AWS.
  */
-function getUpcomingAWS( $monday = null )
+function getUpcomingAWS($monday = null)
 {
-    if( ! $monday )
-    {
-        $date = dbDate( 'this monday' );
+    if (! $monday) {
+        $date = dbDate('this monday');
+        $whereExpr = "date >= '$date'";
+    } else {
+        $date = dbDate($monday);
         $whereExpr = "date >= '$date'";
     }
-    else
-    {
-        $date = dbDate( $monday );
-        $whereExpr = "date >= '$date'";
-    }
-    $res = executeQuery( "SELECT * FROM upcoming_aws WHERE $whereExpr ORDER BY date" );
+    $res = executeQuery("SELECT * FROM upcoming_aws WHERE $whereExpr ORDER BY date");
     return $res;
 }
 
-function getUpcomingAWSOnThisMonday( $monday )
+function getUpcomingAWSOnThisMonday($monday)
 {
-    $date = dbDate( $monday );
-    $res = executeQuery( "SELECT * FROM upcoming_aws WHERE date='$date'" );
+    $date = dbDate($monday);
+    $res = executeQuery("SELECT * FROM upcoming_aws WHERE date='$date'");
     return $res;
 }
 
@@ -2322,19 +2437,21 @@ function maxAWSAllowed(): int
     return 3;
 }
 
-function getUpcomingAWSById( $id )
+function getUpcomingAWSById($id)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM upcoming_aws WHERE id = $id " );
-    $stmt->execute( );
-    return  $stmt->fetch( PDO::FETCH_ASSOC );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query("SELECT * FROM upcoming_aws WHERE id = $id ");
+    $stmt->execute();
+    return  $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 function getUpcomingAWSOfSpeaker(string $speaker)
 {
-    return getTableEntry('upcoming_aws'
-        , 'speaker,status'
-        , ['speaker'=> $speaker, 'status' => 'VALID'] 
+    return getTableEntry(
+        'upcoming_aws',
+        'speaker,status',
+        ['speaker'=> $speaker, 'status' => 'VALID']
     );
 }
 
@@ -2348,83 +2465,87 @@ function getUpcomingAWSOfSpeaker(string $speaker)
     *
     * @return
  */
-function acceptScheduleOfAWS($speaker, $date, string $venue='') 
+function acceptScheduleOfAWS($speaker, $date, string $venue='')
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    if( ! $venue )
-        $venue = getDefaultAWSVenue( $date );
+    if (! $venue) {
+        $venue = getDefaultAWSVenue($date);
+    }
 
     // If date is invalid, return.
-    if( strtotime($date) < 0  or strtotime($date) < strtotime( '-7 day' ) )
+    if (strtotime($date) < 0  or strtotime($date) < strtotime('-7 day')) {
         return 0;
+    }
 
     // If there is already a schedule for this person.
-    $res = getTableEntry( 'upcoming_aws', 'speaker,date'
-        , ['speaker' => $speaker, 'date' => dbDate($date), 'venue'=>$venue]
+    $res = getTableEntry(
+        'upcoming_aws',
+        'speaker,date',
+        ['speaker' => $speaker, 'date' => dbDate($date), 'venue'=>$venue]
     );
 
-    if( $res )
-    {
-        echo printInfo( "Already assigned for $speaker on $date on venue $venue." );
+    if ($res) {
+        echo printInfo("Already assigned for $speaker on $date on venue $venue.");
         return $res[ 'id' ];
     }
 
     // Make sure that person is eligible for AWS. Usually she is some sometimes
     // she is not.
-    $login = explode( '@', $speaker )[0];
-    updateTable( 'logins', 'login', 'eligible_for_aws'
-        , array( 'login' => $login, 'eligible_for_aws' => 'YES')
-        );
+    $login = explode('@', $speaker)[0];
+    updateTable(
+        'logins',
+        'login',
+        'eligible_for_aws',
+        array( 'login' => $login, 'eligible_for_aws' => 'YES')
+    );
 
     // Else add to table.
-    $hippoDB->beginTransaction( );
+    $hippoDB->beginTransaction();
 
     $stmt = $hippoDB->prepare(
         'INSERT INTO upcoming_aws (speaker, date, venue) VALUES (:speaker, :date, :venue)'
     );
 
-    $stmt->bindValue( ':speaker', $speaker );
-    $stmt->bindValue( ':date', $date );
-    $stmt->bindValue( ':venue', $venue );
+    $stmt->bindValue(':speaker', $speaker);
+    $stmt->bindValue(':date', $date);
+    $stmt->bindValue(':venue', $venue);
 
     $awsID = -1;
-    try 
-    {
-        $res = $stmt->execute( );
+    try {
+        $res = $stmt->execute();
         // delete this row from temp table.
-        $stmt = $hippoDB->prepare( 'DELETE FROM aws_temp_schedule WHERE
+        $stmt = $hippoDB->prepare('DELETE FROM aws_temp_schedule WHERE
             speaker=:speaker AND date=:date
-            ' );
-        $stmt->bindValue( ':speaker', $speaker );
-        $stmt->bindValue( ':date', $date );
-        $res = $stmt->execute( );
+            ');
+        $stmt->bindValue(':speaker', $speaker);
+        $stmt->bindValue(':date', $date);
+        $res = $stmt->execute();
 
         // If this happens, I must not commit the previous results into table.
-        if( ! $res )
-        {
-            $hippoDB->rollBack( );
-            return False;
+        if (! $res) {
+            $hippoDB->rollBack();
+            return false;
         }
 
         // If successful add a query in queries to create a clickable query.
-        $aws = getTableEntry( 'upcoming_aws'
-            , 'speaker,date,venue'
-            , ['speaker' => $speaker, 'date' => $date, 'venue'=>$venue]
-            );
+        $aws = getTableEntry(
+            'upcoming_aws',
+            'speaker,date,venue',
+            ['speaker' => $speaker, 'date' => $date, 'venue'=>$venue]
+        );
         $awsID = $aws[ 'id' ];
         $clickableQ = "UPDATE upcoming_aws SET acknowledged='YES' WHERE id='$awsID'";
-        insertClickableQuery( $speaker, "upcoming_aws.$awsID", $clickableQ );
-    }
-    catch (Exception $e)
-    {
-        $hippoDB->rollBack( );
+        insertClickableQuery($speaker, "upcoming_aws.$awsID", $clickableQ);
+    } catch (Exception $e) {
+        $hippoDB->rollBack();
         echo minionEmbarrassed(
             "Failed to insert $speaker, $date into database: " . $e->getMessage()
         );
-        return False;
+        return false;
     }
-    $hippoDB->commit( );
+    $hippoDB->commit();
     return $awsID;
 }
 
@@ -2439,28 +2560,28 @@ function acceptScheduleOfAWS($speaker, $date, string $venue='')
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function insertClickableQuery( $who_can_execute, $external_id, $query )
+function insertClickableQuery($who_can_execute, $external_id, $query)
 {
     $data =  array(
         'query' => $query
         , 'external_id' => $external_id
         , 'who_can_execute' => $who_can_execute
-        , 'last_modified_on' => dbDateTime( 'now' )
+        , 'last_modified_on' => dbDateTime('now')
         , 'status' => 'PENDING'
         );
 
-    $res = getTableEntry('queries', 'who_can_execute,query,external_id,status', $data );
-    if( $res )
-    {
-        echo printInfo( "Clickable URL still unused." );
+    $res = getTableEntry('queries', 'who_can_execute,query,external_id,status', $data);
+    if ($res) {
+        echo printInfo("Clickable URL still unused.");
         return $res['id'];
     }
 
-    $data['id'] = getUniqueID( 'queries' );
-    $res = insertIntoTable( 'queries'
-        , 'id,who_can_execute,external_id,query,last_modified_on,status'
-        , $data
-        );
+    $data['id'] = getUniqueID('queries');
+    $res = insertIntoTable(
+        'queries',
+        'id,who_can_execute,external_id,query,last_modified_on,status',
+        $data
+    );
 
     // Now fetch the query and return its ID. It may not be the ID which we have
     // generated above. The UNIQUE contraints may not allow creating a new
@@ -2476,23 +2597,25 @@ function insertClickableQuery( $who_can_execute, $external_id, $query )
     *
     * @return  List of AWS with matching query.
  */
-function queryAWS( $query )
+function queryAWS($query)
 {
-    if( strlen( $query ) == 0 )
-        return array( );
-
-    if( strlen( $query ) < 3 )
-    {
-        echo printWarning( "Query is too small" );
+    if (strlen($query) == 0) {
         return array( );
     }
 
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM annual_work_seminars
+    if (strlen($query) < 3) {
+        echo printWarning("Query is too small");
+        return array( );
+    }
+
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query(
+        "SELECT * FROM annual_work_seminars
         WHERE LOWER(abstract) LIKE LOWER('%$query%') ORDER BY date DESC"
     );
-    $stmt->execute( );
-    return fetchEntries( $stmt );
+    $stmt->execute();
+    return fetchEntries($stmt);
 }
 
 /**
@@ -2503,16 +2626,17 @@ function queryAWS( $query )
     *
     * @return
  */
-function clearUpcomingAWS( $speaker, $date )
+function clearUpcomingAWS($speaker, $date)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare(
         "DELETE FROM upcoming_aws WHERE speaker=:speaker AND date=:date"
     );
 
-    $stmt->bindValue( ':speaker', $speaker );
-    $stmt->bindValue( ':date', $date );
-    return $stmt->execute( );
+    $stmt->bindValue(':speaker', $speaker);
+    $stmt->bindValue(':date', $date);
+    return $stmt->execute();
 }
 
 /**
@@ -2523,24 +2647,26 @@ function clearUpcomingAWS( $speaker, $date )
     *
     * @return True, on success. False otherwise.
  */
-function deleteAWSEntry( $speaker, $date )
+function deleteAWSEntry($speaker, $date)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
     $stmt = $hippoDB->prepare(
         "DELETE FROM annual_work_seminars WHERE speaker=:speaker AND date=:date"
     );
-    $stmt->bindValue( ':speaker', $speaker );
-    $stmt->bindValue( ':date', $date );
-    return $stmt->execute( );
+    $stmt->bindValue(':speaker', $speaker);
+    $stmt->bindValue(':date', $date);
+    return $stmt->execute();
 }
 
-function getHolidays( $from = NULL )
+function getHolidays($from = null)
 {
     $hippoDB = initDB();
-    if( ! $from )
-        $from = date( 'Y-m-d', strtotime( 'today' ) );
-    $stmt = $hippoDB->query( "SELECT * FROM holidays WHERE date >= '$from' ORDER BY date" );
-    return fetchEntries( $stmt );
+    if (! $from) {
+        $from = date('Y-m-d', strtotime('today'));
+    }
+    $stmt = $hippoDB->query("SELECT * FROM holidays WHERE date >= '$from' ORDER BY date");
+    return fetchEntries($stmt);
 }
 
 /**
@@ -2548,75 +2674,87 @@ function getHolidays( $from = NULL )
     *
     * @return
  */
-function getEmailTemplates( )
+function getEmailTemplates()
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM email_templates" );
-    return fetchEntries( $stmt );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query("SELECT * FROM email_templates");
+    return fetchEntries($stmt);
 }
 
-function getEmailTemplateById( $id )
+function getEmailTemplateById($id)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM email_templates where id='$id'" );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query("SELECT * FROM email_templates where id='$id'");
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function getEmailsByStatus( $status = 'PENDING' )
+function getEmailsByStatus($status = 'PENDING')
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM emails where status = '$status'
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query("SELECT * FROM emails where status = '$status'
         ORDER BY when_to_send DESC
-        " );
-    return fetchEntries( $stmt );
+        ");
+    return fetchEntries($stmt);
 }
 
-function getEmailById( $id )
+function getEmailById($id)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->query( "SELECT * FROM emails where id = '$id'" );
-    return $stmt->fetch( PDO::FETCH_ASSOC );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->query("SELECT * FROM emails where id = '$id'");
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function getEmailByName( $name )
+function getEmailByName($name)
 {
-    $name = preg_replace( '#(Drs*|Mrs*|NA).?\s*#i', '', $name );
-    if( ! $name )
+    $name = preg_replace('#(Drs*|Mrs*|NA).?\s*#i', '', $name);
+    if (! $name) {
         return '';
+    }
 
-    $nameArr = explode( ' ', $name );
+    $nameArr = explode(' ', $name);
     $fname = $nameArr[0];
     $lname = $nameArr[ count($nameArr) - 1 ];
     $data = array( 'first_name' => $fname, 'last_name' => $lname );
-    $res = getTableEntry( 'logins', 'first_name,last_name', $data );
-    if( ! $res )
-        $res = getTableEntry( 'faculty', 'first_name,last_name', $data );
-    if( ! $res )
-        $res = getTableEntry( 'logins', 'first_name', $data );
-    if( ! $res )
-        $res = getTableEntry( 'faculty', 'first_name', $data );
+    $res = getTableEntry('logins', 'first_name,last_name', $data);
+    if (! $res) {
+        $res = getTableEntry('faculty', 'first_name,last_name', $data);
+    }
+    if (! $res) {
+        $res = getTableEntry('logins', 'first_name', $data);
+    }
+    if (! $res) {
+        $res = getTableEntry('faculty', 'first_name', $data);
+    }
 
-    if( ! $res )
+    if (! $res) {
         return '';
+    }
 
     return $res['email'];
 }
 
-function getUpcomingEmails( $from = null )
+function getUpcomingEmails($from = null)
 {
-    $hippoDB = initDB();;
-    if( ! $from )
-        $from = dbDateTime( strtotime( 'today' ) );
+    $hippoDB = initDB();
+    ;
+    if (! $from) {
+        $from = dbDateTime(strtotime('today'));
+    }
 
-    $stmt = $hippoDB->query( "SELECT *k FROM emails where when_to_send>='$from'" );
-    return fetchEntries( $stmt );
+    $stmt = $hippoDB->query("SELECT *k FROM emails where when_to_send>='$from'");
+    return fetchEntries($stmt);
 }
 
-function getSpeakers( )
+function getSpeakers()
 {
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( 'SELECT * FROM speakers' );
-    return fetchEntries( $res );
+    $hippoDB = initDB();
+    ;
+    $res = $hippoDB->query('SELECT * FROM speakers');
+    return fetchEntries($res);
 }
 
 
@@ -2627,32 +2765,32 @@ function getSpeakers( )
     *
     * @return
  */
-function addOrUpdateSpeaker( $data )
+function addOrUpdateSpeaker($data)
 {
-    if( __get__( $data, 'id', 0 ) > 0 )
-    {
-        $speaker = getTableEntry( 'speakers', 'id', $data );
-        if( $speaker )
-        {
+    if (__get__($data, 'id', 0) > 0) {
+        $speaker = getTableEntry('speakers', 'id', $data);
+        if ($speaker) {
             $res = updateTable(
-                'speakers', 'id'
-                , 'honorific,email,first_name,middle_name,last_name'
-                    . ',designation,department,institute,homepage'
-                , $data
+                'speakers',
+                'id',
+                'honorific,email,first_name,middle_name,last_name'
+                    . ',designation,department,institute,homepage',
+                $data
             );
-            return getTableEntry( 'speakers', 'id', $speaker) ;
+            return getTableEntry('speakers', 'id', $speaker) ;
         }
     }
 
     // If we are here, then speaker is not found. Construct a new id.
-    $data['id'] = getUniqueFieldValue( 'speakers', 'id' );
-    $res = insertIntoTable( 'speakers'
-        , 'id,email,honorific,first_name,middle_name,last_name,'
-            . 'designation,department,institute,homepage'
-        , $data
-        );
+    $data['id'] = getUniqueFieldValue('speakers', 'id');
+    $res = insertIntoTable(
+        'speakers',
+        'id,email,honorific,first_name,middle_name,last_name,'
+            . 'designation,department,institute,homepage',
+        $data
+    );
 
-    return getTableEntry( 'speakers', 'id', $data );
+    return getTableEntry('speakers', 'id', $data);
 }
 
 
@@ -2668,51 +2806,49 @@ function addOrUpdateSpeaker( $data )
  * @Returns True if successful.
  */
 /* ----------------------------------------------------------------------------*/
-function addCourseBookings( $runningCourseId )
+function addCourseBookings($runningCourseId)
 {
     // Fetch the course name.
-    $course = getTableEntry( 'courses', 'id', array( 'id' => $runningCourseId ) );
-    $cname = getCourseName( $course[ 'course_id' ] );
+    $course = getTableEntry('courses', 'id', array( 'id' => $runningCourseId ));
+    $cname = getCourseName($course[ 'course_id' ]);
 
     $bookedby = $runningCourseId;
 
-    $venue = __get__( $course, 'venue', '' );
-    if( ! $venue )
-    {
-        echo printWarning( "No venue selected for this course, so no booking is made." );
+    $venue = __get__($course, 'venue', '');
+    if (! $venue) {
+        echo printWarning("No venue selected for this course, so no booking is made.");
         return false;
     }
 
     $title = "Course $cname";
 
-    $tiles = getSlotTiles( $course[ 'slot' ] );
+    $tiles = getSlotTiles($course[ 'slot' ]);
     $ignoreTiles = $course[ 'ignore_tiles' ];
 
-    if( $ignoreTiles )
-        $tiles = array_diff( $tiles, explode(',', $ignore_tiles) );
+    if ($ignoreTiles) {
+        $tiles = array_diff($tiles, explode(',', $ignore_tiles));
+    }
 
     $startDate = $course[ 'start_date' ];
     $endDate = $course[ 'end_date' ];
 
     // Select unique gid.
-    $gid = getUniqueFieldValue( 'bookmyvenue_requests', 'gid');
+    $gid = getUniqueFieldValue('bookmyvenue_requests', 'gid');
 
     $temp = $startDate;
     $rid = 0;
-    while( strtotime($temp) <= strtotime( $endDate ) )
-    {
-        foreach( $tiles as $tile )
-        {
+    while (strtotime($temp) <= strtotime($endDate)) {
+        foreach ($tiles as $tile) {
             $rid += 1;
             $day = $tile[ 'day' ];
-            $date = dbDate( strtotime( "this $day", strtotime( $temp ) ) );
+            $date = dbDate(strtotime("this $day", strtotime($temp)));
             $startTime = $tile[ 'start_time' ];
             $endTime = $tile[ 'end_time' ];
             $msg = "$title at $venue on $date, $startTime, $endTime";
 
             $data = array(
                 'gid' => $gid, 'rid' => $rid
-                , 'date' => dbDate( $date )
+                , 'date' => dbDate($date)
                 , 'start_time' => $startTime
                 , 'end_time' => $endTime
                 , 'venue' => $venue
@@ -2720,24 +2856,24 @@ function addCourseBookings( $runningCourseId )
                 , 'class' => 'CLASS'
                 , 'description' => 'AUTO BOOKED BY Hippo'
                 , 'created_by' => $bookedby
-                , 'last_modified_on' => dbDateTime( 'now' )
+                , 'last_modified_on' => dbDateTime('now')
             );
 
             // Check if there is already an event here. If yes, notify the user.
-            $events = getEventsOnThisVenueBetweenTime( $venue, $date, $startTime, $endTime );
-            $reqs = getRequestsOnThisVenueBetweenTime( $venue, $date, $startTime, $endTime );
+            $events = getEventsOnThisVenueBetweenTime($venue, $date, $startTime, $endTime);
+            $reqs = getRequestsOnThisVenueBetweenTime($venue, $date, $startTime, $endTime);
 
             $reason = p("Your booking request/approved booking was on a 
                 LECTURE HALL.  Course '$cname' is assigned this lecture hall just now.
                 Courses are always given the higest priority on LECTURE HALLS.");
 
-            foreach($events as $ev){
-                echo arrayToTableHTML( $ev, 'event' );
+            foreach ($events as $ev) {
+                echo arrayToTableHTML($ev, 'event');
                 cancelBookingOrRequestAndNotifyBookingParty($ev, $reason);
             }
 
-            foreach($reqs as $req){
-                echo arrayToTableHTML( $req, 'event' );
+            foreach ($reqs as $req) {
+                echo arrayToTableHTML($req, 'event');
                 cancelBookingOrRequestAndNotifyBookingParty($req, $reason);
             }
 
@@ -2745,12 +2881,13 @@ function addCourseBookings( $runningCourseId )
             // prohibited because then gid and eid are not synched.
             $res = insertIntoTable('bookmyvenue_requests', array_keys($data), $data);
             $res = approveRequest($gid, $rid);
-            if(! $res['success'])
-                echo printWarning( "Could not book: $msg" );
+            if (! $res['success']) {
+                echo printWarning("Could not book: $msg");
+            }
         }
 
         // get the next week now.
-        $temp = dbDate(  strtotime( '+1 week', strtotime($temp) ));
+        $temp = dbDate(strtotime('+1 week', strtotime($temp)));
     }
     return true;
 }
@@ -2765,34 +2902,36 @@ function addCourseBookings( $runningCourseId )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function updateBookings( $course )
+function updateBookings($course)
 {
-    deleteBookings( $course );
-    $res = addCourseBookings( $course );
+    deleteBookings($course);
+    $res = addCourseBookings($course);
     return $res;
 }
 function canIChangeRegistration($c, $login) : bool
 {
     $today = strtotime('now');
-    $res = [ 'answer' => 'yes', 'why' => '' ]; 
+    $res = [ 'answer' => 'yes', 'why' => '' ];
 
     // If already registered, say no.
-    $cstart = strtotime( $c[ 'start_date' ] );
+    $cstart = strtotime($c[ 'start_date' ]);
 
     // Registration and dropping is allowed for 3 weeks from course start date.
-    if( ($cstart + 21*24*3600) > $today )
+    if (($cstart + 21*24*3600) > $today) {
         return false;
+    }
     return true;
 }
 
 
-function getMyCourses( $sem, $year, $user  ) : array
+function getMyCourses($sem, $year, $user) : array
 {
     $whereExpr = "(status='VALID' OR status='WAITLIST') AND semester='$sem' AND year='$year' 
         AND student_id='$user'";
-    $courses = getTableEntries( 'course_registration', 'course_id', $whereExpr );
-    foreach($courses as &$c)
+    $courses = getTableEntries('course_registration', 'course_id', $whereExpr);
+    foreach ($courses as &$c) {
         $c['name'] = getCourseName($c['course_id']);
+    }
     return $courses;
 }
 
@@ -2802,15 +2941,16 @@ function getMyCourses( $sem, $year, $user  ) : array
     *
     * @Param $user
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getMyAllCourses(string $user) : array
 {
     $whereExpr = "(status='VALID' OR status='WAITLIST') AND student_id='$user'";
-    $courses = getTableEntries( 'course_registration', 'year DESC, semester', $whereExpr );
-    foreach($courses as &$course)
+    $courses = getTableEntries('course_registration', 'year DESC, semester', $whereExpr);
+    foreach ($courses as &$course) {
         $course['name'] = getCourseName($course['course_id']);
+    }
     return $courses;
 }
 
@@ -2821,30 +2961,32 @@ function getMyAllCourses(string $user) : array
     *
     * @return
  */
-function getActiveRecurrentEvents( $day )
+function getActiveRecurrentEvents($day)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    $from = dbDate( $day );
+    $from = dbDate($day);
 
     // We get gid of events which are still valid.
-    $res = $hippoDB->query( "SELECT gid FROM events WHERE
+    $res = $hippoDB->query(
+        "SELECT gid FROM events WHERE
                 date >= '$from' AND status='VALID' ORDER BY date"
-            );
-    $gids = fetchEntries( $res );
+    );
+    $gids = fetchEntries($res);
 
     $upcomingRecurrentEvents = array( );
-    foreach( $gids as $gid )
-    {
+    foreach ($gids as $gid) {
         $gid = $gid[ 'gid' ];
 
         // Must order by date.
-        $gEvents = getTableEntries( 'events', 'date', "gid='$gid'" );
+        $gEvents = getTableEntries('events', 'date', "gid='$gid'");
 
         // Definately there has to be more than 1 event in group to be qualified
         // as group event.
-        if( count( $gEvents ) > 1 )
+        if (count($gEvents) > 1) {
             $upcomingRecurrentEvents[ $gid ] = $gEvents;
+        }
     }
 
     return $upcomingRecurrentEvents;
@@ -2857,37 +2999,41 @@ function getActiveRecurrentEvents( $day )
     *
     * @return
  */
-function getLoginByName( $name )
+function getLoginByName($name)
 {
-    $hippoDB = initDB();;
-    $name = explode( ' ', $name );
+    $hippoDB = initDB();
+    ;
+    $name = explode(' ', $name);
     $fname = $name[ 0 ];
-    $lname = end( $name );
-    $res = $hippoDB->query( "SELECT * FROM logins WHERE
-        first_name='$fname' AND last_name='$lname'" );
-    return $res->fetch( PDO::FETCH_ASSOC );
+    $lname = end($name);
+    $res = $hippoDB->query("SELECT * FROM logins WHERE
+        first_name='$fname' AND last_name='$lname'");
+    return $res->fetch(PDO::FETCH_ASSOC);
 }
 
-function getSpeakerByName( $name )
+function getSpeakerByName($name)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    $name = splitName( $name );
+    $name = splitName($name);
     $fname = $name[ 'first_name' ];
     $mname = $name[ 'middle_name' ];
     $lname = $name[ 'last_name' ];
 
     // WHERE condition.
     $where = array( "first_name='$fname'" );
-    if( $lname )
+    if ($lname) {
         $where[] =  "last_name='$lname'";
+    }
 
-    if( $mname )
+    if ($mname) {
         $where[] = "middle_name='$mname'";
-    $whereExpr = implode( ' AND ', $where );
+    }
+    $whereExpr = implode(' AND ', $where);
 
-    $res = $hippoDB->query( "SELECT * FROM speakers WHERE $whereExpr " );
-    return $res->fetch( PDO::FETCH_ASSOC );
+    $res = $hippoDB->query("SELECT * FROM speakers WHERE $whereExpr ");
+    return $res->fetch(PDO::FETCH_ASSOC);
 }
 
 function getSpeakerByID($id): array
@@ -2895,37 +3041,38 @@ function getSpeakerByID($id): array
     return getTableEntry('speakers', 'id', ['id' => $id]);
 }
 
-function getWeeklyEventByClass( $classes )
+function getWeeklyEventByClass($classes)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    $classes = explode( ',', $classes );
+    $classes = explode(',', $classes);
     $where = array( );
-    foreach( $classes as $cls )
+    foreach ($classes as $cls) {
         $whereExp[ ] = "class='$cls'";
+    }
 
-    $whereExp = implode( ' OR ', $whereExp );
+    $whereExp = implode(' OR ', $whereExp);
 
-    $today = dbDate( 'today' );
+    $today = dbDate('today');
     $query = "SELECT * FROM events WHERE
                 ( $whereExp ) AND status='VALID' AND date > '$today' GROUP BY gid";
-    $res = $hippoDB->query( $query );
-    $entries = fetchEntries( $res );
+    $res = $hippoDB->query($query);
+    $entries = fetchEntries($res);
 
     // Add which day these events happening.
     $result = array( );
-    foreach( $entries as $entry )
-    {
-        $entry[ 'day' ] = date( 'D', strtotime( $entry[ 'date' ] ) );
+    foreach ($entries as $entry) {
+        $entry[ 'day' ] = date('D', strtotime($entry[ 'date' ]));
         $result[] = $entry;
     }
     return $result;
 }
 
 
-function getLabmeetAndJC( )
+function getLabmeetAndJC()
 {
-    return getWeeklyEventByClass( 'JOURNAL CLUB MEETING,LAB MEETING' );
+    return getWeeklyEventByClass('JOURNAL CLUB MEETING,LAB MEETING');
 }
 
 /**
@@ -2938,32 +3085,32 @@ function getLabmeetAndJC( )
     *
     * @return
  */
-function isThereAClashOnThisVenueSlot( $day, $starttime, $endtime, $venue, $entries )
+function isThereAClashOnThisVenueSlot($day, $starttime, $endtime, $venue, $entries)
 {
-    $clashes = clashesOnThisVenueSlot( $day, $starttime, $endtime, $venue, $entries );
-    if( count( $clashes ) > 0 )
+    $clashes = clashesOnThisVenueSlot($day, $starttime, $endtime, $venue, $entries);
+    if (count($clashes) > 0) {
         return true;
+    }
     return false;
 }
 
-function clashesOnThisVenueSlot( $day, $starttime, $endtime, $venue, $entries )
+function clashesOnThisVenueSlot($day, $starttime, $endtime, $venue, $entries)
 {
     $days = array( 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' );
 
-    if( ! in_array( $day, $days ) )
-        $day = date( 'D', strtotime( $day ) );
+    if (! in_array($day, $days)) {
+        $day = date('D', strtotime($day));
+    }
 
     $clashes = array( );
-    foreach( $entries as $entry )
-    {
-        if( $entry['day'] == $day )
-        {
-            if( strlen($venue) == 0 || $entry[ 'venue' ] == $venue )
-            {
+    foreach ($entries as $entry) {
+        if ($entry['day'] == $day) {
+            if (strlen($venue) == 0 || $entry[ 'venue' ] == $venue) {
                 $s1 = $entry[ 'start_time' ];
                 $e1 = $entry[ 'end_time' ];
-                if( isOverlappingTimeInterval( $starttime, $endtime, $s1, $e1 ) )
+                if (isOverlappingTimeInterval($starttime, $endtime, $s1, $e1)) {
                     $clashes[ ] = $entry;
+                }
             }
         }
     }
@@ -2972,68 +3119,81 @@ function clashesOnThisVenueSlot( $day, $starttime, $endtime, $venue, $entries )
 
 
 
-function labmeetOrJCOnThisVenueSlot( $day, $starttime, $endtime, $venue, $entries = null )
+function labmeetOrJCOnThisVenueSlot($day, $starttime, $endtime, $venue, $entries = null)
 {
-    if( ! $entries )
-        $entries = getLabmeetAndJC( );
-    return clashesOnThisVenueSlot( $day, $starttime, $endtime, $venue, $entries );
+    if (! $entries) {
+        $entries = getLabmeetAndJC();
+    }
+    return clashesOnThisVenueSlot($day, $starttime, $endtime, $venue, $entries);
 }
 
-function getOccupiedSlots( $year = null, $sem = null )
+function getOccupiedSlots($year = null, $sem = null)
 {
-    if( ! $year )
-        $year = getCurrentYear( );
-    if( ! $sem )
-        $sem = getCurrentSemester( );
+    if (! $year) {
+        $year = getCurrentYear();
+    }
+    if (! $sem) {
+        $sem = getCurrentSemester();
+    }
 
     $res = $hippoDB->query(
         "SELECT slot FROM courses WHERE year='$year' AND semester='$sem'"
     );
 
     $slots = array_map(
-        function($x) { return $x['slot']; }
-        , fetchEntries( $res, PDO::FETCH_ASSOC )
-        );
+        function ($x) {
+            return $x['slot'];
+        },
+        fetchEntries($res, PDO::FETCH_ASSOC)
+    );
 
     return $slots;
 }
 
-function getRunningCoursesOnThisVenue( $venue, $date )
+function getRunningCoursesOnThisVenue($venue, $date)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    $year = getYear( $date );
-    $sem = getSemester( $date );
-    $courses = getTableEntries( 'courses', 'id'
-        , " ( end_date >= '$date' AND start_date <= '$date' )"
+    $year = getYear($date);
+    $sem = getSemester($date);
+    $courses = getTableEntries(
+        'courses',
+        'id',
+        " ( end_date >= '$date' AND start_date <= '$date' )"
         . " AND venue='$venue' "
     );
     return $courses;
 }
 
-function getRunningCourseByID( string $cid, string $year='', string $sem='' ) : array
+function getRunningCourseByID(string $cid, string $year='', string $sem='') : array
 {
     $year = $year?$year:getCurrentYear();
     $sem = $sem?$sem:getCurrentSemester();
-    return getTableEntry( 'courses', 'course_id,year,semester'
-        , ['course_id'=>$cid, 'year'=>$year, 'semester' => $sem ]
+    return getTableEntry(
+        'courses',
+        'course_id,year,semester',
+        ['course_id'=>$cid, 'year'=>$year, 'semester' => $sem ]
     );
 }
 
 
-function getRunningCoursesOnTheseSlotTiles( $date, $tile )
+function getRunningCoursesOnTheseSlotTiles($date, $tile)
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
+    ;
 
-    $year = getCurrentYear( );
-    $sem = getCurrentSemester(  );
-    $date = dbDate( $date );
+    $year = getCurrentYear();
+    $sem = getCurrentSemester();
+    $date = dbDate($date);
 
     // Slot is integer value.
-    $slot = getSlotIdOfTile( $tile );
+    $slot = getSlotIdOfTile($tile);
 
-    $courses = getTableEntries( 'courses', 'id'
-        , " ( end_date >= '$date' AND start_date <= '$date' )"
+    $courses = getTableEntries(
+        'courses',
+        'id',
+        " ( end_date >= '$date' AND start_date <= '$date' )"
         . " AND slot='$slot' "
     );
 
@@ -3050,64 +3210,65 @@ function getRunningCoursesOnTheseSlotTiles( $date, $tile )
     *
     * @return
  */
-function runningCoursesOnThisVenueSlot( $venue, $date, $startTime, $endTime )
+function runningCoursesOnThisVenueSlot($venue, $date, $startTime, $endTime)
 {
+    $courses = getRunningCoursesOnThisVenue($venue, $date);
 
-    $courses = getRunningCoursesOnThisVenue( $venue, $date );
+    $day = date('D', strtotime($date));
 
-    $day = date( 'D', strtotime($date) );
-
-    if( ! $courses )
+    if (! $courses) {
         return null;
+    }
 
     // Check if any of these courses slot is clasing with booking.
     $clashes = array( );
-    foreach( $courses as $course )
-    {
+    foreach ($courses as $course) {
         $slotId = $course[ 'slot' ];
-        $slots = getTableEntries( 'slots', 'groupid', "groupid='$slotId'" );
-        foreach( $slots as $sl )
-        {
+        $slots = getTableEntries('slots', 'groupid', "groupid='$slotId'");
+        foreach ($slots as $sl) {
             // If this slot is on on the same day as of booking request, ignore
             // the course.
-            if( strcasecmp( $sl[ 'day' ], $day ) !== 0 )
+            if (strcasecmp($sl[ 'day' ], $day) !== 0) {
                 continue;
+            }
 
             $st = $sl[ 'start_time' ];
             $et = $sl[ 'end_time' ];
 
-            if( isOverlappingTimeInterval( $startTime, $endTime, $st, $et ))
+            if (isOverlappingTimeInterval($startTime, $endTime, $st, $et)) {
                 $clashes[ $course[ 'id' ] ] = $course;
+            }
         }
-
     }
 
-    if( count( $clashes ) > 0 )
+    if (count($clashes) > 0) {
         return $clashes;
+    }
     return null;
 }
 
-function getSlotInfo( $id, $ignore = '' )
+function getSlotInfo($id, $ignore = '')
 {
-    $hippoDB = initDB();;
-    $ignore = str_replace( ' ', ',', $ignore );
-    $ignoreTiles = explode( ',', $ignore );
-    $slots = getTableEntries( 'slots', 'id', "groupid='$id'" );
+    $hippoDB = initDB();
+    ;
+    $ignore = str_replace(' ', ',', $ignore);
+    $ignoreTiles = explode(',', $ignore);
+    $slots = getTableEntries('slots', 'id', "groupid='$id'");
     $res = array( );
-    foreach( $slots as $sl )
-    {
+    foreach ($slots as $sl) {
         // This slot is in ignore tile list i.e. a course is not using its slot
         // fully.
-        if( in_array( $sl['id'], $ignoreTiles ) )
+        if (in_array($sl['id'], $ignoreTiles)) {
             continue;
-        $res[] = $sl[ 'day' ] . ' ' . dbTime( $sl[ 'start_time' ] ) . '-'
-            . dbTime( $sl[ 'end_time' ] );
+        }
+        $res[] = $sl[ 'day' ] . ' ' . dbTime($sl[ 'start_time' ]) . '-'
+            . dbTime($sl[ 'end_time' ]);
     }
-    return  implode( ', ', $res );
+    return  implode(', ', $res);
 }
 
 
-function getCourseById( $cid )
+function getCourseById($cid)
 {
     $c =  getTableEntry('courses_metadata', 'id,status', ['id' => $cid,'status'=>'VALID']);
     return $c;
@@ -3120,25 +3281,26 @@ function getCourseById( $cid )
     *
     * @return
  */
-function isRegistrationOpen( )
+function isRegistrationOpen()
 {
-    $res = getTableEntry( 'conditional_tasks', 'id', array( 'id' => 'COURSE_REGISTRATION' ) );
-    if( strtotime( $res[ 'end_date' ] ) >= strtotime( 'today' ) )
+    $res = getTableEntry('conditional_tasks', 'id', array( 'id' => 'COURSE_REGISTRATION' ));
+    if (strtotime($res[ 'end_date' ]) >= strtotime('today')) {
         return true;
+    }
 
     return false;
-
 }
 
-function getSlotTiles( $id )
+function getSlotTiles($id)
 {
-   $tiles = getTableEntries( 'slots', 'groupid', "groupid='$id'" );
-   $result = array( );
+    $tiles = getTableEntries('slots', 'groupid', "groupid='$id'");
+    $result = array( );
 
-   foreach( $tiles as $tile )
-       $result[ $tile[ 'id' ] ] = $tile;
+    foreach ($tiles as $tile) {
+        $result[ $tile[ 'id' ] ] = $tile;
+    }
 
-   return $result;
+    return $result;
 }
 
 /**
@@ -3149,23 +3311,26 @@ function getSlotTiles( $id )
     *
     * @return
  */
-function isCourseRunningOnThisTile( $course, $tile )
+function isCourseRunningOnThisTile($course, $tile)
 {
-    if( strpos( $course['ignore_tiles'], $tile ) !== 0 )
+    if (strpos($course['ignore_tiles'], $tile) !== 0) {
         return true;
+    }
     return false;
 }
 
-function getCourseSlotTiles( $course )
+function getCourseSlotTiles($course)
 {
-   $sid = $course[ 'slot' ];
-   $tiles = getSlotTiles( $sid );
-   $result = array( );
-   foreach( $tiles as $id => $tile )
-       if( isCourseRunningOnThisTile( $course, $id ) )
-           $result[ ] = $id;
+    $sid = $course[ 'slot' ];
+    $tiles = getSlotTiles($sid);
+    $result = array( );
+    foreach ($tiles as $id => $tile) {
+        if (isCourseRunningOnThisTile($course, $id)) {
+            $result[ ] = $id;
+        }
+    }
 
-   return implode( ",", $result );
+    return implode(",", $result);
 }
 
 
@@ -3176,17 +3341,16 @@ function getCourseSlotTiles( $course )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function totalClassEvents( )
+function totalClassEvents()
 {
-    $courses = getTableEntries( 'courses' );
+    $courses = getTableEntries('courses');
     $numEvents = 0;
-    foreach( $courses as $c )
-    {
-        $startDate = strtotime( $c[ 'start_date' ] );
-        $endDate = min( strtotime( 'now' ), strtotime( $c['end_date' ] ) );
+    foreach ($courses as $c) {
+        $startDate = strtotime($c[ 'start_date' ]);
+        $endDate = min(strtotime('now'), strtotime($c['end_date' ]));
         $slots = $c[ 'slot' ];
-        $nTiles = count( getSlotTiles( $slots ) );
-        $nWeeks = intval( max(0,$endDate - $startDate) / (24*3600*7.0) );
+        $nTiles = count(getSlotTiles($slots));
+        $nWeeks = intval(max(0, $endDate - $startDate) / (24*3600*7.0));
 
         // For each week, add this many events.
         $numEvents += $nWeeks * $nTiles;
@@ -3201,34 +3365,32 @@ function totalClassEvents( )
     *
     * @Param $tableName
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getTableFieldInfo($tableName)
 {
     $schema = getTableSchema($tableName);
     $res = [];
-    foreach($schema as $row)
-    {
+    foreach ($schema as $row) {
         $type = $row['Type'];
         $fname = $row['Field'];
-        if(preg_match( "/^(enum|set)\((.*)\)$/" , $type, $match))
-        {
+        if (preg_match("/^(enum|set)\((.*)\)$/", $type, $match)) {
             $fs = [];
-            foreach( explode(",", $match[2] ) as &$v )
-                $fs[] = str_replace( "'", "", $v );
+            foreach (explode(",", $match[2]) as &$v) {
+                $fs[] = str_replace("'", "", $v);
+            }
             $res[$fname] = ['select', $fs];
-        }
-        else
-        {
-            if(__substr__('varchar', $type))
+        } else {
+            if (__substr__('varchar', $type)) {
                 $res[$fname] = ['text', ''];
-            else if(__substr__('date', $type))
+            } elseif (__substr__('date', $type)) {
                 $res[$fname] = ['date', ''];
-            else if(__substr__('time', $type))
+            } elseif (__substr__('time', $type)) {
                 $res[$fname] = ['time', ''];
-            else
+            } else {
                 $res[$fname] = [$type, ''];
+            }
         }
     }
     return $res;
@@ -3245,28 +3407,26 @@ function getTableFieldInfo($tableName)
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getTableColumnTypes( $tableName, $columnName )
+function getTableColumnTypes($tableName, $columnName)
 {
-    $hippoDB = initDB();;
-    $stmt = $hippoDB->prepare( "SHOW COLUMNS FROM $tableName LIKE '$columnName'" );
-    $stmt->execute( );
-    $column = $stmt->fetch( PDO::FETCH_ASSOC );
+    $hippoDB = initDB();
+    ;
+    $stmt = $hippoDB->prepare("SHOW COLUMNS FROM $tableName LIKE '$columnName'");
+    $stmt->execute();
+    $column = $stmt->fetch(PDO::FETCH_ASSOC);
     $type = $column[ "Type" ];
 
     $res = array( );
-    if( preg_match( "/^(enum|set)\((.*)\)$/" , $type, $match ) )
-    {
-        foreach( explode(",", $match[2] ) as $v )
-        {
-            $v = str_replace( "'", "", $v );
+    if (preg_match("/^(enum|set)\((.*)\)$/", $type, $match)) {
+        foreach (explode(",", $match[2]) as $v) {
+            $v = str_replace("'", "", $v);
             $res[] = $v;
         }
-    }
-    else
+    } else {
         $res[] = $type;
+    }
 
     return $res;
-
 }
 
 function getPIOrHost(string $loginOrEmail) : string
@@ -3274,22 +3434,25 @@ function getPIOrHost(string $loginOrEmail) : string
     $login = explode('@', $loginOrEmail)[0];
 
     // A. Search in table logins.
-    $hippoDB = initDB();;
-    $row = getTableEntry( 'logins', "login", array( 'login' => $login ) );
-    if( __get__($row, 'pi_or_host', '' ) )
+    $hippoDB = initDB();
+    ;
+    $row = getTableEntry('logins', "login", array( 'login' => $login ));
+    if (__get__($row, 'pi_or_host', '')) {
         return $row[ 'pi_or_host' ];
+    }
 
     // B. Search in previous AWS databases.
-    $awses = getMyAws( $login );
-    if( count( $awses ) > 0 )
-    {
+    $awses = getMyAws($login);
+    if (count($awses) > 0) {
         $mostRecentAWS = $awses[0];
         $piOrHost = $mostRecentAWS[ 'supervisor_1'];
-        if( $piOrHost )
-        {
+        if ($piOrHost) {
             // Update PI or HOST table.
-            updateTable( 'logins', 'login', 'pi_or_host'
-                , array( 'login' => $login, 'pi_or_host' => $piOrHost )
+            updateTable(
+                'logins',
+                'login',
+                'pi_or_host',
+                array( 'login' => $login, 'pi_or_host' => $piOrHost )
             );
         }
         return $mostRecentAWS[ 'supervisor_1'];
@@ -3310,11 +3473,11 @@ function getPIOrHost(string $loginOrEmail) : string
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getCoursesAtThisVenueSlotBetweenDates( $venue, $slot, $start, $end )
+function getCoursesAtThisVenueSlotBetweenDates($venue, $slot, $start, $end)
 {
     $whereExpr = "(end_date > '$start' AND start_date < '$end' )
                     AND slot='$slot' AND venue='$venue'";
-    $courses = getTableEntries( 'courses', 'start_date' , $whereExpr );
+    $courses = getTableEntries('courses', 'start_date', $whereExpr);
     return $courses;
 }
 
@@ -3326,11 +3489,12 @@ function getCoursesAtThisVenueSlotBetweenDates( $venue, $slot, $start, $end )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getAllSpecialization( ) : array
+function getAllSpecialization() : array
 {
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( 'SELECT DISTINCT(specialization) FROM faculty' );
-    return fetchEntries( $res );
+    $hippoDB = initDB();
+    ;
+    $res = $hippoDB->query('SELECT DISTINCT(specialization) FROM faculty');
+    return fetchEntries($res);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -3342,21 +3506,24 @@ function getAllSpecialization( ) : array
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getLoginSpecialization( $login )
+function getLoginSpecialization($login)
 {
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( "SELECT specialization FROM logins WHERE login='$login'");
-    $res = $res->fetch( PDO::FETCH_ASSOC );
-    return trim( $res[ 'specialization' ] );
+    $hippoDB = initDB();
+    ;
+    $res = $hippoDB->query("SELECT specialization FROM logins WHERE login='$login'");
+    $res = $res->fetch(PDO::FETCH_ASSOC);
+    return trim($res[ 'specialization' ]);
 }
 
 function getFacultySpecialization(string $email)
 {
-    $hippoDB = initDB();;
-    $res = $hippoDB->query( "SELECT specialization FROM faculty WHERE email='$email'");
+    $hippoDB = initDB();
+    ;
+    $res = $hippoDB->query("SELECT specialization FROM faculty WHERE email='$email'");
     $res = $res->fetch(PDO::FETCH_ASSOC);
-    if($res)
+    if ($res) {
         return trim($res['specialization']);
+    }
     return 'UNKNOWN';
 }
 
@@ -3371,15 +3538,18 @@ function getFacultySpecialization(string $email)
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getSpecialization( $login, $PIEmail = '' )
+function getSpecialization($login, $PIEmail = '')
 {
-    $specialization = getLoginSpecialization( $login );
-    if( ! $specialization )
-        if( $PIEmail )
-            $specialization = getFacultySpecialization( $PIEmail );
+    $specialization = getLoginSpecialization($login);
+    if (! $specialization) {
+        if ($PIEmail) {
+            $specialization = getFacultySpecialization($PIEmail);
+        }
+    }
 
-    if( ! trim( $specialization ) )
+    if (! trim($specialization)) {
         $specialization = 'UNSPECIFIED';
+    }
 
     return $specialization;
 }
@@ -3391,28 +3561,30 @@ function getSpecialization( $login, $PIEmail = '' )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getSlotMap( $slots = array( ) )
+function getSlotMap($slots = array( ))
 {
-    if( ! $slots )
-        $slots = getTableEntries( 'slots', 'groupid' );
+    if (! $slots) {
+        $slots = getTableEntries('slots', 'groupid');
+    }
 
     $slotMap = array();
-    foreach( $slots as $s )
-    {
-        if( intval($s[ 'groupid' ]) == 0 )
+    foreach ($slots as $s) {
+        if (intval($s[ 'groupid' ]) == 0) {
             continue;
+        }
 
         $slotGroupId = $s[ 'groupid' ];
-        if( ! array_key_exists( $slotGroupId, $slotMap ) )
+        if (! array_key_exists($slotGroupId, $slotMap)) {
             $slotMap[ $slotGroupId ] = $slotGroupId .  ' (' . $s['day'] . ':'
-            . humanReadableTime( $s[ 'start_time' ] )
-            . '-' . humanReadableTime( $s['end_time'] )
+            . humanReadableTime($s[ 'start_time' ])
+            . '-' . humanReadableTime($s['end_time'])
             . ')';
-        else
+        } else {
             $slotMap[ $slotGroupId ] .= ' (' . $s['day'] . ':'
-            . humanReadableTime( $s[ 'start_time' ] )
-            . '-' . humanReadableTime( $s['end_time'] )
+            . humanReadableTime($s[ 'start_time' ])
+            . '-' . humanReadableTime($s['end_time'])
             . ')';
+        }
     }
     return $slotMap;
 }
@@ -3422,40 +3594,44 @@ function getSlotMap( $slots = array( ) )
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-function getJCAdmins( $jc_id )
+function getJCAdmins($jc_id)
 {
     return getTableEntries(
-        'jc_subscriptions', 'login'
-        , "jc_id='$jc_id' AND subscription_type='ADMIN'"
+        'jc_subscriptions',
+        'login',
+        "jc_id='$jc_id' AND subscription_type='ADMIN'"
     );
 }
 
-function getJournalClubs( $status = 'ACTIVE' )
+function getJournalClubs($status = 'ACTIVE')
 {
-    return getTableEntries( 'journal_clubs', 'id', "status='$status'" );
+    return getTableEntries('journal_clubs', 'id', "status='$status'");
 }
 
-function isSubscribedToJC( $login, $jc_id )
+function isSubscribedToJC($login, $jc_id)
 {
-    $res = getTableEntry( 'jc_subscriptions'
-            , 'login,jc_id,status'
-            , array( 'login' => $login, 'jc_id' => $jc_id, 'status' => 'VALID' )
+    $res = getTableEntry(
+        'jc_subscriptions',
+        'login,jc_id,status',
+        array( 'login' => $login, 'jc_id' => $jc_id, 'status' => 'VALID' )
     );
 
-    if( $res )
+    if ($res) {
         return true;
+    }
 
-   return false;
+    return false;
 }
 
-function getJCInfo( $jc )
+function getJCInfo($jc)
 {
-    if( is_array( $jc ) )
-        $jc_id = __get__( $jc, 'jc_id', $jc['id'] );
-    else if( is_string( $jc ) )
+    if (is_array($jc)) {
+        $jc_id = __get__($jc, 'jc_id', $jc['id']);
+    } elseif (is_string($jc)) {
         $jc_id = $jc;
+    }
 
-    return getTableEntry( 'journal_clubs', 'id', array( 'id' => $jc_id ));
+    return getTableEntry('journal_clubs', 'id', array( 'id' => $jc_id ));
 }
 
 
@@ -3468,18 +3644,18 @@ function getJCInfo( $jc )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getUserJCs( $login )
+function getUserJCs($login)
 {
-    if( ! $login )
+    if (! $login) {
         return array( );
+    }
 
-    return getTableEntries( 'jc_subscriptions', 'login'
-        , "login='$login' AND status='VALID' " );
+    return getTableEntries('jc_subscriptions', 'login', "login='$login' AND status='VALID' ");
 }
 
-function getMyJCs( )
+function getMyJCs()
 {
-    return getUserJCs( whoAmI() );
+    return getUserJCs(whoAmI());
 }
 
 /* --------------------------------------------------------------------------*/
@@ -3492,34 +3668,37 @@ function getMyJCs( )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getUpcomingJCPresentations( $jcID = '', $date = 'today' )
+function getUpcomingJCPresentations($jcID = '', $date = 'today')
 {
-    $date = dbDate( $date );
+    $date = dbDate($date);
     $whereExpr = "date >= '$date'";
-    if(trim($jcID))
+    if (trim($jcID)) {
         $whereExpr .= " AND jc_id='$jcID' AND status='VALID'";
+    }
 
     $whereExpr .= " AND status='VALID' AND CHAR_LENGTH(presenter) > 1";
-    $jcs = getTableEntries( 'jc_presentations' , 'date', $whereExpr );
+    $jcs = getTableEntries('jc_presentations', 'date', $whereExpr);
     return $jcs;
 }
 
-function getUpcomingJCPresentationsOfUser( $presenter, $jcID, $date = 'today' )
+function getUpcomingJCPresentationsOfUser($presenter, $jcID, $date = 'today')
 {
-    $date = dbDate( $date );
-    return getTableEntries( 'jc_presentations'
-        , 'date'
-        , "date >= '$date' AND presenter='$presenter'
+    $date = dbDate($date);
+    return getTableEntries(
+        'jc_presentations',
+        'date',
+        "date >= '$date' AND presenter='$presenter'
             AND jc_id='$jcID' AND status='VALID' "
     );
 }
 
-function getUpcomingPresentationsOfUser( $presenter, $date = 'today' )
+function getUpcomingPresentationsOfUser($presenter, $date = 'today')
 {
-    $date = dbDate( $date );
-    return getTableEntries( 'jc_presentations'
-        , 'date'
-        , "date >= '$date' AND (presenter='$presenter' OR presenter LIKE '$presenter\@%') 
+    $date = dbDate($date);
+    return getTableEntries(
+        'jc_presentations',
+        'date',
+        "date >= '$date' AND (presenter='$presenter' OR presenter LIKE '$presenter\@%') 
             AND status='VALID' "
     );
 }
@@ -3535,101 +3714,114 @@ function getUpcomingPresentationsOfUser( $presenter, $date = 'today' )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getJCPresentation( $jc, $presenter = '', $date = 'today' )
+function getJCPresentation($jc, $presenter = '', $date = 'today')
 {
-    $date = dbDate( $date );
+    $date = dbDate($date);
     $keys = 'jc_id,date';
 
-    if( $presenter )
+    if ($presenter) {
         $keys .= ',presenter';
+    }
 
-    return getTableEntry( 'jc_presentations', $keys
-        , array( 'jc_id' => $jc, 'presenter' => $presenter, 'date' => $date )
+    return getTableEntry(
+        'jc_presentations',
+        $keys,
+        array( 'jc_id' => $jc, 'presenter' => $presenter, 'date' => $date )
     );
 }
 
-function getJCPresentations( $jc, $date = '', $presenter = '' )
+function getJCPresentations($jc, $date = '', $presenter = '')
 {
     $whereExpr = "status='VALID' AND jc_id='$jc' ";
-    if( $date )
-    {
-        $date = dbDate( $date );
+    if ($date) {
+        $date = dbDate($date);
         $whereExpr .= " AND date='$date' ";
     }
 
-    if( $presenter )
+    if ($presenter) {
         $whereExpr .= " AND presenter='$presenter' ";
+    }
 
-    return getTableEntries( 'jc_presentations', 'date', $whereExpr );
-
+    return getTableEntries('jc_presentations', 'date', $whereExpr);
 }
 
 
-function isJCAdmin( $user )
+function isJCAdmin($user)
 {
-    $res = getTableEntry( 'jc_subscriptions', 'status,login,subscription_type'
-        ,   ['login' => $user, 'subscription_type'=>'ADMIN','status'=>'VALID']
+    $res = getTableEntry(
+        'jc_subscriptions',
+        'status,login,subscription_type',
+        ['login' => $user, 'subscription_type'=>'ADMIN','status'=>'VALID']
     );
-    if( $res )
+    if ($res) {
         return true;
+    }
     return false;
 }
 
-function getJCForWhichUserIsAdmin( $user )
+function getJCForWhichUserIsAdmin($user)
 {
-    return getTableEntries( 'jc_subscriptions', 'jc_id'
-        , "login='$user' AND subscription_type='ADMIN' AND status='VALID'"
+    return getTableEntries(
+        'jc_subscriptions',
+        'jc_id',
+        "login='$user' AND subscription_type='ADMIN' AND status='VALID'"
     );
 }
 
-function getJCSubscriptions( $jc_id )
+function getJCSubscriptions($jc_id)
 {
-    return getTableEntries( 'jc_subscriptions'
-        , 'login'
-        , "jc_id='$jc_id' AND status='VALID'" 
+    return getTableEntries(
+        'jc_subscriptions',
+        'login',
+        "jc_id='$jc_id' AND status='VALID'"
     );
-
 }
 
-function getAllPresentationsBefore( $date, $presenter = '' )
+function getAllPresentationsBefore($date, $presenter = '')
 {
-    $date = dbDate( $date );
+    $date = dbDate($date);
     $whereExpr = " status='VALID' AND date <= '$date' ";
-    if( $presenter )
+    if ($presenter) {
         $whereExpr .= " AND presenter='$presenter' ";
+    }
 
-    return getTableEntries( 'jc_presentations', 'date', $whereExpr );
+    return getTableEntries('jc_presentations', 'date', $whereExpr);
 }
 
-function getAllAdminsOfJC( $jc_id )
+function getAllAdminsOfJC($jc_id)
 {
-    $admins = getTableEntries( 'jc_subscriptions', 'login'
-        , "status='VALID' AND subscription_type='ADMIN' AND jc_id='$jc_id'"
+    $admins = getTableEntries(
+        'jc_subscriptions',
+        'login',
+        "status='VALID' AND subscription_type='ADMIN' AND jc_id='$jc_id'"
     );
 
     $res = array( );
-    foreach( $admins as $admin )
-        $res[ $admin['login'] ] = loginToHTML( $admin['login'] );
+    foreach ($admins as $admin) {
+        $res[ $admin['login'] ] = loginToHTML($admin['login']);
+    }
 
     return $res;
 }
 
-function getUserVote( $voteId, $voter )
+function getUserVote($voteId, $voter)
 {
-    $res = getTableEntry( 'votes', 'id,voter,status'
-        , array( 'id' => $voteId, 'voter' => $voter, 'status' => 'VALID' )
+    $res = getTableEntry(
+        'votes',
+        'id,voter,status',
+        array( 'id' => $voteId, 'voter' => $voter, 'status' => 'VALID' )
     );
     return $res;
 }
 
-function getMyVote( $voteId )
+function getMyVote($voteId)
 {
-    return getUserVote( $voteId, whoAmI( ) );
+    return getUserVote($voteId, whoAmI());
 }
 
-function getVotes( $voteId )
+function getVotes($voteId)
 {
-    return getTableEntries('votes', '', "id='$voteId' AND status='VALID'" );
+    return getTableEntries('votes', '', "id='$voteId' AND status='VALID'");
 }
 
 /* --------------------------------------------------------------------------*/
@@ -3639,19 +3831,21 @@ function getVotes( $voteId )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getConfigFromDB( ) : array
+function getConfigFromDB() : array
 {
     $config = array( );
-    foreach( getTableEntries( 'config' ) as $row )
+    foreach (getTableEntries('config') as $row) {
         $config[ $row['id'] ] = $row[ 'value' ];
+    }
     return $config;
 }
 
-function getConfigValue( $key, $config = null )
+function getConfigValue($key, $config = null)
 {
-    if( ! $config )
-        $config = getConfigFromDB( );
-    $val = __get__( $config, $key, '' );
+    if (! $config) {
+        $config = getConfigFromDB();
+    }
+    $val = __get__($config, $key, '');
     return $val;
 }
 
@@ -3664,78 +3858,82 @@ function getConfigValue( $key, $config = null )
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getQueryWithIdOrExtId( $idOrExternalId )
+function getQueryWithIdOrExtId($idOrExternalId)
 {
     $res = executeQuery(
         "SELECT  * FROM queries WHERE
         (id='$idOrExternalId' OR external_id='$idOrExternalId')
             AND status='PENDING'"
-        );
+    );
 
-    if( ! $res )
+    if (! $res) {
         return -1;
+    }
 
-    return intval( $res[0]['id'] );
+    return intval($res[0]['id']);
 }
 
-function getActiveJCs( )
+function getActiveJCs()
 {
-    return getTableEntries( 'journal_clubs', 'id', "status='ACTIVE'" );
+    return getTableEntries('journal_clubs', 'id', "status='ACTIVE'");
 }
 
-function pickPresenter( $jcID, $picker = 'random', $gap_between_presentations_in_months = 6 )
+function pickPresenter($jcID, $picker = 'random', $gap_between_presentations_in_months = 6)
 {
-    $logins = getJCSubscriptions( $jcID );
+    $logins = getJCSubscriptions($jcID);
 
     $suitable = array( );
-    foreach( $logins as $login )
-    {
+    foreach ($logins as $login) {
         $presenter = $login[ 'login' ];
 
-        if( ! $presenter )
+        if (! $presenter) {
             continue;
+        }
 
-        $onOrBefore = strtotime( 'now' ) + $gap_between_presentations_in_months * 30 * 24 * 3600;
+        $onOrBefore = strtotime('now') + $gap_between_presentations_in_months * 30 * 24 * 3600;
 
         // Get presentations of this USER in lats
         // gap_between_presentations_in_months months. It does not matter in
         // which JC she has given presentations.
-        $presentations = getAllPresentationsBefore( $onOrBefore, $presenter );
-        if( count( $presentations )  > 0 )
+        $presentations = getAllPresentationsBefore($onOrBefore, $presenter);
+        if (count($presentations)  > 0) {
             continue;
+        }
 
-        $upcoming = getUpcomingJCPresentationsOfUser(  $jcID, $presenter );
-        if( $upcoming )
-        {
-            echo printInfo( "user $presenter has upcoming JC" );
+        $upcoming = getUpcomingJCPresentationsOfUser($jcID, $presenter);
+        if ($upcoming) {
+            echo printInfo("user $presenter has upcoming JC");
             continue;
         }
 
         $suitable[] = $presenter;
-        if( $picker == 'round_robin' )
+        if ($picker == 'round_robin') {
             return $presenter;
+        }
     }
 
     // Else return a random sample.
     return $suitable[ mt_rand(0, count($suitable) - 1) ];
 }
 
-function getNumberOfRequetsInGroup( string $gid ) : int
+function getNumberOfRequetsInGroup(string $gid) : int
 {
-    $res = executeQuery( "SELECT COUNT(rid) FROM bookmyvenue_requests WHERE gid='$gid'");
-    if( $res )
+    $res = executeQuery("SELECT COUNT(rid) FROM bookmyvenue_requests WHERE gid='$gid'");
+    if ($res) {
         return intval($res[0]['COUNT(rid)']);
-    else 
+    } else {
         return 0;
+    }
 }
 
 function getNumberOfRowsInTable($tableName, $where) : int
 {
-    $res = executeQuery( "SELECT COUNT(*) FROM $tableName WHERE $where");
-    if( $res )
+    $res = executeQuery("SELECT COUNT(*) FROM $tableName WHERE $where");
+    if ($res) {
         return intval($res[0]['COUNT(*)']);
-    else 
+    } else {
         return 0;
+    }
 }
 
 /* --------------------------------------------------------------------------*/
@@ -3745,7 +3943,7 @@ function getNumberOfRowsInTable($tableName, $where) : int
     * @Param $student
     * @Param $cid
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
@@ -3753,17 +3951,18 @@ function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
     $questions = getTableEntries('course_feedback_questions', 'id', "status='VALID'");
 
     // Get all the response for this year, semester and course id.
-    $nQuesNotAnswered = count($questions); 
+    $nQuesNotAnswered = count($questions);
 
     $res = array();
-    foreach( $questions as $q )
-    {
-        $res = getTableEntry( 'course_feedback_responses'
-            , 'question_id,login,course_id,year,semester'
-            , ['login'=>$student, 'year'=>$year, 'semester'=>$sem, 'course_id'=>$cid, 'question_id'=>$q['id']]
+    foreach ($questions as $q) {
+        $res = getTableEntry(
+            'course_feedback_responses',
+            'question_id,login,course_id,year,semester',
+            ['login'=>$student, 'year'=>$year, 'semester'=>$sem, 'course_id'=>$cid, 'question_id'=>$q['id']]
         );
-        if( $res )
+        if ($res) {
             $nQuesNotAnswered -= 1;
+        }
     }
     return $nQuesNotAnswered;
 }
@@ -3774,27 +3973,28 @@ function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
     *
     * @Param $category
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getQuestionsWithCategory($category) : array
 {
     $res = array();
-    $entries = getTableEntries( 'question_bank', 'id'
-        , "status='VALID' AND category='$category'" );
+    $entries = getTableEntries('question_bank', 'id', "status='VALID' AND category='$category'");
 
-    foreach( $entries as $i => $q )
+    foreach ($entries as $i => $q) {
         $res[$q['subcategory']][] = $q;
+    }
 
     return $res;
 }
 
-function getCourseFeedbackQuestions( ) : array
+function getCourseFeedbackQuestions() : array
 {
     $qsMap = array();
-    $entries = getTableEntries( 'course_feedback_questions', 'id', "status='VALID'");
-    foreach( $entries as $e )
+    $entries = getTableEntries('course_feedback_questions', 'id', "status='VALID'");
+    foreach ($entries as $e) {
         $qsMap[$e['category']][] = $e;
+    }
     return $qsMap;
 }
 
@@ -3806,39 +4006,47 @@ function getCourseFeedbackQuestions( ) : array
     * @Param $semester
     * @Param $cid
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getCourseSpecificFeedback( string $year, string $semester, string $cid, string $login='') : array
+function getCourseSpecificFeedback(string $year, string $semester, string $cid, string $login='') : array
 {
     $responses = array();
-    if( ! $login )
+    if (! $login) {
         $login = whoAmI();
+    }
 
-    $entries = getTableEntries('course_feedback_responses', 'question_id'
-        , "login='$login' AND course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID'"
+    $entries = getTableEntries(
+        'course_feedback_responses',
+        'question_id',
+        "login='$login' AND course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID'"
     );
 
-    foreach($entries as $entry )
+    foreach ($entries as $entry) {
         $responses[$entry['question_id']] = $entry;
+    }
 
     return $responses;
 }
 
-function getInstructorSpecificFeedback( string $year, string $semester, string $cid, string $email, $login='' )
+function getInstructorSpecificFeedback(string $year, string $semester, string $cid, string $email, $login='')
 {
     $responses = array();
 
-    if( ! $login )
+    if (! $login) {
         $login = whoAmI();
+    }
 
-    $entries = getTableEntries('course_feedback_responses', 'question_id'
-        , "login='$login' AND course_id='$cid' AND year='$year' AND semester='$semester' AND 
+    $entries = getTableEntries(
+        'course_feedback_responses',
+        'question_id',
+        "login='$login' AND course_id='$cid' AND year='$year' AND semester='$semester' AND 
             instructor_email='$email' AND status='VALID'"
     );
 
-    foreach($entries as $entry )
+    foreach ($entries as $entry) {
         $responses[$entry['question_id']] = $entry;
+    }
 
     return $responses;
 }
@@ -3850,64 +4058,70 @@ function getInstructorSpecificFeedback( string $year, string $semester, string $
     *
     * @Param $loginOrEmail
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function findAnyoneWithLoginOrEmail( $loginOrEmail )
+function findAnyoneWithLoginOrEmail($loginOrEmail)
 {
-    return executeQuery( "SELECT * FROM logins WHERE login='$loginOrEmail' OR email='$loginOrEmail'");
+    return executeQuery("SELECT * FROM logins WHERE login='$loginOrEmail' OR email='$loginOrEmail'");
 }
 
-function getSchedulingRequests( string $user ) : array
+function getSchedulingRequests(string $user) : array
 {
-    $today = dbDate( 'today' );
+    $today = dbDate('today');
 
-    $res = getTableEntries( 'aws_scheduling_request', 'id'
-        ,  "(first_preference > '$today' OR second_preference > '$today')
+    $res = getTableEntries(
+        'aws_scheduling_request',
+        'id',
+        "(first_preference > '$today' OR second_preference > '$today')
                 AND speaker='$user' AND status!='CANCELLED' "
-        );
+    );
 
-    if( count($res) > 0 )
+    if (count($res) > 0) {
         return $res[0];
+    }
 
     return [];
 }
 
-function isAWSHoliday( $date ) : bool
+function isAWSHoliday($date) : bool
 {
-    $h = getTableEntry( 'holidays', 'date,schedule_talk_or_aws'
-        , [ 'date' => $date, 'schedule_talk_or_aws' => 'YES' ]);
+    $h = getTableEntry('holidays', 'date,schedule_talk_or_aws', [ 'date' => $date, 'schedule_talk_or_aws' => 'YES' ]);
 
-    if( $h )
+    if ($h) {
         return true;
+    }
 
     return false;
-
 }
 
-function updateCourseWaitlist( string $cid, string $year, string $semester ): bool
+function updateCourseWaitlist(string $cid, string $year, string $semester): bool
 {
     $data = [ 'course_id' => $cid, 'year' => $year, 'semester' => $semester ];
-    $course = getTableEntry( 'courses', 'course_id,year,semester', $data);
+    $course = getTableEntry('courses', 'course_id,year,semester', $data);
 
-    if( ! $course ) 
+    if (! $course) {
         return false;
+    }
 
     // Otherwise get the waitlist.
-    $nmax = intval( $course['max_registration']);
-    $curEnroll = count(getCourseRegistrations( $cid, $year, $semester));
+    $nmax = intval($course['max_registration']);
+    $curEnroll = count(getCourseRegistrations($cid, $year, $semester));
 
     $data['status'] = 'WAITLIST';
-    $waitList = getTableEntries( 'course_registration', 'registered_on'
-        , "status='WAITLIST' AND year='$year' AND semester='$semester'"
+    $waitList = getTableEntries(
+        'course_registration',
+        'registered_on',
+        "status='WAITLIST' AND year='$year' AND semester='$semester'"
     );
 
-    for( $i = 0; $i < min(count($waitList), $nmax - $curEnroll); $i++)
-    {
+    for ($i = 0; $i < min(count($waitList), $nmax - $curEnroll); $i++) {
         $toUpdate = $waitList[$i];
-        $res = updateTable( 'course_registration', 'student_id,course_id,year,semester'
-            , 'status'
-            , [ 'course_id'=> $cid, 'year'=>$year, 'semester'=>$semester
+        $res = updateTable(
+            'course_registration',
+            'student_id,course_id,year,semester',
+            'status',
+            [ 'course_id'=> $cid, 'year'=>$year, 'semester'=>$semester
                 , 'student_id'=>$toUpdate['student_id']
                 , 'status' => 'VALID' ]
         );
@@ -3917,35 +4131,33 @@ function updateCourseWaitlist( string $cid, string $year, string $semester ): bo
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  
+    * @Synopsis
     *
     * @Param $course
     * @Param array
     *
-    * @Returns   
+    * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function registerForCourse(array $course, array $data, bool $sendEmail=true): array
 {
     $res = ['success'=>true, 'msg' => ''];
-    $data['last_modified_on'] = dbDateTime( 'now' );
+    $data['last_modified_on'] = dbDateTime('now');
     $data['registered_on'] = dbDateTime('now');
 
-    // This is not very clean solution. 
-    if(__get__($data, 'status', 'VALID') !== 'DROPPED')
-    {
+    // This is not very clean solution.
+    if (__get__($data, 'status', 'VALID') !== 'DROPPED') {
         $data['status'] = 'VALID';
         $what = $data['type'] . 'ed';
-    }
-    else
+    } else {
         $what = 'DROPPed';
+    }
 
     $data['year'] = $course['year'];
     $data['semester'] = $course['semester'];
 
     $cid = $course['course_id'];
-    if(! $cid)
-    {
+    if (! $cid) {
         $res['success'] = false;
         $res['msg'] = "Empty course id";
         return $res;
@@ -3953,21 +4165,18 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
 
     // If user has asked for AUDIT but course does not allow auditing,
     // do not register and raise and error.
-    if( $course['is_audit_allowed'] == 'NO' && $data['type'] == 'AUDIT' )
-    {
+    if ($course['is_audit_allowed'] == 'NO' && $data['type'] == 'AUDIT') {
         $res['msg'] = "Sorry but course $cid does not allow <tt>AUDIT</tt>.";
         return $res;
     }
 
     // If number of students are over the number of allowed students
     // then add student to waiting list and raise a flag.
-    if( $course['max_registration'] > 0)
-    {
-        $numEnrollments = count(getCourseRegistrations( $cid, $course['year'], $course['semester'] ));
-        if( intval($numEnrollments) >= intval($course['max_registration']) )
-        {
+    if ($course['max_registration'] > 0) {
+        $numEnrollments = count(getCourseRegistrations($cid, $course['year'], $course['semester']));
+        if (intval($numEnrollments) >= intval($course['max_registration'])) {
             $data['status'] = 'WAITLIST';
-            $res['msg'] .= p( "<i class=\"fa fa-flag fa-2x\"></i>
+            $res['msg'] .= p("<i class=\"fa fa-flag fa-2x\"></i>
                 Number of registrations have reached the limit. I've added you to 
                 <tt>WAITLIST</tt>. Please contact academic office or your instructor about 
                 the policy on <tt>WAITLIST</tt>. By default, <tt>WAITLIST</tt> means 
@@ -3978,48 +4187,47 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
     $data = array_merge($data, $course);
 
     // If already registered then update the type else register new.
-    $r = insertOrUpdateTable( 'course_registration'
-        , 'student_id,semester,year,type,course_id,registered_on,last_modified_on'
-        , 'type,last_modified_on,status'
-        , $data 
+    $r = insertOrUpdateTable(
+        'course_registration',
+        'student_id,semester,year,type,course_id,registered_on,last_modified_on',
+        'type,last_modified_on,status',
+        $data
     );
 
     // Update waiting lists.
-    if(strtoupper($data['status']) === 'DROPPED')
-        updateCourseWaitlist( $data['course_id'], $data['year'], $data['semester'] );
+    if (strtoupper($data['status']) === 'DROPPED') {
+        updateCourseWaitlist($data['course_id'], $data['year'], $data['semester']);
+    }
 
-    if(! $r)
-    {
-        $res['msg'] .= p( "Failed to $what the course " . $data['course_id'] );
+    if (! $r) {
+        $res['msg'] .= p("Failed to $what the course " . $data['course_id']);
         $res['success'] = false;
         return $res;
     }
 
-    $res['msg'] .= p("Successfully $what course ".$data['course_id'].'.' );
+    $res['msg'] .= p("Successfully $what course ".$data['course_id'].'.');
 
-    if($sendEmail)
-    {
+    if ($sendEmail) {
         // Send email to user.
         $type = $data['type'];
         $cid = $data['course_id'];
         $login = getLoginInfo($data['student_id'], true, true);
-        $msg = p( "Dear " . arrayToName($login, true));
+        $msg = p("Dear " . arrayToName($login, true));
         $msg .= p("Hippo has successfully updated your courses.");
 
-        $sem = getCurrentSemester( );
-        $year = getCurrentYear( );
+        $sem = getCurrentSemester();
+        $year = getCurrentYear();
 
         // User courses and slots.
         $myCourses = getMyCourses($sem, $year, $user=$data['student_id']);
-        if(count($myCourses)>0)
-        {
+        if (count($myCourses)>0) {
             $msg .= p("List of your courses this semester.");
-            foreach( $myCourses as $c )
-                $msg .= arrayToVerticalTableHTML($c, 'info',''
-                ,'grade,grade_is_given_on,status');
-        }
-        else
+            foreach ($myCourses as $c) {
+                $msg .= arrayToVerticalTableHTML($c, 'info', '', 'grade,grade_is_given_on,status');
+            }
+        } else {
             $msg .= p("You are registered for no course this semester.");
+        }
 
         $to = $login['email'];
         $cname = getCourseName($cid);
@@ -4027,5 +4235,3 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
     }
     return $res;
 }
-
-?>
