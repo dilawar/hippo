@@ -44,6 +44,28 @@ function whoAmI( )
     return explode('@', $me)[0];
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Get a value from header.
+    *
+    * @Param $key This is the key to fetch.
+    *
+    * @Returns  The value of key if available; empty otherwise.
+ */
+/* ----------------------------------------------------------------------------*/
+function getHeader($key)
+{
+    return __get__(getallheaders(), $key, '');
+}
+
+
+function getLogin()
+{
+    if(isset($_POST))
+        return __get__($_POST, 'login', getHeader('login'));
+    return whoAmI();
+}
+
 /**
     * @brief Find valid email in text.
     *
@@ -1567,58 +1589,53 @@ function isCourseActive( $course, $day = 'today' )
     return false;
 }
 
-
-function cancelEventAndNotifyBookingParty( $ev )
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Cancel a pending request or a confirmed booking. Notify the
+    * user.
+    *
+    * @Param $evOrReq Event or request.
+    * @Param $reason  Why?
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $reason)
 {
-    echo printInfo( "Cancelling and notifying the booking party" );
-
-    $res = changeStatusOfEvent( $ev[ 'gid' ]
-        , $ev[ 'eid' ], $ev[ 'created_by' ], 'CANCELLED'
-    );
-
-    $login = $ev[ 'created_by' ];
-    if( $res )
-    {
-        // Nofity the user.
-        $to = getLoginEmail( $ev[ 'created_by' ] );
-        $cc = 'hippo@lists.ncbs.res.in';
-        $subject = 'ATTN: Your booked event has been cancelled by Hippo';
-        $msg = "<p> Greetings " . loginToHTML( $login ) . '</p>';
-
-        $msg .= "<p> Following events has been cancelled because it was on a
-            lecture hall and an  upcoming course has been scheduled here.
-            Lecture Halls are given preference for courses. </p>";
-
-        $msg .= arrayToTableHTML( $ev, 'event' );
-
-        $msg .= "<p>Kindly find another venue for your event. </p>";
-        sendHTMLEmail($msg, $subject, $to, $cc );
+    // Reuqest have rid while events have eid
+    $isConfirmed = true;
+    $what = 'confirmed booking';
+    if(in_array('rid', $evOrReq)) {
+        $isConfirmed = false;
+        $what = 'pending booking request';
     }
-}
 
-function cancelRequesttAndNotifyBookingParty( $request )
-{
-    echo printInfo( "Cancelling and notifying the booking party" );
-    $res = changeRequestStatus( $request[ 'gid' ]
-        , $request[ 'rid' ], $request[ 'created_by' ], 'CANCELLED'
-    );
+    $login = $evOrReq['created_by'];
+    $gid = $evOrReq['gid'];
 
-    $login = $request[ 'created_by' ];
-    if( $res )
+    if(! $isConfirmed)
+        $res = changeRequestStatus($gid, $evOrReq['rid'], $login, 'CANCELLED');
+    else
+        $res = changeStatusOfEvent($gid, $evOrReq['eid'], $login, 'CANCELLED');
+
+    if($res)
     {
         // Nofity the user.
-        $to = getLoginEmail( $request[ 'created_by' ] );
+        $to = getLoginEmail($login);
         $cc = 'hippo@lists.ncbs.res.in';
-        $subject = 'ATTN: Your booked event has been cancelled by Hippo';
-        $msg = "<p> Greetings " . loginToHTML( $login ) . '</p>';
+        $subject = "IMP: Hippo has cancelled your $what.";
+        $msg = "<p> Greetings " . loginToHTML($login) . '</p>';
 
-        $msg .= "<p> Following events has been cancelled because it was on a
-            lecture hall and an  upcoming course has been scheduled here.
-            Lecture Halls are given preference for courses. </p>";
-
-        $msg .= arrayToTableHTML( $request, 'event' );
-
-        $msg .= "<p>Kindly find another venue for your event. </p>";
+        $msg .= "<p> Hippo has cancelled following $what.</p>";
+        $msg .= arrayToTableHTML($evOrReq, 'event');
+        $msg .= p("Following reason is given:");
+        $msg .= $reason ?? p("No reason is given. So rude!");
+        $msg .= p("<small>
+            NOTE: This action was triggered automatically due to a 
+            policy violation which could not enforced during booking.
+            Please get in touch with appropriate person if this was a mistake or
+            oversight.</small>
+            ");
         sendHTMLEmail($msg, $subject, $to, $cc );
     }
 }
@@ -1974,20 +1991,30 @@ function getAWSVenueForm( string $date, string $defaultVenue = '' ) : string
     return $form;
 }
 
-function bookAVenueForThisAWS(array $aws): array
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Book a venue for upcoming AWS.
+    *
+    * @Param array
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function bookAVenueForThisAWS(array $aws, bool $removeCollision=false): array
 {
-    $result = ['msg'=>'', 'status'=>false];
+    $result = ['msg'=>'', 'success'=>false, 'collision'=>[]];
     $extID = "upcoming_aws." . $aws['id'];
 
     $booking = getTableEntry('events', 'external_id', ['external_id'=>$extID]);
     $request = getTableEntry('bookmyvenue_requests', 'external_id', ['external_id'=>$extID]);
 
     if($booking) { /* Update */
-        echo "TODO : update";
-
+        echo "TODO : update confirmed event.";
+        return $result;
     }
     else if($request) { // Update
-        echo "TODO: Update";
+        echo "TODO: Update request.";
+        return $result;
     }
     else { /* Create new */
         $data = ['external_id'=>$extID
@@ -2002,19 +2029,31 @@ function bookAVenueForThisAWS(array $aws): array
             , 'venue'=>$aws['venue']];
 
         // If external_id already in the requests or events then update else create.
-        $res = submitRequestImproved($data);
+        $res = submitRequestImproved($data, true);
+        $result['collision'] = $res['collision'];
+
         if($res['success']) {
+            // At least one of the request is approved. Call it success.
+            if(count($res['rid'])>0) {
+                $result['success'] = true;
+            }
+
             foreach($res['rid'] as $rid) {
-                $res2 = approveRequest( $res['gid'], $rid, 'APPROVED' );
-                $res['msg'] = $res2['msg'];
+                $gid = $res['gid'];
+                $res2 = approveRequest($gid, $rid, 'APPROVED');
+                if($res2['success'])
+                    $result['msg'] .= p("Successfully approved. $gid.$rid");
+                else
+                    $result['msg'] .= p("Failed to approve $gid.$rid: " . $res2['msg']);
             }
         }
-        else
+        else {
+            // collision
+            $result['request_response'] = $res;
             $result['msg'] .= $res['msg'];
-        return $res;
+        }
+        return $result;
     }
-    echo $result['msg'];
-    return $result;
 }
 
 

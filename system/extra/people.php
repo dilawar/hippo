@@ -68,7 +68,7 @@ function addUpdateSpeaker(array $data): array
     // After inserting new speaker, upload his/her image.
     if( array_key_exists( 'picture', $_FILES ) && $_FILES[ 'picture' ]['name'] )
     {
-        $imgpath = getSpeakerPicturePath( $sid );
+        $imgpath = getSpeakerPicturePathById( $sid );
         $ret['msg'] .= printInfo( "Uploading speaker image to $imgpath .. " );
         $res = uploadImage( $_FILES[ 'picture' ], $imgpath );
         if( ! $res )

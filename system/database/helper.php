@@ -853,11 +853,10 @@ function getUniqueID( $tablename )
     *
     * @return  Group id of request.
  */
-function submitRequestImproved(array $request) : array
+function submitRequestImproved(array $request, bool $removeCollision=false) : array
 {
     $result = ['msg'=>'', 'success'=>false, 'collision'=>[]
         ,  'gid'=>null, 'rid'=>[]];
-
 
     $request['created_by'] = $request['created_by'] ?? whoAmI();
     $repeatPat = __get__( $request, 'repeat_pat', '' );
@@ -868,7 +867,7 @@ function submitRequestImproved(array $request) : array
 
     if(count($days) < 1)
     {
-        $result['msg'] .= minionEmbarrassed( "I could not generate list of slots for you reuqest" );
+        $result['msg'] .= p("I could not generate list of slots for you reuqest");
         return $result;
     }
 
@@ -879,33 +878,39 @@ function submitRequestImproved(array $request) : array
     foreach($days as $day)
     {
         $rid += 1;
-        $request['gid'] = $gid;
-        $request['rid'] = $rid;
+        $request['gid'] = strval($gid);
+        $request['rid'] = strval($rid);
         $request['date'] = $day;
 
-        $collideWith = checkCollision( $request );
+        $collideWith = checkCollision($request);
         $hide = 'rid,external_id,description,is_public_event,url,modified_by';
 
-        if( $collideWith )
+        if($collideWith)
         {
+            // If $removeCollision is true then remove this request and send
+            // email to the booking party.
             $errorMsg .= 'Collision with following event/request';
             foreach( $collideWith as $ev ) {
                 $errorMsg .= arrayToTableHTML( $ev, 'events', $hide );
-                $result['collision'][] = $ev; true;
+                if($removeCollision){
+                    cancelBookingOrRequestAndNotifyBookingParty($ev, $reason);
+                }
+                $result['collision'][] = $ev; 
             }
             continue;
         }
 
         $request['timestamp'] = dbDateTime('now');
         $request['modified_by'] = getLogin();
+        $request['description'] = $request['description'] ?? 'No description was provided.';
 
         $keys = 'gid,rid,external_id,created_by,venue,title,description' .
                 ',date,start_time,end_time,timestamp,is_public_event,class';
 
         foreach(explode(',', $keys) as $k) {
-            if(! $request[$k]) {
-                $errorMsg .= p("Empty value for '$key'. Fatal error.");
-                $request['msg'] .= $errorMsg;
+            if(! strlen($request[$k] ?? '') === 0) {
+                $errorMsg .= p("Empty value for '$k'. Fatal error.");
+                $result['msg'] .= $errorMsg;
                 return $result;
             }
         }
@@ -2695,23 +2700,24 @@ function addCourseBookings( $runningCourseId )
             $events = getEventsOnThisVenueBetweenTime( $venue, $date, $startTime, $endTime );
             $reqs = getRequestsOnThisVenueBetweenTime( $venue, $date, $startTime, $endTime );
 
-            foreach( $events as $ev )
-            {
+            $reason = p("Your booking request/approved booking was on a 
+                LECTURE HALL.  Course '$cname' is assigned this lecture hall just now.
+                Courses are always given the higest priority on LECTURE HALLS.");
+
+            foreach($events as $ev){
                 echo arrayToTableHTML( $ev, 'event' );
-                // Remove all of them.
-                cancelEventAndNotifyBookingParty( $ev );
+                cancelBookingOrRequestAndNotifyBookingParty($ev, $reason);
             }
 
-            foreach( $reqs as $req )
-            {
+            foreach($reqs as $req){
                 echo arrayToTableHTML( $req, 'event' );
-                cancelRequesttAndNotifyBookingParty( $req );
+                cancelBookingOrRequestAndNotifyBookingParty($req, $reason);
             }
 
             // Create request and approve it. Direct entry in event is
             // prohibited because then gid and eid are not synched.
-            $res = insertIntoTable( 'bookmyvenue_requests', array_keys( $data ), $data );
-            $res = approveRequest( $gid, $rid );
+            $res = insertIntoTable('bookmyvenue_requests', array_keys($data), $data);
+            $res = approveRequest($gid, $rid);
             if(! $res['success'])
                 echo printWarning( "Could not book: $msg" );
         }

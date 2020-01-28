@@ -824,10 +824,7 @@ function arrayHeaderRow( $array, $tablename, $tobefilterd = '', $sort_button = f
     return $hrow;
 }
 
-function arrayToTHRow( array $array
-    , string $tablename
-    , $tobefilterd = ''
-    , bool $sort_button  = false ) : string
+function arrayToTHRow(array $array, string $tablename, $tobefilterd='', bool $sort_button=false) : string
 { 
     if( ! $array )
         return '';
@@ -836,8 +833,8 @@ function arrayToTHRow( array $array
 }
 
 // Convert an array to HTML
-function arrayToTableHTML( $array, $tablename, $background = ''
-        , $tobefilterd = '', $header = true )
+function arrayToTableHTML(array $array, string $tablename, string $background=''
+    , string $tobefilterd='', bool $header=true, string $class= '')
 {
     if( $background )
         $background = "style=\"background:$background;\"";
@@ -845,7 +842,7 @@ function arrayToTableHTML( $array, $tablename, $background = ''
     if( is_string( $tobefilterd ) )
         $tobefilterd = explode( ',', $tobefilterd );
 
-    $table = "<table class=\"show_$tablename\" $background>";
+    $table = "<table class=\"show_$tablename $class\" $background>";
     $keys = array_keys( $array );
     $toDisplay = Array();
     if( $header )
@@ -2254,7 +2251,8 @@ function displayImage( $picpath, $height = 'auto', $width = 'auto', $usemap = ''
 function nullPicPath( $default = 'null' )
 {
     $conf = getConf( );
-    return FCPATH . "data/$default.png";
+    $datadir = $conf[ 'data' ]['user_imagedir'];
+    return $datadir . "/$default.png";
 }
 
 function inlineImageOfSpeakerId( $id, $height = 'auto', $width = 'auto')

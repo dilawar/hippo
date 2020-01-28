@@ -36,31 +36,11 @@ function authenticateAPI($apikey, $user='')
 
 }
 
-/* --------------------------------------------------------------------------*/
-/**
-    * @Synopsis  Get a value from header.
-    *
-    * @Param $key This is the key to fetch.
-    *
-    * @Returns  The value of key if available; empty otherwise.
- */
-/* ----------------------------------------------------------------------------*/
-function getHeader($key)
-{
-    return __get__(getallheaders(), $key, '');
-}
-
 function getKey()
 {
     return __get__( $_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
 }
 
-function getLogin()
-{
-    if(isset($_POST))
-        return __get__($_POST, 'login', getHeader('login'));
-    return whoAmI();
-}
 
 
 class Api extends CI_Controller

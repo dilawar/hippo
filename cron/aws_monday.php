@@ -89,8 +89,16 @@ function bookVenueForAWS( )
     echo printInfo("Found total " . count($upAWSs) . " awses.");
     foreach($upAWSs as $aws)
     {
-        $res = bookAVenueForThisAWS( $aws );
-        echo json_encode($res['msg']);
+        $res = bookAVenueForThisAWS($aws, $removeCollision=true);
+        echo json_encode($res);
+        if(! $res['success'])
+            echo p("Could not book. " . $res['msg']);
+
+        foreach($res['collision'] as $collision)
+        {
+            echo p("Colliding with.");
+            echo arrayToTableHTML($collision, 'info');
+        }
     }
 }
 
