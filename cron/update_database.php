@@ -3,11 +3,8 @@
 function update_publishing_database() 
 {
 
-    if(trueOnGivenDayAndTime('this wednesday', '16:30'))
+    if(trueOnGivenDayAndTime('this friday', '19:00'))
     {
-        $shema = "sha512,title,abstract,publisher,type,date,doi,urls," . 
-            "source,external_id,metadata_json,modified_on";
-
         $extra = 'datetype=pdat&reldate=14';
         $url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
             .  "db=pubmed&retmode=json&$extra" 
@@ -22,19 +19,31 @@ function update_publishing_database()
         $url .=  "esummary.fcgi?db=pubmed&id=$idlist&retmode=json";
         $res = json_decode(file_get_contents($url, true));
         $items = $res->result;
+
+        $data = [];
         foreach($items->uids as $uid) {
             $item = $items->$uid;
+            $data['title'] = $item->title;
+            $data['sha512'] = hash("sha512", $data['title']);
+            $data['abstract'] = 'NA';
+            $data['publisher'] = $item->fulljournalname;
+            $data['type'] = $item->pubtype[0];
+            $data['date'] = dbDate($item->pubdate);
+            $data['modified_on'] = dbDate('now');
+            $data['external_id'] = "PUBMED.$uid";
+            $data['doi'] = $item->elocationid;
+            $data['json_metadata'] = json_encode($item);
 
-            $title = $item->title;
-            $sha = hash("sha512", $title);
-            $abstract = 'NA';
-            $publisher = $item->fulljournalname;
-            $type = $item->pubtype;
-            $date = dbDate($item->pubdate);
-            echo "title: $title, $date, $type, $publisher";
-
-            print_r($item);
-            echo " <br /> <br />";
+            // If $sha is not in the table, create one entry. Notify the
+            // academic topic.
+            $entry = getTableEntries('publications', 'sha512', $data);
+            if(! $entry) {
+                insertIntoTable('publications', array_keys($data), $data);
+                $title = $data['title'];
+                $title .= ' <br />DOI ' . $data['doi'];
+                sendFirebaseCloudMessage('academic', 'A new publication', $title);
+            }
+            
         }
 
     }
