@@ -10,10 +10,12 @@ use Psalm\Internal\FileManipulation\FileManipulationBuffer;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\Context;
+use Psalm\Issue\CircularReference;
 use Psalm\Issue\DeprecatedClass;
 use Psalm\Issue\DeprecatedConstant;
 use Psalm\Issue\InaccessibleClassConstant;
 use Psalm\Issue\ParentNotFound;
+use Psalm\Issue\UndefinedClass;
 use Psalm\Issue\UndefinedConstant;
 use Psalm\IssueBuffer;
 use Psalm\Type;
@@ -89,13 +91,17 @@ class ClassConstFetchAnalyzer
 
             $moved_class = false;
 
-            if ($codebase->alter_code) {
+            if ($codebase->alter_code
+                && !\in_array($stmt->class->parts[0], ['parent', 'static'])
+            ) {
                 $moved_class = $codebase->classlikes->handleClassLikeReferenceInMigration(
                     $codebase,
                     $statements_analyzer,
                     $stmt->class,
                     $fq_class_name,
-                    $context->calling_method_id
+                    $context->calling_function_id,
+                    false,
+                    $stmt->class->parts[0] === 'self'
                 );
             }
 
@@ -119,11 +125,14 @@ class ClassConstFetchAnalyzer
                 }
 
                 if ($first_part_lc === 'static') {
-                    $stmt->inferredType = new Type\Union([
-                        new Type\Atomic\TClassString($fq_class_name, new Type\Atomic\TNamedObject($fq_class_name))
-                    ]);
+                    $statements_analyzer->node_data->setType(
+                        $stmt,
+                        new Type\Union([
+                            new Type\Atomic\TClassString($fq_class_name, new Type\Atomic\TNamedObject($fq_class_name))
+                        ])
+                    );
                 } else {
-                    $stmt->inferredType = Type::getLiteralClassString($fq_class_name);
+                    $statements_analyzer->node_data->setType($stmt, Type::getLiteralClassString($fq_class_name));
                 }
 
                 if ($codebase->store_node_types
@@ -142,7 +151,7 @@ class ClassConstFetchAnalyzer
 
             // if we're ignoring that the class doesn't exist, exit anyway
             if (!$codebase->classOrInterfaceExists($fq_class_name)) {
-                $stmt->inferredType = Type::getMixed();
+                $statements_analyzer->node_data->setType($stmt, Type::getMixed());
 
                 return null;
             }
@@ -190,12 +199,28 @@ class ClassConstFetchAnalyzer
                 $class_visibility = \ReflectionProperty::IS_PUBLIC;
             }
 
-            $class_constant_type = $codebase->classlikes->getConstantForClass(
-                $fq_class_name,
-                $stmt->name->name,
-                $class_visibility,
-                $statements_analyzer
-            );
+            try {
+                $class_constant_type = $codebase->classlikes->getConstantForClass(
+                    $fq_class_name,
+                    $stmt->name->name,
+                    $class_visibility,
+                    $statements_analyzer
+                );
+            } catch (\InvalidArgumentException $_) {
+                return;
+            } catch (\Psalm\Exception\CircularReferenceException $e) {
+                if (IssueBuffer::accepts(
+                    new CircularReference(
+                        'Constant ' . $const_id . ' contains a circular reference',
+                        new CodeLocation($statements_analyzer->getSource(), $stmt)
+                    ),
+                    $statements_analyzer->getSuppressedIssues()
+                )) {
+                    // fall through
+                }
+
+                return;
+            }
 
             if (!$class_constant_type) {
                 if ($fq_class_name !== $context->self) {
@@ -232,9 +257,9 @@ class ClassConstFetchAnalyzer
                 return;
             }
 
-            if ($context->calling_method_id) {
+            if ($context->calling_function_id) {
                 $codebase->file_reference_provider->addMethodReferenceToClassMember(
-                    $context->calling_method_id,
+                    $context->calling_function_id,
                     strtolower($fq_class_name) . '::' . $stmt->name->name
                 );
             }
@@ -298,10 +323,12 @@ class ClassConstFetchAnalyzer
             }
 
             if ($first_part_lc !== 'static' || $class_const_storage->final) {
-                $stmt->inferredType = clone $class_constant_type;
-                $context->vars_in_scope[$const_id] = $stmt->inferredType;
+                $stmt_type = clone $class_constant_type;
+
+                $statements_analyzer->node_data->setType($stmt, $stmt_type);
+                $context->vars_in_scope[$const_id] = $stmt_type;
             } else {
-                $stmt->inferredType = Type::getMixed();
+                $statements_analyzer->node_data->setType($stmt, Type::getMixed());
             }
 
             return null;
@@ -309,14 +336,14 @@ class ClassConstFetchAnalyzer
 
         if ($stmt->name instanceof PhpParser\Node\Identifier && $stmt->name->name === 'class') {
             ExpressionAnalyzer::analyze($statements_analyzer, $stmt->class, $context);
-            $lhs_type = $stmt->class->inferredType;
+            $lhs_type = $statements_analyzer->node_data->getType($stmt->class);
 
             $class_string_types = [];
 
             $has_mixed_or_object = false;
 
             if ($lhs_type) {
-                foreach ($lhs_type->getTypes() as $lhs_atomic_type) {
+                foreach ($lhs_type->getAtomicTypes() as $lhs_atomic_type) {
                     if ($lhs_atomic_type instanceof Type\Atomic\TNamedObject) {
                         $class_string_types[] = new Type\Atomic\TClassString(
                             $lhs_atomic_type->value,
@@ -331,17 +358,17 @@ class ClassConstFetchAnalyzer
             }
 
             if ($has_mixed_or_object) {
-                $stmt->inferredType = new Type\Union([new Type\Atomic\TClassString()]);
+                $statements_analyzer->node_data->setType($stmt, new Type\Union([new Type\Atomic\TClassString()]));
             } elseif ($class_string_types) {
-                $stmt->inferredType = new Type\Union($class_string_types);
+                $statements_analyzer->node_data->setType($stmt, new Type\Union($class_string_types));
             } else {
-                $stmt->inferredType = Type::getMixed();
+                $statements_analyzer->node_data->setType($stmt, Type::getMixed());
             }
 
             return;
         }
 
-        $stmt->inferredType = Type::getMixed();
+        $statements_analyzer->node_data->setType($stmt, Type::getMixed());
 
         if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->class, $context) === false) {
             return false;

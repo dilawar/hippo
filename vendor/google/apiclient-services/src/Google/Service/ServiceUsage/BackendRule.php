@@ -19,6 +19,7 @@ class Google_Service_ServiceUsage_BackendRule extends Google_Model
 {
   public $address;
   public $deadline;
+  public $disableAuth;
   public $jwtAudience;
   public $minDeadline;
   public $operationDeadline;
@@ -40,6 +41,14 @@ class Google_Service_ServiceUsage_BackendRule extends Google_Model
   public function getDeadline()
   {
     return $this->deadline;
+  }
+  public function setDisableAuth($disableAuth)
+  {
+    $this->disableAuth = $disableAuth;
+  }
+  public function getDisableAuth()
+  {
+    return $this->disableAuth;
   }
   public function setJwtAudience($jwtAudience)
   {

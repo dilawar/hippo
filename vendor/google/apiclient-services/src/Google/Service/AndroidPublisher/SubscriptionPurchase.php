@@ -41,6 +41,8 @@ class Google_Service_AndroidPublisher_SubscriptionPurchase extends Google_Model
   public $priceCurrencyCode;
   public $profileId;
   public $profileName;
+  public $promotionCode;
+  public $promotionType;
   public $purchaseType;
   public $startTimeMillis;
   public $userCancellationTimeMillis;
@@ -230,6 +232,22 @@ class Google_Service_AndroidPublisher_SubscriptionPurchase extends Google_Model
   public function getProfileName()
   {
     return $this->profileName;
+  }
+  public function setPromotionCode($promotionCode)
+  {
+    $this->promotionCode = $promotionCode;
+  }
+  public function getPromotionCode()
+  {
+    return $this->promotionCode;
+  }
+  public function setPromotionType($promotionType)
+  {
+    $this->promotionType = $promotionType;
+  }
+  public function getPromotionType()
+  {
+    return $this->promotionType;
   }
   public function setPurchaseType($purchaseType)
   {

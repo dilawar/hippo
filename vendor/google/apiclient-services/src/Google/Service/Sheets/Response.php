@@ -31,6 +31,8 @@ class Google_Service_Sheets_Response extends Google_Model
   protected $addProtectedRangeDataType = '';
   protected $addSheetType = 'Google_Service_Sheets_AddSheetResponse';
   protected $addSheetDataType = '';
+  protected $addSlicerType = 'Google_Service_Sheets_AddSlicerResponse';
+  protected $addSlicerDataType = '';
   protected $createDeveloperMetadataType = 'Google_Service_Sheets_CreateDeveloperMetadataResponse';
   protected $createDeveloperMetadataDataType = '';
   protected $deleteConditionalFormatRuleType = 'Google_Service_Sheets_DeleteConditionalFormatRuleResponse';
@@ -153,6 +155,20 @@ class Google_Service_Sheets_Response extends Google_Model
   public function getAddSheet()
   {
     return $this->addSheet;
+  }
+  /**
+   * @param Google_Service_Sheets_AddSlicerResponse
+   */
+  public function setAddSlicer(Google_Service_Sheets_AddSlicerResponse $addSlicer)
+  {
+    $this->addSlicer = $addSlicer;
+  }
+  /**
+   * @return Google_Service_Sheets_AddSlicerResponse
+   */
+  public function getAddSlicer()
+  {
+    return $this->addSlicer;
   }
   /**
    * @param Google_Service_Sheets_CreateDeveloperMetadataResponse

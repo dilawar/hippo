@@ -22,6 +22,7 @@ class Google_Service_Compute_Snapshot extends Google_Collection
   public $creationTimestamp;
   public $description;
   public $diskSizeGb;
+  public $downloadBytes;
   public $id;
   public $kind;
   public $labelFingerprint;
@@ -72,6 +73,14 @@ class Google_Service_Compute_Snapshot extends Google_Collection
   public function getDiskSizeGb()
   {
     return $this->diskSizeGb;
+  }
+  public function setDownloadBytes($downloadBytes)
+  {
+    $this->downloadBytes = $downloadBytes;
+  }
+  public function getDownloadBytes()
+  {
+    return $this->downloadBytes;
   }
   public function setId($id)
   {

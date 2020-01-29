@@ -55,13 +55,18 @@ class ReturnAnalyzer
         $codebase = $statements_analyzer->getCodebase();
 
         if ($doc_comment && ($parsed_docblock = $statements_analyzer->getParsedDocblock())) {
+            $file_storage_provider = $codebase->file_storage_provider;
+
+            $file_storage = $file_storage_provider->get($statements_analyzer->getFilePath());
+
             try {
                 $var_comments = CommentAnalyzer::arrayToDocblocks(
                     $doc_comment,
                     $parsed_docblock,
                     $statements_analyzer->getSource(),
                     $statements_analyzer->getAliases(),
-                    $statements_analyzer->getTemplateTypeMap()
+                    $statements_analyzer->getTemplateTypeMap(),
+                    $file_storage->type_aliases
                 );
             } catch (DocblockParseException $e) {
                 if (IssueBuffer::accepts(
@@ -104,7 +109,7 @@ class ReturnAnalyzer
                         $statements_analyzer,
                         $comment_type,
                         $type_location,
-                        $context->calling_method_id
+                        $context->calling_function_id
                     );
                 }
 
@@ -119,16 +124,19 @@ class ReturnAnalyzer
 
         if ($stmt->expr) {
             $context->inside_call = true;
+
             if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->expr, $context) === false) {
                 return false;
             }
 
             if ($var_comment_type) {
-                $stmt->inferredType = $var_comment_type;
-            } elseif (isset($stmt->expr->inferredType)) {
-                $stmt->inferredType = $stmt->expr->inferredType;
+                $stmt_type = $var_comment_type;
 
-                if ($stmt->inferredType->isNever()) {
+                $statements_analyzer->node_data->setType($stmt, $var_comment_type);
+            } elseif ($stmt_expr_type = $statements_analyzer->node_data->getType($stmt->expr)) {
+                $stmt_type = $stmt_expr_type;
+
+                if ($stmt_type->isNever()) {
                     if (IssueBuffer::accepts(
                         new NoValue(
                             'This function or method call never returns output',
@@ -139,18 +147,20 @@ class ReturnAnalyzer
                         // fall through
                     }
 
-                    $stmt->inferredType = Type::getEmpty();
+                    $stmt_type = Type::getEmpty();
                 }
 
-                if ($stmt->inferredType->isVoid()) {
-                    $stmt->inferredType = Type::getNull();
+                if ($stmt_type->isVoid()) {
+                    $stmt_type = Type::getNull();
                 }
             } else {
-                $stmt->inferredType = Type::getMixed();
+                $stmt_type = Type::getMixed();
             }
         } else {
-            $stmt->inferredType = Type::getVoid();
+            $stmt_type = Type::getVoid();
         }
+
+        $statements_analyzer->node_data->setType($stmt, $stmt_type);
 
         if ($source instanceof FunctionLikeAnalyzer
             && !($source->getSource() instanceof TraitAnalyzer)
@@ -166,7 +176,7 @@ class ReturnAnalyzer
             if ($stmt->expr && $storage->location) {
                 $inferred_type = ExpressionAnalyzer::fleshOutType(
                     $codebase,
-                    $stmt->inferredType,
+                    $stmt_type,
                     $source->getFQCLN(),
                     $source->getFQCLN(),
                     $source->getParentFQCLN()
@@ -178,7 +188,7 @@ class ReturnAnalyzer
                     $stmt,
                     $cased_method_id,
                     $inferred_type,
-                    $storage->location
+                    $storage
                 );
 
                 if ($storage->return_type && !$storage->return_type->hasMixed()) {
@@ -215,7 +225,7 @@ class ReturnAnalyzer
                         return null;
                     }
 
-                    if ($stmt->inferredType->hasMixed()) {
+                    if ($stmt_type->hasMixed()) {
                         if ($local_return_type->isVoid() || $local_return_type->isNever()) {
                             if (IssueBuffer::accepts(
                                 new InvalidReturnStatement(
@@ -285,21 +295,23 @@ class ReturnAnalyzer
                         // is the declared return type more specific than the inferred one?
                         if ($union_comparison_results->type_coerced) {
                             if ($union_comparison_results->type_coerced_from_mixed) {
-                                if (IssueBuffer::accepts(
-                                    new MixedReturnTypeCoercion(
-                                        'The type \'' . $stmt->inferredType->getId() . '\' is more general than the'
-                                            . ' declared return type \'' . $local_return_type->getId() . '\''
-                                            . ' for ' . $cased_method_id,
-                                        new CodeLocation($source, $stmt->expr)
-                                    ),
-                                    $statements_analyzer->getSuppressedIssues()
-                                )) {
-                                    return false;
+                                if (!$union_comparison_results->type_coerced_from_as_mixed) {
+                                    if (IssueBuffer::accepts(
+                                        new MixedReturnTypeCoercion(
+                                            'The type \'' . $stmt_type->getId() . '\' is more general than the'
+                                                . ' declared return type \'' . $local_return_type->getId() . '\''
+                                                . ' for ' . $cased_method_id,
+                                            new CodeLocation($source, $stmt->expr)
+                                        ),
+                                        $statements_analyzer->getSuppressedIssues()
+                                    )) {
+                                        return false;
+                                    }
                                 }
                             } else {
                                 if (IssueBuffer::accepts(
                                     new LessSpecificReturnStatement(
-                                        'The type \'' . $stmt->inferredType->getId() . '\' is more general than the'
+                                        'The type \'' . $stmt_type->getId() . '\' is more general than the'
                                             . ' declared return type \'' . $local_return_type->getId() . '\''
                                             . ' for ' . $cased_method_id,
                                         new CodeLocation($source, $stmt->expr)
@@ -310,7 +322,7 @@ class ReturnAnalyzer
                                 }
                             }
 
-                            foreach ($local_return_type->getTypes() as $local_type_part) {
+                            foreach ($local_return_type->getAtomicTypes() as $local_type_part) {
                                 if ($local_type_part instanceof Type\Atomic\TClassString
                                     && $stmt->expr instanceof PhpParser\Node\Scalar\String_
                                 ) {
@@ -326,7 +338,9 @@ class ReturnAnalyzer
                                 } elseif ($local_type_part instanceof Type\Atomic\TArray
                                     && $stmt->expr instanceof PhpParser\Node\Expr\Array_
                                 ) {
-                                    foreach ($local_type_part->type_params[1]->getTypes() as $local_array_type_part) {
+                                    $value_param = $local_type_part->type_params[1];
+
+                                    foreach ($value_param->getAtomicTypes() as $local_array_type_part) {
                                         if ($local_array_type_part instanceof Type\Atomic\TClassString) {
                                             foreach ($stmt->expr->items as $item) {
                                                 if ($item && $item->value instanceof PhpParser\Node\Scalar\String_) {
@@ -348,7 +362,7 @@ class ReturnAnalyzer
                         } else {
                             if (IssueBuffer::accepts(
                                 new InvalidReturnStatement(
-                                    'The type \'' . $stmt->inferredType->getId()
+                                    'The type \'' . $stmt_type->getId()
                                         . '\' does not match the declared return '
                                         . 'type \'' . $local_return_type->getId() . '\' for ' . $cased_method_id,
                                     new CodeLocation($source, $stmt->expr)
@@ -360,15 +374,16 @@ class ReturnAnalyzer
                         }
                     }
 
-                    if (!$stmt->inferredType->ignore_nullable_issues
+                    if (!$stmt_type->ignore_nullable_issues
                         && $inferred_type->isNullable()
                         && !$local_return_type->isNullable()
+                        && !$local_return_type->hasTemplate()
                     ) {
                         if (IssueBuffer::accepts(
                             new NullableReturnStatement(
-                                'The declared return type \'' . $local_return_type . '\' for '
+                                'The declared return type \'' . $local_return_type->getId() . '\' for '
                                     . $cased_method_id . ' is not nullable, but the function returns \''
-                                        . $inferred_type . '\'',
+                                        . $inferred_type->getId() . '\'',
                                 new CodeLocation($source, $stmt->expr)
                             ),
                             $statements_analyzer->getSuppressedIssues()
@@ -377,7 +392,7 @@ class ReturnAnalyzer
                         }
                     }
 
-                    if (!$stmt->inferredType->ignore_falsable_issues
+                    if (!$stmt_type->ignore_falsable_issues
                         && $inferred_type->isFalsable()
                         && !$local_return_type->isFalsable()
                         && !$local_return_type->hasBool()
@@ -425,15 +440,16 @@ class ReturnAnalyzer
         PhpParser\Node\Stmt\Return_ $stmt,
         string $cased_method_id,
         Type\Union $inferred_type,
-        CodeLocation $function_location
+        \Psalm\Storage\FunctionLikeStorage $storage
     ) : void {
-        if (!$codebase->taint || !$stmt->expr) {
+        if (!$codebase->taint || !$stmt->expr || !$storage->location || $storage->remove_taint) {
             return;
         }
 
         $method_sink = new Sink(
             strtolower($cased_method_id),
-            $function_location
+            $cased_method_id,
+            $storage->location
         );
 
         if ($previous_sink = $codebase->taint->hasPreviousSink($method_sink, $suffixes)) {
@@ -447,6 +463,7 @@ class ReturnAnalyzer
 
                             $new_sink = new Sink(
                                 $inferred_source->id . '-' . $suffix,
+                                $inferred_source->label,
                                 $inferred_source->code_location
                             );
 
@@ -460,6 +477,7 @@ class ReturnAnalyzer
                         function (Source $inferred_source) use ($previous_sink) {
                             $new_sink = new Sink(
                                 $inferred_source->id,
+                                $inferred_source->label,
                                 $inferred_source->code_location
                             );
 
@@ -471,7 +489,6 @@ class ReturnAnalyzer
                 }
 
                 $codebase->taint->addSinks(
-                    $statements_analyzer,
                     $new_sinks
                 );
             }
@@ -490,7 +507,8 @@ class ReturnAnalyzer
 
                             $new_source = new Source(
                                 strtolower($cased_method_id . '-' . $suffix),
-                                $function_location
+                                $cased_method_id,
+                                $storage->location
                             );
 
                             $new_source->parents = [$previous_source ?: $type_source];
@@ -500,7 +518,8 @@ class ReturnAnalyzer
                     } else {
                         $new_source = new Source(
                             strtolower($cased_method_id),
-                            $function_location
+                            $cased_method_id,
+                            $storage->location
                         );
 
                         $new_source->parents = [$previous_source ?: $type_source];
@@ -509,7 +528,6 @@ class ReturnAnalyzer
                     }
 
                     $codebase->taint->addSources(
-                        $statements_analyzer,
                         $new_sources
                     );
                 }

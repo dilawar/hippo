@@ -77,7 +77,8 @@ class TNamedObject extends Atomic
             $use_phpdoc_format
         );
 
-        return Type::getStringFromFQCLN($this->value, $namespace, $aliased_classes, $this_class) . $intersection_types;
+        return Type::getStringFromFQCLN($this->value, $namespace, $aliased_classes, $this_class, true)
+            . $intersection_types;
     }
 
     /**
@@ -116,6 +117,14 @@ class TNamedObject extends Atomic
     public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
     {
         $this->replaceIntersectionTemplateTypesWithArgTypes($template_types, $codebase);
+    }
+
+    /**
+     * @return list<Type\Atomic\TTemplateParam>
+     */
+    public function getTemplateTypes() : array
+    {
+        return $this->getIntersectionTemplateTypes();
     }
 
     /**

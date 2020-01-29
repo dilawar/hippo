@@ -41,12 +41,11 @@ class Google_Service_Pubsub_Resource_ProjectsSnapshots extends Google_Service_Re
    * generated name is populated in the returned Snapshot object. Note that for
    * REST API requests, you must specify a name in the request. (snapshots.create)
    *
-   * @param string $name Optional user-provided name for this snapshot. If the
-   * name is not provided in the request, the server will assign a random name for
-   * this snapshot on the same project as the subscription. Note that for REST API
-   * requests, you must specify a name.  See the
-   *
-   * resource name rules. Format is `projects/{project}/snapshots/{snap}`.
+   * @param string $name User-provided name for this snapshot. If the name is not
+   * provided in the request, the server will assign a random name for this
+   * snapshot on the same project as the subscription. Note that for REST API
+   * requests, you must specify a name.  See the  resource name rules. Format is
+   * `projects/{project}/snapshots/{snap}`.
    * @param Google_Service_Pubsub_CreateSnapshotRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Pubsub_Snapshot
@@ -105,8 +104,14 @@ class Google_Service_Pubsub_Resource_ProjectsSnapshots extends Google_Service_Re
    * @param array $optParams Optional parameters.
    *
    * @opt_param int options.requestedPolicyVersion Optional. The policy format
-   * version to be returned. Acceptable values are 0, 1, and 3. If the value is 0,
-   * or the field is omitted, policy format version 1 will be returned.
+   * version to be returned.
+   *
+   * Valid values are 0, 1, and 3. Requests specifying an invalid value will be
+   * rejected.
+   *
+   * Requests for policies with any conditional bindings must specify version 3.
+   * Policies without any conditional bindings may specify any valid value or
+   * leave the field unset.
    * @return Google_Service_Pubsub_Policy
    */
   public function getIamPolicy($resource, $optParams = array())
@@ -157,7 +162,10 @@ class Google_Service_Pubsub_Resource_ProjectsSnapshots extends Google_Service_Re
   }
   /**
    * Sets the access control policy on the specified resource. Replaces any
-   * existing policy. (snapshots.setIamPolicy)
+   * existing policy.
+   *
+   * Can return Public Errors: NOT_FOUND, INVALID_ARGUMENT and PERMISSION_DENIED
+   * (snapshots.setIamPolicy)
    *
    * @param string $resource REQUIRED: The resource for which the policy is being
    * specified. See the operation documentation for the appropriate value for this

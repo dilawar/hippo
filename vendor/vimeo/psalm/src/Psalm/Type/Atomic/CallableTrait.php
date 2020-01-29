@@ -6,6 +6,8 @@ use function count;
 use function implode;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
+use Psalm\Internal\Type\TemplateResult;
+use Psalm\Internal\Type\UnionTemplateHandler;
 use Psalm\StatementsSource;
 use Psalm\Storage\FunctionLikeParameter;
 use Psalm\Type;
@@ -116,7 +118,7 @@ trait CallableTrait
         }
 
         if ($this->return_type !== null) {
-            $return_type_multiple = count($this->return_type->getTypes()) > 1;
+            $return_type_multiple = count($this->return_type->getAtomicTypes()) > 1;
 
             $return_type_string = ':' . ($return_type_multiple ? '(' : '') . $this->return_type->toNamespacedString(
                 $namespace,
@@ -179,7 +181,7 @@ trait CallableTrait
         }
 
         if ($this->return_type !== null) {
-            $return_type_multiple = count($this->return_type->getTypes()) > 1;
+            $return_type_multiple = count($this->return_type->getAtomicTypes()) > 1;
             $return_type_string = ':' . ($return_type_multiple ? '(' : '')
                 . $this->return_type->getId() . ($return_type_multiple ? ')' : '');
         }
@@ -192,24 +194,20 @@ trait CallableTrait
         return $this->getId();
     }
 
-    /**
-     * @param  array<string, array<string, array{Type\Union}>>     $template_types
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>     $generic_params
-     * @param  Atomic|null              $input_type
-     *
-     * @return void
-     */
     public function replaceTemplateTypesWithStandins(
-        array &$template_types,
-        array &$generic_params,
+        TemplateResult $template_result,
         Codebase $codebase = null,
         Atomic $input_type = null,
+        ?string $calling_class = null,
+        ?string $calling_function = null,
         bool $replace = true,
         bool $add_upper_bound = false,
         int $depth = 0
-    ) {
-        if ($this->params) {
-            foreach ($this->params as $offset => $param) {
+    ) : Atomic {
+        $callable = clone $this;
+
+        if ($callable->params) {
+            foreach ($callable->params as $offset => $param) {
                 $input_param_type = null;
 
                 if (($input_type instanceof Atomic\TFn || $input_type instanceof Atomic\TCallable)
@@ -222,11 +220,13 @@ trait CallableTrait
                     continue;
                 }
 
-                $param->type->replaceTemplateTypesWithStandins(
-                    $template_types,
-                    $generic_params,
+                $param->type = UnionTemplateHandler::replaceTemplateTypesWithStandins(
+                    $param->type,
+                    $template_result,
                     $codebase,
                     $input_param_type,
+                    $calling_class,
+                    $calling_function,
                     $replace,
                     !$add_upper_bound,
                     $depth
@@ -235,22 +235,26 @@ trait CallableTrait
         }
 
         if (($input_type instanceof Atomic\TCallable || $input_type instanceof Atomic\TFn)
-            && $this->return_type
+            && $callable->return_type
             && $input_type->return_type
         ) {
-            $this->return_type->replaceTemplateTypesWithStandins(
-                $template_types,
-                $generic_params,
+            $callable->return_type = UnionTemplateHandler::replaceTemplateTypesWithStandins(
+                $callable->return_type,
+                $template_result,
                 $codebase,
                 $input_type->return_type,
+                $calling_class,
+                $calling_function,
                 $replace,
                 $add_upper_bound
             );
         }
+
+        return $callable;
     }
 
     /**
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>  $template_types
+     * @param  array<string, array<string, array{Type\Union, 1?:int}>>     $template_types
      *
      * @return void
      */
@@ -269,6 +273,28 @@ trait CallableTrait
         if ($this->return_type) {
             $this->return_type->replaceTemplateTypesWithArgTypes($template_types, $codebase);
         }
+    }
+
+    /**
+     * @return list<Type\Atomic\TTemplateParam>
+     */
+    public function getTemplateTypes() : array
+    {
+        $template_types = [];
+
+        if ($this->params) {
+            foreach ($this->params as $param) {
+                if ($param->type) {
+                    $template_types = \array_merge($template_types, $param->type->getTemplateTypes());
+                }
+            }
+        }
+
+        if ($this->return_type) {
+            $template_types = \array_merge($template_types, $this->return_type->getTemplateTypes());
+        }
+
+        return $template_types;
     }
 
     /**

@@ -17,6 +17,7 @@ use Psalm\Issue\ParentNotFound;
 use Psalm\Issue\UndefinedConstant;
 use Psalm\IssueBuffer;
 use Psalm\Type;
+use function array_key_exists;
 use function implode;
 use function strtolower;
 use function explode;
@@ -42,20 +43,20 @@ class ConstFetchAnalyzer
 
         switch (strtolower($const_name)) {
             case 'null':
-                $stmt->inferredType = Type::getNull();
+                $statements_analyzer->node_data->setType($stmt, Type::getNull());
                 break;
 
             case 'false':
                 // false is a subtype of bool
-                $stmt->inferredType = Type::getFalse();
+                $statements_analyzer->node_data->setType($stmt, Type::getFalse());
                 break;
 
             case 'true':
-                $stmt->inferredType = Type::getTrue();
+                $statements_analyzer->node_data->setType($stmt, Type::getTrue());
                 break;
 
             case 'stdin':
-                $stmt->inferredType = Type::getResource();
+                $statements_analyzer->node_data->setType($stmt, Type::getResource());
                 break;
 
             default:
@@ -66,7 +67,7 @@ class ConstFetchAnalyzer
                 );
 
                 if ($const_type) {
-                    $stmt->inferredType = clone $const_type;
+                    $statements_analyzer->node_data->setType($stmt, clone $const_type);
                 } elseif ($context->check_consts) {
                     if (IssueBuffer::accepts(
                         new UndefinedConstant(
@@ -102,8 +103,8 @@ class ConstFetchAnalyzer
 
         $predefined_constants = $codebase->config->getPredefinedConstants();
 
-        if (isset($predefined_constants[$fq_const_name])
-            || isset($predefined_constants[$const_name])
+        if (($fq_const_name && array_key_exists($fq_const_name, $predefined_constants))
+            || array_key_exists($const_name, $predefined_constants)
         ) {
             switch ($const_name) {
                 case 'PHP_VERSION':
@@ -148,7 +149,7 @@ class ConstFetchAnalyzer
                     return Type::getFloat();
             }
 
-            if ($fq_const_name && isset($predefined_constants[$fq_const_name])) {
+            if ($fq_const_name && array_key_exists($fq_const_name, $predefined_constants)) {
                 return ClassLikeAnalyzer::getTypeFromValue($predefined_constants[$fq_const_name]);
             }
 

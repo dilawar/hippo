@@ -57,12 +57,10 @@ class Google_Service_Calendar_Resource_Events extends Google_Service_Resource
    * @param string $eventId Event identifier.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param bool alwaysIncludeEmail Whether to always include a value in the
-   * email field for the organizer, creator and attendees, even if no real email
-   * is available (i.e. a generated, non-working value will be provided). The use
-   * of this option is discouraged and should only be used by clients which cannot
-   * handle the absence of an email address value in the mentioned places.
-   * Optional. The default is False.
+   * @opt_param bool alwaysIncludeEmail Deprecated and ignored. A value will
+   * always be returned in the email field for the organizer, creator and
+   * attendees, even if no real email address is available (i.e. a generated, non-
+   * working value will be provided).
    * @opt_param int maxAttendees The maximum number of attendees to include in the
    * response. If there are more than the specified number of attendees, only the
    * participant is returned. Optional.
@@ -145,12 +143,10 @@ class Google_Service_Calendar_Resource_Events extends Google_Service_Resource
    * @param string $eventId Recurring event identifier.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param bool alwaysIncludeEmail Whether to always include a value in the
-   * email field for the organizer, creator and attendees, even if no real email
-   * is available (i.e. a generated, non-working value will be provided). The use
-   * of this option is discouraged and should only be used by clients which cannot
-   * handle the absence of an email address value in the mentioned places.
-   * Optional. The default is False.
+   * @opt_param bool alwaysIncludeEmail Deprecated and ignored. A value will
+   * always be returned in the email field for the organizer, creator and
+   * attendees, even if no real email address is available (i.e. a generated, non-
+   * working value will be provided).
    * @opt_param int maxAttendees The maximum number of attendees to include in the
    * response. If there are more than the specified number of attendees, only the
    * participant is returned. Optional.
@@ -189,12 +185,10 @@ class Google_Service_Calendar_Resource_Events extends Google_Service_Resource
    * the currently logged in user, use the "primary" keyword.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param bool alwaysIncludeEmail Whether to always include a value in the
-   * email field for the organizer, creator and attendees, even if no real email
-   * is available (i.e. a generated, non-working value will be provided). The use
-   * of this option is discouraged and should only be used by clients which cannot
-   * handle the absence of an email address value in the mentioned places.
-   * Optional. The default is False.
+   * @opt_param bool alwaysIncludeEmail Deprecated and ignored. A value will
+   * always be returned in the email field for the organizer, creator and
+   * attendees, even if no real email address is available (i.e. a generated, non-
+   * working value will be provided).
    * @opt_param string iCalUID Specifies event ID in the iCalendar format to be
    * included in the response. Optional.
    * @opt_param int maxAttendees The maximum number of attendees to include in the
@@ -306,12 +300,10 @@ class Google_Service_Calendar_Resource_Events extends Google_Service_Resource
    * @param Google_Service_Calendar_Event $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param bool alwaysIncludeEmail Whether to always include a value in the
-   * email field for the organizer, creator and attendees, even if no real email
-   * is available (i.e. a generated, non-working value will be provided). The use
-   * of this option is discouraged and should only be used by clients which cannot
-   * handle the absence of an email address value in the mentioned places.
-   * Optional. The default is False.
+   * @opt_param bool alwaysIncludeEmail Deprecated and ignored. A value will
+   * always be returned in the email field for the organizer, creator and
+   * attendees, even if no real email address is available (i.e. a generated, non-
+   * working value will be provided).
    * @opt_param int conferenceDataVersion Version number of conference data
    * supported by the API client. Version 0 assumes no conference data support and
    * ignores conference data in the event's body. Version 1 enables support for
@@ -371,12 +363,10 @@ class Google_Service_Calendar_Resource_Events extends Google_Service_Resource
    * @param Google_Service_Calendar_Event $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param bool alwaysIncludeEmail Whether to always include a value in the
-   * email field for the organizer, creator and attendees, even if no real email
-   * is available (i.e. a generated, non-working value will be provided). The use
-   * of this option is discouraged and should only be used by clients which cannot
-   * handle the absence of an email address value in the mentioned places.
-   * Optional. The default is False.
+   * @opt_param bool alwaysIncludeEmail Deprecated and ignored. A value will
+   * always be returned in the email field for the organizer, creator and
+   * attendees, even if no real email address is available (i.e. a generated, non-
+   * working value will be provided).
    * @opt_param int conferenceDataVersion Version number of conference data
    * supported by the API client. Version 0 assumes no conference data support and
    * ignores conference data in the event's body. Version 1 enables support for
@@ -411,12 +401,10 @@ class Google_Service_Calendar_Resource_Events extends Google_Service_Resource
    * @param Google_Service_Calendar_Channel $postBody
    * @param array $optParams Optional parameters.
    *
-   * @opt_param bool alwaysIncludeEmail Whether to always include a value in the
-   * email field for the organizer, creator and attendees, even if no real email
-   * is available (i.e. a generated, non-working value will be provided). The use
-   * of this option is discouraged and should only be used by clients which cannot
-   * handle the absence of an email address value in the mentioned places.
-   * Optional. The default is False.
+   * @opt_param bool alwaysIncludeEmail Deprecated and ignored. A value will
+   * always be returned in the email field for the organizer, creator and
+   * attendees, even if no real email address is available (i.e. a generated, non-
+   * working value will be provided).
    * @opt_param string iCalUID Specifies event ID in the iCalendar format to be
    * included in the response. Optional.
    * @opt_param int maxAttendees The maximum number of attendees to include in the

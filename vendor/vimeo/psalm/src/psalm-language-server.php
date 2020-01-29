@@ -9,6 +9,8 @@ gc_disable();
 // show all errors
 error_reporting(-1);
 
+require_once __DIR__ . '/Psalm/Internal/exception_handler.php';
+
 $valid_short_options = [
     'h',
     'v',
@@ -181,13 +183,6 @@ $first_autoloader = requireAutoloaders($current_dir, isset($options['r']), $vend
 if (array_key_exists('v', $options)) {
     echo 'Psalm ' . PSALM_VERSION . PHP_EOL;
     exit;
-}
-
-if (ini_get('pcre.jit') === '1'
-    && PHP_OS === 'Darwin'
-    && version_compare(PHP_VERSION, '7.3.0') >= 0
-) {
-    die(\Psalm\Internal\Fork\Pool::MAC_PCRE_MESSAGE . PHP_EOL . PHP_EOL);
 }
 
 $ini_handler = new \Psalm\Internal\Fork\PsalmRestarter('PSALM');

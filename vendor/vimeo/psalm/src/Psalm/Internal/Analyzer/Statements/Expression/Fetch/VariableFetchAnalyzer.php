@@ -76,17 +76,17 @@ class VariableFetchAnalyzer
                 return null;
             }
 
-            $stmt->inferredType = clone $context->vars_in_scope['$this'];
+            $statements_analyzer->node_data->setType($stmt, clone $context->vars_in_scope['$this']);
 
             if ($codebase->store_node_types
                     && !$context->collect_initializations
                     && !$context->collect_mutations
-                && isset($stmt->inferredType)
+                && ($stmt_type = $statements_analyzer->node_data->getType($stmt))
             ) {
                 $codebase->analyzer->addNodeType(
                     $statements_analyzer->getFilePath(),
                     $stmt,
-                    (string) $stmt->inferredType
+                    (string) $stmt_type
                 );
             }
 
@@ -100,12 +100,12 @@ class VariableFetchAnalyzer
                 if (!$context->hasVariable($var_name, $statements_analyzer)) {
                     $context->vars_in_scope[$var_name] = Type::getMixed();
                     $context->vars_possibly_in_scope[$var_name] = true;
-                    $stmt->inferredType = Type::getMixed();
+                    $statements_analyzer->node_data->setType($stmt, Type::getMixed());
                 } else {
-                    $stmt->inferredType = clone $context->vars_in_scope[$var_name];
+                    $statements_analyzer->node_data->setType($stmt, clone $context->vars_in_scope[$var_name]);
                 }
             } else {
-                $stmt->inferredType = Type::getMixed();
+                $statements_analyzer->node_data->setType($stmt, Type::getMixed());
             }
 
             return null;
@@ -115,14 +115,14 @@ class VariableFetchAnalyzer
             $var_name = '$' . $stmt->name;
 
             if (isset($context->vars_in_scope[$var_name])) {
-                $stmt->inferredType = clone $context->vars_in_scope[$var_name];
+                $statements_analyzer->node_data->setType($stmt, clone $context->vars_in_scope[$var_name]);
 
                 return null;
             }
 
             $type = $statements_analyzer->getGlobalType($var_name);
 
-            $stmt->inferredType = $type;
+            $statements_analyzer->node_data->setType($stmt, $type);
             $context->vars_in_scope[$var_name] = clone $type;
             $context->vars_possibly_in_scope[$var_name] = true;
 
@@ -180,7 +180,7 @@ class VariableFetchAnalyzer
                             return false;
                         }
 
-                        $stmt->inferredType = Type::getMixed();
+                        $statements_analyzer->node_data->setType($stmt, Type::getMixed());
 
                         return null;
                     }
@@ -195,7 +195,7 @@ class VariableFetchAnalyzer
                         // fall through
                     }
 
-                    $stmt->inferredType = Type::getMixed();
+                    $statements_analyzer->node_data->setType($stmt, Type::getMixed());
 
                     return false;
                 }
@@ -225,7 +225,8 @@ class VariableFetchAnalyzer
                                 $first_appearance->getLineNumber(),
                             new CodeLocation($statements_analyzer->getSource(), $stmt)
                         ),
-                        $statements_analyzer->getSuppressedIssues()
+                        $statements_analyzer->getSuppressedIssues(),
+                        (bool) $statements_analyzer->getBranchPoint($var_name)
                     )) {
                         return false;
                     }
@@ -250,7 +251,8 @@ class VariableFetchAnalyzer
                                 $first_appearance->getLineNumber(),
                             new CodeLocation($statements_analyzer->getSource(), $stmt)
                         ),
-                        $statements_analyzer->getSuppressedIssues()
+                        $statements_analyzer->getSuppressedIssues(),
+                        (bool) $statements_analyzer->getBranchPoint($var_name)
                     )) {
                         return false;
                     }
@@ -270,7 +272,33 @@ class VariableFetchAnalyzer
                 $statements_analyzer->registerVariableUses([$first_appearance->getHash() => $first_appearance]);
             }
         } else {
-            $stmt->inferredType = clone $context->vars_in_scope[$var_name];
+            $stmt_type = clone $context->vars_in_scope[$var_name];
+
+            $statements_analyzer->node_data->setType($stmt, $stmt_type);
+
+            if ($stmt_type->possibly_undefined_from_try && !$context->inside_isset) {
+                if ($context->is_global) {
+                    if (IssueBuffer::accepts(
+                        new PossiblyUndefinedGlobalVariable(
+                            'Possibly undefined global variable ' . $var_name . ' defined in try block',
+                            new CodeLocation($statements_analyzer->getSource(), $stmt)
+                        ),
+                        $statements_analyzer->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                } else {
+                    if (IssueBuffer::accepts(
+                        new PossiblyUndefinedVariable(
+                            'Possibly undefined variable ' . $var_name . ' defined in try block',
+                            new CodeLocation($statements_analyzer->getSource(), $stmt)
+                        ),
+                        $statements_analyzer->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                }
+            }
 
             if ($codebase->store_node_types
                 && !$context->collect_initializations
@@ -279,7 +307,7 @@ class VariableFetchAnalyzer
                 $codebase->analyzer->addNodeType(
                     $statements_analyzer->getFilePath(),
                     $stmt,
-                    (string) $stmt->inferredType
+                    (string) $stmt_type
                 );
             }
 
@@ -295,7 +323,7 @@ class VariableFetchAnalyzer
                         $stmt,
                         $first_appearance->raw_file_start
                             . '-' . $first_appearance->raw_file_end
-                            . ':' . $stmt->inferredType->getId()
+                            . ':' . $stmt_type->getId()
                     );
                 }
             }

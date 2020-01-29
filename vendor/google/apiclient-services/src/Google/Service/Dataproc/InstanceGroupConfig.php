@@ -28,6 +28,7 @@ class Google_Service_Dataproc_InstanceGroupConfig extends Google_Collection
   public $machineTypeUri;
   protected $managedGroupConfigType = 'Google_Service_Dataproc_ManagedGroupConfig';
   protected $managedGroupConfigDataType = '';
+  public $minCpuPlatform;
   public $numInstances;
 
   /**
@@ -103,6 +104,14 @@ class Google_Service_Dataproc_InstanceGroupConfig extends Google_Collection
   public function getManagedGroupConfig()
   {
     return $this->managedGroupConfig;
+  }
+  public function setMinCpuPlatform($minCpuPlatform)
+  {
+    $this->minCpuPlatform = $minCpuPlatform;
+  }
+  public function getMinCpuPlatform()
+  {
+    return $this->minCpuPlatform;
   }
   public function setNumInstances($numInstances)
   {

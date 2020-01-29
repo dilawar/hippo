@@ -99,6 +99,11 @@ class Google_Service_Dialogflow_Resource_ProjectsAgentSessionsContexts extends G
    *
    * The `Context ID` is always converted to lowercase, may only contain
    * characters in [a-zA-Z0-9_-%] and may be at most 250 bytes long.
+   *
+   * The following context names are reserved for internal use by Dialogflow. You
+   * should not use these contexts or create contexts with these names:
+   *
+   * * `__system_counters__` * `*_id_dialog_context` * `*_dialog_params_size`
    * @param Google_Service_Dialogflow_GoogleCloudDialogflowV2Context $postBody
    * @param array $optParams Optional parameters.
    *

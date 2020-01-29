@@ -22,7 +22,7 @@ class Google_Service_DLP_GooglePrivacyDlpV2InspectContentRequest extends Google_
   public $inspectTemplateName;
   protected $itemType = 'Google_Service_DLP_GooglePrivacyDlpV2ContentItem';
   protected $itemDataType = '';
-  public $location;
+  public $locationId;
 
   /**
    * @param Google_Service_DLP_GooglePrivacyDlpV2InspectConfig
@@ -60,12 +60,12 @@ class Google_Service_DLP_GooglePrivacyDlpV2InspectContentRequest extends Google_
   {
     return $this->item;
   }
-  public function setLocation($location)
+  public function setLocationId($locationId)
   {
-    $this->location = $location;
+    $this->locationId = $locationId;
   }
-  public function getLocation()
+  public function getLocationId()
   {
-    return $this->location;
+    return $this->locationId;
   }
 }

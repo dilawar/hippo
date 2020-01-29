@@ -1176,6 +1176,10 @@ class Google_Service_YouTube extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'filterByMemberChannelId' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
                 'hasAccessToLevel' => array(
                   'location' => 'query',
                   'type' => 'string',

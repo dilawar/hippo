@@ -43,11 +43,11 @@ class Google_Service_Iam_Resource_ProjectsServiceAccounts extends Google_Service
   /**
    * Deletes a ServiceAccount. (serviceAccounts.delete)
    *
-   * @param string $name The resource name of the service account in the following
-   * format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a
-   * wildcard for the `PROJECT_ID` will infer the project from the account. The
-   * `ACCOUNT` value can be the `email` address or the `unique_id` of the service
-   * account.
+   * @param string $name Required. The resource name of the service account in the
+   * following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
+   * `-` as a wildcard for the `PROJECT_ID` will infer the project from the
+   * account. The `ACCOUNT` value can be the `email` address or the `unique_id` of
+   * the service account.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Iam_IamEmpty
    */
@@ -122,11 +122,11 @@ class Google_Service_Iam_Resource_ProjectsServiceAccounts extends Google_Service
   /**
    * Gets a ServiceAccount. (serviceAccounts.get)
    *
-   * @param string $name The resource name of the service account in the following
-   * format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a
-   * wildcard for the `PROJECT_ID` will infer the project from the account. The
-   * `ACCOUNT` value can be the `email` address or the `unique_id` of the service
-   * account.
+   * @param string $name Required. The resource name of the service account in the
+   * following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
+   * `-` as a wildcard for the `PROJECT_ID` will infer the project from the
+   * account. The `ACCOUNT` value can be the `email` address or the `unique_id` of
+   * the service account.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Iam_ServiceAccount
    */
@@ -157,8 +157,14 @@ class Google_Service_Iam_Resource_ProjectsServiceAccounts extends Google_Service
    * @param array $optParams Optional parameters.
    *
    * @opt_param int options.requestedPolicyVersion Optional. The policy format
-   * version to be returned. Acceptable values are 0, 1, and 3. If the value is 0,
-   * or the field is omitted, policy format version 1 will be returned.
+   * version to be returned.
+   *
+   * Valid values are 0, 1, and 3. Requests specifying an invalid value will be
+   * rejected.
+   *
+   * Requests for policies with any conditional bindings must specify version 3.
+   * Policies without any conditional bindings may specify any valid value or
+   * leave the field unset.
    * @return Google_Service_Iam_Policy
    */
   public function getIamPolicy($resource, $optParams = array())
@@ -256,11 +262,11 @@ class Google_Service_Iam_Resource_ProjectsServiceAccounts extends Google_Service
    * Signs a blob using a service account's system-managed private key.
    * (serviceAccounts.signBlob)
    *
-   * @param string $name The resource name of the service account in the following
-   * format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a
-   * wildcard for the `PROJECT_ID` will infer the project from the account. The
-   * `ACCOUNT` value can be the `email` address or the `unique_id` of the service
-   * account.
+   * @param string $name Required. The resource name of the service account in the
+   * following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
+   * `-` as a wildcard for the `PROJECT_ID` will infer the project from the
+   * account. The `ACCOUNT` value can be the `email` address or the `unique_id` of
+   * the service account.
    * @param Google_Service_Iam_SignBlobRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Iam_SignBlobResponse
@@ -282,11 +288,11 @@ class Google_Service_Iam_Resource_ProjectsServiceAccounts extends Google_Service
    * expiry time of one hour by default. If you request an expiry time of more
    * than one hour, the request will fail. (serviceAccounts.signJwt)
    *
-   * @param string $name The resource name of the service account in the following
-   * format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a
-   * wildcard for the `PROJECT_ID` will infer the project from the account. The
-   * `ACCOUNT` value can be the `email` address or the `unique_id` of the service
-   * account.
+   * @param string $name Required. The resource name of the service account in the
+   * following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
+   * `-` as a wildcard for the `PROJECT_ID` will infer the project from the
+   * account. The `ACCOUNT` value can be the `email` address or the `unique_id` of
+   * the service account.
    * @param Google_Service_Iam_SignJwtRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Iam_SignJwtResponse

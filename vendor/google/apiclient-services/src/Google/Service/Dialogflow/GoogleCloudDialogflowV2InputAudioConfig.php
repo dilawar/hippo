@@ -17,13 +17,17 @@
 
 class Google_Service_Dialogflow_GoogleCloudDialogflowV2InputAudioConfig extends Google_Collection
 {
-  protected $collection_key = 'phraseHints';
+  protected $collection_key = 'speechContexts';
   public $audioEncoding;
+  public $enableWordInfo;
   public $languageCode;
+  public $model;
   public $modelVariant;
   public $phraseHints;
   public $sampleRateHertz;
   public $singleUtterance;
+  protected $speechContextsType = 'Google_Service_Dialogflow_GoogleCloudDialogflowV2SpeechContext';
+  protected $speechContextsDataType = 'array';
 
   public function setAudioEncoding($audioEncoding)
   {
@@ -33,6 +37,14 @@ class Google_Service_Dialogflow_GoogleCloudDialogflowV2InputAudioConfig extends 
   {
     return $this->audioEncoding;
   }
+  public function setEnableWordInfo($enableWordInfo)
+  {
+    $this->enableWordInfo = $enableWordInfo;
+  }
+  public function getEnableWordInfo()
+  {
+    return $this->enableWordInfo;
+  }
   public function setLanguageCode($languageCode)
   {
     $this->languageCode = $languageCode;
@@ -40,6 +52,14 @@ class Google_Service_Dialogflow_GoogleCloudDialogflowV2InputAudioConfig extends 
   public function getLanguageCode()
   {
     return $this->languageCode;
+  }
+  public function setModel($model)
+  {
+    $this->model = $model;
+  }
+  public function getModel()
+  {
+    return $this->model;
   }
   public function setModelVariant($modelVariant)
   {
@@ -72,5 +92,19 @@ class Google_Service_Dialogflow_GoogleCloudDialogflowV2InputAudioConfig extends 
   public function getSingleUtterance()
   {
     return $this->singleUtterance;
+  }
+  /**
+   * @param Google_Service_Dialogflow_GoogleCloudDialogflowV2SpeechContext
+   */
+  public function setSpeechContexts($speechContexts)
+  {
+    $this->speechContexts = $speechContexts;
+  }
+  /**
+   * @return Google_Service_Dialogflow_GoogleCloudDialogflowV2SpeechContext
+   */
+  public function getSpeechContexts()
+  {
+    return $this->speechContexts;
   }
 }

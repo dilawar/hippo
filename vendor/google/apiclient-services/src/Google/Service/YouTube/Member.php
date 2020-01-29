@@ -18,7 +18,6 @@
 class Google_Service_YouTube_Member extends Google_Model
 {
   public $etag;
-  public $id;
   public $kind;
   protected $snippetType = 'Google_Service_YouTube_MemberSnippet';
   protected $snippetDataType = '';
@@ -30,14 +29,6 @@ class Google_Service_YouTube_Member extends Google_Model
   public function getEtag()
   {
     return $this->etag;
-  }
-  public function setId($id)
-  {
-    $this->id = $id;
-  }
-  public function getId()
-  {
-    return $this->id;
   }
   public function setKind($kind)
   {

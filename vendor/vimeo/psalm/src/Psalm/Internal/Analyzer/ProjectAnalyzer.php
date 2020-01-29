@@ -244,12 +244,6 @@ class ProjectAnalyzer
             $progress
         );
 
-        if ($stdout_report_options
-            && !in_array($stdout_report_options->format, Report::SUPPORTED_OUTPUT_TYPES, true)
-        ) {
-            throw new \UnexpectedValueException('Unrecognised output format ' . $stdout_report_options->format);
-        }
-
         $this->stdout_report_options = $stdout_report_options;
         $this->generated_report_options = $generated_report_options;
 
@@ -289,6 +283,7 @@ class ProjectAnalyzer
             'checkstyle.xml' => Report::TYPE_CHECKSTYLE,
             'sonarqube.json' => Report::TYPE_SONARQUBE,
             'summary.json' => Report::TYPE_JSON_SUMMARY,
+            'junit.xml' => Report::TYPE_JUNIT,
             '.xml' => Report::TYPE_XML,
             '.json' => Report::TYPE_JSON,
             '.txt' => Report::TYPE_TEXT,
@@ -325,13 +320,21 @@ class ProjectAnalyzer
         $this->file_reference_provider->loadReferenceCache();
         $this->codebase->enterServerMode();
 
-        $cpu_count = self::getCpuCount();
+        if (\ini_get('pcre.jit') === '1'
+            && \PHP_OS === 'Darwin'
+            && \version_compare(\PHP_VERSION, '7.3.0') >= 0
+            && \version_compare(\PHP_VERSION, '7.4.0') < 0
+        ) {
+            // do nothing
+        } else {
+            $cpu_count = self::getCpuCount();
 
-        // let's not go crazy
-        $usable_cpus = $cpu_count - 2;
+            // let's not go crazy
+            $usable_cpus = $cpu_count - 2;
 
-        if ($usable_cpus > 1) {
-            $this->threads = $usable_cpus;
+            if ($usable_cpus > 1) {
+                $this->threads = $usable_cpus;
+            }
         }
 
         $this->config->initializePlugins($this);
@@ -490,6 +493,8 @@ class ProjectAnalyzer
             $this->config->initializePlugins($this);
 
             $this->codebase->scanFiles($this->threads);
+
+            $this->codebase->infer_types_from_usage = true;
         } else {
             $this->progress->debug(count($diff_files) . ' changed files: ' . "\n");
             $this->progress->debug('    ' . implode("\n    ", $diff_files) . "\n");
@@ -540,15 +545,12 @@ class ProjectAnalyzer
     /**
      * @return void
      */
-    public function checkClassReferences()
+    public function consolidateAnalyzedData()
     {
-        if (!$this->codebase->collect_references) {
-            throw new \UnexpectedValueException('Should not be checking references');
-        }
-
-        $this->codebase->classlikes->checkClassReferences(
+        $this->codebase->classlikes->consolidateAnalyzedData(
             $this->codebase->methods,
-            $this->progress
+            $this->progress,
+            !!$this->codebase->find_unused_code
         );
     }
 
@@ -1159,7 +1161,7 @@ class ProjectAnalyzer
      */
     public function setPhpVersion(string $version)
     {
-        if (!preg_match('/^(5\.[456]|7\.[01234])(\..*)?$/', $version)) {
+        if (!preg_match('/^(5\.[456]|7\.[01234]|8\.[0])(\..*)?$/', $version)) {
             throw new \UnexpectedValueException('Expecting a version number in the format x.y');
         }
 
@@ -1193,7 +1195,6 @@ class ProjectAnalyzer
 
     public function setAllIssuesToFix(): void
     {
-        /** @var array<string, true> $keyed_issues */
         $keyed_issues = array_fill_keys(static::getSupportedIssuesToFix(), true);
 
         $this->setIssuesToFix($keyed_issues);

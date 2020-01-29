@@ -7,10 +7,13 @@ use function count;
 use function get_class;
 use function implode;
 use function is_int;
+use function sort;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\StatementsSource;
 use Psalm\Internal\Type\TypeCombination;
+use Psalm\Internal\Type\TemplateResult;
+use Psalm\Internal\Type\UnionTemplateHandler;
 use Psalm\Type;
 use Psalm\Type\Atomic;
 use Psalm\Type\Union;
@@ -70,47 +73,43 @@ class ObjectLike extends \Psalm\Type\Atomic
 
     public function __toString()
     {
+        $union_type_parts = array_map(
+            /**
+             * @param  string|int $name
+             * @param  Union $type
+             *
+             * @return string
+             */
+            function ($name, Union $type) {
+                return $name . ($type->possibly_undefined ? '?' : '') . ': ' . $type;
+            },
+            array_keys($this->properties),
+            $this->properties
+        );
+        sort($union_type_parts);
         /** @psalm-suppress MixedOperand */
-        return static::KEY . '{' .
-                implode(
-                    ', ',
-                    array_map(
-                        /**
-                         * @param  string|int $name
-                         * @param  Union $type
-                         *
-                         * @return string
-                         */
-                        function ($name, Union $type) {
-                            return $name . ($type->possibly_undefined ? '?' : '') . ': ' . $type;
-                        },
-                        array_keys($this->properties),
-                        $this->properties
-                    )
-                ) .
-                '}';
+        return static::KEY . '{' . implode(', ', $union_type_parts) . '}';
     }
 
     public function getId()
     {
+        $union_type_parts = array_map(
+            /**
+             * @param  string|int $name
+             * @param  Union $type
+             *
+             * @return string
+             */
+            function ($name, Union $type) {
+                return $name . ($type->possibly_undefined ? '?' : '') . ': ' . $type->getId();
+            },
+            array_keys($this->properties),
+            $this->properties
+        );
+        sort($union_type_parts);
         /** @psalm-suppress MixedOperand */
         return static::KEY . '{' .
-                implode(
-                    ', ',
-                    array_map(
-                        /**
-                         * @param  string|int $name
-                         * @param  Union $type
-                         *
-                         * @return string
-                         */
-                        function ($name, Union $type) {
-                            return $name . ($type->possibly_undefined ? '?' : '') . ': ' . $type->getId();
-                        },
-                        array_keys($this->properties),
-                        $this->properties
-                    )
-                ) .
+                implode(', ', $union_type_parts) .
                 '}'
                 . ($this->previous_value_type
                     ? '<' . ($this->previous_key_type ? $this->previous_key_type->getId() . ', ' : '')
@@ -320,22 +319,18 @@ class ObjectLike extends \Psalm\Type\Atomic
         }
     }
 
-    /**
-     * @param  array<string, array<string, array{Type\Union}>>    $template_types
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>     $generic_params
-     * @param  Atomic|null              $input_type
-     *
-     * @return void
-     */
     public function replaceTemplateTypesWithStandins(
-        array &$template_types,
-        array &$generic_params,
+        TemplateResult $template_result,
         Codebase $codebase = null,
         Atomic $input_type = null,
+        ?string $calling_class = null,
+        ?string $calling_function = null,
         bool $replace = true,
         bool $add_upper_bound = false,
         int $depth = 0
-    ) {
+    ) : Atomic {
+        $object_like = clone $this;
+
         foreach ($this->properties as $offset => $property) {
             $input_type_param = null;
 
@@ -345,28 +340,49 @@ class ObjectLike extends \Psalm\Type\Atomic
                 $input_type_param = $input_type->properties[$offset];
             }
 
-            $property->replaceTemplateTypesWithStandins(
-                $template_types,
-                $generic_params,
+            $object_like->properties[$offset] = UnionTemplateHandler::replaceTemplateTypesWithStandins(
+                $property,
+                $template_result,
                 $codebase,
                 $input_type_param,
+                $calling_class,
+                $calling_function,
                 $replace,
                 $add_upper_bound,
                 $depth
             );
         }
+
+        return $object_like;
     }
 
     /**
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>  $template_types
+     * @param  array<string, array<string, array{Type\Union, 1?:int}>>     $template_types
      *
      * @return void
      */
     public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
     {
         foreach ($this->properties as $property) {
-            $property->replaceTemplateTypesWithArgTypes($template_types);
+            $property->replaceTemplateTypesWithArgTypes(
+                $template_types,
+                $codebase
+            );
         }
+    }
+
+    /**
+     * @return list<Type\Atomic\TTemplateParam>
+     */
+    public function getTemplateTypes() : array
+    {
+        $template_types = [];
+
+        foreach ($this->properties as $property) {
+            $template_types = \array_merge($template_types, $property->getTemplateTypes());
+        }
+
+        return $template_types;
     }
 
     /**

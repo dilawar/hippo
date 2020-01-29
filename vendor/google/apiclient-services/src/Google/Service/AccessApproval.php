@@ -16,7 +16,7 @@
  */
 
 /**
- * Service definition for AccessApproval (v1beta1).
+ * Service definition for AccessApproval (v1).
  *
  * <p>
  * An API for controlling access to data by Google personnel.</p>
@@ -53,7 +53,7 @@ class Google_Service_AccessApproval extends Google_Service
     $this->rootUrl = $rootUrl ?: 'https://accessapproval.googleapis.com/';
     $this->servicePath = '';
     $this->batchPath = 'batch';
-    $this->version = 'v1beta1';
+    $this->version = 'v1';
     $this->serviceName = 'accessapproval';
 
     $this->folders = new Google_Service_AccessApproval_Resource_Folders(
@@ -62,8 +62,18 @@ class Google_Service_AccessApproval extends Google_Service
         'folders',
         array(
           'methods' => array(
-            'getAccessApprovalSettings' => array(
-              'path' => 'v1beta1/{+name}',
+            'deleteAccessApprovalSettings' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'getAccessApprovalSettings' => array(
+              'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'name' => array(
@@ -73,7 +83,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'updateAccessApprovalSettings' => array(
-              'path' => 'v1beta1/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'PATCH',
               'parameters' => array(
                 'name' => array(
@@ -97,7 +107,7 @@ class Google_Service_AccessApproval extends Google_Service
         array(
           'methods' => array(
             'approve' => array(
-              'path' => 'v1beta1/{+name}:approve',
+              'path' => 'v1/{+name}:approve',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'name' => array(
@@ -107,7 +117,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'dismiss' => array(
-              'path' => 'v1beta1/{+name}:dismiss',
+              'path' => 'v1/{+name}:dismiss',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'name' => array(
@@ -117,7 +127,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'get' => array(
-              'path' => 'v1beta1/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'name' => array(
@@ -127,17 +137,13 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'list' => array(
-              'path' => 'v1beta1/{+parent}/approvalRequests',
+              'path' => 'v1/{+parent}/approvalRequests',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'parent' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
                 'pageToken' => array(
                   'location' => 'query',
@@ -146,6 +152,10 @@ class Google_Service_AccessApproval extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
+                ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),
@@ -158,8 +168,18 @@ class Google_Service_AccessApproval extends Google_Service
         'organizations',
         array(
           'methods' => array(
-            'getAccessApprovalSettings' => array(
-              'path' => 'v1beta1/{+name}',
+            'deleteAccessApprovalSettings' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'getAccessApprovalSettings' => array(
+              'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'name' => array(
@@ -169,7 +189,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'updateAccessApprovalSettings' => array(
-              'path' => 'v1beta1/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'PATCH',
               'parameters' => array(
                 'name' => array(
@@ -193,7 +213,7 @@ class Google_Service_AccessApproval extends Google_Service
         array(
           'methods' => array(
             'approve' => array(
-              'path' => 'v1beta1/{+name}:approve',
+              'path' => 'v1/{+name}:approve',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'name' => array(
@@ -203,7 +223,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'dismiss' => array(
-              'path' => 'v1beta1/{+name}:dismiss',
+              'path' => 'v1/{+name}:dismiss',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'name' => array(
@@ -213,7 +233,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'get' => array(
-              'path' => 'v1beta1/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'name' => array(
@@ -223,17 +243,13 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'list' => array(
-              'path' => 'v1beta1/{+parent}/approvalRequests',
+              'path' => 'v1/{+parent}/approvalRequests',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'parent' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
                 'pageToken' => array(
                   'location' => 'query',
@@ -242,6 +258,10 @@ class Google_Service_AccessApproval extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
+                ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),
@@ -254,8 +274,18 @@ class Google_Service_AccessApproval extends Google_Service
         'projects',
         array(
           'methods' => array(
-            'getAccessApprovalSettings' => array(
-              'path' => 'v1beta1/{+name}',
+            'deleteAccessApprovalSettings' => array(
+              'path' => 'v1/{+name}',
+              'httpMethod' => 'DELETE',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'getAccessApprovalSettings' => array(
+              'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'name' => array(
@@ -265,7 +295,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'updateAccessApprovalSettings' => array(
-              'path' => 'v1beta1/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'PATCH',
               'parameters' => array(
                 'name' => array(
@@ -289,7 +319,7 @@ class Google_Service_AccessApproval extends Google_Service
         array(
           'methods' => array(
             'approve' => array(
-              'path' => 'v1beta1/{+name}:approve',
+              'path' => 'v1/{+name}:approve',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'name' => array(
@@ -299,7 +329,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'dismiss' => array(
-              'path' => 'v1beta1/{+name}:dismiss',
+              'path' => 'v1/{+name}:dismiss',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'name' => array(
@@ -309,7 +339,7 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'get' => array(
-              'path' => 'v1beta1/{+name}',
+              'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'name' => array(
@@ -319,13 +349,17 @@ class Google_Service_AccessApproval extends Google_Service
                 ),
               ),
             ),'list' => array(
-              'path' => 'v1beta1/{+parent}/approvalRequests',
+              'path' => 'v1/{+parent}/approvalRequests',
               'httpMethod' => 'GET',
               'parameters' => array(
                 'parent' => array(
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,
+                ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
                 'pageToken' => array(
                   'location' => 'query',
@@ -334,10 +368,6 @@ class Google_Service_AccessApproval extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
               ),
             ),

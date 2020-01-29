@@ -23,6 +23,8 @@ class Google_Service_CloudKMS_CryptoKeyVersion extends Google_Model
   public $createTime;
   public $destroyEventTime;
   public $destroyTime;
+  protected $externalProtectionLevelOptionsType = 'Google_Service_CloudKMS_ExternalProtectionLevelOptions';
+  protected $externalProtectionLevelOptionsDataType = '';
   public $generateTime;
   public $importFailureReason;
   public $importJob;
@@ -76,6 +78,20 @@ class Google_Service_CloudKMS_CryptoKeyVersion extends Google_Model
   public function getDestroyTime()
   {
     return $this->destroyTime;
+  }
+  /**
+   * @param Google_Service_CloudKMS_ExternalProtectionLevelOptions
+   */
+  public function setExternalProtectionLevelOptions(Google_Service_CloudKMS_ExternalProtectionLevelOptions $externalProtectionLevelOptions)
+  {
+    $this->externalProtectionLevelOptions = $externalProtectionLevelOptions;
+  }
+  /**
+   * @return Google_Service_CloudKMS_ExternalProtectionLevelOptions
+   */
+  public function getExternalProtectionLevelOptions()
+  {
+    return $this->externalProtectionLevelOptions;
   }
   public function setGenerateTime($generateTime)
   {

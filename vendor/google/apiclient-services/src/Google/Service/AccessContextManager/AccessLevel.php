@@ -20,6 +20,8 @@ class Google_Service_AccessContextManager_AccessLevel extends Google_Model
   protected $basicType = 'Google_Service_AccessContextManager_BasicLevel';
   protected $basicDataType = '';
   public $createTime;
+  protected $customType = 'Google_Service_AccessContextManager_CustomLevel';
+  protected $customDataType = '';
   public $description;
   public $name;
   public $title;
@@ -46,6 +48,20 @@ class Google_Service_AccessContextManager_AccessLevel extends Google_Model
   public function getCreateTime()
   {
     return $this->createTime;
+  }
+  /**
+   * @param Google_Service_AccessContextManager_CustomLevel
+   */
+  public function setCustom(Google_Service_AccessContextManager_CustomLevel $custom)
+  {
+    $this->custom = $custom;
+  }
+  /**
+   * @return Google_Service_AccessContextManager_CustomLevel
+   */
+  public function getCustom()
+  {
+    return $this->custom;
   }
   public function setDescription($description)
   {

@@ -23,6 +23,7 @@ class Google_Service_Compute_AttachedDisk extends Google_Collection
   public $deviceName;
   protected $diskEncryptionKeyType = 'Google_Service_Compute_CustomerEncryptionKey';
   protected $diskEncryptionKeyDataType = '';
+  public $diskSizeGb;
   protected $guestOsFeaturesType = 'Google_Service_Compute_GuestOsFeature';
   protected $guestOsFeaturesDataType = 'array';
   public $index;
@@ -72,6 +73,14 @@ class Google_Service_Compute_AttachedDisk extends Google_Collection
   public function getDiskEncryptionKey()
   {
     return $this->diskEncryptionKey;
+  }
+  public function setDiskSizeGb($diskSizeGb)
+  {
+    $this->diskSizeGb = $diskSizeGb;
+  }
+  public function getDiskSizeGb()
+  {
+    return $this->diskSizeGb;
   }
   /**
    * @param Google_Service_Compute_GuestOsFeature

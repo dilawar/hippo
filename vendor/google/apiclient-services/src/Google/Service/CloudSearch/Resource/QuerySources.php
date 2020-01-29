@@ -27,6 +27,8 @@ class Google_Service_CloudSearch_Resource_QuerySources extends Google_Service_Re
 {
   /**
    * Returns list of sources that user can use for Search and Suggest APIs.
+   *
+   * **Note:** This API requires a standard end user account to execute.
    * (sources.listQuerySources)
    *
    * @param array $optParams Optional parameters.
@@ -34,8 +36,10 @@ class Google_Service_CloudSearch_Resource_QuerySources extends Google_Service_Re
    * @opt_param string requestOptions.timeZone Current user's time zone id, such
    * as "America/Los_Angeles" or "Australia/Sydney". These IDs are defined by
    * [Unicode Common Locale Data Repository (CLDR)](http://cldr.unicode.org/)
-   * project, and currently available in the file
-   * [timezone.xml](http://unicode.org/repos/cldr/trunk/common/bcp47/timezone.xml)
+   * project, and currently available in the file [timezone.xml](http://unicode.or
+   * g/repos/cldr/trunk/common/bcp47/timezone.xml). This field is used to
+   * correctly interpret date and time queries. If this field is not specified,
+   * the default time zone (UTC) is used.
    * @opt_param string pageToken Number of sources to return in the response.
    * @opt_param bool requestOptions.debugOptions.enableDebugging If you are asked
    * by Google to help with debugging, set this field. Otherwise, ignore this
@@ -45,8 +49,14 @@ class Google_Service_CloudSearch_Resource_QuerySources extends Google_Service_Re
    * http://www.unicode.org/reports/tr35/#Unicode_locale_identifier. For
    * translations.
    *
+   * Set this field using the language set in browser or for the page. In the
+   * event that the user's language preference is known, set this field to the
+   * known user language.
+   *
    * When specified, the documents in search results are biased towards the
-   * specified language. Suggest API does not use this parameter. It autocompletes
+   * specified language.
+   *
+   * The suggest API does not use this parameter. Instead, suggest autocompletes
    * only based on characters in the query.
    * @opt_param string requestOptions.searchApplicationId Id of the application
    * created using SearchApplicationsService.

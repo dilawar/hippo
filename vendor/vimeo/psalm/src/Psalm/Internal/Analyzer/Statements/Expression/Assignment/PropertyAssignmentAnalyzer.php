@@ -32,6 +32,7 @@ use Psalm\Issue\PossiblyNullPropertyAssignmentValue;
 use Psalm\Issue\PropertyTypeCoercion;
 use Psalm\Issue\UndefinedClass;
 use Psalm\Issue\UndefinedPropertyAssignment;
+use Psalm\Issue\UndefinedMagicPropertyAssignment;
 use Psalm\Issue\UndefinedThisPropertyAssignment;
 use Psalm\IssueBuffer;
 use Psalm\Type;
@@ -95,7 +96,7 @@ class PropertyAssignmentAnalyzer
                 $context
             );
 
-            if ($class_property_type && $context->self) {
+            if ($class_property_type) {
                 $class_storage = $codebase->classlike_storage_provider->get($context->self);
 
                 $class_property_type = ExpressionAnalyzer::fleshOutType(
@@ -115,7 +116,7 @@ class PropertyAssignmentAnalyzer
                 return false;
             }
 
-            $lhs_type = isset($stmt->var->inferredType) ? $stmt->var->inferredType : null;
+            $lhs_type = $statements_analyzer->node_data->getType($stmt->var);
 
             if ($lhs_type === null) {
                 return null;
@@ -163,7 +164,7 @@ class PropertyAssignmentAnalyzer
                 if ($stmt->name instanceof PhpParser\Node\Identifier) {
                     $codebase->analyzer->addMixedMemberName(
                         '$' . $stmt->name->name,
-                        $context->calling_method_id ?: $statements_analyzer->getFileName()
+                        $context->calling_function_id ?: $statements_analyzer->getFileName()
                     );
                 }
 
@@ -222,14 +223,14 @@ class PropertyAssignmentAnalyzer
 
             $has_valid_assignment_type = false;
 
-            foreach ($lhs_type->getTypes() as $lhs_type_part) {
+            foreach ($lhs_type->getAtomicTypes() as $lhs_type_part) {
                 if ($lhs_type_part instanceof TNull) {
                     continue;
                 }
 
                 if ($lhs_type_part instanceof Type\Atomic\TFalse
                     && $lhs_type->ignore_falsable_issues
-                    && count($lhs_type->getTypes()) > 1
+                    && count($lhs_type->getAtomicTypes()) > 1
                 ) {
                     continue;
                 }
@@ -340,6 +341,8 @@ class PropertyAssignmentAnalyzer
                 $property_id = $fq_class_name . '::$' . $prop_name;
                 $property_ids[] = $property_id;
 
+                $has_magic_setter = false;
+
                 if ($codebase->methodExists($fq_class_name . '::__set')
                     && (!$codebase->properties->propertyExists($property_id, false, $statements_analyzer, $context)
                         || ($lhs_var_id !== '$this'
@@ -354,6 +357,7 @@ class PropertyAssignmentAnalyzer
                             ) !== true)
                     )
                 ) {
+                    $has_magic_setter = true;
                     $class_storage = $codebase->classlike_storage_provider->get($fq_class_name);
 
                     if ($var_id) {
@@ -379,6 +383,10 @@ class PropertyAssignmentAnalyzer
 
                             unset($context->vars_in_scope[$var_id]);
                         }
+
+                        $old_data_provider = $statements_analyzer->node_data;
+
+                        $statements_analyzer->node_data = clone $statements_analyzer->node_data;
 
                         $fake_method_call = new PhpParser\Node\Expr\MethodCall(
                             $stmt->var,
@@ -412,6 +420,8 @@ class PropertyAssignmentAnalyzer
                         if (!in_array('PossiblyNullReference', $suppressed_issues, true)) {
                             $statements_analyzer->removeSuppressedIssues(['PossiblyNullReference']);
                         }
+
+                        $statements_analyzer->node_data = $old_data_provider;
                     }
 
                     /*
@@ -426,8 +436,8 @@ class PropertyAssignmentAnalyzer
 
                     if (!$class_exists) {
                         if (IssueBuffer::accepts(
-                            new UndefinedPropertyAssignment(
-                                'Instance property ' . $property_id . ' is not defined',
+                            new UndefinedMagicPropertyAssignment(
+                                'Magic instance property ' . $property_id . ' is not defined',
                                 new CodeLocation($statements_analyzer->getSource(), $stmt),
                                 $property_id
                             ),
@@ -488,15 +498,28 @@ class PropertyAssignmentAnalyzer
                             // fall through
                         }
                     } else {
-                        if (IssueBuffer::accepts(
-                            new UndefinedPropertyAssignment(
-                                'Instance property ' . $property_id . ' is not defined',
-                                new CodeLocation($statements_analyzer->getSource(), $stmt),
-                                $property_id
-                            ),
-                            $statements_analyzer->getSuppressedIssues()
-                        )) {
-                            // fall through
+                        if ($has_magic_setter) {
+                            if (IssueBuffer::accepts(
+                                new UndefinedMagicPropertyAssignment(
+                                    'Magic instance property ' . $property_id . ' is not defined',
+                                    new CodeLocation($statements_analyzer->getSource(), $stmt),
+                                    $property_id
+                                ),
+                                $statements_analyzer->getSuppressedIssues()
+                            )) {
+                                // fall through
+                            }
+                        } else {
+                            if (IssueBuffer::accepts(
+                                new UndefinedPropertyAssignment(
+                                    'Instance property ' . $property_id . ' is not defined',
+                                    new CodeLocation($statements_analyzer->getSource(), $stmt),
+                                    $property_id
+                                ),
+                                $statements_analyzer->getSuppressedIssues()
+                            )) {
+                                // fall through
+                            }
                         }
                     }
 
@@ -623,17 +646,19 @@ class PropertyAssignmentAnalyzer
                             true
                         );
 
-                        $property_pure_compatible = isset($stmt->var->inferredType)
-                            && $stmt->var->inferredType->external_mutation_free
-                            && !$stmt->var->inferredType->mutation_free;
+                        $stmt_var_type = $statements_analyzer->node_data->getType($stmt->var);
+
+                        $property_pure_compatible = $stmt_var_type
+                            && $stmt_var_type->external_mutation_free
+                            && !$stmt_var_type->mutation_free;
 
                         if ($appearing_property_class
                             && !($context->self
                                 && ($appearing_property_class === $context->self
                                     || $codebase->classExtends($context->self, $appearing_property_class))
-                                && (!$context->calling_method_id
-                                    || \strpos($context->calling_method_id, '::__construct')
-                                    || \strpos($context->calling_method_id, '::unserialize')
+                                && (!$context->calling_function_id
+                                    || \strpos($context->calling_function_id, '::__construct')
+                                    || \strpos($context->calling_function_id, '::unserialize')
                                     || $property_pure_compatible)
                             )
                         ) {
@@ -747,7 +772,6 @@ class PropertyAssignmentAnalyzer
 
             if ($var_id) {
                 if ($context->collect_initializations
-                    && $var_id
                     && $lhs_var_id === '$this'
                 ) {
                     $assignment_value_type->initialized_class = $context->self;
@@ -977,6 +1001,7 @@ class PropertyAssignmentAnalyzer
 
         $method_sink = new Sink(
             $property_id,
+            $property_id,
             $code_location
         );
 
@@ -987,11 +1012,11 @@ class PropertyAssignmentAnalyzer
         if ($child_sink = $codebase->taint->hasPreviousSink($method_sink)) {
             if ($assignment_value_type->sources) {
                 $codebase->taint->addSinks(
-                    $statements_analyzer,
                     \array_map(
                         function (Source $assignment_source) use ($child_sink) {
                             $new_sink = new Sink(
                                 $assignment_source->id,
+                                $assignment_source->label,
                                 $assignment_source->code_location
                             );
 
@@ -1013,6 +1038,7 @@ class PropertyAssignmentAnalyzer
                     if (!$previous_source) {
                         $previous_source = new Source(
                             $type_source->id,
+                            $type_source->label,
                             $type_source->code_location
                         );
 
@@ -1021,6 +1047,7 @@ class PropertyAssignmentAnalyzer
 
                     $new_source = new Source(
                         $property_id,
+                        $property_id,
                         $code_location
                     );
 
@@ -1028,7 +1055,6 @@ class PropertyAssignmentAnalyzer
                     $new_source->taint = $previous_source->taint;
 
                     $codebase->taint->addSources(
-                        $statements_analyzer,
                         [$new_source]
                     );
                 }
@@ -1064,7 +1090,7 @@ class PropertyAssignmentAnalyzer
             $statements_analyzer
         );
 
-        $fq_class_name = (string)$stmt->class->inferredType;
+        $fq_class_name = (string) $statements_analyzer->node_data->getType($stmt->class);
 
         $codebase = $statements_analyzer->getCodebase();
 
@@ -1078,7 +1104,7 @@ class PropertyAssignmentAnalyzer
             if ($fq_class_name && !$context->ignore_variable_property) {
                 $codebase->analyzer->addMixedMemberName(
                     strtolower($fq_class_name) . '::$',
-                    $context->calling_method_id ?: $statements_analyzer->getFileName()
+                    $context->calling_function_id ?: $statements_analyzer->getFileName()
                 );
             }
 
@@ -1125,7 +1151,7 @@ class PropertyAssignmentAnalyzer
                 $statements_analyzer,
                 $stmt->class,
                 $fq_class_name,
-                $context->calling_method_id
+                $context->calling_function_id
             );
 
             if (!$moved_class) {
@@ -1280,8 +1306,9 @@ class PropertyAssignmentAnalyzer
             if (TypeAnalyzer::canBeContainedBy($codebase, $assignment_value_type, $class_property_type)) {
                 if (IssueBuffer::accepts(
                     new PossiblyInvalidPropertyAssignmentValue(
-                        $var_id . ' with declared type \'' . $class_property_type . '\' cannot be assigned type \'' .
-                            $assignment_value_type . '\'',
+                        $var_id . ' with declared type \''
+                            . $class_property_type->getId() . '\' cannot be assigned type \''
+                            . $assignment_value_type->getId() . '\'',
                         new CodeLocation(
                             $statements_analyzer->getSource(),
                             $assignment_value ?: $stmt
@@ -1295,8 +1322,9 @@ class PropertyAssignmentAnalyzer
             } else {
                 if (IssueBuffer::accepts(
                     new InvalidPropertyAssignmentValue(
-                        $var_id . ' with declared type \'' . $class_property_type . '\' cannot be assigned type \'' .
-                            $assignment_value_type . '\'',
+                        $var_id . ' with declared type \'' . $class_property_type->getId()
+                            . '\' cannot be assigned type \''
+                            . $assignment_value_type->getId() . '\'',
                         new CodeLocation(
                             $statements_analyzer->getSource(),
                             $assignment_value ?: $stmt

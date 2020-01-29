@@ -25,6 +25,7 @@ class Google_Service_HomeGraphService_Device extends Google_Collection
   public $id;
   protected $nameType = 'Google_Service_HomeGraphService_DeviceNames';
   protected $nameDataType = '';
+  public $notificationSupportedByAgent;
   protected $otherDeviceIdsType = 'Google_Service_HomeGraphService_AgentOtherDeviceId';
   protected $otherDeviceIdsDataType = 'array';
   public $roomHint;
@@ -84,6 +85,14 @@ class Google_Service_HomeGraphService_Device extends Google_Collection
   public function getName()
   {
     return $this->name;
+  }
+  public function setNotificationSupportedByAgent($notificationSupportedByAgent)
+  {
+    $this->notificationSupportedByAgent = $notificationSupportedByAgent;
+  }
+  public function getNotificationSupportedByAgent()
+  {
+    return $this->notificationSupportedByAgent;
   }
   /**
    * @param Google_Service_HomeGraphService_AgentOtherDeviceId

@@ -18,6 +18,8 @@
 class Google_Service_Bigquery_TrainingRun extends Google_Collection
 {
   protected $collection_key = 'results';
+  protected $dataSplitResultType = 'Google_Service_Bigquery_DataSplitResult';
+  protected $dataSplitResultDataType = '';
   protected $evaluationMetricsType = 'Google_Service_Bigquery_EvaluationMetrics';
   protected $evaluationMetricsDataType = '';
   protected $resultsType = 'Google_Service_Bigquery_IterationResult';
@@ -26,6 +28,20 @@ class Google_Service_Bigquery_TrainingRun extends Google_Collection
   protected $trainingOptionsType = 'Google_Service_Bigquery_TrainingOptions';
   protected $trainingOptionsDataType = '';
 
+  /**
+   * @param Google_Service_Bigquery_DataSplitResult
+   */
+  public function setDataSplitResult(Google_Service_Bigquery_DataSplitResult $dataSplitResult)
+  {
+    $this->dataSplitResult = $dataSplitResult;
+  }
+  /**
+   * @return Google_Service_Bigquery_DataSplitResult
+   */
+  public function getDataSplitResult()
+  {
+    return $this->dataSplitResult;
+  }
   /**
    * @param Google_Service_Bigquery_EvaluationMetrics
    */

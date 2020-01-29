@@ -4,7 +4,6 @@ namespace Psalm\Internal\Codebase;
 use function array_filter;
 use function array_intersect_key;
 use function array_merge;
-use function array_merge_recursive;
 use function count;
 use function explode;
 use function number_format;
@@ -40,13 +39,15 @@ use function usort;
  *     snippet_from: int,
  *     snippet_to: int,
  *     column_from: int,
- *     column_to: int
+ *     column_to: int,
+ *     selected_text: string
  * }
  *
  * @psalm-type  TaggedCodeType = array<int, array{0: int, 1: string}>
  *
  * @psalm-type  WorkerData = array{
  *      issues: array<int, IssueData>,
+ *      fixable_issue_counts: array<string, int>,
  *      file_references_to_classes: array<string, array<string,bool>>,
  *      file_references_to_class_members: array<string, array<string,bool>>,
  *      file_references_to_missing_class_members: array<string, array<string,bool>>,
@@ -256,10 +257,20 @@ class Analyzer
 
         $this->doAnalysis($project_analyzer, $pool_size);
 
+        $scanned_files = $codebase->scanner->getScannedFiles();
+        $codebase->file_reference_provider->updateReferenceCache($codebase, $scanned_files);
+
         if ($codebase->taint) {
             $i = 0;
             while ($codebase->taint->hasNewSinksAndSources() && ++$i <= 4) {
                 $project_analyzer->progress->write("\n\n" . 'Found tainted inputs, reanalysing' . "\n\n");
+
+                $this->files_to_analyze = $codebase->taint->getFilesToAnalyze(
+                    $codebase->file_reference_provider,
+                    $codebase->file_storage_provider,
+                    $codebase->classlike_storage_provider,
+                    $codebase->config
+                );
 
                 $codebase->taint->clearNewSinksAndSources();
 
@@ -269,17 +280,14 @@ class Analyzer
 
         $this->progress->finish();
 
-        if ($codebase->find_unused_code
-            && ($project_analyzer->full_run || $codebase->find_unused_code === 'always')
-        ) {
-            $project_analyzer->checkClassReferences();
+        if ($project_analyzer->full_run || $codebase->find_unused_code === 'always') {
+            $project_analyzer->consolidateAnalyzedData();
         }
 
         if ($codebase->track_unused_suppressions) {
             IssueBuffer::processUnusedSuppressions($codebase->file_provider);
         }
 
-        $scanned_files = $codebase->scanner->getScannedFiles();
         $codebase->file_reference_provider->setAnalyzedMethods($this->analyzed_methods);
         $codebase->file_reference_provider->setFileMaps($this->getFileMaps());
         $codebase->file_reference_provider->setTypeCoverage($this->mixed_counts);
@@ -355,11 +363,34 @@ class Analyzer
             };
 
         if ($pool_size > 1 && count($this->files_to_analyze) > $pool_size) {
+            $shuffle_count = $pool_size + 1;
+
+            $file_paths = \array_values($this->files_to_analyze);
+
+            $count = count($file_paths);
+            $middle = \intdiv($count, $shuffle_count);
+            $remainder = $count % $shuffle_count;
+
+            $new_file_paths = [];
+
+            for ($i = 0; $i < $shuffle_count; $i++) {
+                for ($j = 0; $j < $middle; $j++) {
+                    if ($j * $shuffle_count + $i < $count) {
+                        $new_file_paths[] = $file_paths[$j * $shuffle_count + $i];
+                    }
+                }
+
+                if ($remainder) {
+                    $new_file_paths[] = $file_paths[$middle * $shuffle_count + $remainder - 1];
+                    $remainder--;
+                }
+            }
+
             $process_file_paths = [];
 
             $i = 0;
 
-            foreach ($this->files_to_analyze as $file_path) {
+            foreach ($file_paths as $file_path) {
                 $process_file_paths[$i % $pool_size][] = $file_path;
                 ++$i;
             }
@@ -396,6 +427,7 @@ class Analyzer
                     // @codingStandardsIgnoreStart
                     return [
                         'issues' => IssueBuffer::getIssuesData(),
+                        'fixable_issue_counts' => IssueBuffer::getFixableIssues(),
                         'file_references_to_classes' => $rerun ? [] : $file_reference_provider->getAllFileReferencesToClasses(),
                         'file_references_to_class_members' => $rerun ? [] : $file_reference_provider->getAllFileReferencesToClassMembers(),
                         'method_references_to_class_members' => $rerun ? [] : $file_reference_provider->getAllMethodReferencesToClassMembers(),
@@ -432,6 +464,7 @@ class Analyzer
 
             foreach ($forked_pool_data as $pool_data) {
                 IssueBuffer::addIssues($pool_data['issues']);
+                IssueBuffer::addFixableIssues($pool_data['fixable_issue_counts']);
 
                 if ($codebase->track_unused_suppressions) {
                     IssueBuffer::addUnusedSuppressions($pool_data['unused_suppressions']);
@@ -998,7 +1031,16 @@ class Analyzer
      */
     public function addMixedMemberNames(array $names)
     {
-        $this->mixed_member_names = array_merge_recursive($this->mixed_member_names, $names);
+        foreach ($names as $key => $name) {
+            if (isset($this->mixed_member_names[$key])) {
+                $this->mixed_member_names[$key] = array_merge(
+                    $this->mixed_member_names[$key],
+                    $name
+                );
+            } else {
+                $this->mixed_member_names[$key] = $name;
+            }
+        }
     }
 
     /**

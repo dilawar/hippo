@@ -148,6 +148,13 @@ class Context
     public $clauses = [];
 
     /**
+     * A list of hashed clauses that have already been factored in
+     *
+     * @var list<string>
+     */
+    public $reconciled_expression_clauses = [];
+
+    /**
      * Whether or not to do a deep analysis and collect mutations to this context
      *
      * @var bool
@@ -281,6 +288,16 @@ class Context
     public $case_scope = null;
 
     /**
+     * @var Context|null
+     */
+    public $if_context = null;
+
+    /**
+     * @var \Psalm\Internal\Scope\IfScope|null
+     */
+    public $if_scope = null;
+
+    /**
      * @var bool
      */
     public $strict_types = false;
@@ -288,7 +305,7 @@ class Context
     /**
      * @var string|null
      */
-    public $calling_method_id;
+    public $calling_function_id;
 
     /**
      * @var bool
@@ -319,6 +336,11 @@ class Context
      * @var bool
      */
     public $external_mutation_free = false;
+
+    /**
+     * @var bool
+     */
+    public $error_suppressing = false;
 
     /**
      * @param string|null $self
@@ -392,7 +414,7 @@ class Context
                 // if the type changed within the block of statements, process the replacement
                 // also never allow ourselves to remove all types from a union
                 if ((!$new_type || !$old_type->equals($new_type))
-                    && ($new_type || count($existing_type->getTypes()) > 1)
+                    && ($new_type || count($existing_type->getAtomicTypes()) > 1)
                 ) {
                     $existing_type->substitute($old_type, $new_type);
 
@@ -482,31 +504,33 @@ class Context
     }
 
     /**
-     * @param  string[]             $changed_var_ids
+     * @param  Clause[]             $clauses
+     * @param  array<string, bool>  $changed_var_ids
      *
-     * @return void
+     * @return array{0: list<Clause>, list<Clause>}
      */
-    public function removeReconciledClauses(array $changed_var_ids)
+    public static function removeReconciledClauses(array $clauses, array $changed_var_ids)
     {
-        $this->clauses = \array_values(
-            array_filter(
-                $this->clauses,
-                /** @return bool */
-                function (Clause $c) use ($changed_var_ids) {
-                    if ($c->wedge) {
-                        return true;
-                    }
+        $included_clauses = [];
+        $rejected_clauses = [];
 
-                    foreach ($c->possibilities as $key => $_) {
-                        if (in_array($key, $changed_var_ids, true)) {
-                            return false;
-                        }
-                    }
+        foreach ($clauses as $c) {
+            if ($c->wedge) {
+                $included_clauses[] = $c;
+                continue;
+            }
 
-                    return true;
+            foreach ($c->possibilities as $key => $_) {
+                if (isset($changed_var_ids[$key])) {
+                    $rejected_clauses[] = $c;
+                    continue 2;
                 }
-            )
-        );
+            }
+
+            $included_clauses[] = $c;
+        }
+
+        return [$included_clauses, $rejected_clauses];
     }
 
     /**
@@ -633,16 +657,14 @@ class Context
             return;
         }
 
-        if ($this->clauses) {
-            $this->removeVarFromConflictingClauses(
-                $remove_var_id,
-                $existing_type->hasMixed()
-                    || ($new_type && $existing_type->from_docblock !== $new_type->from_docblock)
-                    ? null
-                    : $new_type,
-                $statements_analyzer
-            );
-        }
+        $this->removeVarFromConflictingClauses(
+            $remove_var_id,
+            $existing_type->hasMixed()
+                || ($new_type && $existing_type->from_docblock !== $new_type->from_docblock)
+                ? null
+                : $new_type,
+            $statements_analyzer
+        );
 
         $vars_to_remove = [];
 

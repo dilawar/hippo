@@ -9,13 +9,13 @@ class TTemplateKeyOf extends TArrayKey
     public $param_name;
 
     /**
-     * @var ?string
+     * @var string
      */
     public $defining_class;
 
     public function __construct(
         string $param_name,
-        ?string $defining_class
+        string $defining_class
     ) {
         $this->param_name = $param_name;
         $this->defining_class = $defining_class;

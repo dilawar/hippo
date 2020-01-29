@@ -13,6 +13,7 @@ use Psalm\CodeLocation;
 use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
 use Psalm\Internal\Analyzer\TypeAnalyzer;
+use Psalm\Internal\Type\TemplateResult;
 use Psalm\Issue\InvalidTemplateParam;
 use Psalm\Issue\MissingTemplateParam;
 use Psalm\Issue\ReservedWord;
@@ -25,6 +26,7 @@ use Psalm\Type;
 use Psalm\Type\Atomic\ObjectLike;
 use Psalm\Type\Atomic\TArray;
 use Psalm\Type\Atomic\TArrayKey;
+use Psalm\Type\Atomic\TAssertionFalsy;
 use Psalm\Type\Atomic\TBool;
 use Psalm\Type\Atomic\TCallable;
 use Psalm\Type\Atomic\TCallableArray;
@@ -158,16 +160,23 @@ abstract class Atomic
                 return new TCallable();
 
             case 'array':
+            case 'associative-array':
                 return new TArray([new Union([new TArrayKey]), new Union([new TMixed])]);
 
             case 'non-empty-array':
                 return new TNonEmptyArray([new Union([new TMixed]), new Union([new TMixed])]);
+
+            case 'callable-array':
+                return new Type\Atomic\TCallableArray([new Union([new TArrayKey]), new Union([new TMixed])]);
 
             case 'list':
                 return new TList(Type::getMixed());
 
             case 'non-empty-list':
                 return new TNonEmptyList(Type::getMixed());
+
+            case 'non-empty-string':
+                return new Type\Atomic\TNonEmptyString();
 
             case 'resource':
                 return $php_version !== null ? new TNamedObject($value) : new TResource();
@@ -193,6 +202,9 @@ abstract class Atomic
             case 'mixed':
                 return $php_version !== null ? new TNamedObject($value) : new TMixed();
 
+            case 'callable-object':
+                return new TCallableObject();
+
             case 'class-string':
             case 'interface-string':
                 return new TClassString();
@@ -208,6 +220,9 @@ abstract class Atomic
 
             case 'html-escaped-string':
                 return new THtmlEscapedString();
+
+            case 'false-y':
+                return new TAssertionFalsy();
 
             case '$this':
                 return new TNamedObject('static');
@@ -361,6 +376,7 @@ abstract class Atomic
         return $this instanceof TArray
             || $this instanceof ObjectLike
             || $this instanceof TList
+            || $this instanceof Atomic\TClassStringMap
             || $this->hasArrayAccessInterface($codebase)
             || ($this instanceof TNamedObject && $this->value === 'SimpleXMLElement');
     }
@@ -377,7 +393,7 @@ abstract class Atomic
     /**
      * @return bool
      */
-    private function hasArrayAccessInterface(Codebase $codebase)
+    public function hasArrayAccessInterface(Codebase $codebase)
     {
         return $this instanceof TNamedObject
             && (
@@ -394,6 +410,7 @@ abstract class Atomic
                     $this->extra_types
                     && array_filter(
                         $this->extra_types,
+                        /** @param Atomic $a */
                         function (Atomic $a) use ($codebase) : bool {
                             return $a->hasArrayAccessInterface($codebase);
                         }
@@ -432,7 +449,7 @@ abstract class Atomic
         array $phantom_classes = []
     ) {
         if ($this instanceof TNamedObject) {
-            if (!isset($phantom_classes[strtolower($this->value)])) {
+            if (!isset($phantom_classes[$this->value]) && !isset($phantom_classes[strtolower($this->value)])) {
                 $codebase->scanner->queueClassLikeForScanning(
                     $this->value,
                     $file_storage ? $file_storage->file_path : null,
@@ -474,14 +491,16 @@ abstract class Atomic
         }
 
         if ($this instanceof TClassString && $this->as !== 'object') {
-            $codebase->scanner->queueClassLikeForScanning(
-                $this->as,
-                $file_storage ? $file_storage->file_path : null,
-                false,
-                !$this->from_docblock
-            );
-            if ($file_storage) {
-                $file_storage->referenced_classlikes[strtolower($this->as)] = $this->as;
+            if (!isset($phantom_classes[$this->as]) && !isset($phantom_classes[strtolower($this->as)])) {
+                $codebase->scanner->queueClassLikeForScanning(
+                    $this->as,
+                    $file_storage ? $file_storage->file_path : null,
+                    false,
+                    !$this->from_docblock
+                );
+                if ($file_storage) {
+                    $file_storage->referenced_classlikes[strtolower($this->as)] = $this->as;
+                }
             }
         }
 
@@ -535,6 +554,16 @@ abstract class Atomic
 
             if ($this->return_type) {
                 $this->return_type->queueClassLikesForScanning(
+                    $codebase,
+                    $file_storage,
+                    $phantom_classes
+                );
+            }
+        }
+
+        if ($this instanceof ObjectLike) {
+            foreach ($this->properties as $property) {
+                $property->queueClassLikesForScanning(
                     $codebase,
                     $file_storage,
                     $phantom_classes
@@ -790,23 +819,17 @@ abstract class Atomic
         $this->from_docblock = true;
     }
 
-    /**
-     * @param  array<string, array<string, array{Type\Union}>> $template_types
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>> $generic_params
-     * @param  Type\Atomic|null          $input_type
-     *
-     * @return void
-     */
     public function replaceTemplateTypesWithStandins(
-        array &$template_types,
-        array &$generic_params,
+        TemplateResult $template_result,
         Codebase $codebase = null,
         Type\Atomic $input_type = null,
+        ?string $calling_class = null,
+        ?string $calling_function = null,
         bool $replace = true,
         bool $add_upper_bound = false,
         int $depth = 0
-    ) {
-        // do nothing
+    ) : self {
+        return $this;
     }
 
     /**
@@ -817,6 +840,14 @@ abstract class Atomic
     public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
     {
         // do nothing
+    }
+
+    /**
+     * @return list<Type\Atomic\TTemplateParam>
+     */
+    public function getTemplateTypes() : array
+    {
+        return [];
     }
 
     /**

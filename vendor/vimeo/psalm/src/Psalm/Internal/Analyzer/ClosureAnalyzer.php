@@ -1,16 +1,22 @@
 <?php
 namespace Psalm\Internal\Analyzer;
 
+use PhpParser;
+
 /**
  * @internal
  */
 class ClosureAnalyzer extends FunctionLikeAnalyzer
 {
-    public function __construct(\PhpParser\Node\Expr\Closure $function, SourceAnalyzer $source)
+    /**
+     * @param PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\ArrowFunction $function
+     * @param SourceAnalyzer               $source   [description]
+     */
+    public function __construct(PhpParser\Node\FunctionLike $function, SourceAnalyzer $source)
     {
         $codebase = $source->getCodebase();
 
-        $function_id = $source->getFilePath()
+        $function_id = \strtolower($source->getFilePath())
             . ':' . $function->getLine()
             . ':' . (int)$function->getAttribute('startFilePos')
             . ':-:closure';

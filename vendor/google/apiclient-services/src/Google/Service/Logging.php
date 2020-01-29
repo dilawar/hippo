@@ -59,6 +59,7 @@ class Google_Service_Logging extends Google_Service
   public $folders_sinks;
   public $logs;
   public $monitoredResourceDescriptors;
+  public $organizations;
   public $organizations_exclusions;
   public $organizations_logs;
   public $organizations_sinks;
@@ -67,6 +68,7 @@ class Google_Service_Logging extends Google_Service
   public $projects_metrics;
   public $projects_sinks;
   public $sinks;
+  public $v2;
   
   /**
    * Constructs the internal representation of the Logging service.
@@ -650,6 +652,40 @@ class Google_Service_Logging extends Google_Service
           )
         )
     );
+    $this->organizations = new Google_Service_Logging_Resource_Organizations(
+        $this,
+        $this->serviceName,
+        'organizations',
+        array(
+          'methods' => array(
+            'getCmekSettings' => array(
+              'path' => 'v2/{+name}/cmekSettings',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'updateCmekSettings' => array(
+              'path' => 'v2/{+name}/cmekSettings',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+                'updateMask' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),
+          )
+        )
+    );
     $this->organizations_exclusions = new Google_Service_Logging_Resource_OrganizationsExclusions(
         $this,
         $this->serviceName,
@@ -1204,6 +1240,40 @@ class Google_Service_Logging extends Google_Service
                 'uniqueWriterIdentity' => array(
                   'location' => 'query',
                   'type' => 'boolean',
+                ),
+                'updateMask' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->v2 = new Google_Service_Logging_Resource_V2(
+        $this,
+        $this->serviceName,
+        'v2',
+        array(
+          'methods' => array(
+            'getCmekSettings' => array(
+              'path' => 'v2/{+name}/cmekSettings',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'updateCmekSettings' => array(
+              'path' => 'v2/{+name}/cmekSettings',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
                 ),
                 'updateMask' => array(
                   'location' => 'query',

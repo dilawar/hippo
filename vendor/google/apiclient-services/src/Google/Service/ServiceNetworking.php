@@ -102,6 +102,10 @@ class Google_Service_ServiceNetworking extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
+                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -109,10 +113,6 @@ class Google_Service_ServiceNetworking extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
-                ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
                 ),
               ),
             ),
@@ -135,8 +135,38 @@ class Google_Service_ServiceNetworking extends Google_Service
                   'required' => true,
                 ),
               ),
+            ),'disableVpcServiceControls' => array(
+              'path' => 'v1/{+parent}:disableVpcServiceControls',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'parent' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'enableVpcServiceControls' => array(
+              'path' => 'v1/{+parent}:enableVpcServiceControls',
+              'httpMethod' => 'PATCH',
+              'parameters' => array(
+                'parent' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
             ),'searchRange' => array(
               'path' => 'v1/{+parent}:searchRange',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'parent' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'validate' => array(
+              'path' => 'v1/{+parent}:validate',
               'httpMethod' => 'POST',
               'parameters' => array(
                 'parent' => array(

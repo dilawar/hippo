@@ -24,7 +24,8 @@
             <file name="src/Psalm/Internal/Traverser/CustomTraverser.php"/>
             <file name="tests/ErrorBaselineTest.php"/>
             <file name="vendor/symfony/console/Command/Command.php"/>
-            <directory name="src/Psalm/Internal/Stubs"/>
+            <file name="src/spl_object_id.php"/>
+            <file name="src/Psalm/Internal/Stubs/*.php"/>
             <directory name="tests/fixtures"/>
             <file name="vendor/felixfbecker/advanced-json-rpc/lib/Dispatcher.php" />
             <directory name="vendor/netresearch/jsonmapper" />
@@ -48,18 +49,13 @@
     </plugins>
 
     <issueHandlers>
-        <MisplacedRequiredParam errorLevel="suppress"/>
         <PossiblyNullOperand errorLevel="suppress"/>
-        <MissingConstructor>
+
+        <DeprecatedMethod>
             <errorLevel type="suppress">
-                <file name="src/Psalm/Internal/Scanner/FunctionDocblockComment.php"/>
-                <file name="src/Psalm/Storage/FunctionLikeStorage.php"/>
-                <file name="src/Psalm/Storage/MethodStorage.php"/>
-                <file name="src/Psalm/Storage/PropertyStorage.php"/>
-                <file name="src/Psalm/Internal/Scope/CaseScope.php"/>
+                <directory name="tests" />
             </errorLevel>
-        </MissingConstructor>
-        <DeprecatedProperty errorLevel="suppress"/>
+        </DeprecatedMethod>
 
         <DeprecatedMethod>
             <errorLevel type="suppress">
@@ -76,6 +72,9 @@
         <PossiblyUnusedParam>
             <errorLevel type="suppress">
                 <directory name="examples"/>
+            </errorLevel>
+            <errorLevel type="info">
+                <directory name="src/Psalm/Type/Atomic"/>
             </errorLevel>
         </PossiblyUnusedParam>
 
@@ -141,13 +140,13 @@
             </errorLevel>
         </InternalMethod>
 
-        <PossiblyUndefinedArrayOffset>
+        <PossiblyUndefinedStringArrayOffset>
             <errorLevel type="suppress">
                 <directory name="src/Psalm/Internal/Provider/ReturnTypeProvider" />
                 <file name="src/Psalm/Internal/Type/AssertionReconciler.php" />
                 <file name="src/Psalm/Internal/Type/NegatedAssertionReconciler.php" />
                 <directory name="tests"/>
             </errorLevel>
-        </PossiblyUndefinedArrayOffset>
+        </PossiblyUndefinedStringArrayOffset>
     </issueHandlers>
 </psalm>

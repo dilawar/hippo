@@ -16,7 +16,7 @@
  */
 
 /**
- * Service definition for Dfareporting (v3.3).
+ * Service definition for Dfareporting (v3.4).
  *
  * <p>
  * Manages your DoubleClick Campaign Manager ad campaigns and reports.</p>
@@ -63,6 +63,7 @@ class Google_Service_Dfareporting extends Google_Service
   public $creativeFields;
   public $creativeGroups;
   public $creatives;
+  public $customEvents;
   public $dimensionValues;
   public $directorySites;
   public $dynamicTargetingKeys;
@@ -113,9 +114,9 @@ class Google_Service_Dfareporting extends Google_Service
   {
     parent::__construct($client);
     $this->rootUrl = $rootUrl ?: 'https://www.googleapis.com/';
-    $this->servicePath = 'dfareporting/v3.3/';
-    $this->batchPath = 'batch/dfareporting/v3.3';
-    $this->version = 'v3.3';
+    $this->servicePath = 'dfareporting/v3.4/';
+    $this->batchPath = 'batch/dfareporting/v3.4';
+    $this->version = 'v3.4';
     $this->serviceName = 'dfareporting';
 
     $this->accountActiveAdSummaries = new Google_Service_Dfareporting_Resource_AccountActiveAdSummaries(
@@ -1963,6 +1964,26 @@ class Google_Service_Dfareporting extends Google_Service
             ),'update' => array(
               'path' => 'userprofiles/{profileId}/creatives',
               'httpMethod' => 'PUT',
+              'parameters' => array(
+                'profileId' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
+    $this->customEvents = new Google_Service_Dfareporting_Resource_CustomEvents(
+        $this,
+        $this->serviceName,
+        'customEvents',
+        array(
+          'methods' => array(
+            'batchinsert' => array(
+              'path' => 'userprofiles/{profileId}/customEvents/batchinsert',
+              'httpMethod' => 'POST',
               'parameters' => array(
                 'profileId' => array(
                   'location' => 'path',
@@ -3955,21 +3976,6 @@ class Google_Service_Dfareporting extends Google_Service
                 'sortOrder' => array(
                   'location' => 'query',
                   'type' => 'string',
-                ),
-              ),
-            ),'patch' => array(
-              'path' => 'userprofiles/{profileId}/reports/{reportId}',
-              'httpMethod' => 'PATCH',
-              'parameters' => array(
-                'profileId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ),
-                'reportId' => array(
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
                 ),
               ),
             ),'run' => array(

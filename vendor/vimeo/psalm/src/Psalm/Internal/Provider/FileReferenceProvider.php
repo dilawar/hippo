@@ -4,7 +4,6 @@ namespace Psalm\Internal\Provider;
 use function array_filter;
 use function array_keys;
 use function array_merge;
-use function array_merge_recursive;
 use function array_unique;
 use function file_exists;
 use Psalm\Codebase;
@@ -26,7 +25,8 @@ use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
  *     snippet_from: int,
  *     snippet_to: int,
  *     column_from: int,
- *     column_to: int
+ *     column_to: int,
+ *     selected_text: string
  * }
  *
  * @psalm-type  TaggedCodeType = array<int, array{0: int, 1: string}>
@@ -64,14 +64,7 @@ class FileReferenceProvider
     private static $file_references_to_missing_class_members = [];
 
     /**
-     * A lookup table used for getting all the files that reference any other file
-     *
-     * @var array<string,array<string,bool>>
-     */
-    private static $referencing_files = [];
-
-    /**
-     * @var array<string, array<int,string>>
+     * @var array<string, array<string, true>>
      */
     private static $files_inheriting_classes = [];
 
@@ -188,7 +181,6 @@ class FileReferenceProvider
      */
     public function addFileReferenceToClass(string $source_file, string $fq_class_name_lc)
     {
-        self::$referencing_files[$source_file] = true;
         self::$file_references_to_classes[$fq_class_name_lc][$source_file] = true;
     }
 
@@ -207,10 +199,16 @@ class FileReferenceProvider
      */
     public function addFileReferencesToClasses(array $references)
     {
-        self::$file_references_to_classes = array_merge_recursive(
-            $references,
-            self::$file_references_to_classes
-        );
+        foreach ($references as $key => $reference) {
+            if (isset(self::$file_references_to_classes[$key])) {
+                self::$file_references_to_classes[$key] = array_merge(
+                    $reference,
+                    self::$file_references_to_classes[$key]
+                );
+            } else {
+                self::$file_references_to_classes[$key] = $reference;
+            }
+        }
     }
 
     /**
@@ -252,10 +250,16 @@ class FileReferenceProvider
      */
     public function addFileReferencesToClassMembers(array $references)
     {
-        self::$file_references_to_class_members = array_merge_recursive(
-            $references,
-            self::$file_references_to_class_members
-        );
+        foreach ($references as $key => $reference) {
+            if (isset(self::$file_references_to_class_members[$key])) {
+                self::$file_references_to_class_members[$key] = array_merge(
+                    $reference,
+                    self::$file_references_to_class_members[$key]
+                );
+            } else {
+                self::$file_references_to_class_members[$key] = $reference;
+            }
+        }
     }
 
     /**
@@ -265,10 +269,16 @@ class FileReferenceProvider
      */
     public function addFileReferencesToMissingClassMembers(array $references)
     {
-        self::$file_references_to_missing_class_members = array_merge_recursive(
-            $references,
-            self::$file_references_to_missing_class_members
-        );
+        foreach ($references as $key => $reference) {
+            if (isset(self::$file_references_to_missing_class_members[$key])) {
+                self::$file_references_to_missing_class_members[$key] = array_merge(
+                    $reference,
+                    self::$file_references_to_missing_class_members[$key]
+                );
+            } else {
+                self::$file_references_to_missing_class_members[$key] = $reference;
+            }
+        }
     }
 
     /**
@@ -293,7 +303,7 @@ class FileReferenceProvider
     /**
      * @param   string $file
      *
-     * @return  array
+     * @return  array<int, string>
      */
     private function calculateFilesReferencingFile(Codebase $codebase, $file)
     {
@@ -316,7 +326,7 @@ class FileReferenceProvider
     /**
      * @param   string $file
      *
-     * @return  array
+     * @return  array<int, string>
      */
     private function calculateFilesInheritingFile(Codebase $codebase, $file)
     {
@@ -560,24 +570,24 @@ class FileReferenceProvider
     /**
      * @return void
      */
-    public function addMethodReferenceToClassMember(string $calling_method_id, string $referenced_member_id)
+    public function addMethodReferenceToClassMember(string $calling_function_id, string $referenced_member_id)
     {
         if (!isset(self::$method_references_to_class_members[$referenced_member_id])) {
-            self::$method_references_to_class_members[$referenced_member_id] = [$calling_method_id => true];
+            self::$method_references_to_class_members[$referenced_member_id] = [$calling_function_id => true];
         } else {
-            self::$method_references_to_class_members[$referenced_member_id][$calling_method_id] = true;
+            self::$method_references_to_class_members[$referenced_member_id][$calling_function_id] = true;
         }
     }
 
     /**
      * @return void
      */
-    public function addMethodReferenceToMissingClassMember(string $calling_method_id, string $referenced_member_id)
+    public function addMethodReferenceToMissingClassMember(string $calling_function_id, string $referenced_member_id)
     {
         if (!isset(self::$method_references_to_missing_class_members[$referenced_member_id])) {
-            self::$method_references_to_missing_class_members[$referenced_member_id] = [$calling_method_id => true];
+            self::$method_references_to_missing_class_members[$referenced_member_id] = [$calling_function_id => true];
         } else {
-            self::$method_references_to_missing_class_members[$referenced_member_id][$calling_method_id] = true;
+            self::$method_references_to_missing_class_members[$referenced_member_id][$calling_function_id] = true;
         }
     }
 
@@ -704,10 +714,16 @@ class FileReferenceProvider
      */
     public function addMethodReferencesToClassMembers(array $references)
     {
-        self::$method_references_to_class_members = array_merge_recursive(
-            $references,
-            self::$method_references_to_class_members
-        );
+        foreach ($references as $key => $reference) {
+            if (isset(self::$method_references_to_class_members[$key])) {
+                self::$method_references_to_class_members[$key] = array_merge(
+                    $reference,
+                    self::$method_references_to_class_members[$key]
+                );
+            } else {
+                self::$method_references_to_class_members[$key] = $reference;
+            }
+        }
     }
 
     /**
@@ -717,10 +733,16 @@ class FileReferenceProvider
      */
     public function addMethodReferencesToMissingClassMembers(array $references)
     {
-        self::$method_references_to_missing_class_members = array_merge_recursive(
-            $references,
-            self::$method_references_to_missing_class_members
-        );
+        foreach ($references as $key => $reference) {
+            if (isset(self::$method_references_to_missing_class_members[$key])) {
+                self::$method_references_to_missing_class_members[$key] = array_merge(
+                    $reference,
+                    self::$method_references_to_missing_class_members[$key]
+                );
+            } else {
+                self::$method_references_to_missing_class_members[$key] = $reference;
+            }
+        }
     }
 
     /**
@@ -986,7 +1008,6 @@ class FileReferenceProvider
     public static function clearCache()
     {
         self::$file_references_to_classes = [];
-        self::$referencing_files = [];
         self::$files_inheriting_classes = [];
         self::$deleted_files = null;
         self::$file_references = [];

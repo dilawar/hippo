@@ -26,7 +26,7 @@ else
         $repeatPat = getRecurrentPatternOfThisRequest( $gid );
         $subReqRes = generateSubRequestsTable( $gid, $repeatPat );
 
-        $form =  '<table class="info" >';
+        $form =  '<table class="table table-sm" >';
         $form .=  "<tr>";
         $form .=  "<td>" . arrayToTableHTML( $request, "info", '', $tobefiltered );
         $form .=  '<form method="post" action="'.site_url("user/private_request_edit") .'">';

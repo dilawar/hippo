@@ -2,10 +2,13 @@
 namespace Psalm\Internal\Analyzer\Statements\Expression\Assignment;
 
 use PhpParser;
+use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
 use Psalm\Internal\Analyzer\Statements\Expression\Fetch\ArrayFetchAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Context;
+use Psalm\IssueBuffer;
+use Psalm\Issue\InvalidArrayAssignment;
 use Psalm\Type;
 use Psalm\Type\Atomic\ObjectLike;
 use Psalm\Type\Atomic\TArray;
@@ -58,24 +61,19 @@ class ArrayAssignmentAnalyzer
             $context
         );
 
-        if (!isset($stmt->var->inferredType) && $var_id) {
+        if (!$statements_analyzer->node_data->getType($stmt->var) && $var_id) {
             $context->vars_in_scope[$var_id] = Type::getMixed();
         }
     }
 
     /**
-     * @param  StatementsAnalyzer                 $statements_analyzer
-     * @param  PhpParser\Node\Expr\ArrayDimFetch $stmt
-     * @param  Type\Union                        $assignment_type
-     * @param  PhpParser\Node\Expr|null          $assign_value
-     * @param  Context                           $context
      *
      * @return false|null
      */
     public static function updateArrayType(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Expr\ArrayDimFetch $stmt,
-        $assign_value,
+        ?PhpParser\Node\Expr $assign_value,
         Type\Union $assignment_type,
         Context $context
     ) {
@@ -102,7 +100,7 @@ class ArrayAssignmentAnalyzer
 
         $codebase = $statements_analyzer->getCodebase();
 
-        $root_type = isset($root_array_expr->inferredType) ? $root_array_expr->inferredType : Type::getMixed();
+        $root_type = $statements_analyzer->node_data->getType($root_array_expr) ?: Type::getMixed();
 
         if ($root_type->hasMixed()) {
             if (ExpressionAnalyzer::analyze(
@@ -146,9 +144,21 @@ class ArrayAssignmentAnalyzer
 
         $parent_var_id = null;
 
+        $offset_already_existed = false;
         $full_var_id = true;
 
         $child_stmt = null;
+
+        $taint_sources = [];
+        $taint_type = 0;
+
+        if ($codebase->taint
+            && $assign_value
+            && ($assign_value_type = $statements_analyzer->node_data->getType($assign_value))
+        ) {
+            $taint_sources = $assign_value_type->sources;
+            $taint_type = $assign_value_type->tainted ?: 0;
+        }
 
         // First go from the root element up, and go as far as we can to figure out what
         // array types there are
@@ -159,6 +169,8 @@ class ArrayAssignmentAnalyzer
                 array_unshift($reversed_child_stmts, $child_stmt);
             }
 
+            $child_stmt_dim_type = null;
+
             if ($child_stmt->dim) {
                 if (ExpressionAnalyzer::analyze(
                     $statements_analyzer,
@@ -168,18 +180,18 @@ class ArrayAssignmentAnalyzer
                     return false;
                 }
 
-                if (!isset($child_stmt->dim->inferredType)) {
+                if (!($child_stmt_dim_type = $statements_analyzer->node_data->getType($child_stmt->dim))) {
                     return null;
                 }
 
                 if ($child_stmt->dim instanceof PhpParser\Node\Scalar\String_
                     || ($child_stmt->dim instanceof PhpParser\Node\Expr\ConstFetch
-                       && $child_stmt->dim->inferredType->isSingleStringLiteral())
+                       && $child_stmt_dim_type->isSingleStringLiteral())
                 ) {
                     if ($child_stmt->dim instanceof PhpParser\Node\Scalar\String_) {
                         $value = $child_stmt->dim->value;
                     } else {
-                        $value = $child_stmt->dim->inferredType->getSingleStringLiteral()->value;
+                        $value = $child_stmt_dim_type->getSingleStringLiteral()->value;
                     }
 
                     if (preg_match('/^(0|[1-9][0-9]*)$/', $value)) {
@@ -188,12 +200,12 @@ class ArrayAssignmentAnalyzer
                     $var_id_additions[] = '[\'' . $value . '\']';
                 } elseif ($child_stmt->dim instanceof PhpParser\Node\Scalar\LNumber
                     || ($child_stmt->dim instanceof PhpParser\Node\Expr\ConstFetch
-                        && $child_stmt->dim->inferredType->isSingleIntLiteral())
+                        && $child_stmt_dim_type->isSingleIntLiteral())
                 ) {
                     if ($child_stmt->dim instanceof PhpParser\Node\Scalar\LNumber) {
                         $value = $child_stmt->dim->value;
                     } else {
-                        $value = $child_stmt->dim->inferredType->getSingleIntLiteral()->value;
+                        $value = $child_stmt_dim_type->getSingleIntLiteral()->value;
                     }
 
                     $var_id_additions[] = '[' . $value . ']';
@@ -213,8 +225,17 @@ class ArrayAssignmentAnalyzer
                     if ($object_id) {
                         $var_id_additions[] = '[' . $object_id . '->' . $child_stmt->dim->name->name . ']';
                     }
+                } elseif ($child_stmt->dim instanceof PhpParser\Node\Expr\ClassConstFetch
+                    && $child_stmt->dim->name instanceof PhpParser\Node\Identifier
+                    && $child_stmt->dim->class instanceof PhpParser\Node\Name
+                ) {
+                    $object_name = ClassLikeAnalyzer::getFQCLNFromNameObject(
+                        $child_stmt->dim->class,
+                        $statements_analyzer->getAliases()
+                    );
+                    $var_id_additions[] = '[' . $object_name . '::' . $child_stmt->dim->name->name . ']';
                 } else {
-                    $var_id_additions[] = '[' . $child_stmt->dim->inferredType . ']';
+                    $var_id_additions[] = '[' . $child_stmt_dim_type . ']';
                     $full_var_id = false;
                 }
             } else {
@@ -222,27 +243,29 @@ class ArrayAssignmentAnalyzer
                 $full_var_id = false;
             }
 
-            if (!isset($child_stmt->var->inferredType)) {
+            if (!($child_stmt_var_type = $statements_analyzer->node_data->getType($child_stmt->var))) {
                 return null;
             }
 
-            if ($child_stmt->var->inferredType->isEmpty()) {
-                $child_stmt->var->inferredType = Type::getEmptyArray();
+            if ($child_stmt_var_type->isEmpty()) {
+                $child_stmt_var_type = Type::getEmptyArray();
+                $statements_analyzer->node_data->setType($child_stmt->var, $child_stmt_var_type);
             }
 
             $array_var_id = $root_var_id . implode('', $var_id_additions);
 
             if ($parent_var_id && isset($context->vars_in_scope[$parent_var_id])) {
-                $child_stmt->var->inferredType = clone $context->vars_in_scope[$parent_var_id];
+                $child_stmt_var_type = clone $context->vars_in_scope[$parent_var_id];
+                $statements_analyzer->node_data->setType($child_stmt->var, $child_stmt_var_type);
             }
 
-            $array_type = clone $child_stmt->var->inferredType;
+            $array_type = clone $child_stmt_var_type;
 
-            $child_stmt->inferredType = ArrayFetchAnalyzer::getArrayAccessTypeGivenOffset(
+            $child_stmt_type = ArrayFetchAnalyzer::getArrayAccessTypeGivenOffset(
                 $statements_analyzer,
                 $child_stmt,
                 $array_type,
-                isset($child_stmt->dim->inferredType) ? $child_stmt->dim->inferredType : Type::getInt(),
+                $child_stmt_dim_type ?: Type::getInt(),
                 true,
                 $array_var_id,
                 $context,
@@ -250,7 +273,14 @@ class ArrayAssignmentAnalyzer
                 $child_stmts ? null : $assignment_type
             );
 
-            $child_stmt->var->inferredType = $array_type;
+            $statements_analyzer->node_data->setType(
+                $child_stmt,
+                $child_stmt_type
+            );
+
+            $child_stmt_var_type = $array_type;
+
+            $statements_analyzer->node_data->setType($child_stmt->var, $array_type);
 
             if ($root_var_id) {
                 if (!$parent_var_id) {
@@ -261,35 +291,70 @@ class ArrayAssignmentAnalyzer
                 }
 
                 $context->vars_in_scope[$rooted_parent_id] = $array_type;
+                $context->possibly_assigned_var_ids[$rooted_parent_id] = true;
             }
 
             if (!$child_stmts) {
-                $child_stmt->inferredType = $assignment_type;
+                // we need this slight hack as the type we're putting it has to be
+                // different from the type we're getting out
+                if ($array_type->isSingle() && $array_type->hasClassStringMap()) {
+                    $assignment_type = $child_stmt_type;
+                }
+
+                $child_stmt_type = $assignment_type;
+                $statements_analyzer->node_data->setType($child_stmt, $assignment_type);
             }
 
-            $current_type = $child_stmt->inferredType;
+            $current_type = $child_stmt_type;
             $current_dim = $child_stmt->dim;
 
             $parent_var_id = $array_var_id;
 
-            if ($child_stmt->var->inferredType->hasMixed()) {
+            if ($child_stmt_var_type->hasMixed()) {
                 $full_var_id = false;
+
+                while ($child_stmts) {
+                    $child_stmt = array_shift($child_stmts);
+
+                    if ($child_stmt->dim) {
+                        if (ExpressionAnalyzer::analyze(
+                            $statements_analyzer,
+                            $child_stmt->dim,
+                            $context
+                        ) === false) {
+                            return false;
+                        }
+                    }
+                }
+
                 break;
             }
         }
 
         if ($root_var_id
             && $full_var_id
-            && isset($child_stmt->var->inferredType)
-            && !$child_stmt->var->inferredType->hasObjectType()
+            && $child_stmt
+            && ($child_stmt_var_type = $statements_analyzer->node_data->getType($child_stmt->var))
+            && !$child_stmt_var_type->hasObjectType()
         ) {
             $array_var_id = $root_var_id . implode('', $var_id_additions);
+            $parent_var_id = $root_var_id . implode('', \array_slice($var_id_additions, 0, -1));
+
+            if (isset($context->vars_in_scope[$array_var_id])
+                && !$context->vars_in_scope[$array_var_id]->possibly_undefined
+            ) {
+                $offset_already_existed = true;
+            }
+
             $context->vars_in_scope[$array_var_id] = clone $assignment_type;
+            $context->possibly_assigned_var_ids[$array_var_id] = true;
         }
 
         // only update as many child stmts are we were able to process above
         foreach ($reversed_child_stmts as $child_stmt) {
-            if (!isset($child_stmt->inferredType)) {
+            $child_stmt_type = $statements_analyzer->node_data->getType($child_stmt);
+
+            if (!$child_stmt_type) {
                 throw new \InvalidArgumentException('Should never get here');
             }
 
@@ -300,23 +365,24 @@ class ArrayAssignmentAnalyzer
             ) {
                 $key_value = $current_dim->value;
             } elseif ($current_dim instanceof PhpParser\Node\Expr\ConstFetch
-                && isset($current_dim->inferredType)
+                && ($current_dim_type = $statements_analyzer->node_data->getType($current_dim))
             ) {
-                $is_single_string_literal = $current_dim->inferredType->isSingleStringLiteral();
+                $is_single_string_literal = $current_dim_type->isSingleStringLiteral();
 
-                if ($is_single_string_literal || $current_dim->inferredType->isSingleIntLiteral()) {
+                if ($is_single_string_literal || $current_dim_type->isSingleIntLiteral()) {
                     if ($is_single_string_literal) {
-                        $key_value = $current_dim->inferredType->getSingleStringLiteral()->value;
+                        $key_value = $current_dim_type->getSingleStringLiteral()->value;
                     } else {
-                        $key_value = $current_dim->inferredType->getSingleIntLiteral()->value;
+                        $key_value = $current_dim_type->getSingleIntLiteral()->value;
                     }
                 }
             }
 
             if ($key_value !== null) {
                 $has_matching_objectlike_property = false;
+                $has_matching_string = false;
 
-                foreach ($child_stmt->inferredType->getTypes() as $type) {
+                foreach ($child_stmt_type->getAtomicTypes() as $type) {
                     if ($type instanceof ObjectLike) {
                         if (isset($type->properties[$key_value])) {
                             $has_matching_objectlike_property = true;
@@ -324,22 +390,36 @@ class ArrayAssignmentAnalyzer
                             $type->properties[$key_value] = clone $current_type;
                         }
                     }
+
+                    if ($type instanceof Type\Atomic\TString && \is_int($key_value)) {
+                        $has_matching_string = true;
+
+                        if ($type instanceof Type\Atomic\TLiteralString
+                            && $current_type->isSingleStringLiteral()
+                        ) {
+                            $new_char = $current_type->getSingleStringLiteral()->value;
+
+                            if (\strlen($new_char) === 1) {
+                                $type->value[0] = $new_char;
+                            }
+                        }
+                    }
                 }
 
-                if (!$has_matching_objectlike_property) {
+                if (!$has_matching_objectlike_property && !$has_matching_string) {
                     $array_assignment_type = new Type\Union([
                         new ObjectLike([$key_value => $current_type]),
                     ]);
 
                     $new_child_type = Type::combineUnionTypes(
-                        $child_stmt->inferredType,
+                        $child_stmt_type,
                         $array_assignment_type,
                         $codebase,
                         true,
                         false
                     );
                 } else {
-                    $new_child_type = $child_stmt->inferredType; // noop
+                    $new_child_type = $child_stmt_type; // noop
                 }
             } else {
                 if (!$current_dim) {
@@ -349,14 +429,14 @@ class ArrayAssignmentAnalyzer
                 } else {
                     $array_assignment_type = new Type\Union([
                         new TArray([
-                            $current_dim->inferredType ?? Type::getMixed(),
+                            $statements_analyzer->node_data->getType($current_dim) ?: Type::getMixed(),
                             $current_type,
                         ]),
                     ]);
                 }
 
                 $new_child_type = Type::combineUnionTypes(
-                    $child_stmt->inferredType,
+                    $child_stmt_type,
                     $array_assignment_type,
                     $codebase,
                     true,
@@ -367,18 +447,20 @@ class ArrayAssignmentAnalyzer
             $new_child_type->removeType('null');
             $new_child_type->possibly_undefined = false;
 
-            if (!$child_stmt->inferredType->hasObjectType()) {
-                $child_stmt->inferredType = $new_child_type;
+            if (!$child_stmt_type->hasObjectType()) {
+                $child_stmt_type = $new_child_type;
+                $statements_analyzer->node_data->setType($child_stmt, $new_child_type);
             }
 
-            $current_type = $child_stmt->inferredType;
+            $current_type = $child_stmt_type;
             $current_dim = $child_stmt->dim;
 
             array_pop($var_id_additions);
 
             if ($root_var_id) {
                 $array_var_id = $root_var_id . implode('', $var_id_additions);
-                $context->vars_in_scope[$array_var_id] = clone $child_stmt->inferredType;
+                $context->vars_in_scope[$array_var_id] = clone $child_stmt_type;
+                $context->possibly_assigned_var_ids[$array_var_id] = true;
             }
         }
 
@@ -390,16 +472,16 @@ class ArrayAssignmentAnalyzer
         ) {
             $key_value = $current_dim->value;
         } elseif ($current_dim instanceof PhpParser\Node\Expr\ConstFetch
-            && isset($current_dim->inferredType)
+            && ($current_dim_type = $statements_analyzer->node_data->getType($current_dim))
             && !$root_is_string
         ) {
-            $is_single_string_literal = $current_dim->inferredType->isSingleStringLiteral();
+            $is_single_string_literal = $current_dim_type->isSingleStringLiteral();
 
-            if ($is_single_string_literal || $current_dim->inferredType->isSingleIntLiteral()) {
+            if ($is_single_string_literal || $current_dim_type->isSingleIntLiteral()) {
                 if ($is_single_string_literal) {
-                    $key_value = $current_dim->inferredType->getSingleStringLiteral()->value;
+                    $key_value = $current_dim_type->getSingleStringLiteral()->value;
                 } else {
-                    $key_value = $current_dim->inferredType->getSingleIntLiteral()->value;
+                    $key_value = $current_dim_type->getSingleIntLiteral()->value;
                 }
             }
         }
@@ -407,7 +489,7 @@ class ArrayAssignmentAnalyzer
         if ($key_value !== null) {
             $has_matching_objectlike_property = false;
 
-            foreach ($root_type->getTypes() as $type) {
+            foreach ($root_type->getAtomicTypes() as $type) {
                 if ($type instanceof ObjectLike) {
                     if (isset($type->properties[$key_value])) {
                         $has_matching_objectlike_property = true;
@@ -447,18 +529,79 @@ class ArrayAssignmentAnalyzer
             }
         } elseif (!$root_is_string) {
             if ($current_dim) {
-                if (isset($current_dim->inferredType)) {
+                if ($current_dim_type = $statements_analyzer->node_data->getType($current_dim)) {
                     $array_atomic_key_type = ArrayFetchAnalyzer::replaceOffsetTypeWithInts(
-                        $current_dim->inferredType
+                        $current_dim_type
                     );
                 } else {
                     $array_atomic_key_type = Type::getMixed();
                 }
 
-                $array_atomic_type = new TNonEmptyArray([
-                    $array_atomic_key_type,
-                    $current_type,
-                ]);
+                if ($offset_already_existed
+                    && $child_stmt
+                    && $parent_var_id
+                    && ($parent_type = $context->vars_in_scope[$parent_var_id] ?? null)
+
+                ) {
+                    if ($parent_type->hasList()) {
+                        $array_atomic_type = new TNonEmptyList(
+                            $current_type
+                        );
+                    } elseif ($parent_type->hasClassStringMap()
+                        && $current_dim_type
+                        && $current_dim_type->isTemplatedClassString()
+                    ) {
+                        /**
+                         * @var Type\Atomic\TClassStringMap
+                         * @psalm-suppress PossiblyUndefinedStringArrayOffset
+                         */
+                        $class_string_map = $parent_type->getAtomicTypes()['array'];
+                        /**
+                         * @var Type\Atomic\TTemplateParamClass
+                         */
+                        $offset_type_part = \array_values($current_dim_type->getAtomicTypes())[0];
+
+                        $template_result = new \Psalm\Internal\Type\TemplateResult(
+                            [],
+                            [
+                                $offset_type_part->param_name => [
+                                    $offset_type_part->defining_class => [
+                                        new Type\Union([
+                                            new Type\Atomic\TTemplateParam(
+                                                $class_string_map->param_name,
+                                                $offset_type_part->as_type
+                                                    ? new Type\Union([$offset_type_part->as_type])
+                                                    : Type::getObject(),
+                                                'class-string-map'
+                                            )
+                                        ])
+                                    ]
+                                ]
+                            ]
+                        );
+
+                        $current_type->replaceTemplateTypesWithArgTypes(
+                            $template_result->generic_params,
+                            $codebase
+                        );
+
+                        $array_atomic_type = new Type\Atomic\TClassStringMap(
+                            $class_string_map->param_name,
+                            $class_string_map->as_type,
+                            $current_type
+                        );
+                    } else {
+                        $array_atomic_type = new TNonEmptyArray([
+                            $array_atomic_key_type,
+                            $current_type,
+                        ]);
+                    }
+                } else {
+                    $array_atomic_type = new TNonEmptyArray([
+                        $array_atomic_key_type,
+                        $current_type,
+                    ]);
+                }
             } else {
                 $array_atomic_type = new TNonEmptyList($current_type);
             }
@@ -468,10 +611,15 @@ class ArrayAssignmentAnalyzer
             $new_child_type = null;
 
             if (!$current_dim && !$context->inside_loop) {
-                $atomic_root_types = $root_type->getTypes();
+                $atomic_root_types = $root_type->getAtomicTypes();
 
                 if (isset($atomic_root_types['array'])) {
-                    if ($atomic_root_types['array'] instanceof TNonEmptyArray
+                    if ($array_atomic_type instanceof Type\Atomic\TClassStringMap) {
+                        $array_atomic_type = new TNonEmptyArray([
+                            $array_atomic_type->getStandinKeyParam(),
+                            $array_atomic_type->value_param
+                        ]);
+                    } elseif ($atomic_root_types['array'] instanceof TNonEmptyArray
                         || $atomic_root_types['array'] instanceof TNonEmptyList
                     ) {
                         $array_atomic_type->count = $atomic_root_types['array']->count;
@@ -515,7 +663,7 @@ class ArrayAssignmentAnalyzer
             }
 
             if ($from_countable_object_like) {
-                $atomic_root_types = $new_child_type->getTypes();
+                $atomic_root_types = $new_child_type->getAtomicTypes();
 
                 if (isset($atomic_root_types['array'])
                     && ($atomic_root_types['array'] instanceof TNonEmptyArray
@@ -535,7 +683,12 @@ class ArrayAssignmentAnalyzer
             $root_type = $new_child_type;
         }
 
-        $root_array_expr->inferredType = $root_type;
+        if ($codebase->taint && $taint_sources) {
+            $root_type->sources = \array_merge($taint_sources, $root_type->sources ?: []);
+            $root_type->tainted = $taint_type | $root_type->tainted;
+        }
+
+        $statements_analyzer->node_data->setType($root_array_expr, $root_type);
 
         if ($root_array_expr instanceof PhpParser\Node\Expr\PropertyFetch) {
             if ($root_array_expr->name instanceof PhpParser\Node\Identifier) {
@@ -557,8 +710,36 @@ class ArrayAssignmentAnalyzer
                     return false;
                 }
             }
+        } elseif ($root_array_expr instanceof PhpParser\Node\Expr\StaticPropertyFetch
+            && $root_array_expr->name instanceof PhpParser\Node\Identifier
+        ) {
+            PropertyAssignmentAnalyzer::analyzeStatic(
+                $statements_analyzer,
+                $root_array_expr,
+                null,
+                $root_type,
+                $context
+            );
         } elseif ($root_var_id) {
             $context->vars_in_scope[$root_var_id] = $root_type;
+        }
+
+        if ($root_array_expr instanceof PhpParser\Node\Expr\MethodCall
+            || $root_array_expr instanceof PhpParser\Node\Expr\StaticCall
+            || $root_array_expr instanceof PhpParser\Node\Expr\FuncCall
+        ) {
+            if ($root_type->hasArray()) {
+                if (IssueBuffer::accepts(
+                    new InvalidArrayAssignment(
+                        'Assigning to the output of a function has no effect',
+                        new \Psalm\CodeLocation($statements_analyzer->getSource(), $root_array_expr)
+                    ),
+                    $statements_analyzer->getSuppressedIssues()
+                )
+                ) {
+                    // do nothing
+                }
+            }
         }
 
         return null;

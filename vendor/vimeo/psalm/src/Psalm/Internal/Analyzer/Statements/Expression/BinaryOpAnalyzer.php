@@ -5,6 +5,7 @@ use PhpParser;
 use Psalm\Internal\Analyzer\Statements\Expression\Assignment\ArrayAssignmentAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
+use Psalm\Internal\Analyzer\Statements\Block\IfAnalyzer;
 use Psalm\Internal\Analyzer\TypeAnalyzer;
 use Psalm\CodeLocation;
 use Psalm\Config;
@@ -48,7 +49,6 @@ use function preg_match;
 use function preg_quote;
 use function strtolower;
 use function strlen;
-use DeepCopy\TypeMatcher\TypeMatcher;
 
 /**
  * @internal
@@ -67,7 +67,8 @@ class BinaryOpAnalyzer
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Expr\BinaryOp $stmt,
         Context $context,
-        $nesting = 0
+        int $nesting = 0,
+        bool $from_stmt = false
     ) {
         $codebase = $statements_analyzer->getCodebase();
 
@@ -76,150 +77,290 @@ class BinaryOpAnalyzer
         } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BooleanAnd ||
             $stmt instanceof PhpParser\Node\Expr\BinaryOp\LogicalAnd
         ) {
+            if ($from_stmt) {
+                $fake_if_stmt = new PhpParser\Node\Stmt\If_(
+                    $stmt->left,
+                    [
+                        'stmts' => [
+                            new PhpParser\Node\Stmt\Expression(
+                                $stmt->right
+                            )
+                        ]
+                    ],
+                    $stmt->getAttributes()
+                );
+
+                if (IfAnalyzer::analyze($statements_analyzer, $fake_if_stmt, $context) === false) {
+                    return false;
+                }
+
+                return null;
+            }
+
+            $pre_referenced_var_ids = $context->referenced_var_ids;
+
+            $pre_assigned_var_ids = $context->assigned_var_ids;
+
+            $left_context = clone $context;
+
+            $left_context->referenced_var_ids = [];
+            $left_context->assigned_var_ids = [];
+
+            /** @var list<string> */
+            $left_context->reconciled_expression_clauses = [];
+
+            if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->left, $left_context) === false) {
+                return false;
+            }
+
             $left_clauses = Algebra::getFormula(
+                \spl_object_id($stmt->left),
                 $stmt->left,
-                $statements_analyzer->getFQCLN(),
+                $context->self,
                 $statements_analyzer,
                 $codebase
             );
 
-            $pre_referenced_var_ids = $context->referenced_var_ids;
-            $context->referenced_var_ids = [];
-            $original_vars_in_scope = $context->vars_in_scope;
-
-            $pre_assigned_var_ids = $context->assigned_var_ids;
-
-            if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->left, $context) === false) {
-                return false;
+            foreach ($left_context->vars_in_scope as $var_id => $type) {
+                if (isset($left_context->assigned_var_ids[$var_id])) {
+                    $context->vars_in_scope[$var_id] = $type;
+                }
             }
 
             /** @var array<string, bool> */
-            $new_referenced_var_ids = $context->referenced_var_ids;
-            $context->referenced_var_ids = array_merge($pre_referenced_var_ids, $new_referenced_var_ids);
+            $left_referenced_var_ids = $left_context->referenced_var_ids;
+            $context->referenced_var_ids = array_merge($pre_referenced_var_ids, $left_referenced_var_ids);
 
-            $new_assigned_var_ids = array_diff_key($context->assigned_var_ids, $pre_assigned_var_ids);
+            $left_assigned_var_ids = array_diff_key($left_context->assigned_var_ids, $pre_assigned_var_ids);
 
-            $new_referenced_var_ids = array_diff_key($new_referenced_var_ids, $new_assigned_var_ids);
+            $left_referenced_var_ids = array_diff_key($left_referenced_var_ids, $left_assigned_var_ids);
 
-            // remove all newly-asserted var ids too
-            $new_referenced_var_ids = array_filter(
-                $new_referenced_var_ids,
-                /**
-                 * @param string $var_id
-                 *
-                 * @return bool
-                 */
-                function ($var_id) use ($original_vars_in_scope) {
-                    return isset($original_vars_in_scope[$var_id]);
-                },
-                ARRAY_FILTER_USE_KEY
+            $context_clauses = array_merge($left_context->clauses, $left_clauses);
+
+            if ($left_context->reconciled_expression_clauses) {
+                $reconciled_expression_clauses = $left_context->reconciled_expression_clauses;
+
+                $context_clauses = array_values(
+                    array_filter(
+                        $context_clauses,
+                        function ($c) use ($reconciled_expression_clauses) {
+                            return !\in_array($c->getHash(), $reconciled_expression_clauses);
+                        }
+                    )
+                );
+
+                if (\count($context_clauses) === 1
+                    && $context_clauses[0]->wedge
+                    && !$context_clauses[0]->possibilities
+                ) {
+                    $context_clauses = [];
+                }
+            }
+
+            $simplified_clauses = Algebra::simplifyCNF($context_clauses);
+
+            $active_left_assertions = [];
+
+            $left_type_assertions = Algebra::getTruthsFromFormula(
+                $simplified_clauses,
+                \spl_object_id($stmt->left),
+                $left_referenced_var_ids,
+                $active_left_assertions
             );
-
-            $simplified_clauses = Algebra::simplifyCNF(array_merge($context->clauses, $left_clauses));
-
-            $left_type_assertions = Algebra::getTruthsFromFormula($simplified_clauses);
 
             $changed_var_ids = [];
 
-            $op_context = clone $context;
+            $right_context = clone $left_context;
 
             if ($left_type_assertions) {
                 // while in an and, we allow scope to boil over to support
                 // statements of the form if ($x && $x->foo())
-                $op_vars_in_scope = Reconciler::reconcileKeyedTypes(
+                $right_vars_in_scope = Reconciler::reconcileKeyedTypes(
                     $left_type_assertions,
+                    $active_left_assertions,
                     $context->vars_in_scope,
                     $changed_var_ids,
-                    $new_referenced_var_ids,
+                    $left_referenced_var_ids,
                     $statements_analyzer,
                     [],
                     $context->inside_loop,
                     new CodeLocation($statements_analyzer->getSource(), $stmt)
                 );
 
-                $op_context->vars_in_scope = $op_vars_in_scope;
+                $right_context->vars_in_scope = $right_vars_in_scope;
+
+                if ($context->if_scope) {
+                    $context->if_scope->if_cond_changed_var_ids += $changed_var_ids;
+                }
             }
 
-            $op_context->removeReconciledClauses($changed_var_ids);
+            $partitioned_clauses = Context::removeReconciledClauses($left_clauses, $changed_var_ids);
 
-            if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->right, $op_context) === false) {
+            $right_context->clauses = $partitioned_clauses[0];
+
+            if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->right, $right_context) === false) {
                 return false;
             }
 
             $context->referenced_var_ids = array_merge(
-                $op_context->referenced_var_ids,
-                $context->referenced_var_ids
+                $right_context->referenced_var_ids,
+                $left_context->referenced_var_ids
             );
 
             if ($context->collect_references) {
-                $context->unreferenced_vars = $op_context->unreferenced_vars;
-            }
-
-            foreach ($op_context->vars_in_scope as $var_id => $type) {
-                if (isset($context->vars_in_scope[$var_id])) {
-                    $context->vars_in_scope[$var_id] = Type::combineUnionTypes(
-                        $context->vars_in_scope[$var_id],
-                        $type,
-                        $codebase
-                    );
-                }
+                $context->unreferenced_vars = $right_context->unreferenced_vars;
             }
 
             if ($context->inside_conditional) {
-                foreach ($op_context->vars_in_scope as $var => $type) {
-                    if (!isset($context->vars_in_scope[$var]) && !$type->possibly_undefined) {
-                        $context->vars_in_scope[$var] = $type;
-                    }
-                }
-
-                $context->updateChecks($op_context);
+                $context->updateChecks($right_context);
 
                 $context->vars_possibly_in_scope = array_merge(
-                    $op_context->vars_possibly_in_scope,
-                    $context->vars_possibly_in_scope
+                    $right_context->vars_possibly_in_scope,
+                    $left_context->vars_possibly_in_scope
                 );
 
                 $context->assigned_var_ids = array_merge(
-                    $context->assigned_var_ids,
-                    $op_context->assigned_var_ids
+                    $left_context->assigned_var_ids,
+                    $right_context->assigned_var_ids
                 );
+            }
+
+            if ($context->if_context && !$context->inside_negation) {
+                $context->vars_in_scope = $right_context->vars_in_scope;
+                $if_context = $context->if_context;
+
+                foreach ($right_context->vars_in_scope as $var_id => $type) {
+                    if (!isset($if_context->vars_in_scope[$var_id])) {
+                        $if_context->vars_in_scope[$var_id] = $type;
+                    } elseif (isset($context->vars_in_scope[$var_id])) {
+                        $if_context->vars_in_scope[$var_id] = $context->vars_in_scope[$var_id];
+                    }
+                }
+
+                $if_context->referenced_var_ids = array_merge(
+                    $context->referenced_var_ids,
+                    $if_context->referenced_var_ids
+                );
+
+                $if_context->assigned_var_ids = array_merge(
+                    $context->assigned_var_ids,
+                    $if_context->assigned_var_ids
+                );
+
+                if ($context->collect_references) {
+                    $if_context->unreferenced_vars = $context->unreferenced_vars;
+                }
+
+                $if_context->reconciled_expression_clauses = array_merge(
+                    $if_context->reconciled_expression_clauses,
+                    array_map(
+                        function ($c) {
+                            return $c->getHash();
+                        },
+                        $partitioned_clauses[1]
+                    )
+                );
+
+                $if_context->vars_possibly_in_scope = array_merge(
+                    $context->vars_possibly_in_scope,
+                    $if_context->vars_possibly_in_scope
+                );
+
+                $if_context->updateChecks($context);
+            } else {
+                $context->vars_in_scope = $left_context->vars_in_scope;
             }
         } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BooleanOr ||
             $stmt instanceof PhpParser\Node\Expr\BinaryOp\LogicalOr
         ) {
-            $pre_referenced_var_ids = $context->referenced_var_ids;
-            $context->referenced_var_ids = [];
+            if ($from_stmt) {
+                $fake_if_stmt = new PhpParser\Node\Stmt\If_(
+                    new PhpParser\Node\Expr\BooleanNot($stmt->left, $stmt->left->getAttributes()),
+                    [
+                        'stmts' => [
+                            new PhpParser\Node\Stmt\Expression(
+                                $stmt->right
+                            )
+                        ]
+                    ],
+                    $stmt->getAttributes()
+                );
 
-            $pre_assigned_var_ids = $context->assigned_var_ids;
-
-            $pre_op_context = clone $context;
-            $pre_op_context->parent_context = $context;
-
-            if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->left, $pre_op_context) === false) {
-                return false;
-            }
-
-            foreach ($pre_op_context->vars_in_scope as $var_id => $type) {
-                if (!isset($context->vars_in_scope[$var_id])) {
-                    $context->vars_in_scope[$var_id] = clone $type;
-                } else {
-                    $context->vars_in_scope[$var_id] = Type::combineUnionTypes(
-                        $context->vars_in_scope[$var_id],
-                        $type
-                    );
+                if (IfAnalyzer::analyze($statements_analyzer, $fake_if_stmt, $context) === false) {
+                    return false;
                 }
+
+                return null;
             }
 
-            $new_referenced_var_ids = $pre_op_context->referenced_var_ids;
-            $pre_op_context->referenced_var_ids = array_merge($pre_referenced_var_ids, $new_referenced_var_ids);
+            if (!$stmt->left instanceof PhpParser\Node\Expr\BinaryOp\BooleanOr
+                && !($stmt->left instanceof PhpParser\Node\Expr\BooleanNot
+                    && $stmt->left->expr instanceof PhpParser\Node\Expr\BinaryOp\BooleanAnd)
+            ) {
+                $if_scope = new \Psalm\Internal\Scope\IfScope();
 
-            $new_assigned_var_ids = array_diff_key($pre_op_context->assigned_var_ids, $pre_assigned_var_ids);
+                try {
+                    $if_conditional_scope = IfAnalyzer::analyzeIfConditional(
+                        $statements_analyzer,
+                        $stmt->left,
+                        $context,
+                        $codebase,
+                        $if_scope,
+                        $context->branch_point ?: (int) $stmt->getAttribute('startFilePos')
+                    );
 
-            $new_referenced_var_ids = array_diff_key($new_referenced_var_ids, $new_assigned_var_ids);
+                    $left_context = $if_conditional_scope->if_context;
+
+                    $left_referenced_var_ids = $if_conditional_scope->cond_referenced_var_ids;
+                    $left_assigned_var_ids = $if_conditional_scope->cond_assigned_var_ids;
+                } catch (\Psalm\Exception\ScopeAnalysisException $e) {
+                    return false;
+                }
+            } else {
+                $pre_referenced_var_ids = $context->referenced_var_ids;
+                $context->referenced_var_ids = [];
+
+                $pre_assigned_var_ids = $context->assigned_var_ids;
+
+                $left_context = clone $context;
+                $left_context->parent_context = $context;
+                $left_context->if_context = null;
+                $left_context->assigned_var_ids = [];
+
+                if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->left, $left_context) === false) {
+                    return false;
+                }
+
+                foreach ($left_context->vars_in_scope as $var_id => $type) {
+                    if (!isset($context->vars_in_scope[$var_id])) {
+                        if (isset($left_context->assigned_var_ids[$var_id])) {
+                            $context->vars_in_scope[$var_id] = clone $type;
+                        }
+                    } else {
+                        $context->vars_in_scope[$var_id] = Type::combineUnionTypes(
+                            $context->vars_in_scope[$var_id],
+                            $type,
+                            $codebase
+                        );
+                    }
+                }
+
+                if ($context->collect_references) {
+                    $context->unreferenced_vars = $left_context->unreferenced_vars;
+                }
+
+                $left_referenced_var_ids = $left_context->referenced_var_ids;
+                $left_context->referenced_var_ids = array_merge($pre_referenced_var_ids, $left_referenced_var_ids);
+
+                $left_assigned_var_ids = array_diff_key($left_context->assigned_var_ids, $pre_assigned_var_ids);
+
+                $left_referenced_var_ids = array_diff_key($left_referenced_var_ids, $left_assigned_var_ids);
+            }
 
             $left_clauses = Algebra::getFormula(
+                \spl_object_id($stmt->left),
                 $stmt->left,
-                $statements_analyzer->getFQCLN(),
+                $context->self,
                 $statements_analyzer,
                 $codebase
             );
@@ -230,62 +371,114 @@ class BinaryOpAnalyzer
                 return false;
             }
 
+            if ($left_context->reconciled_expression_clauses) {
+                $reconciled_expression_clauses = $left_context->reconciled_expression_clauses;
+
+                $negated_left_clauses = array_values(
+                    array_filter(
+                        $negated_left_clauses,
+                        function ($c) use ($reconciled_expression_clauses) {
+                            return !\in_array($c->getHash(), $reconciled_expression_clauses);
+                        }
+                    )
+                );
+
+                if (\count($negated_left_clauses) === 1
+                    && $negated_left_clauses[0]->wedge
+                    && !$negated_left_clauses[0]->possibilities
+                ) {
+                    $negated_left_clauses = [];
+                }
+            }
+
             $clauses_for_right_analysis = Algebra::simplifyCNF(
                 array_merge(
-                    $pre_op_context->clauses,
+                    $context->clauses,
                     $negated_left_clauses
                 )
             );
 
-            $negated_type_assertions = Algebra::getTruthsFromFormula($clauses_for_right_analysis);
+            $active_negated_type_assertions = [];
+
+            $negated_type_assertions = Algebra::getTruthsFromFormula(
+                $clauses_for_right_analysis,
+                \spl_object_id($stmt->left),
+                $left_referenced_var_ids,
+                $active_negated_type_assertions
+            );
 
             $changed_var_ids = [];
 
-            $op_context = clone $pre_op_context;
+            $right_context = clone $context;
 
             if ($negated_type_assertions) {
                 // while in an or, we allow scope to boil over to support
                 // statements of the form if ($x === null || $x->foo())
-                $op_vars_in_scope = Reconciler::reconcileKeyedTypes(
+                $right_vars_in_scope = Reconciler::reconcileKeyedTypes(
                     $negated_type_assertions,
-                    $pre_op_context->vars_in_scope,
+                    $active_negated_type_assertions,
+                    $right_context->vars_in_scope,
                     $changed_var_ids,
-                    $new_referenced_var_ids,
+                    $left_referenced_var_ids,
                     $statements_analyzer,
                     [],
-                    $pre_op_context->inside_loop,
+                    $left_context->inside_loop,
                     new CodeLocation($statements_analyzer->getSource(), $stmt)
                 );
-                $op_context->vars_in_scope = $op_vars_in_scope;
+                $right_context->vars_in_scope = $right_vars_in_scope;
             }
 
-            $op_context->clauses = $clauses_for_right_analysis;
+            $right_context->clauses = $clauses_for_right_analysis;
 
             if ($changed_var_ids) {
-                $op_context->removeReconciledClauses($changed_var_ids);
-                $context->removeReconciledClauses($changed_var_ids);
+                $partitioned_clauses = Context::removeReconciledClauses($right_context->clauses, $changed_var_ids);
+                $right_context->clauses = $partitioned_clauses[0];
+                $right_context->reconciled_expression_clauses = array_merge(
+                    $context->reconciled_expression_clauses,
+                    array_map(
+                        function ($c) {
+                            return $c->getHash();
+                        },
+                        $partitioned_clauses[1]
+                    )
+                );
+
+                $partitioned_clauses = Context::removeReconciledClauses($context->clauses, $changed_var_ids);
+                $context->clauses = $partitioned_clauses[0];
+                $context->reconciled_expression_clauses = array_merge(
+                    $context->reconciled_expression_clauses,
+                    array_map(
+                        function ($c) {
+                            return $c->getHash();
+                        },
+                        $partitioned_clauses[1]
+                    )
+                );
             }
 
-            if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->right, $op_context) === false) {
+            $right_context->if_context = null;
+
+            if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->right, $right_context) === false) {
                 return false;
             }
 
             if (!($stmt->right instanceof PhpParser\Node\Expr\Exit_)) {
-                foreach ($op_context->vars_in_scope as $var_id => $type) {
+                foreach ($right_context->vars_in_scope as $var_id => $type) {
                     if (isset($context->vars_in_scope[$var_id])) {
                         $context->vars_in_scope[$var_id] = Type::combineUnionTypes(
                             $context->vars_in_scope[$var_id],
-                            $type
+                            $type,
+                            $codebase
                         );
                     }
                 }
             } elseif ($stmt->left instanceof PhpParser\Node\Expr\Assign) {
                 $var_id = ExpressionAnalyzer::getVarId($stmt->left->var, $context->self);
 
-                if ($var_id && isset($pre_op_context->vars_in_scope[$var_id])) {
+                if ($var_id && isset($left_context->vars_in_scope[$var_id])) {
                     $left_inferred_reconciled = AssertionReconciler::reconcile(
                         '!falsy',
-                        clone $pre_op_context->vars_in_scope[$var_id],
+                        clone $left_context->vars_in_scope[$var_id],
                         '',
                         $statements_analyzer,
                         $context->inside_loop,
@@ -299,21 +492,21 @@ class BinaryOpAnalyzer
             }
 
             if ($context->inside_conditional) {
-                $context->updateChecks($op_context);
+                $context->updateChecks($right_context);
             }
 
             $context->referenced_var_ids = array_merge(
-                $op_context->referenced_var_ids,
+                $right_context->referenced_var_ids,
                 $context->referenced_var_ids
             );
 
             $context->assigned_var_ids = array_merge(
                 $context->assigned_var_ids,
-                $op_context->assigned_var_ids
+                $right_context->assigned_var_ids
             );
 
             if ($context->collect_references) {
-                foreach ($op_context->unreferenced_vars as $var_id => $locations) {
+                foreach ($right_context->unreferenced_vars as $var_id => $locations) {
                     if (!isset($context->unreferenced_vars[$var_id])) {
                         $context->unreferenced_vars[$var_id] = $locations;
                     } else {
@@ -329,13 +522,43 @@ class BinaryOpAnalyzer
                 }
             }
 
+            if ($context->if_context) {
+                $if_context = $context->if_context;
+
+                foreach ($right_context->vars_in_scope as $var_id => $type) {
+                    if (isset($if_context->vars_in_scope[$var_id])) {
+                        $if_context->vars_in_scope[$var_id] = Type::combineUnionTypes(
+                            $type,
+                            $if_context->vars_in_scope[$var_id],
+                            $codebase
+                        );
+                    } elseif (isset($left_context->vars_in_scope[$var_id])) {
+                        $if_context->vars_in_scope[$var_id] = $left_context->vars_in_scope[$var_id];
+                    }
+                }
+
+                $if_context->referenced_var_ids = array_merge(
+                    $context->referenced_var_ids,
+                    $if_context->referenced_var_ids
+                );
+
+                $if_context->assigned_var_ids = array_merge(
+                    $context->assigned_var_ids,
+                    $if_context->assigned_var_ids
+                );
+
+                if ($context->collect_references) {
+                    $if_context->unreferenced_vars = $context->unreferenced_vars;
+                }
+
+                $if_context->updateChecks($context);
+            }
+
             $context->vars_possibly_in_scope = array_merge(
-                $op_context->vars_possibly_in_scope,
+                $right_context->vars_possibly_in_scope,
                 $context->vars_possibly_in_scope
             );
         } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Concat) {
-            $stmt->inferredType = Type::getString();
-
             if (ExpressionAnalyzer::analyze($statements_analyzer, $stmt->left, $context) === false) {
                 return false;
             }
@@ -344,34 +567,28 @@ class BinaryOpAnalyzer
                 return false;
             }
 
-            if ($codebase->taint) {
-                $sources = [];
-                $either_tainted = 0;
+            $stmt_type = Type::getString();
 
-                if (isset($stmt->left->inferredType)) {
-                    $sources = $stmt->left->inferredType->sources ?: [];
-                    $either_tainted = $stmt->left->inferredType->tainted;
-                }
+            self::analyzeConcatOp(
+                $statements_analyzer,
+                $stmt->left,
+                $stmt->right,
+                $context,
+                $result_type
+            );
 
-                if (isset($stmt->right->inferredType)) {
-                    $sources = array_merge($sources, $stmt->right->inferredType->sources ?: []);
-                    $either_tainted = $either_tainted | $stmt->right->inferredType->tainted;
-                }
-
-                if ($sources) {
-                    $stmt->inferredType->sources = $sources;
-                }
-
-                if ($either_tainted) {
-                    $stmt->inferredType->tainted = $either_tainted;
-                }
+            if ($result_type) {
+                $stmt_type = $result_type;
             }
+
+            $statements_analyzer->node_data->setType($stmt, $stmt_type);
         } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Coalesce) {
             $t_if_context = clone $context;
 
             $if_clauses = Algebra::getFormula(
+                \spl_object_id($stmt),
                 $stmt,
-                $statements_analyzer->getFQCLN(),
+                $context->self,
                 $statements_analyzer,
                 $codebase
             );
@@ -397,6 +614,8 @@ class BinaryOpAnalyzer
                      */
                     function (\Psalm\Internal\Clause $c) use ($mixed_var_ids) {
                         $keys = array_keys($c->possibilities);
+
+                        $mixed_var_ids = \array_diff($mixed_var_ids, $keys);
 
                         foreach ($keys as $key) {
                             foreach ($mixed_var_ids as $mixed_var_id) {
@@ -425,6 +644,7 @@ class BinaryOpAnalyzer
             if ($reconcilable_if_types) {
                 $t_if_vars_in_scope_reconciled = Reconciler::reconcileKeyedTypes(
                     $reconcilable_if_types,
+                    [],
                     $t_if_context->vars_in_scope,
                     $changed_var_ids,
                     [],
@@ -434,7 +654,11 @@ class BinaryOpAnalyzer
                     new CodeLocation($statements_analyzer->getSource(), $stmt->left)
                 );
 
-                $t_if_context->vars_in_scope = $t_if_vars_in_scope_reconciled;
+                foreach ($context->vars_in_scope as $var_id => $_) {
+                    if (isset($t_if_vars_in_scope_reconciled[$var_id])) {
+                        $t_if_context->vars_in_scope[$var_id] = $t_if_vars_in_scope_reconciled[$var_id];
+                    }
+                }
             }
 
             if (!self::hasArrayDimFetch($stmt->left)) {
@@ -447,15 +671,18 @@ class BinaryOpAnalyzer
                 IssueBuffer::clearRecordingLevel();
                 IssueBuffer::stopRecording();
 
-                $naive_type = $stmt->left->inferredType ?? null;
+                $naive_type = $statements_analyzer->node_data->getType($stmt->left);
 
                 if ($naive_type
-                    && !$naive_type->isMixed()
+                    && !$naive_type->possibly_undefined
+                    && !$naive_type->hasMixed()
                     && !$naive_type->isNullable()
                 ) {
                     $var_id = ExpressionAnalyzer::getVarId($stmt->left, $context->self);
 
-                    if (!$var_id || !\in_array($var_id, $changed_var_ids, true)) {
+                    if (!$var_id
+                        || ($var_id !== '$_SESSION' && $var_id !== '$_SERVER' && !isset($changed_var_ids[$var_id]))
+                    ) {
                         if ($naive_type->from_docblock) {
                             if (IssueBuffer::accepts(
                                 new \Psalm\Issue\DocblockTypeContradiction(
@@ -491,7 +718,11 @@ class BinaryOpAnalyzer
 
             foreach ($t_if_context->vars_in_scope as $var_id => $type) {
                 if (isset($context->vars_in_scope[$var_id])) {
-                    $context->vars_in_scope[$var_id] = Type::combineUnionTypes($context->vars_in_scope[$var_id], $type);
+                    $context->vars_in_scope[$var_id] = Type::combineUnionTypes(
+                        $context->vars_in_scope[$var_id],
+                        $type,
+                        $codebase
+                    );
                 } else {
                     $context->vars_in_scope[$var_id] = $type;
                 }
@@ -514,6 +745,7 @@ class BinaryOpAnalyzer
             if ($negated_if_types) {
                 $t_else_vars_in_scope_reconciled = Reconciler::reconcileKeyedTypes(
                     $negated_if_types,
+                    [],
                     $t_else_context->vars_in_scope,
                     $changed_var_ids,
                     [],
@@ -544,10 +776,10 @@ class BinaryOpAnalyzer
 
             $lhs_type = null;
 
-            if (isset($stmt->left->inferredType)) {
+            if ($stmt_left_type = $statements_analyzer->node_data->getType($stmt->left)) {
                 $if_return_type_reconciled = AssertionReconciler::reconcile(
                     '!null',
-                    $stmt->left->inferredType,
+                    clone $stmt_left_type,
                     '',
                     $statements_analyzer,
                     $context->inside_loop,
@@ -556,13 +788,23 @@ class BinaryOpAnalyzer
                     $statements_analyzer->getSuppressedIssues()
                 );
 
-                $lhs_type = $if_return_type_reconciled;
+                $lhs_type = clone $if_return_type_reconciled;
             }
 
-            if (!$lhs_type || !isset($stmt->right->inferredType)) {
-                $stmt->inferredType = Type::getMixed();
+            $stmt_right_type = null;
+
+            if (!$lhs_type || !($stmt_right_type = $statements_analyzer->node_data->getType($stmt->right))) {
+                $stmt_type = Type::getMixed();
+
+                $statements_analyzer->node_data->setType($stmt, $stmt_type);
             } else {
-                $stmt->inferredType = Type::combineUnionTypes($lhs_type, $stmt->right->inferredType);
+                $stmt_type = Type::combineUnionTypes(
+                    $lhs_type,
+                    $stmt_right_type,
+                    $codebase
+                );
+
+                $statements_analyzer->node_data->setType($stmt, $stmt_type);
             }
         } else {
             if ($stmt->left instanceof PhpParser\Node\Expr\BinaryOp) {
@@ -586,22 +828,27 @@ class BinaryOpAnalyzer
             }
         }
 
+        $stmt_left_type = $statements_analyzer->node_data->getType($stmt->left);
+        $stmt_right_type = $statements_analyzer->node_data->getType($stmt->right);
+
         // let's do some fun type assignment
-        if (isset($stmt->left->inferredType) && isset($stmt->right->inferredType)) {
-            if ($stmt->left->inferredType->hasString()
-                && $stmt->right->inferredType->hasString()
+        if ($stmt_left_type && $stmt_right_type) {
+            if ($stmt_left_type->hasString()
+                && $stmt_right_type->hasString()
                 && ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseOr
                     || $stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseXor
                     || $stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseAnd
                 )
             ) {
-                $stmt->inferredType = Type::getString();
+                $stmt_type = Type::getString();
+
+                $statements_analyzer->node_data->setType($stmt, $stmt_type);
             } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Plus
                 || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Minus
                 || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Mod
                 || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Mul
                 || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Pow
-                || (($stmt->left->inferredType->hasInt() || $stmt->right->inferredType->hasInt())
+                || (($stmt_left_type->hasInt() || $stmt_right_type->hasInt())
                     && ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseOr
                         || $stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseXor
                         || $stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseAnd
@@ -612,6 +859,7 @@ class BinaryOpAnalyzer
             ) {
                 self::analyzeNonDivArithmeticOp(
                     $statements_analyzer,
+                    $statements_analyzer->node_data,
                     $stmt->left,
                     $stmt->right,
                     $stmt,
@@ -620,19 +868,20 @@ class BinaryOpAnalyzer
                 );
 
                 if ($result_type) {
-                    $stmt->inferredType = $result_type;
+                    $statements_analyzer->node_data->setType($stmt, $result_type);
                 }
             } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseXor
-                && ($stmt->left->inferredType->hasBool() || $stmt->right->inferredType->hasBool())
+                && ($stmt_left_type->hasBool() || $stmt_right_type->hasBool())
             ) {
-                $stmt->inferredType = Type::getInt();
+                $statements_analyzer->node_data->setType($stmt, Type::getInt());
             } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\LogicalXor
-                && ($stmt->left->inferredType->hasBool() || $stmt->right->inferredType->hasBool())
+                && ($stmt_left_type->hasBool() || $stmt_right_type->hasBool())
             ) {
-                $stmt->inferredType = Type::getBool();
+                $statements_analyzer->node_data->setType($stmt, Type::getBool());
             } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Div) {
                 self::analyzeNonDivArithmeticOp(
                     $statements_analyzer,
+                    $statements_analyzer->node_data,
                     $stmt->left,
                     $stmt->right,
                     $stmt,
@@ -645,39 +894,12 @@ class BinaryOpAnalyzer
                         $result_type->addType(new TFloat);
                     }
 
-                    $stmt->inferredType = $result_type;
-                }
-            } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Concat) {
-                self::analyzeConcatOp(
-                    $statements_analyzer,
-                    $stmt->left,
-                    $stmt->right,
-                    $context,
-                    $result_type
-                );
-
-                if ($result_type) {
-                    $stmt->inferredType = $result_type;
-                }
-
-                if ($codebase->taint && $stmt->inferredType) {
-                    $sources = $stmt->left->inferredType->sources ?: [];
-                    $either_tainted = $stmt->left->inferredType->tainted;
-
-                    $sources = array_merge($sources, $stmt->right->inferredType->sources ?: []);
-                    $either_tainted = $either_tainted | $stmt->right->inferredType->tainted;
-
-                    if ($sources) {
-                        $stmt->inferredType->sources = $sources;
-                    }
-
-                    if ($either_tainted) {
-                        $stmt->inferredType->tainted = $either_tainted;
-                    }
+                    $statements_analyzer->node_data->setType($stmt, $result_type);
                 }
             } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\BitwiseOr) {
                 self::analyzeNonDivArithmeticOp(
                     $statements_analyzer,
+                    $statements_analyzer->node_data,
                     $stmt->left,
                     $stmt->right,
                     $stmt,
@@ -700,11 +922,11 @@ class BinaryOpAnalyzer
             || $stmt instanceof PhpParser\Node\Expr\BinaryOp\Smaller
             || $stmt instanceof PhpParser\Node\Expr\BinaryOp\SmallerOrEqual
         ) {
-            $stmt->inferredType = Type::getBool();
+            $statements_analyzer->node_data->setType($stmt, Type::getBool());
         }
 
         if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Spaceship) {
-            $stmt->inferredType = Type::getInt();
+            $statements_analyzer->node_data->setType($stmt, Type::getInt());
         }
 
         return null;
@@ -727,6 +949,7 @@ class BinaryOpAnalyzer
 
     public static function analyzeNonDivArithmeticOp(
         ?StatementsSource $statements_source,
+        \Psalm\Internal\Provider\NodeDataProvider $nodes,
         PhpParser\Node\Expr $left,
         PhpParser\Node\Expr $right,
         PhpParser\Node $parent,
@@ -735,8 +958,8 @@ class BinaryOpAnalyzer
     ) : void {
         $codebase = $statements_source ? $statements_source->getCodebase() : null;
 
-        $left_type = isset($left->inferredType) ? $left->inferredType : null;
-        $right_type = isset($right->inferredType) ? $right->inferredType : null;
+        $left_type = $nodes->getType($left);
+        $right_type = $nodes->getType($right);
         $config = Config::getInstance();
 
         if ($left_type && $right_type) {
@@ -795,7 +1018,7 @@ class BinaryOpAnalyzer
             if ($left_type->isFalse()) {
                 if ($statements_source && IssueBuffer::accepts(
                     new FalseOperand(
-                        'Left operand cannot be null',
+                        'Left operand cannot be false',
                         new CodeLocation($statements_source, $left)
                     ),
                     $statements_source->getSuppressedIssues()
@@ -850,8 +1073,8 @@ class BinaryOpAnalyzer
             $has_valid_right_operand = false;
             $has_string_increment = false;
 
-            foreach ($left_type->getTypes() as $left_type_part) {
-                foreach ($right_type->getTypes() as $right_type_part) {
+            foreach ($left_type->getAtomicTypes() as $left_type_part) {
+                foreach ($right_type->getAtomicTypes() as $right_type_part) {
                     $candidate_result_type = self::analyzeNonDivOperands(
                         $statements_source,
                         $codebase,
@@ -1333,8 +1556,8 @@ class BinaryOpAnalyzer
     ) {
         $codebase = $statements_analyzer->getCodebase();
 
-        $left_type = isset($left->inferredType) ? $left->inferredType : null;
-        $right_type = isset($right->inferredType) ? $right->inferredType : null;
+        $left_type = $statements_analyzer->node_data->getType($left);
+        $right_type = $statements_analyzer->node_data->getType($right);
         $config = Config::getInstance();
 
         if ($left_type && $right_type) {
@@ -1499,7 +1722,7 @@ class BinaryOpAnalyzer
             $left_comparison_result = new \Psalm\Internal\Analyzer\TypeComparisonResult();
             $right_comparison_result = new \Psalm\Internal\Analyzer\TypeComparisonResult();
 
-            foreach ($left_type->getTypes() as $left_type_part) {
+            foreach ($left_type->getAtomicTypes() as $left_type_part) {
                 if ($left_type_part instanceof Type\Atomic\TTemplateParam) {
                     if (IssueBuffer::accepts(
                         new MixedOperand(
@@ -1545,7 +1768,7 @@ class BinaryOpAnalyzer
                 }
             }
 
-            foreach ($right_type->getTypes() as $right_type_part) {
+            foreach ($right_type->getAtomicTypes() as $right_type_part) {
                 if ($right_type_part instanceof Type\Atomic\TTemplateParam) {
                     if (IssueBuffer::accepts(
                         new MixedOperand(
@@ -1643,6 +1866,7 @@ class BinaryOpAnalyzer
                 }
             }
         }
+
         // When concatenating two known string literals (with only one possibility),
         // put the concatenated string into $result_type
         if ($left_type && $right_type && $left_type->isSingleStringLiteral() && $right_type->isSingleStringLiteral()) {
@@ -1650,6 +1874,41 @@ class BinaryOpAnalyzer
             if (strlen($literal) <= 1000) {
                 // Limit these to 10000 bytes to avoid extremely large union types from repeated concatenations, etc
                 $result_type = Type::getString($literal);
+            }
+        } else {
+            if ($left_type
+                && $right_type
+                && ($left_type->getId() === 'non-empty-string'
+                    || $right_type->getId() === 'non-empty-string'
+                    || ($left_type->isSingleStringLiteral()
+                        && $left_type->getSingleStringLiteral()->value)
+                    || ($right_type->isSingleStringLiteral()
+                        && $right_type->getSingleStringLiteral()->value))
+            ) {
+                $result_type = new Type\Union([new Type\Atomic\TNonEmptyString()]);
+            }
+        }
+
+        if ($codebase->taint && $result_type) {
+            $sources = [];
+            $either_tainted = 0;
+
+            if ($left_type) {
+                $sources = $left_type->sources ?: [];
+                $either_tainted = $left_type->tainted;
+            }
+
+            if ($right_type) {
+                $sources = array_merge($sources, $right_type->sources ?: []);
+                $either_tainted = $either_tainted | $right_type->tainted;
+            }
+
+            if ($sources) {
+                $result_type->sources = $sources;
+            }
+
+            if ($either_tainted) {
+                $result_type->tainted = $either_tainted;
             }
         }
     }

@@ -44,6 +44,14 @@ class TIterable extends Atomic
         return 'iterable';
     }
 
+    /**
+     * @return string
+     */
+    public function getAssertionString()
+    {
+        return 'iterable';
+    }
+
     public function getId()
     {
         $s = '';
@@ -81,7 +89,10 @@ class TIterable extends Atomic
         $php_major_version,
         $php_minor_version
     ) {
-        return $php_major_version >= 7 && $php_minor_version >= 1 ? 'iterable' : null;
+        return $php_major_version > 7
+            || ($php_major_version === 7 && $php_minor_version >= 1)
+            ? 'iterable'
+            : null;
     }
 
     /**
