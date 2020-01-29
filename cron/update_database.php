@@ -2,9 +2,12 @@
 
 function update_publishing_database() 
 {
-    if(trueOnGivenDayAndTime('this tuesday', '19:30'))
+
+    if(trueOnGivenDayAndTime('this wednesday', '16:30'))
     {
-        echo "Updating database.";
+        $shema = "sha512,title,abstract,publisher,type,date,doi,urls," . 
+            "source,external_id,metadata_json,modified_on";
+
         $extra = 'datetype=pdat&reldate=14';
         $url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
             .  "db=pubmed&retmode=json&$extra" 
@@ -13,12 +16,26 @@ function update_publishing_database()
         $data = json_decode(file_get_contents($url, true));
 
         $items = $data->esearchresult->idlist;
-        $idlist =  implode(",", $items);
+        $idlist = implode(",", $items);
 
         $url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
         $url .=  "esummary.fcgi?db=pubmed&id=$idlist&retmode=json";
-        $items = file_get_contents($url, true);
-        print_r($items);
+        $res = json_decode(file_get_contents($url, true));
+        $items = $res->result;
+        foreach($items->uids as $uid) {
+            $item = $items->$uid;
+
+            $title = $item->title;
+            $sha = hash("sha512", $title);
+            $abstract = 'NA';
+            $publisher = $item->fulljournalname;
+            $type = $item->pubtype;
+            $date = dbDate($item->pubdate);
+            echo "title: $title, $date, $type, $publisher";
+
+            print_r($item);
+            echo " <br /> <br />";
+        }
 
     }
 }
