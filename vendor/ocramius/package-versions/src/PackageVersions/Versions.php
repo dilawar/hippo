@@ -77,7 +77,7 @@ final class Versions
   'webmozart/assert' => '1.6.0@573381c0a64f155a0d9a23f4b0c797194805b925',
   'webmozart/glob' => '4.1.0@3cbf63d4973cf9d780b93d2da8eec7e4a9e63bbe',
   'webmozart/path-util' => '2.3.0@d939f7edc24c9a1bb9c0dee5cb05d8e859490725',
-  'codeigniter/framework' => 'dev-devel@4fef9e30c6d78599e69f4042432c242c87b236b0',
+  'codeigniter/framework' => 'dev-master@cdf3aff7bd78f25161b5ab59fcc422e41139b664',
 );
 
     private function __construct()
