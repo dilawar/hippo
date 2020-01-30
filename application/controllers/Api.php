@@ -2955,6 +2955,42 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
                 return;
             }
+            else if($args[1] === 'get')
+            {
+                $data = [];
+                if($args[2] === 'all') {
+                    $awses = executeQuery("SELECT date,speaker,title,status FROM annual_work_seminars");
+                    foreach($awses as $aws)
+                        $data[$aws['date']]=$aws;
+                }
+                else {
+                    $id = $args[2];
+                    $data = executeQuery("SELECT * FROM annual_work_seminars WHERE id='$id'", true);
+                }
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'search')
+            {
+                $q = $args[2];
+                $data = [];
+                if(strlen($q) > 2) {
+                    $data = executeQuery("SELECT id,title,speaker,date,venue,supervisor_1 
+                        FROM annual_work_seminars 
+                        WHERE date LIKE '%$q%' OR speaker LIKE '%$q%' OR title LIKE '%$q%'
+                        ORDER BY date DESC LIMIT 20");
+                }
+                foreach($data as &$e) {
+                    $e['html'] = '<strong>' . getLoginHTML($e['speaker']) 
+                        . '</strong> on <strong>' 
+                        . humanReadableDate($e['date']) 
+                        . "</strong> '". $e['title'] . "'"
+                        . ' <small>(pi/host: ' . $e['supervisor_1'] .')</small>';
+                }
+                // Send as list. Its a query data.
+                $this->send_data_helper($data);
+                return;
+            }
             else if($args[1] === 'assign')
             {
                 $_POST['venue'] = __get__($_POST, 'venue'
