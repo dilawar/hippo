@@ -11,6 +11,29 @@ Psalm uses an XML config file (by default, `psalm.xml`). A barebones example loo
 </psalm>
 ```
 
+Configuration file may be split into several files using [XInclude](https://www.w3.org/TR/xinclude/) tags (c.f. previous example):
+#### psalm.xml
+```xml
+<?xml version="1.0"?>
+<psalm
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+>
+    <xi:include href="files.xml"/>
+</psalm>
+```
+#### files.xml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<projectFiles xmlns="https://getpsalm.org/schema/config">
+    <file name="Bar.php" />
+    <file name="Bat.php" />
+</projectFiles>
+```
+
+
 ## Optional `<psalm />` attributes
 
 ### Coding style
@@ -220,6 +243,16 @@ Setting to `false` prevents the stub from loading.
 >
 ```
 When `true`, Psalm will complain when referencing an explicit string offset on an array e.g. `$arr['foo']` without a user first asserting that it exists (either via an `isset` check or via an object-like array). Defaults to `false`.
+
+#### phpVersion
+```xml
+<psalm
+  phpVersion="[string]"
+>
+```
+Set the php version psalm should assume when checking and/or fixing the project. If this attribute is not set, psalm uses the declaration in `composer.json` if one is present. It will check against the earliest version of PHP that satisfies the declared `php` dependency
+
+This can be overridden on the command-line using the `--php-version=` flag which takes the highest precedence over both the `phpVersion` setting and the version derived from `composer.json`.
 
 ### Running Psalm
 

@@ -188,7 +188,7 @@ class ReturnTypeAnalyzer
                 $function_stmts,
                 $type_provider,
                 $codebase->config->exit_functions,
-                false,
+                [],
                 false
             ) !== [ScopeAnalyzer::ACTION_END]
         ) {
@@ -758,7 +758,7 @@ class ReturnTypeAnalyzer
                 '$this'
             );
 
-            $class_template_params = $class_template_params ?: $classlike_storage->template_types;
+            $class_template_params = $class_template_params ?: [];
 
             if ($class_template_params) {
                 $template_result = new \Psalm\Internal\Type\TemplateResult(

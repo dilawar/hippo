@@ -290,7 +290,7 @@ class Functions
             'chdir', 'chgrp', 'chmod', 'chown', 'chroot', 'closedir', 'copy', 'file_put_contents',
             'fopen', 'fread', 'fwrite', 'fclose', 'touch', 'fpassthru', 'fputs', 'fscanf', 'fseek',
             'ftruncate', 'fprintf', 'symlink', 'mkdir', 'unlink', 'rename', 'rmdir', 'popen', 'pclose',
-            'fputcsv', 'umask', 'finfo_close', 'readline_add_history', 'stream_set_timeout',
+            'fputcsv', 'umask', 'finfo_close', 'readline_add_history', 'stream_set_timeout', 'fflush',
 
             // stream/socket io
             'stream_context_set_option', 'socket_write', 'stream_set_blocking', 'socket_close',
@@ -304,7 +304,7 @@ class Functions
 
             // output buffer
             'ob_start', 'ob_end_clean', 'readfile', 'printf', 'var_dump', 'phpinfo',
-            'ob_implicit_flush',
+            'ob_implicit_flush', 'vprintf',
 
             // mcrypt
             'mcrypt_generic_init', 'mcrypt_generic_deinit', 'mcrypt_module_close',
@@ -338,7 +338,8 @@ class Functions
             // well-known functions
             'libxml_use_internal_errors', 'libxml_disable_entity_loader', 'curl_exec',
             'mt_srand', 'openssl_pkcs7_sign',
-            'mt_rand', 'rand', 'wincache_ucache_delete', 'wincache_ucache_set', 'wincache_ucache_inc',
+            'mt_rand', 'rand', 'random_int', 'random_bytes',
+            'wincache_ucache_delete', 'wincache_ucache_set', 'wincache_ucache_inc',
             'class_alias',
 
             // php environment
@@ -354,7 +355,7 @@ class Functions
 
             // session
             'session_id', 'session_name', 'session_set_cookie_params', 'session_set_save_handler',
-            'session_regenerate_id', 'mb_internal_encoding',
+            'session_regenerate_id', 'mb_internal_encoding', 'session_start',
 
             // ldap
             'ldap_set_option',

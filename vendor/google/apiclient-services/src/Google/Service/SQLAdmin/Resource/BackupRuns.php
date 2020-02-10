@@ -97,12 +97,12 @@ class Google_Service_SQLAdmin_Resource_BackupRuns extends Google_Service_Resourc
    * project ID.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string parent The parent, which owns this collection of
-   * backupRuns. Format:
-   * projects/{project}/locations/{location}/instances/{instance}
    * @opt_param string pageToken A previously-returned page token representing
    * part of the larger set of results to view.
    * @opt_param int maxResults Maximum number of backup runs per response.
+   * @opt_param string parent The parent, which owns this collection of
+   * backupRuns. Format:
+   * projects/{project}/locations/{location}/instances/{instance}
    * @return Google_Service_SQLAdmin_BackupRunsListResponse
    */
   public function listBackupRuns($project, $instance, $optParams = array())

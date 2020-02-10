@@ -5,7 +5,7 @@
   "main": "./js/calendar.js",
   "dependencies": {
     "anchorme": "~1.1.2",
-    "bootstrap": "^4.3.1",
+    "bootstrap": "^4.4.1",
     "bootstrap-datepicker": "^1.9.0",
     "bootstrap-datetimepicker": "0.0.7",
     "font-awesome": "^4.7.0",

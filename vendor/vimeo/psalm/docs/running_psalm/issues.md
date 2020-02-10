@@ -332,6 +332,20 @@ function takesString(string $s) : void {}
 takesString(new A);
 ```
 
+### ImpureByReferenceAssignment
+
+Emitted when assigning a passed-by-reference variable inside a function or method marked as mutation-free.
+
+```php
+/**
+ * @psalm-pure
+ */
+function foo(string &$a): string {
+    $a = "B";
+    return $a;
+}
+```
+
 ### ImpureFunctionCall
 
 Emitted when calling an impure function from a function or method marked as pure.
@@ -411,6 +425,23 @@ function addCumulative(int $left) : int {
     static $i = 0;
     $i += $left;
     return $left;
+}
+```
+
+### ImpureStaticProperty
+
+Emitted when attempting to use a static property from a function or method marked as pure
+
+```php
+class ValueHolder {
+    public static ?string $value = null;
+
+    /**
+     * @psalm-pure
+     */
+    public static function get(): ?string {
+        return self::$value;
+    }
 }
 ```
 

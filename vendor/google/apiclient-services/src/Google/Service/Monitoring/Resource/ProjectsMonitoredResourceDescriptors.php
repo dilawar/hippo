@@ -29,9 +29,10 @@ class Google_Service_Monitoring_Resource_ProjectsMonitoredResourceDescriptors ex
    * Gets a single monitored resource descriptor. This method does not require a
    * Stackdriver account. (monitoredResourceDescriptors.get)
    *
-   * @param string $name The monitored resource descriptor to get. The format is "
-   * projects/{project_id_or_number}/monitoredResourceDescriptors/{resource_type}"
-   * . The {resource_type} is a predefined type, such as cloudsql_database.
+   * @param string $name Required. The monitored resource descriptor to get. The
+   * format is "projects/{project_id_or_number}/monitoredResourceDescriptors/{reso
+   * urce_type}". The {resource_type} is a predefined type, such as
+   * cloudsql_database.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Monitoring_MonitoredResourceDescriptor
    */
@@ -46,8 +47,8 @@ class Google_Service_Monitoring_Resource_ProjectsMonitoredResourceDescriptors ex
    * not require a Stackdriver account.
    * (monitoredResourceDescriptors.listProjectsMonitoredResourceDescriptors)
    *
-   * @param string $name The project on which to execute the request. The format
-   * is "projects/{project_id_or_number}".
+   * @param string $name Required. The project on which to execute the request.
+   * The format is "projects/{project_id_or_number}".
    * @param array $optParams Optional parameters.
    *
    * @opt_param string pageToken If this field is not empty then it must contain

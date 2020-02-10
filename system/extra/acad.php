@@ -38,7 +38,7 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
             // entries for the week.
             // rescheduleAWS( );
             // Send email to user.
-            $st = notifyUserAboutUpcomingAWS( $speaker, $date, $awsID );
+            $st = @notifyUserAboutUpcomingAWS( $speaker, $date, $awsID );
             if(! $st['success'] )
                 $res['msg'] .= $st['msg'];
             return $res;

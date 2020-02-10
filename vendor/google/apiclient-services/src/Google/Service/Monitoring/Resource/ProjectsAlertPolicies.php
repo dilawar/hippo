@@ -28,11 +28,11 @@ class Google_Service_Monitoring_Resource_ProjectsAlertPolicies extends Google_Se
   /**
    * Creates a new alerting policy. (alertPolicies.create)
    *
-   * @param string $name The project in which to create the alerting policy. The
-   * format is projects/[PROJECT_ID].Note that this field names the parent
-   * container in which the alerting policy will be written, not the name of the
-   * created policy. The alerting policy that is returned will have a name that
-   * contains a normalized representation of this name as a prefix but adds a
+   * @param string $name Required. The project in which to create the alerting
+   * policy. The format is projects/[PROJECT_ID].Note that this field names the
+   * parent container in which the alerting policy will be written, not the name
+   * of the created policy. The alerting policy that is returned will have a name
+   * that contains a normalized representation of this name as a prefix but adds a
    * suffix of the form /alertPolicies/[POLICY_ID], identifying the policy in the
    * container.
    * @param Google_Service_Monitoring_AlertPolicy $postBody
@@ -48,7 +48,7 @@ class Google_Service_Monitoring_Resource_ProjectsAlertPolicies extends Google_Se
   /**
    * Deletes an alerting policy. (alertPolicies.delete)
    *
-   * @param string $name The alerting policy to delete. The format is:
+   * @param string $name Required. The alerting policy to delete. The format is:
    * projects/[PROJECT_ID]/alertPolicies/[ALERT_POLICY_ID] For more information,
    * see AlertPolicy.
    * @param array $optParams Optional parameters.
@@ -63,7 +63,7 @@ class Google_Service_Monitoring_Resource_ProjectsAlertPolicies extends Google_Se
   /**
    * Gets a single alerting policy. (alertPolicies.get)
    *
-   * @param string $name The alerting policy to retrieve. The format is
+   * @param string $name Required. The alerting policy to retrieve. The format is
    * projects/[PROJECT_ID]/alertPolicies/[ALERT_POLICY_ID]
    * @param array $optParams Optional parameters.
    * @return Google_Service_Monitoring_AlertPolicy
@@ -78,15 +78,13 @@ class Google_Service_Monitoring_Resource_ProjectsAlertPolicies extends Google_Se
    * Lists the existing alerting policies for the project.
    * (alertPolicies.listProjectsAlertPolicies)
    *
-   * @param string $name The project whose alert policies are to be listed. The
-   * format is projects/[PROJECT_ID] Note that this field names the parent
-   * container in which the alerting policies to be listed are stored. To retrieve
-   * a single alerting policy by name, use the GetAlertPolicy operation, instead.
+   * @param string $name Required. The project whose alert policies are to be
+   * listed. The format is projects/[PROJECT_ID] Note that this field names the
+   * parent container in which the alerting policies to be listed are stored. To
+   * retrieve a single alerting policy by name, use the GetAlertPolicy operation,
+   * instead.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string filter If provided, this field specifies the criteria that
-   * must be met by alert policies to be included in the response.For more
-   * details, see sorting and filtering.
    * @opt_param string orderBy A comma-separated list of fields by which to sort
    * the result. Supports the same set of field references as the filter field.
    * Entries can be prefixed with a minus sign to sort by the field in descending
@@ -97,6 +95,9 @@ class Google_Service_Monitoring_Resource_ProjectsAlertPolicies extends Google_Se
    * call.
    * @opt_param int pageSize The maximum number of results to return in a single
    * response.
+   * @opt_param string filter If provided, this field specifies the criteria that
+   * must be met by alert policies to be included in the response.For more
+   * details, see sorting and filtering.
    * @return Google_Service_Monitoring_ListAlertPoliciesResponse
    */
   public function listProjectsAlertPolicies($name, $optParams = array())

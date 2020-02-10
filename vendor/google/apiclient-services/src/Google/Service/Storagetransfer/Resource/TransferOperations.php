@@ -41,20 +41,6 @@ class Google_Service_Storagetransfer_Resource_TransferOperations extends Google_
     return $this->call('cancel', array($params), "Google_Service_Storagetransfer_StoragetransferEmpty");
   }
   /**
-   * This method is not supported and the server returns `UNIMPLEMENTED`.
-   * (transferOperations.delete)
-   *
-   * @param string $name The name of the operation resource to be deleted.
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_Storagetransfer_StoragetransferEmpty
-   */
-  public function delete($name, $optParams = array())
-  {
-    $params = array('name' => $name);
-    $params = array_merge($params, $optParams);
-    return $this->call('delete', array($params), "Google_Service_Storagetransfer_StoragetransferEmpty");
-  }
-  /**
    * Gets the latest state of a long-running operation.  Clients can use this
    * method to poll the operation result at intervals as recommended by the API
    * service. (transferOperations.get)

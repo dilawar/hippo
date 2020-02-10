@@ -268,7 +268,7 @@ return [
     'domelement' => [
         'schemaTypeInfo' => 'bool',
         'tagName' => 'string',
-        'attributes' => 'DOMNamedNodeMap',
+        'attributes' => 'DOMNamedNodeMap<DOMAttr>',
     ],
     'tidynode' => [
         'value' => 'string',
@@ -407,7 +407,7 @@ return [
     'phpparser\\node\\expr\\array_' => [
         'items' => 'array<int, PhpParser\Node\Expr\ArrayItem|null>',
     ],
-    'phpparser\node\expr\list_' => [
+    'phpparser\\node\\expr\\list_' => [
         'items' => 'array<int, PhpParser\Node\Expr\ArrayItem|null>',
     ],
     'phpparser\\node\\expr\\methodcall' => [

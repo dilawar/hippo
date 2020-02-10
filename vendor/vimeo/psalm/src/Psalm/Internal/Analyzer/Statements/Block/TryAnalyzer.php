@@ -90,7 +90,7 @@ class TryAnalyzer
             $stmt->stmts,
             $statements_analyzer->node_data,
             $codebase->config->exit_functions,
-            $context->inside_case
+            $context->break_types
         );
 
         /** @var array<string, bool> */
@@ -198,6 +198,10 @@ class TryAnalyzer
                 throw new \UnexpectedValueException('Catch var name must be a string');
             }
 
+            if (!$catch->types) {
+                throw new \UnexpectedValueException('Very bad');
+            }
+
             foreach ($catch->types as $catch_type) {
                 $fq_catch_class = ClassLikeAnalyzer::getFQCLNFromNameObject(
                     $catch_type,
@@ -258,6 +262,7 @@ class TryAnalyzer
 
                         if ($exception_fqcln_lower === $fq_catch_class_lower) {
                             unset($context->possibly_thrown_exceptions[$exception_fqcln]);
+                            unset($catch_context->possibly_thrown_exceptions[$exception_fqcln]);
                             continue;
                         }
 
@@ -268,6 +273,7 @@ class TryAnalyzer
                             )
                         ) {
                             unset($context->possibly_thrown_exceptions[$exception_fqcln]);
+                            unset($catch_context->possibly_thrown_exceptions[$exception_fqcln]);
                             continue;
                         }
 
@@ -278,10 +284,13 @@ class TryAnalyzer
                             )
                         ) {
                             unset($context->possibly_thrown_exceptions[$exception_fqcln]);
+                            unset($catch_context->possibly_thrown_exceptions[$exception_fqcln]);
                             continue;
                         }
                     }
                 }
+
+                $context->mergeExceptions($catch_context);
             }
 
             $catch_var_id = '$' . $catch_var_name;
@@ -350,7 +359,7 @@ class TryAnalyzer
                 $catch->stmts,
                 $statements_analyzer->node_data,
                 $codebase->config->exit_functions,
-                $context->inside_case
+                $context->break_types
             );
 
             foreach ($issues_to_suppress as $issue_to_suppress) {
@@ -397,6 +406,10 @@ class TryAnalyzer
                         $context->unreferenced_vars[$var_id] = $newly_unreferenced_vars[$var_id];
                     }
                 }
+            }
+
+            if ($catch_context->collect_exceptions) {
+                $context->mergeExceptions($catch_context);
             }
 
             if ($catch_actions[$i] !== [ScopeAnalyzer::ACTION_END]

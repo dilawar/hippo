@@ -26,6 +26,22 @@
 class Google_Service_FirebaseHosting_Resource_SitesVersions extends Google_Service_Resource
 {
   /**
+   * Creates a new version on the target site using the content of the specified
+   * version. (versions.cloneSitesVersions)
+   *
+   * @param string $parent Required. The target site where the cloned version will
+   * reside, in the format: `sites/{site}`
+   * @param Google_Service_FirebaseHosting_CloneVersionRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Google_Service_FirebaseHosting_Operation
+   */
+  public function cloneSitesVersions($parent, Google_Service_FirebaseHosting_CloneVersionRequest $postBody, $optParams = array())
+  {
+    $params = array('parent' => $parent, 'postBody' => $postBody);
+    $params = array_merge($params, $optParams);
+    return $this->call('clone', array($params), "Google_Service_FirebaseHosting_Operation");
+  }
+  /**
    * Creates a new version for a site. (versions.create)
    *
    * @param string $parent Required. The parent to create the version for, in the

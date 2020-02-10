@@ -30,9 +30,9 @@ class GetClassT extends TString
         $this->as_type = $as_type;
     }
 
-    public function getId()
+    public function getId(bool $nested = false)
     {
-        return 'class-string';
+        return $this->as_type->isMixed() ? 'class-string' : 'class-string<' . $this->as_type->getId() . '>';
     }
 
     /**

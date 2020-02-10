@@ -216,10 +216,6 @@ class Google_Service_SQLAdmin_Resource_Instances extends Google_Service_Resource
    * instances.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string pageToken A previously-returned page token representing
-   * part of the larger set of results to view.
-   * @opt_param string maxResults The maximum number of results to return per
-   * response.
    * @opt_param string parent The parent, which owns this collection of database
    * instances. Format: projects/{project}/locations/{location}
    * @opt_param string filter A filter expression that filters resources listed in
@@ -230,6 +226,10 @@ class Google_Service_SQLAdmin_Resource_Instances extends Google_Service_Resource
    * Multiple filter queries are space-separated. For example. 'state:RUNNABLE
    * instanceType:CLOUD_SQL_INSTANCE'. By default, each expression is an AND
    * expression. However, you can include AND and OR expressions explicitly.
+   * @opt_param string pageToken A previously-returned page token representing
+   * part of the larger set of results to view.
+   * @opt_param string maxResults The maximum number of results to return per
+   * response.
    * @return Google_Service_SQLAdmin_InstancesListResponse
    */
   public function listInstances($project, $optParams = array())

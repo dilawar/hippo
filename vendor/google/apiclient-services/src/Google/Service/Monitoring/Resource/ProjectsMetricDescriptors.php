@@ -29,8 +29,8 @@ class Google_Service_Monitoring_Resource_ProjectsMetricDescriptors extends Googl
    * Creates a new metric descriptor. User-created metric descriptors define
    * custom metrics. (metricDescriptors.create)
    *
-   * @param string $name The project on which to execute the request. The format
-   * is "projects/{project_id_or_number}".
+   * @param string $name Required. The project on which to execute the request.
+   * The format is "projects/{project_id_or_number}".
    * @param Google_Service_Monitoring_MetricDescriptor $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Monitoring_MetricDescriptor
@@ -45,8 +45,8 @@ class Google_Service_Monitoring_Resource_ProjectsMetricDescriptors extends Googl
    * Deletes a metric descriptor. Only user-created custom metrics can be deleted.
    * (metricDescriptors.delete)
    *
-   * @param string $name The metric descriptor on which to execute the request.
-   * The format is
+   * @param string $name Required. The metric descriptor on which to execute the
+   * request. The format is
    * "projects/{project_id_or_number}/metricDescriptors/{metric_id}". An example
    * of {metric_id} is: "custom.googleapis.com/my_test_metric".
    * @param array $optParams Optional parameters.
@@ -62,8 +62,8 @@ class Google_Service_Monitoring_Resource_ProjectsMetricDescriptors extends Googl
    * Gets a single metric descriptor. This method does not require a Stackdriver
    * account. (metricDescriptors.get)
    *
-   * @param string $name The metric descriptor on which to execute the request.
-   * The format is
+   * @param string $name Required. The metric descriptor on which to execute the
+   * request. The format is
    * "projects/{project_id_or_number}/metricDescriptors/{metric_id}". An example
    * value of {metric_id} is
    * "compute.googleapis.com/instance/disk/read_bytes_count".
@@ -80,8 +80,8 @@ class Google_Service_Monitoring_Resource_ProjectsMetricDescriptors extends Googl
    * Lists metric descriptors that match a filter. This method does not require a
    * Stackdriver account. (metricDescriptors.listProjectsMetricDescriptors)
    *
-   * @param string $name The project on which to execute the request. The format
-   * is "projects/{project_id_or_number}".
+   * @param string $name Required. The project on which to execute the request.
+   * The format is "projects/{project_id_or_number}".
    * @param array $optParams Optional parameters.
    *
    * @opt_param string pageToken If this field is not empty then it must contain

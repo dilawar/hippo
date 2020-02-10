@@ -27,6 +27,7 @@ class Google_Service_AndroidPublisher_SubscriptionPurchase extends Google_Model
   public $developerPayload;
   public $emailAddress;
   public $expiryTimeMillis;
+  public $externalAccountId;
   public $familyName;
   public $givenName;
   protected $introductoryPriceInfoType = 'Google_Service_AndroidPublisher_IntroductoryPriceInfo';
@@ -124,6 +125,14 @@ class Google_Service_AndroidPublisher_SubscriptionPurchase extends Google_Model
   public function getExpiryTimeMillis()
   {
     return $this->expiryTimeMillis;
+  }
+  public function setExternalAccountId($externalAccountId)
+  {
+    $this->externalAccountId = $externalAccountId;
+  }
+  public function getExternalAccountId()
+  {
+    return $this->externalAccountId;
   }
   public function setFamilyName($familyName)
   {

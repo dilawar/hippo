@@ -99,6 +99,96 @@ interface Iterator extends Traversable {
 /**
  * @template-covariant TKey
  * @template-covariant TValue
+ *
+ * @template-extends Iterator<TKey, TValue>
+ */
+interface OuterIterator extends Iterator {
+    /**
+     * @return Iterator<TKey, TValue>
+     */
+    public function getInnerIterator();
+}
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ *
+ * @template-implements OuterIterator<TKey, TValue>
+ */
+class IteratorIterator implements OuterIterator {
+    /**
+     * @param Traversable<TKey, TValue> $iterator
+     */
+    public function __construct(Traversable $iterator) {}
+
+    /**
+     * @return Iterator<TKey, TValue>
+     */
+    public function getInnerIterator() {}
+
+    /**
+     * Return the current element
+     * @link http://php.net/manual/en/iterator.current.php
+     *
+     * @return TValue Can return any type.
+     *
+     * @since 5.0.0
+     */
+    public function current() {}
+
+    /**
+     * Move forward to next element
+     * @link http://php.net/manual/en/iterator.next.php
+     *
+     * @return void Any returned value is ignored.
+     *
+     * @since 5.0.0
+     */
+    public function next() {}
+
+    /**
+     * Return the key of the current element
+     * @link http://php.net/manual/en/iterator.key.php
+     *
+     * @return TKey scalar on success, or null on failure.
+     *
+     * @since 5.0.0
+     */
+    public function key() {}
+
+    /**
+     * @return bool The return value will be casted to boolean and then evaluated.
+     *              Returns true on success or false on failure.
+     *
+     * @since 5.0.0
+     */
+    public function valid() {}
+
+    /**
+     * Rewind the Iterator to the first element
+     * @link http://php.net/manual/en/iterator.rewind.php
+     *
+     * @return void Any returned value is ignored.
+     *
+     * @since 5.0.0
+     */
+    public function rewind() {}
+}
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ *
+ * @template-extends IteratorIterator<TKey, TValue>
+ */
+class FilterIterator extends IteratorIterator {
+     public abstract function accept () : bool {}
+ }
+
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
  * @template TSend
  * @template-covariant TReturn
  *
@@ -852,8 +942,36 @@ class DOMNodeList implements Traversable, Countable {
     /**
      * @param int $index
      * @return TNode|null
+     * @psalm-ignore-nullable-return
      */
     public function item($index) {}
+}
+
+/**
+ * @template-covariant TNode as DOMNode
+ * @template-implements Traversable<string, TNode>
+ */
+class DOMNamedNodeMap implements Traversable, Countable {
+    /**
+     * @var int
+     */
+    public $length;
+
+    /**
+     * @return TNode|null
+     */
+    public function getNamedItem(string $name): ?DOMNode {}
+
+    /**
+     * @return TNode|null
+     */
+    public function getNamedItemNS(string $namespaceURI, string $localName): ?DOMNode {}
+
+    /**
+     * @return TNode|null
+     * @psalm-ignore-nullable-return
+     */
+    public function item(int $index): ?DOMNode {}
 }
 
 /**

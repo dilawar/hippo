@@ -17,9 +17,11 @@
 
 class Google_Service_CloudVideoIntelligence_GoogleCloudVideointelligenceV1p3beta1TimestampedObject extends Google_Collection
 {
-  protected $collection_key = 'attributes';
+  protected $collection_key = 'landmarks';
   protected $attributesType = 'Google_Service_CloudVideoIntelligence_GoogleCloudVideointelligenceV1p3beta1DetectedAttribute';
   protected $attributesDataType = 'array';
+  protected $landmarksType = 'Google_Service_CloudVideoIntelligence_GoogleCloudVideointelligenceV1p3beta1DetectedLandmark';
+  protected $landmarksDataType = 'array';
   protected $normalizedBoundingBoxType = 'Google_Service_CloudVideoIntelligence_GoogleCloudVideointelligenceV1p3beta1NormalizedBoundingBox';
   protected $normalizedBoundingBoxDataType = '';
   public $timeOffset;
@@ -37,6 +39,20 @@ class Google_Service_CloudVideoIntelligence_GoogleCloudVideointelligenceV1p3beta
   public function getAttributes()
   {
     return $this->attributes;
+  }
+  /**
+   * @param Google_Service_CloudVideoIntelligence_GoogleCloudVideointelligenceV1p3beta1DetectedLandmark
+   */
+  public function setLandmarks($landmarks)
+  {
+    $this->landmarks = $landmarks;
+  }
+  /**
+   * @return Google_Service_CloudVideoIntelligence_GoogleCloudVideointelligenceV1p3beta1DetectedLandmark
+   */
+  public function getLandmarks()
+  {
+    return $this->landmarks;
   }
   /**
    * @param Google_Service_CloudVideoIntelligence_GoogleCloudVideointelligenceV1p3beta1NormalizedBoundingBox

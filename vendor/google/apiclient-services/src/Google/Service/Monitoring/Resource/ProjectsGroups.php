@@ -28,8 +28,8 @@ class Google_Service_Monitoring_Resource_ProjectsGroups extends Google_Service_R
   /**
    * Creates a new group. (groups.create)
    *
-   * @param string $name The project in which to create the group. The format is
-   * "projects/{project_id_or_number}".
+   * @param string $name Required. The project in which to create the group. The
+   * format is "projects/{project_id_or_number}".
    * @param Google_Service_Monitoring_Group $postBody
    * @param array $optParams Optional parameters.
    *
@@ -46,7 +46,7 @@ class Google_Service_Monitoring_Resource_ProjectsGroups extends Google_Service_R
   /**
    * Deletes an existing group. (groups.delete)
    *
-   * @param string $name The group to delete. The format is
+   * @param string $name Required. The group to delete. The format is
    * "projects/{project_id_or_number}/groups/{group_id}".
    * @param array $optParams Optional parameters.
    *
@@ -64,7 +64,7 @@ class Google_Service_Monitoring_Resource_ProjectsGroups extends Google_Service_R
   /**
    * Gets a single group. (groups.get)
    *
-   * @param string $name The group to retrieve. The format is
+   * @param string $name Required. The group to retrieve. The format is
    * "projects/{project_id_or_number}/groups/{group_id}".
    * @param array $optParams Optional parameters.
    * @return Google_Service_Monitoring_Group
@@ -78,14 +78,10 @@ class Google_Service_Monitoring_Resource_ProjectsGroups extends Google_Service_R
   /**
    * Lists the existing groups. (groups.listProjectsGroups)
    *
-   * @param string $name The project whose groups are to be listed. The format is
-   * "projects/{project_id_or_number}".
+   * @param string $name Required. The project whose groups are to be listed. The
+   * format is "projects/{project_id_or_number}".
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string descendantsOfGroup A group name:
-   * "projects/{project_id_or_number}/groups/{group_id}". Returns the descendants
-   * of the specified group. This is a superset of the results returned by the
-   * childrenOfGroup filter, and includes children-of-children, and so forth.
    * @opt_param string pageToken If this field is not empty then it must contain
    * the nextPageToken value returned by a previous call to this method. Using
    * this field causes the method to return additional results from the previous
@@ -101,6 +97,10 @@ class Google_Service_Monitoring_Resource_ProjectsGroups extends Google_Service_R
    * "projects/{project_id_or_number}/groups/{group_id}". Returns groups whose
    * parentName field contains the group name. If no groups have this parent, the
    * results are empty.
+   * @opt_param string descendantsOfGroup A group name:
+   * "projects/{project_id_or_number}/groups/{group_id}". Returns the descendants
+   * of the specified group. This is a superset of the results returned by the
+   * childrenOfGroup filter, and includes children-of-children, and so forth.
    * @return Google_Service_Monitoring_ListGroupsResponse
    */
   public function listProjectsGroups($name, $optParams = array())

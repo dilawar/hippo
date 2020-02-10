@@ -19,6 +19,7 @@ class Google_Service_CloudRedis_Instance extends Google_Model
 {
   public $alternativeLocationId;
   public $authorizedNetwork;
+  public $connectMode;
   public $createTime;
   public $currentLocationId;
   public $displayName;
@@ -51,6 +52,14 @@ class Google_Service_CloudRedis_Instance extends Google_Model
   public function getAuthorizedNetwork()
   {
     return $this->authorizedNetwork;
+  }
+  public function setConnectMode($connectMode)
+  {
+    $this->connectMode = $connectMode;
+  }
+  public function getConnectMode()
+  {
+    return $this->connectMode;
   }
   public function setCreateTime($createTime)
   {

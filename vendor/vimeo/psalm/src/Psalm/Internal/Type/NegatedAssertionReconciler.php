@@ -192,23 +192,25 @@ class NegatedAssertionReconciler extends Reconciler
             );
         }
 
-        if ($assertion === 'string' && !$existing_var_type->hasMixed() && !$is_equality) {
+        if ($assertion === 'string' && !$existing_var_type->hasMixed()) {
             return self::reconcileString(
                 $existing_var_type,
                 $key,
                 $code_location,
                 $suppressed_issues,
-                $failed_reconciliation
+                $failed_reconciliation,
+                $is_equality
             );
         }
 
-        if ($assertion === 'array' && !$existing_var_type->hasMixed() && !$is_equality) {
+        if ($assertion === 'array' && !$existing_var_type->hasMixed()) {
             return self::reconcileArray(
                 $existing_var_type,
                 $key,
                 $code_location,
                 $suppressed_issues,
-                $failed_reconciliation
+                $failed_reconciliation,
+                $is_equality
             );
         }
 
@@ -243,7 +245,20 @@ class NegatedAssertionReconciler extends Reconciler
                 $code_location,
                 $suppressed_issues,
                 $failed_reconciliation,
-                $is_equality
+                $is_equality,
+                null
+            );
+        }
+
+        if (substr($assertion, 0, 13) === 'has-at-least-') {
+            return self::reconcileNonEmptyCountable(
+                $existing_var_type,
+                $key,
+                $code_location,
+                $suppressed_issues,
+                $failed_reconciliation,
+                $is_equality,
+                (int) substr($assertion, 13)
             );
         }
 
@@ -486,7 +501,8 @@ class NegatedAssertionReconciler extends Reconciler
         ?CodeLocation $code_location,
         array $suppressed_issues,
         int &$failed_reconciliation,
-        bool $is_equality
+        bool $is_equality,
+        ?int $min_count
     ) : Type\Union {
         $old_var_type_string = $existing_var_type->getId();
         $existing_var_atomic_types = $existing_var_type->getAtomicTypes();
@@ -495,9 +511,10 @@ class NegatedAssertionReconciler extends Reconciler
             $array_atomic_type = $existing_var_atomic_types['array'];
             $did_remove_type = false;
 
-            if ($array_atomic_type instanceof Type\Atomic\TNonEmptyArray
-                || $array_atomic_type instanceof Type\Atomic\TNonEmptyList
-                || ($array_atomic_type instanceof Type\Atomic\ObjectLike && $array_atomic_type->sealed)
+            if (($array_atomic_type instanceof Type\Atomic\TNonEmptyArray
+                    || $array_atomic_type instanceof Type\Atomic\TNonEmptyList)
+                && ($min_count === null
+                    || $array_atomic_type->count >= $min_count)
             ) {
                 $did_remove_type = true;
 
@@ -850,11 +867,15 @@ class NegatedAssertionReconciler extends Reconciler
                 $non_scalar_types[] = $type;
             } else {
                 $did_remove_type = true;
+
+                if ($is_equality) {
+                    $non_scalar_types[] = $type;
+                }
             }
         }
 
         if (!$did_remove_type || !$non_scalar_types) {
-            if ($key && $code_location && !$is_equality) {
+            if ($key && $code_location) {
                 self::triggerIssueForImpossible(
                     $existing_var_type,
                     $old_var_type_string,
@@ -918,11 +939,15 @@ class NegatedAssertionReconciler extends Reconciler
                 $non_object_types[] = $type;
             } else {
                 $did_remove_type = true;
+
+                if ($is_equality) {
+                    $non_object_types[] = $type;
+                }
             }
         }
 
-        if (!$non_object_types) {
-            if ($key && $code_location && !$is_equality) {
+        if (!$non_object_types || !$did_remove_type) {
+            if ($key && $code_location) {
                 self::triggerIssueForImpossible(
                     $existing_var_type,
                     $old_var_type_string,
@@ -982,10 +1007,14 @@ class NegatedAssertionReconciler extends Reconciler
                 $non_numeric_types[] = $type;
             } else {
                 $did_remove_type = true;
+
+                if ($is_equality) {
+                    $non_numeric_types[] = $type;
+                }
             }
         }
 
-        if ((!$non_numeric_types || !$did_remove_type)) {
+        if (!$non_numeric_types || !$did_remove_type) {
             if ($key && $code_location && !$is_equality) {
                 self::triggerIssueForImpossible(
                     $existing_var_type,
@@ -1025,7 +1054,8 @@ class NegatedAssertionReconciler extends Reconciler
         ?string $key,
         ?CodeLocation $code_location,
         array $suppressed_issues,
-        int &$failed_reconciliation
+        int &$failed_reconciliation,
+        bool $is_equality
     ) : Type\Union {
         $old_var_type_string = $existing_var_type->getId();
         $non_string_types = [];
@@ -1057,10 +1087,14 @@ class NegatedAssertionReconciler extends Reconciler
                 $non_string_types[] = $type;
             } else {
                 $did_remove_type = true;
+
+                if ($is_equality) {
+                    $non_string_types[] = $type;
+                }
             }
         }
 
-        if ((!$non_string_types || !$did_remove_type)) {
+        if (!$non_string_types || !$did_remove_type) {
             if ($key && $code_location) {
                 self::triggerIssueForImpossible(
                     $existing_var_type,
@@ -1100,7 +1134,8 @@ class NegatedAssertionReconciler extends Reconciler
         ?string $key,
         ?CodeLocation $code_location,
         array $suppressed_issues,
-        int &$failed_reconciliation
+        int &$failed_reconciliation,
+        bool $is_equality
     ) : Type\Union {
         $old_var_type_string = $existing_var_type->getId();
         $non_array_types = [];
@@ -1134,6 +1169,10 @@ class NegatedAssertionReconciler extends Reconciler
                 $non_array_types[] = $type;
             } else {
                 $did_remove_type = true;
+
+                if ($is_equality) {
+                    $non_array_types[] = $type;
+                }
             }
         }
 

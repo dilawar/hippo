@@ -266,11 +266,14 @@ class Context
     public $branch_point;
 
     /**
-     * If we're inside case statements we allow continue; statements as an alias of break;
+     * What does break mean in this context?
      *
-     * @var bool
+     * 'loop' means we're breaking out of a loop,
+     * 'switch' means we're breaking out of a switch
+     *
+     * @var list<'loop'|'switch'>
      */
-    public $inside_case = false;
+    public $break_types = [];
 
     /**
      * @var bool
@@ -379,7 +382,7 @@ class Context
      * @param  bool        $has_leaving_statements   whether or not the parent scope is abandoned between
      *                                               $start_context and $end_context
      * @param  array       $vars_to_update
-     * @param  array       $updated_vars
+     * @param  array<string, bool>  $updated_vars
      *
      * @return void
      */

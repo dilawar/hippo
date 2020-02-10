@@ -43,7 +43,7 @@ class Google_Service_CloudHealthcare_Resource_ProjectsLocationsDatasetsDicomStor
     return $this->call('create', array($params), "Google_Service_CloudHealthcare_DicomStore");
   }
   /**
-   * Creates a new DICOM store containing de-identified data from the source
+   * De-identifies data from the source store and writes it to the destination
    * store. The metadata field type is OperationMetadata. If the request is
    * successful, the response field type is DeidentifyDicomStoreSummary. If errors
    * occur, error details field type is DeidentifyErrorDetails. Errors are also

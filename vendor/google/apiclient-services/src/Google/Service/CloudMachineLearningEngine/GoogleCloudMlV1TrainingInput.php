@@ -35,6 +35,8 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1TrainingInput ext
   public $region;
   public $runtimeVersion;
   public $scaleTier;
+  protected $schedulingType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Scheduling';
+  protected $schedulingDataType = '';
   public $useChiefInTfConfig;
   protected $workerConfigType = 'Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1ReplicaConfig';
   protected $workerConfigDataType = '';
@@ -170,6 +172,20 @@ class Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1TrainingInput ext
   public function getScaleTier()
   {
     return $this->scaleTier;
+  }
+  /**
+   * @param Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Scheduling
+   */
+  public function setScheduling(Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Scheduling $scheduling)
+  {
+    $this->scheduling = $scheduling;
+  }
+  /**
+   * @return Google_Service_CloudMachineLearningEngine_GoogleCloudMlV1Scheduling
+   */
+  public function getScheduling()
+  {
+    return $this->scheduling;
   }
   public function setUseChiefInTfConfig($useChiefInTfConfig)
   {

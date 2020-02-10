@@ -1,12 +1,15 @@
 <?php
 namespace Psalm;
 
+use Composer\Semver\Semver;
 use Webmozart\PathUtil\Path;
 use function array_merge;
 use function array_pop;
 use function array_unique;
 use function class_exists;
 use Composer\Autoload\ClassLoader;
+use DOMDocument;
+
 use function count;
 use const DIRECTORY_SEPARATOR;
 use function dirname;
@@ -18,9 +21,11 @@ use function filetype;
 use function get_class;
 use function get_defined_constants;
 use function get_defined_functions;
+use function glob;
 use function in_array;
 use function intval;
 use function is_dir;
+use function is_file;
 use function json_decode;
 use function libxml_clear_errors;
 use const LIBXML_ERR_ERROR;
@@ -65,6 +70,10 @@ use function sys_get_temp_dir;
 use function trigger_error;
 use function unlink;
 use function version_compare;
+use function getcwd;
+use function chdir;
+use function simplexml_import_dom;
+use const LIBXML_NONET;
 
 class Config
 {
@@ -175,6 +184,13 @@ class Config
     public $base_dir;
 
     /**
+     * The PHP version to assume as declared in the config file
+     *
+     * @var string|null
+     */
+    private $configured_php_version;
+
+    /**
      * @var array<int, string>
      */
     private $file_extensions = ['php'];
@@ -260,6 +276,11 @@ class Config
      * @var bool
      */
     public $use_phpdoc_method_without_magic_or_parent = false;
+
+    /**
+     * @var bool
+     */
+    public $use_phpdoc_property_without_magic_or_parent = false;
 
     /**
      * @var bool
@@ -605,16 +626,31 @@ class Config
             $current_dir = $base_dir;
         }
 
-        self::validateXmlConfig($file_contents);
+        self::validateXmlConfig($base_dir, $file_contents);
 
         return self::fromXmlAndPaths($base_dir, $file_contents, $current_dir);
     }
 
+    private static function loadDomDocument(string $base_dir, string $file_contents): DOMDocument
+    {
+        $dom_document = new DOMDocument();
+
+        // there's no obvious way to set xml:base for a document when loading it from string
+        // so instead we're changing the current directory instead to be able to process XIncludes
+        $oldpwd = getcwd();
+        chdir($base_dir);
+
+        $dom_document->loadXML($file_contents, LIBXML_NONET);
+        $dom_document->xinclude(LIBXML_NONET);
+
+        chdir($oldpwd);
+        return $dom_document;
+    }
 
     /**
      * @throws ConfigException
      */
-    private static function validateXmlConfig(string $file_contents): void
+    private static function validateXmlConfig(string $base_dir, string $file_contents): void
     {
         $schema_path = dirname(dirname(__DIR__)) . '/config.xsd';
 
@@ -622,8 +658,7 @@ class Config
             throw new ConfigException('Cannot locate config schema');
         }
 
-        $dom_document = new \DOMDocument();
-        $dom_document->loadXML($file_contents);
+        $dom_document = self::loadDomDocument($base_dir, $file_contents);
 
         $psalm_nodes = $dom_document->getElementsByTagName('psalm');
 
@@ -640,8 +675,7 @@ class Config
             $psalm_node->setAttribute('xmlns', 'https://getpsalm.org/schema/config');
 
             $old_dom_document = $dom_document;
-            $dom_document = new \DOMDocument();
-            $dom_document->loadXML($old_dom_document->saveXML());
+            $dom_document = self::loadDomDocument($base_dir, $old_dom_document->saveXML());
         }
 
         // Enable user error handling
@@ -674,7 +708,9 @@ class Config
     {
         $config = new static();
 
-        $config_xml = new SimpleXMLElement($file_contents);
+        $dom_document = self::loadDomDocument($base_dir, $file_contents);
+
+        $config_xml = simplexml_import_dom($dom_document);
 
         $booleanAttributes = [
             'useDocblockTypes' => 'use_docblock_types',
@@ -691,6 +727,7 @@ class Config
             'allowPhpStormGenerics' => 'allow_phpstorm_generics',
             'allowStringToStandInForClass' => 'allow_string_standin_for_class',
             'usePhpDocMethodsWithoutMagicCall' => 'use_phpdoc_method_without_magic_or_parent',
+            'usePhpDocPropertiesWithoutMagicCall' => 'use_phpdoc_properties_without_magic_or_parent',
             'memoizeMethodCallResults' => 'memoize_method_calls',
             'hoistConstants' => 'hoist_constants',
             'addParamDefaultToDocblockType' => 'add_param_default_to_docblock_type',
@@ -720,6 +757,10 @@ class Config
         } else {
             $config->base_dir = $current_dir;
             $base_dir = $current_dir;
+        }
+
+        if (isset($config_xml['phpVersion'])) {
+            $config->configured_php_version = (string) $config_xml['phpVersion'];
         }
 
         if (isset($config_xml['autoloader'])) {
@@ -1560,8 +1601,16 @@ class Config
 
         $phpstorm_meta_path = $this->base_dir . DIRECTORY_SEPARATOR . '.phpstorm.meta.php';
 
-        if (file_exists($phpstorm_meta_path)) {
+        if (is_file($phpstorm_meta_path)) {
             $stub_files[] = $phpstorm_meta_path;
+        } elseif (is_dir($phpstorm_meta_path)) {
+            $phpstorm_meta_path = realpath($phpstorm_meta_path);
+
+            foreach (glob($phpstorm_meta_path . '/*.meta.php') as $glob) {
+                if (is_file($glob) && realpath(dirname($glob)) === $phpstorm_meta_path) {
+                    $stub_files[] = $glob;
+                }
+            }
         }
 
         if ($this->load_xdebug_stub) {
@@ -1830,8 +1879,42 @@ class Config
         $this->stub_files[] = $stub_file;
     }
 
+    public function getPhpVersion(): ?string
+    {
+        if (isset($this->configured_php_version)) {
+            return $this->configured_php_version;
+        }
+
+        return $this->getPHPVersionFromComposerJson();
+    }
+
     private function setBooleanAttribute(string $name, bool $value): void
     {
         $this->$name = $value;
+    }
+
+    /**
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedArrayAccess
+     */
+    private function getPHPVersionFromComposerJson(): ?string
+    {
+        $composer_json_path = $this->base_dir . DIRECTORY_SEPARATOR. 'composer.json';
+
+        if (file_exists($composer_json_path)) {
+            if (!$composer_json = json_decode(file_get_contents($composer_json_path), true)) {
+                throw new \UnexpectedValueException('Invalid composer.json at ' . $composer_json_path);
+            }
+            $php_version = $composer_json['require']['php'] ?? null;
+
+            if ($php_version) {
+                foreach (['5.4', '5.5', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0'] as $candidate) {
+                    if (Semver::satisfies($candidate, (string)$php_version)) {
+                        return $candidate;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

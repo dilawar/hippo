@@ -112,6 +112,8 @@ abstract class Type
         'list' => true,
         'non-empty-list' => true,
         'class-string-map' => true,
+        'open-resource' => true,
+        'closed-resource' => true,
     ];
 
     /**
@@ -378,7 +380,8 @@ abstract class Type
 
                     return new Atomic\TTemplateKeyOf(
                         $param_name,
-                        $defining_class
+                        $defining_class,
+                        $template_type_map[$param_name][$defining_class][0]
                     );
                 }
 
@@ -408,7 +411,8 @@ abstract class Type
 
                     return new Atomic\TTemplateKeyOf(
                         $param_name,
-                        $defining_class
+                        $defining_class,
+                        $template_type_map[$param_name][$defining_class][0]
                     );
                 }
 
@@ -466,6 +470,12 @@ abstract class Type
 
             if ($has_null) {
                 $atomic_types[] = new TNull;
+            }
+
+            if (!$atomic_types) {
+                throw new TypeParseTreeException(
+                    'No atomic types found'
+                );
             }
 
             return TypeCombination::combineTypes($atomic_types);
@@ -809,9 +819,25 @@ abstract class Type
                 );
             }
 
+            if ($t instanceof Atomic\TTemplateParam) {
+                $t_atomic_types = $t->as->getAtomicTypes();
+                $t_atomic_type = \count($t_atomic_types) === 1 ? \reset($t_atomic_types) : null;
+
+                if (!$t_atomic_type instanceof TNamedObject) {
+                    $t_atomic_type = null;
+                }
+
+                return new Atomic\TTemplateParamClass(
+                    $t->param_name,
+                    $t_atomic_type ? $t_atomic_type->value : 'object',
+                    $t_atomic_type,
+                    $t->defining_class
+                );
+            }
+
             if (!$t instanceof TNamedObject) {
                 throw new TypeParseTreeException(
-                    'Invalid templated classname \'' . $t . '\''
+                    'Invalid templated classname \'' . $t->getId() . '\''
                 );
             }
 

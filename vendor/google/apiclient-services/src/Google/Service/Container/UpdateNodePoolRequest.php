@@ -15,14 +15,18 @@
  * the License.
  */
 
-class Google_Service_Container_UpdateNodePoolRequest extends Google_Model
+class Google_Service_Container_UpdateNodePoolRequest extends Google_Collection
 {
+  protected $collection_key = 'locations';
   public $clusterId;
   public $imageType;
+  public $locations;
   public $name;
   public $nodePoolId;
   public $nodeVersion;
   public $projectId;
+  protected $upgradeSettingsType = 'Google_Service_Container_UpgradeSettings';
+  protected $upgradeSettingsDataType = '';
   public $zone;
 
   public function setClusterId($clusterId)
@@ -40,6 +44,14 @@ class Google_Service_Container_UpdateNodePoolRequest extends Google_Model
   public function getImageType()
   {
     return $this->imageType;
+  }
+  public function setLocations($locations)
+  {
+    $this->locations = $locations;
+  }
+  public function getLocations()
+  {
+    return $this->locations;
   }
   public function setName($name)
   {
@@ -72,6 +84,20 @@ class Google_Service_Container_UpdateNodePoolRequest extends Google_Model
   public function getProjectId()
   {
     return $this->projectId;
+  }
+  /**
+   * @param Google_Service_Container_UpgradeSettings
+   */
+  public function setUpgradeSettings(Google_Service_Container_UpgradeSettings $upgradeSettings)
+  {
+    $this->upgradeSettings = $upgradeSettings;
+  }
+  /**
+   * @return Google_Service_Container_UpgradeSettings
+   */
+  public function getUpgradeSettings()
+  {
+    return $this->upgradeSettings;
   }
   public function setZone($zone)
   {

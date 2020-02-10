@@ -20,6 +20,8 @@ use RuntimeException;
 use function str_replace;
 use function strpos;
 use function usort;
+use function count;
+use function array_values;
 
 class ErrorBaseline
 {
@@ -51,7 +53,12 @@ class ErrorBaseline
     /**
      * @param FileProvider $fileProvider
      * @param string $baselineFile
-     * @param array<array{file_name: string, type: string, severity: string, selected_text: string}> $issues
+     * @param array<string, list<array{
+     *         file_name: string,
+     *         type: string,
+     *         severity: string,
+     *         selected_text: string
+     * }>> $issues
      *
      * @return void
      */
@@ -118,7 +125,7 @@ class ErrorBaseline
                 $codeSamples = $issue->getElementsByTagName('code');
 
                 foreach ($codeSamples as $codeSample) {
-                    $files[$fileName][$issueType]['s'][] = (string) $codeSample->textContent;
+                    $files[$fileName][$issueType]['s'][] = $codeSample->textContent;
                 }
             }
         }
@@ -129,7 +136,12 @@ class ErrorBaseline
     /**
      * @param FileProvider $fileProvider
      * @param string $baselineFile
-     * @param array<array{file_name: string, type: string, severity: string, selected_text: string}> $issues
+     * @param array<string, list<array{
+     *         file_name: string,
+     *         type: string,
+     *         severity: string,
+     *         selected_text: string
+     * }>> $issues
      *
      * @throws Exception\ConfigException
      *
@@ -177,14 +189,22 @@ class ErrorBaseline
     }
 
     /**
-     * @param array<array{file_name: string, type: string, severity: string, selected_text: string}> $issues
+     * @param array<string, list<array{
+     *         file_name: string,
+     *         type: string,
+     *         severity: string,
+     *         selected_text: string
+     * }>> $issues
      *
      * @return array<string,array<string,array{o:int, s:array<int, string>}>>
      */
     private static function countIssueTypesByFile(array $issues): array
     {
+        if ($issues === []) {
+            return [];
+        }
         $groupedIssues = array_reduce(
-            $issues,
+            array_merge(...array_values($issues)),
             /**
              * @param array<string,array<string,array{o:int, s:array<int, string>}>> $carry
              * @param array{type: string, file_name: string, severity: string, selected_text: string} $issue

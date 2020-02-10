@@ -1,4 +1,5 @@
 <?php
+
 defined('BASEPATH') OR exit('No direct script access allowed');
 require_once __DIR__.'/ApiHelper.php';
 require_once __DIR__.'/Adminservices.php';
@@ -9,9 +10,9 @@ require_once BASEPATH . '/extra/people.php';
 require_once BASEPATH . '/extra/search.php';
 require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/talk.php';
-include_once BASEPATH . '/extra/acad.php';
-include_once BASEPATH . '/extra/services.php';
-include_once BASEPATH . '/extra/me.php';
+require_once BASEPATH . '/extra/acad.php';
+require_once BASEPATH . '/extra/services.php';
+require_once BASEPATH . '/extra/me.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -704,33 +705,6 @@ class Api extends CI_Controller
         $this->process_events_requests($args);
     }
 
-    // Helper function for aws() function.
-    private function process_aws_requests($args)
-    {
-        $results = [];
-        $status = 'ok';
-        if($args[0] === 'date')
-        {
-            $from = dbDate($args[1]);
-            $to = dbDate(__get__($args, 2, strtotime('+14 day', strtotime($from))));
-            $results = getTableEntries( 'annual_work_seminars', 'date'
-                , "date >= '$from' AND date < '$to'"
-            );
-        }
-        else if($args[0] === 'latest')
-        {
-            $numEvents = __get__($args, 1, 6);
-            $from = dbDate('today');
-            // echo " x $from $numEvents ";
-            $results = getTableEntries('upcoming_aws', 'date'
-                , "date >= '$from'", '*', $numEvents
-            );
-        }
-        else
-            $status = 'warning';
-        $this->send_data($results, $status);
-    }
-
     /* --------------------------------------------------------------------------*/
     /**
         * @Synopsis  Return AWS based on GET query.
@@ -753,7 +727,36 @@ class Api extends CI_Controller
         $args = func_get_args();
         if(count($args)==0)
             $args = ['latest'];
-        $this->process_aws_requests($args);
+
+        $results = [];
+        $status = 'ok';
+        if($args[0] === 'date')
+        {
+            $from = dbDate($args[1]);
+            $to = dbDate(__get__($args, 2, strtotime('+14 day', strtotime($from))));
+            $results = getTableEntries( 'annual_work_seminars', 'date'
+                , "date >= '$from' AND date < '$to'"
+            );
+        }
+        if($args[0] === 'id')
+        {
+            $id = $args[1];
+            $results = getTableEntries( 'annual_work_seminars', 'date'
+                , "id >= '$id'"
+            );
+        }
+        else if($args[0] === 'latest')
+        {
+            $numEvents = __get__($args, 1, 6);
+            $from = dbDate('today');
+            // echo " x $from $numEvents ";
+            $results = getTableEntries('upcoming_aws', 'date'
+                , "date >= '$from'", '*', $numEvents
+            );
+        }
+        else
+            $status = 'warning';
+        $this->send_data($results, $status);
     }
 
 
@@ -1757,7 +1760,7 @@ class Api extends CI_Controller
             $this->send_data($res, 'ok');
             return;
         }
-        else if( $args[0] == 'get')
+        else if( $args[0] === 'get')
         {
             // Fetching comments.
             $limit = __get__($args, 1, 20);
@@ -2924,7 +2927,13 @@ class Api extends CI_Controller
         return;
     }
 
-    // Admin acad
+    /* --------------------------------------------------------------------------*/
+    /**
+        * @Synopsis  API endpoint for acadadmin.
+        *
+        * @Returns   
+     */
+    /* ----------------------------------------------------------------------------*/
     public function acadadmin()
     {
         if(! authenticateAPI(getKey()))
@@ -2942,7 +2951,7 @@ class Api extends CI_Controller
 
         $args = func_get_args();
         $data = [];
-        if($args[0] === 'aws')
+        if($args[0] === 'upcomingaws')
         {
             if($args[1] === 'upcoming')
             {
@@ -2953,42 +2962,6 @@ class Api extends CI_Controller
                     $data[$aws['date']][]=$aws;
                 }
                 $this->send_data($data, 'ok');
-                return;
-            }
-            else if($args[1] === 'get')
-            {
-                $data = [];
-                if($args[2] === 'all') {
-                    $awses = executeQuery("SELECT date,speaker,title,status FROM annual_work_seminars");
-                    foreach($awses as $aws)
-                        $data[$aws['date']]=$aws;
-                }
-                else {
-                    $id = $args[2];
-                    $data = executeQuery("SELECT * FROM annual_work_seminars WHERE id='$id'", true);
-                }
-                $this->send_data($data, 'ok');
-                return;
-            }
-            else if($args[1] === 'search')
-            {
-                $q = $args[2];
-                $data = [];
-                if(strlen($q) > 2) {
-                    $data = executeQuery("SELECT id,title,speaker,date,venue,supervisor_1 
-                        FROM annual_work_seminars 
-                        WHERE date LIKE '%$q%' OR speaker LIKE '%$q%' OR title LIKE '%$q%'
-                        ORDER BY date DESC LIMIT 20");
-                }
-                foreach($data as &$e) {
-                    $e['html'] = '<strong>' . getLoginHTML($e['speaker']) 
-                        . '</strong> on <strong>' 
-                        . humanReadableDate($e['date']) 
-                        . "</strong> '". $e['title'] . "'"
-                        . ' <small>(pi/host: ' . $e['supervisor_1'] .')</small>';
-                }
-                // Send as list. Its a query data.
-                $this->send_data_helper($data);
                 return;
             }
             else if($args[1] === 'assign')
@@ -3015,6 +2988,85 @@ class Api extends CI_Controller
             else
             {
                 $this->send_data(["Unknown request"], "ok");
+                return;
+            }
+        }
+        else if($args[0] === 'aws' ) 
+        {
+            // These aws has been delivered. 
+            if($args[1] === 'search')
+            {
+                $q = $args[2];
+                $data = [];
+                if(strlen($q) > 2) {
+                    $data = executeQuery("SELECT id,status,title,speaker,date,venue,supervisor_1 
+                        FROM annual_work_seminars 
+                        WHERE date LIKE '%$q%' OR speaker LIKE '%$q%' OR title LIKE '%$q%'
+                        ORDER BY date DESC LIMIT 20");
+                }
+                foreach($data as &$e) {
+                    $e['html'] = '<tt>(' . $e['status'] . ')</tt> '
+                        . '<strong>' . getLoginHTML($e['speaker']) 
+                        . '</strong> on <strong>' 
+                        . humanReadableDate($e['date']) 
+                        . "</strong> '". $e['title'] . "'"
+                        . ' <small>(pi/host: ' . $e['supervisor_1'] .')</small>';
+                    $e['summary'] = $e['speaker']
+                        . ', ' . humanReadableDate($e['date']) 
+                        . ", '". $e['title'] . "'";
+                }
+                // Send as list. Its a query data.
+                $this->send_data_helper($data);
+                return;
+            }
+            else if($args[1] === 'delete') 
+            {
+                $id = $args[2];
+                if($id && is_int($id))
+                {
+                    $res = updateTable('annual_work_seminars', 'id', 'status'
+                        , ['id'=>$id, 'status'=>'DELETED']);
+                    $this->send_data(['success'=>true
+                        , 'msg'=>"Deleted AWS with id $id"]);
+                    return;
+                }
+                $this->send_data(['success'=>false, 'msg'=>"Invalid AWS id $id"]);
+                return;
+            }
+            else if($args[1] === 'get')
+            {
+                $data = [];
+                if($args[2] === 'all') {
+                    $awses = executeQuery("SELECT date,speaker,title,status FROM annual_work_seminars");
+                    foreach($awses as $aws)
+                        $data[$aws['date']]=$aws;
+                }
+                else {
+                    $id = $args[2];
+                    $data = executeQuery("SELECT * FROM annual_work_seminars WHERE id='$id'", true);
+                    $data = count($data) > 0?$data[0]:[];
+                }
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'update')
+            {
+                $data = ['success'=>false, 'msg'=>'Failed to update AWS.'];
+                $res = updateTable('annual_work_seminars', 'id'
+                    , 'title,abstract,status,is_presynopsis_seminar', $_POST);
+
+                if($res) 
+                {
+                    $data['success'] = true;
+                    $data['msg'] .= "Successfully updated.";
+                }
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else
+            {
+                $data = [ "Unknown AWS request: " . json_encode($args)];
+                $this->send_data($data, 'ok');
                 return;
             }
         }
@@ -3098,7 +3150,7 @@ class Api extends CI_Controller
             $this->send_data(['success'=>true, 'msg'=> "Reschedule OK."], "ok");
             return;
         }
-        $this->send_data(["Unknown request"], "ok");
+        $this->send_data(["Unknown request: " . json_encode($args)], "ok");
         return;
     }
 

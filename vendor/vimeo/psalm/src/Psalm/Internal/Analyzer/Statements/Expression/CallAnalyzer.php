@@ -644,6 +644,10 @@ class CallAnalyzer
             || $arg->value instanceof PhpParser\Node\Expr\Array_
             || $arg->value instanceof PhpParser\Node\Expr\BinaryOp
             || $arg->value instanceof PhpParser\Node\Scalar\Encapsed
+            || $arg->value instanceof PhpParser\Node\Expr\PostInc
+            || $arg->value instanceof PhpParser\Node\Expr\PostDec
+            || $arg->value instanceof PhpParser\Node\Expr\PreInc
+            || $arg->value instanceof PhpParser\Node\Expr\PreDec
         ) {
             $was_inside_call = $context->inside_call;
             $context->inside_call = true;
@@ -810,6 +814,12 @@ class CallAnalyzer
                 $arg->value,
                 $context
             ) === false) {
+                return false;
+            }
+        }
+
+        if (!$arg->value instanceof PhpParser\Node\Expr\Variable) {
+            if (ExpressionAnalyzer::analyze($statements_analyzer, $arg->value, $context) === false) {
                 return false;
             }
         }
@@ -1394,6 +1404,7 @@ class CallAnalyzer
 
             if (self::checkArrayFunctionArgumentsMatch(
                 $statements_analyzer,
+                $context,
                 $args,
                 $method_id,
                 $context->check_functions
@@ -1888,7 +1899,11 @@ class CallAnalyzer
                 $array_atomic_type = $arg_type->getAtomicTypes()['array'];
 
                 if ($array_atomic_type instanceof Type\Atomic\ObjectLike) {
-                    $arg_type = $array_atomic_type->getGenericValueType();
+                    if ($array_atomic_type->is_list && isset($array_atomic_type->properties[$argument_offset])) {
+                        $arg_type = clone $array_atomic_type->properties[$argument_offset];
+                    } else {
+                        $arg_type = $array_atomic_type->getGenericValueType();
+                    }
                 } elseif ($array_atomic_type instanceof Type\Atomic\TList) {
                     $arg_type = $array_atomic_type->type_param;
                 } else {
@@ -1986,7 +2001,7 @@ class CallAnalyzer
                                 }
                             }
 
-                            $template_types[$template_name][$class_storage->name] = [$output_type ?: Type::getMixed()];
+                            $template_types[$template_name][$class_storage->name] = [$output_type];
                         }
                     }
                 }
@@ -2015,6 +2030,7 @@ class CallAnalyzer
      */
     protected static function checkArrayFunctionArgumentsMatch(
         StatementsAnalyzer $statements_analyzer,
+        Context $context,
         array $args,
         $method_id,
         bool $check_functions
@@ -2071,6 +2087,7 @@ class CallAnalyzer
             foreach ($closure_arg_type->getAtomicTypes() as $closure_type) {
                 self::checkArrayFunctionClosureType(
                     $statements_analyzer,
+                    $context,
                     $method_id,
                     $closure_type,
                     $closure_arg,
@@ -2093,6 +2110,7 @@ class CallAnalyzer
      */
     private static function checkArrayFunctionClosureType(
         StatementsAnalyzer $statements_analyzer,
+        Context $context,
         $method_id,
         Type\Atomic $closure_type,
         PhpParser\Node\Arg $closure_arg,
@@ -2229,6 +2247,7 @@ class CallAnalyzer
 
             self::checkArrayFunctionClosureTypeArgs(
                 $statements_analyzer,
+                $context,
                 $method_id,
                 $closure_type,
                 $closure_arg,
@@ -2250,6 +2269,7 @@ class CallAnalyzer
      */
     private static function checkArrayFunctionClosureTypeArgs(
         StatementsAnalyzer $statements_analyzer,
+        Context $context,
         $method_id,
         Type\Atomic $closure_type,
         PhpParser\Node\Arg $closure_arg,
@@ -2312,11 +2332,8 @@ class CallAnalyzer
             return;
         }
 
-        $i = 0;
-
-        foreach ($closure_params as $closure_param) {
+        foreach ($closure_params as $i => $closure_param) {
             if (!isset($array_arg_types[$i])) {
-                ++$i;
                 continue;
             }
 
@@ -2325,15 +2342,46 @@ class CallAnalyzer
             $input_type = $array_arg_type->type_params[1];
 
             if ($input_type->hasMixed()) {
-                ++$i;
                 continue;
             }
 
             $closure_param_type = $closure_param->type;
 
             if (!$closure_param_type) {
-                ++$i;
                 continue;
+            }
+
+            if ($method_id === 'array_map'
+                && $i === 0
+                && $closure_type->return_type
+                && $closure_param_type->hasTemplate()
+            ) {
+                $closure_param_type = clone $closure_param_type;
+                $closure_type->return_type = clone $closure_type->return_type;
+
+                $template_result = new \Psalm\Internal\Type\TemplateResult(
+                    [],
+                    []
+                );
+
+                foreach ($closure_param_type->getTemplateTypes() as $template_type) {
+                    $template_result->template_types[$template_type->param_name] = [
+                        ($template_type->defining_class) => [$template_type->as]
+                    ];
+                }
+
+                $closure_param_type = UnionTemplateHandler::replaceTemplateTypesWithStandins(
+                    $closure_param_type,
+                    $template_result,
+                    $codebase,
+                    $input_type,
+                    $context->self,
+                    $context->calling_function_id
+                );
+
+                $closure_type->return_type->replaceTemplateTypesWithArgTypes(
+                    $template_result->generic_params
+                );
             }
 
             $union_comparison_results = new \Psalm\Internal\Analyzer\TypeComparisonResult();
@@ -2342,8 +2390,8 @@ class CallAnalyzer
                 $codebase,
                 $input_type,
                 $closure_param_type,
-                false,
-                false,
+                $input_type->ignore_nullable_issues,
+                $input_type->ignore_falsable_issues,
                 $union_comparison_results
             );
 
@@ -2419,8 +2467,6 @@ class CallAnalyzer
                     // fall through
                 }
             }
-
-            ++$i;
         }
     }
 

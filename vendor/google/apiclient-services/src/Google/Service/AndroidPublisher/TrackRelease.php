@@ -22,6 +22,7 @@ class Google_Service_AndroidPublisher_TrackRelease extends Google_Collection
   protected $controlsDataType = 'array';
   protected $countryTargetingType = 'Google_Service_AndroidPublisher_CountryTargeting';
   protected $countryTargetingDataType = '';
+  public $inAppUpdatePriority;
   public $name;
   protected $releaseNotesType = 'Google_Service_AndroidPublisher_LocalizedText';
   protected $releaseNotesDataType = 'array';
@@ -58,6 +59,14 @@ class Google_Service_AndroidPublisher_TrackRelease extends Google_Collection
   public function getCountryTargeting()
   {
     return $this->countryTargeting;
+  }
+  public function setInAppUpdatePriority($inAppUpdatePriority)
+  {
+    $this->inAppUpdatePriority = $inAppUpdatePriority;
+  }
+  public function getInAppUpdatePriority()
+  {
+    return $this->inAppUpdatePriority;
   }
   public function setName($name)
   {

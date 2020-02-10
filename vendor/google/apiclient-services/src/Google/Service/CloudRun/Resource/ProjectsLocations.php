@@ -26,19 +26,6 @@
 class Google_Service_CloudRun_Resource_ProjectsLocations extends Google_Service_Resource
 {
   /**
-   * Gets information about a location. (locations.get)
-   *
-   * @param string $name Resource name for the location.
-   * @param array $optParams Optional parameters.
-   * @return Google_Service_CloudRun_Location
-   */
-  public function get($name, $optParams = array())
-  {
-    $params = array('name' => $name);
-    $params = array_merge($params, $optParams);
-    return $this->call('get', array($params), "Google_Service_CloudRun_Location");
-  }
-  /**
    * Lists information about the supported locations for this service.
    * (locations.listProjectsLocations)
    *
@@ -46,9 +33,9 @@ class Google_Service_CloudRun_Resource_ProjectsLocations extends Google_Service_
    * applicable.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string filter The standard list filter.
    * @opt_param string pageToken The standard list page token.
    * @opt_param int pageSize The standard list page size.
-   * @opt_param string filter The standard list filter.
    * @return Google_Service_CloudRun_ListLocationsResponse
    */
   public function listProjectsLocations($name, $optParams = array())

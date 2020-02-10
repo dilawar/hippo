@@ -65,7 +65,7 @@ use function substr;
  *         7:array<string, bool>,
  *         8:array<string, bool>
  *     },
- *     issues:array<int, IssueData>,
+ *     issues:array<string, list<IssueData>>,
  *     changed_members:array<string, array<string, bool>>,
  *     unchanged_signature_members:array<string, array<string, bool>>,
  *     diff_map:array<string, array<int, array{0:int, 1:int, 2:int, 3:int}>>,
@@ -280,6 +280,7 @@ class Scanner
      * @param  string|null  $referencing_file_path
      * @param  bool $analyze_too
      * @param  bool $store_failure
+     * @param  array<string, mixed> $phantom_classes
      *
      * @return void
      */
@@ -287,7 +288,8 @@ class Scanner
         $fq_classlike_name,
         $referencing_file_path = null,
         $analyze_too = false,
-        $store_failure = true
+        $store_failure = true,
+        array $phantom_classes = []
     ) {
         if ($fq_classlike_name[0] === '\\') {
             $fq_classlike_name = substr($fq_classlike_name, 1);
@@ -325,7 +327,7 @@ class Scanner
                     $property_type->queueClassLikesForScanning(
                         $this->codebase,
                         null,
-                        [$fq_classlike_name_lc => true]
+                        $phantom_classes + [$fq_classlike_name_lc => true]
                     );
                 }
             }

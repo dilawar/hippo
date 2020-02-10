@@ -204,7 +204,10 @@ class Google_Service_Container_Resource_ProjectsZonesClusters extends Google_Ser
     return $this->call('list', array($params), "Google_Service_Container_ListClustersResponse");
   }
   /**
-   * Sets the locations for a specific cluster. (clusters.locations)
+   * Sets the locations for a specific cluster. Deprecated. Use
+   * [projects.locations.clusters.update](/kubernetes-
+   * engine/docs/reference/rest/v1/projects.locations.clusters.update) instead.
+   * (clusters.locations)
    *
    * @param string $projectId Required. Deprecated. The Google Developers Console
    * [project ID or project

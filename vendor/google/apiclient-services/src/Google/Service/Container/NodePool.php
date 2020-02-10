@@ -17,7 +17,7 @@
 
 class Google_Service_Container_NodePool extends Google_Collection
 {
-  protected $collection_key = 'instanceGroupUrls';
+  protected $collection_key = 'locations';
   protected $autoscalingType = 'Google_Service_Container_NodePoolAutoscaling';
   protected $autoscalingDataType = '';
   protected $conditionsType = 'Google_Service_Container_StatusCondition';
@@ -26,6 +26,7 @@ class Google_Service_Container_NodePool extends Google_Collection
   protected $configDataType = '';
   public $initialNodeCount;
   public $instanceGroupUrls;
+  public $locations;
   protected $managementType = 'Google_Service_Container_NodeManagement';
   protected $managementDataType = '';
   protected $maxPodsConstraintType = 'Google_Service_Container_MaxPodsConstraint';
@@ -35,6 +36,8 @@ class Google_Service_Container_NodePool extends Google_Collection
   public $selfLink;
   public $status;
   public $statusMessage;
+  protected $upgradeSettingsType = 'Google_Service_Container_UpgradeSettings';
+  protected $upgradeSettingsDataType = '';
   public $version;
 
   /**
@@ -94,6 +97,14 @@ class Google_Service_Container_NodePool extends Google_Collection
   public function getInstanceGroupUrls()
   {
     return $this->instanceGroupUrls;
+  }
+  public function setLocations($locations)
+  {
+    $this->locations = $locations;
+  }
+  public function getLocations()
+  {
+    return $this->locations;
   }
   /**
    * @param Google_Service_Container_NodeManagement
@@ -162,6 +173,20 @@ class Google_Service_Container_NodePool extends Google_Collection
   public function getStatusMessage()
   {
     return $this->statusMessage;
+  }
+  /**
+   * @param Google_Service_Container_UpgradeSettings
+   */
+  public function setUpgradeSettings(Google_Service_Container_UpgradeSettings $upgradeSettings)
+  {
+    $this->upgradeSettings = $upgradeSettings;
+  }
+  /**
+   * @return Google_Service_Container_UpgradeSettings
+   */
+  public function getUpgradeSettings()
+  {
+    return $this->upgradeSettings;
   }
   public function setVersion($version)
   {

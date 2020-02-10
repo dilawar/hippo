@@ -255,11 +255,13 @@ trait JCAdmin
                     $anyWarning = true;
                     continue;
                 }
+
+                $_POST['login'] = $emailOrLogin;
                 $res = subscribeJC($_POST);
                 if( ! $res['success'] )
                     $anyWarning = true;
                 else
-                    flashMessage( "$login is successfully added to JC" );
+                    flashMessage( "$login is successfully added to JC. "  . $res['msg']);
             }
 
             if( ! $anyWarning )

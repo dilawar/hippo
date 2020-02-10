@@ -23,15 +23,18 @@ use Psalm\SourceControl\SourceControlInfo;
 use const STDERR;
 use function strlen;
 use function var_export;
+use function count;
+use function array_merge;
+use function array_values;
 
 class Shepherd implements \Psalm\Plugin\Hook\AfterAnalysisInterface
 {
     /**
      * Called after analysis is complete
      *
-     * @param array<int, array{severity: string, line_from: int, line_to: int, type: string, message: string,
+     * @param array<string, list<array{severity: string, line_from: int, line_to: int, type: string, message: string,
      * file_name: string, file_path: string, snippet: string, from: int, to: int,
-     * snippet_from: int, snippet_to: int, column_from: int, column_to: int, selected_text: string}> $issues
+     * snippet_from: int, snippet_to: int, column_from: int, column_to: int, selected_text: string}>> $issues
      *
      * @return void
      */
@@ -56,18 +59,20 @@ class Shepherd implements \Psalm\Plugin\Hook\AfterAnalysisInterface
         unset($build_info['git']);
 
         if ($build_info) {
+            $normalized_data = $issues === [] ? [] : array_filter(
+                array_merge(...array_values($issues)),
+                /**
+                 * @param array{severity: string} $i
+                 */
+                static function (array $i) : bool {
+                    return $i['severity'] === 'error';
+                }
+            );
+
             $data = [
                 'build' => $build_info,
                 'git' => $source_control_data,
-                'issues' => array_filter(
-                    $issues,
-                    /**
-                     * @param array{severity: string} $i
-                     */
-                    function (array $i) : bool {
-                        return $i['severity'] === 'error';
-                    }
-                ),
+                'issues' => $normalized_data,
                 'coverage' => $codebase->analyzer->getTotalTypeCoverage($codebase),
             ];
 

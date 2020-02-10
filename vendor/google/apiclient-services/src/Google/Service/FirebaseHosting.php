@@ -45,6 +45,7 @@ class Google_Service_FirebaseHosting extends Google_Service
   const FIREBASE_READONLY =
       "https://www.googleapis.com/auth/firebase.readonly";
 
+  public $projects_operations;
   public $sites;
   public $sites_domains;
   public $sites_releases;
@@ -66,6 +67,26 @@ class Google_Service_FirebaseHosting extends Google_Service
     $this->version = 'v1beta1';
     $this->serviceName = 'firebasehosting';
 
+    $this->projects_operations = new Google_Service_FirebaseHosting_Resource_ProjectsOperations(
+        $this,
+        $this->serviceName,
+        'operations',
+        array(
+          'methods' => array(
+            'get' => array(
+              'path' => 'v1beta1/{+name}',
+              'httpMethod' => 'GET',
+              'parameters' => array(
+                'name' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),
+          )
+        )
+    );
     $this->sites = new Google_Service_FirebaseHosting_Resource_Sites(
         $this,
         $this->serviceName,
@@ -216,7 +237,17 @@ class Google_Service_FirebaseHosting extends Google_Service
         'versions',
         array(
           'methods' => array(
-            'create' => array(
+            'clone' => array(
+              'path' => 'v1beta1/{+parent}/versions:clone',
+              'httpMethod' => 'POST',
+              'parameters' => array(
+                'parent' => array(
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ),
+              ),
+            ),'create' => array(
               'path' => 'v1beta1/{+parent}/versions',
               'httpMethod' => 'POST',
               'parameters' => array(

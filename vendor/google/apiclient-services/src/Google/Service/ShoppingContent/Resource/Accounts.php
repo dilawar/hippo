@@ -158,6 +158,27 @@ class Google_Service_ShoppingContent_Resource_Accounts extends Google_Service_Re
     return $this->call('list', array($params), "Google_Service_ShoppingContent_AccountsListResponse");
   }
   /**
+   * Returns the list of accounts linked to your Merchant Center account.
+   * (accounts.listlinks)
+   *
+   * @param string $merchantId The ID of the managing account. If this parameter
+   * is not the same as accountId, then this account must be a multi-client
+   * account and accountId must be the ID of a sub-account of this account.
+   * @param string $accountId The ID of the account for which to list links.
+   * @param array $optParams Optional parameters.
+   *
+   * @opt_param string maxResults The maximum number of links to return in the
+   * response, used for pagination.
+   * @opt_param string pageToken The token returned by the previous request.
+   * @return Google_Service_ShoppingContent_AccountsListLinksResponse
+   */
+  public function listlinks($merchantId, $accountId, $optParams = array())
+  {
+    $params = array('merchantId' => $merchantId, 'accountId' => $accountId);
+    $params = array_merge($params, $optParams);
+    return $this->call('listlinks', array($params), "Google_Service_ShoppingContent_AccountsListLinksResponse");
+  }
+  /**
    * Updates a Merchant Center account. (accounts.update)
    *
    * @param string $merchantId The ID of the managing account. If this parameter

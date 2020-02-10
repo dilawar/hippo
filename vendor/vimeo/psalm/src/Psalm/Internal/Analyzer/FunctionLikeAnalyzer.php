@@ -175,11 +175,13 @@ abstract class FunctionLikeAnalyzer extends SourceAnalyzer
             $appearing_class_storage = $classlike_storage_provider->get($fq_class_name);
 
             if ($add_mutations) {
-                $hash = md5($real_method_id . '::' . $context->getScopeSummary());
+                if (!$context->collect_initializations) {
+                    $hash = md5($real_method_id . '::' . $context->getScopeSummary());
 
-                // if we know that the function has no effects on vars, we don't bother rechecking
-                if (isset(self::$no_effects_hashes[$hash])) {
-                    return null;
+                    // if we know that the function has no effects on vars, we don't bother rechecking
+                    if (isset(self::$no_effects_hashes[$hash])) {
+                        return null;
+                    }
                 }
             } elseif ($context->self) {
                 if ($appearing_class_storage->template_types) {
@@ -521,6 +523,11 @@ abstract class FunctionLikeAnalyzer extends SourceAnalyzer
                     'PossiblyUndefinedMethod',
                 ]);
             }
+        } elseif ($cased_method_id && strpos($cased_method_id, '__destruct')) {
+            $statements_analyzer->addSuppressedIssues([
+                'InvalidPropertyAssignmentValue',
+                'PossiblyNullPropertyAssignmentValue',
+            ]);
         }
 
         $statements_analyzer->analyze($function_stmts, $context, $global_context, true);
@@ -608,7 +615,6 @@ abstract class FunctionLikeAnalyzer extends SourceAnalyzer
                 ) {
                     if ($function_type = $statements_analyzer->node_data->getType($this->function)) {
                         /**
-                         * @psalm-suppress PossiblyUndefinedStringArrayOffset
                          * @var Type\Atomic\TFn
                          */
                         $closure_atomic = \array_values($function_type->getAtomicTypes())[0];
@@ -632,6 +638,13 @@ abstract class FunctionLikeAnalyzer extends SourceAnalyzer
         }
 
         foreach ($storage->throws as $expected_exception => $_) {
+            if (($expected_exception === 'self'
+                    || $expected_exception === 'static')
+                && $context->self
+            ) {
+                $expected_exception = $context->self;
+            }
+
             if (isset($storage->throw_locations[$expected_exception])) {
                 if (ClassLikeAnalyzer::checkFullyQualifiedClassLikeName(
                     $statements_analyzer,
@@ -728,7 +741,11 @@ abstract class FunctionLikeAnalyzer extends SourceAnalyzer
                 }
             }
 
-            if ($hash && $real_method_id && $this instanceof MethodAnalyzer) {
+            if ($hash
+                && $real_method_id
+                && $this instanceof MethodAnalyzer
+                && !$context->collect_initializations
+            ) {
                 $new_hash = md5($real_method_id . '::' . $context->getScopeSummary());
 
                 if ($new_hash === $hash) {
@@ -979,6 +996,10 @@ abstract class FunctionLikeAnalyzer extends SourceAnalyzer
                 $context->unreferenced_vars['$' . $function_param->name] = [
                     $function_param->location->getHash() => $function_param->location
                 ];
+            }
+
+            if ($function_param->by_ref) {
+                $context->vars_in_scope['$' . $function_param->name]->by_ref = true;
             }
 
             $parser_param = $this->function->getParams()[$offset];

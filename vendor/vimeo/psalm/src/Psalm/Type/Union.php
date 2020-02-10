@@ -52,9 +52,9 @@ class Union
         | self::TAINTED_SYSTEM_SECRET;
 
     /**
-     * @var array<string, Atomic>
+     * @var non-empty-array<string, Atomic>
      */
-    private $types = [];
+    private $types;
 
     /**
      * Whether the type originated in a docblock
@@ -196,19 +196,17 @@ class Union
     /**
      * Constructs an Union instance
      *
-     * @param array<int, Atomic>     $types
+     * @param non-empty-array<int, Atomic>     $types
      */
     public function __construct(array $types)
     {
         $from_docblock = false;
 
-        if (!$types) {
-            throw new \UnexpectedValueException('Cannot construct a union with empty types');
-        }
+        $keyed_types = [];
 
         foreach ($types as $type) {
             $key = $type->getKey();
-            $this->types[$key] = $type;
+            $keyed_types[$key] = $type;
 
             if ($type instanceof TLiteralInt) {
                 $this->literal_int_types[$key] = $type;
@@ -216,12 +214,16 @@ class Union
                 $this->literal_string_types[$key] = $type;
             } elseif ($type instanceof TLiteralFloat) {
                 $this->literal_float_types[$key] = $type;
-            } elseif ($type instanceof Type\Atomic\TClassString && $type->as_type) {
+            } elseif ($type instanceof Type\Atomic\TClassString
+                && ($type->as_type || $type instanceof Type\Atomic\TTemplateParamClass)
+            ) {
                 $this->typed_class_strings[$key] = $type;
             }
 
             $from_docblock = $from_docblock || $type->from_docblock;
         }
+
+        $this->types = $keyed_types;
 
         $this->from_docblock = $from_docblock;
     }
@@ -237,7 +239,7 @@ class Union
     }
 
     /**
-     * @return array<string, Atomic>
+     * @return non-empty-array<string, Atomic>
      */
     public function getAtomicTypes()
     {
@@ -262,7 +264,7 @@ class Union
                 unset($this->literal_string_types[$key], $this->types[$key]);
             }
             if (!$type instanceof Type\Atomic\TClassString
-                || !$type->as_type
+                || (!$type->as_type && !$type instanceof Type\Atomic\TTemplateParamClass)
             ) {
                 foreach ($this->typed_class_strings as $key => $_) {
                     unset($this->typed_class_strings[$key], $this->types[$key]);
@@ -297,7 +299,9 @@ class Union
                 $this->literal_string_types[$key] = $type;
             } elseif ($type instanceof TLiteralFloat) {
                 $this->literal_float_types[$key] = $type;
-            } elseif ($type instanceof Type\Atomic\TClassString && $type->as_type) {
+            } elseif ($type instanceof Type\Atomic\TClassString
+                && ($type->as_type || $type instanceof Type\Atomic\TTemplateParamClass)
+            ) {
                 $this->typed_class_strings[$key] = $type;
             }
         }
@@ -486,13 +490,13 @@ class Union
         $types = $this->types;
 
         if (isset($types['null'])) {
+            if (count($types) === 1) {
+                return null;
+            }
+
             unset($types['null']);
 
             $nullable = true;
-        }
-
-        if (!$types) {
-            return null;
         }
 
         $atomic_type = array_values($types)[0];
@@ -524,11 +528,11 @@ class Union
         $types = $this->types;
 
         if (isset($types['null'])) {
-            unset($types['null']);
-        }
-
-        if (!$types) {
-            return false;
+            if (count($types) > 1) {
+                unset($types['null']);
+            } else {
+                return false;
+            }
         }
 
         $atomic_type = array_values($types)[0];
@@ -625,7 +629,7 @@ class Union
      */
     public function hasArray()
     {
-        return isset($this->types['array']);
+        return isset($this->types['array']) || isset($this->types['callable-array']);
     }
 
     /**
@@ -1182,25 +1186,37 @@ class Union
             } elseif ($atomic_type instanceof Type\Atomic\TTemplateParamClass) {
                 $template_type = isset($template_types[$atomic_type->param_name][$atomic_type->defining_class])
                     ? clone $template_types[$atomic_type->param_name][$atomic_type->defining_class][0]
-                    : Type::getMixed();
+                    : null;
 
-                foreach ($template_type->types as $template_type_part) {
-                    if ($template_type_part instanceof Type\Atomic\TMixed
-                        || $template_type_part instanceof Type\Atomic\TObject
-                    ) {
-                        $unknown_class_string = new Type\Atomic\TClassString();
+                $class_template_type = null;
 
-                        $new_types[$unknown_class_string->getKey()] = $unknown_class_string;
-                        $keys_to_unset[] = $key;
-                    } elseif ($template_type_part instanceof Type\Atomic\TNamedObject) {
-                        $literal_class_string = new Type\Atomic\TClassString(
-                            $template_type_part->value,
-                            $template_type_part
-                        );
+                if ($template_type) {
+                    foreach ($template_type->types as $template_type_part) {
+                        if ($template_type_part instanceof Type\Atomic\TMixed
+                            || $template_type_part instanceof Type\Atomic\TObject
+                        ) {
+                            $class_template_type = new Type\Atomic\TClassString();
+                        } elseif ($template_type_part instanceof Type\Atomic\TNamedObject) {
+                            $class_template_type = new Type\Atomic\TClassString(
+                                $template_type_part->value,
+                                $template_type_part
+                            );
+                        } elseif ($template_type_part instanceof Type\Atomic\TTemplateParam) {
+                            $first_atomic_type = array_values($template_type_part->as->types)[0];
 
-                        $new_types[$literal_class_string->getKey()] = $literal_class_string;
-                        $keys_to_unset[] = $key;
+                            $class_template_type = new Type\Atomic\TTemplateParamClass(
+                                $template_type_part->param_name,
+                                $template_type_part->as->getId(),
+                                $first_atomic_type instanceof TNamedObject ? $first_atomic_type : null,
+                                $template_type_part->defining_class
+                            );
+                        }
                     }
+                }
+
+                if ($class_template_type) {
+                    $keys_to_unset[] = $key;
+                    $new_types[$class_template_type->getKey()] = $class_template_type;
                 }
             } elseif ($atomic_type instanceof Type\Atomic\TTemplateIndexedAccess) {
                 $keys_to_unset[] = $key;
@@ -1252,6 +1268,10 @@ class Union
         $this->id = null;
 
         if ($is_mixed) {
+            if (!$new_types) {
+                throw new \UnexpectedValueException('This array should be full');
+            }
+
             $this->types = $new_types;
 
             return;
@@ -1271,10 +1291,14 @@ class Union
             }
         }
 
-        $this->types = TypeCombination::combineTypes(
-            array_values(array_merge($this->types, $new_types)),
-            $codebase
-        )->getAtomicTypes();
+        $atomic_types = array_values(array_merge($this->types, $new_types));
+
+        if ($atomic_types) {
+            $this->types = TypeCombination::combineTypes(
+                $atomic_types,
+                $codebase
+            )->getAtomicTypes();
+        }
     }
 
     /**

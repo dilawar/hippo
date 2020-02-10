@@ -181,6 +181,10 @@ abstract class Atomic
             case 'resource':
                 return $php_version !== null ? new TNamedObject($value) : new TResource();
 
+            case 'resource (closed)':
+            case 'closed-resource':
+                return new Type\Atomic\TClosedResource();
+
             case 'numeric':
                 return $php_version !== null ? new TNamedObject($value) : new TNumeric();
 
@@ -454,7 +458,8 @@ abstract class Atomic
                     $this->value,
                     $file_storage ? $file_storage->file_path : null,
                     false,
-                    !$this->from_docblock
+                    !$this->from_docblock,
+                    $phantom_classes
                 );
 
                 if ($file_storage) {
@@ -483,7 +488,8 @@ abstract class Atomic
                 $this->fq_classlike_name,
                 $file_storage ? $file_storage->file_path : null,
                 false,
-                !$this->from_docblock
+                !$this->from_docblock,
+                $phantom_classes
             );
             if ($file_storage) {
                 $file_storage->referenced_classlikes[strtolower($this->fq_classlike_name)] = $this->fq_classlike_name;
@@ -496,7 +502,8 @@ abstract class Atomic
                     $this->as,
                     $file_storage ? $file_storage->file_path : null,
                     false,
-                    !$this->from_docblock
+                    !$this->from_docblock,
+                    $phantom_classes
                 );
                 if ($file_storage) {
                     $file_storage->referenced_classlikes[strtolower($this->as)] = $this->as;
@@ -517,7 +524,8 @@ abstract class Atomic
                 $this->value,
                 $file_storage ? $file_storage->file_path : null,
                 false,
-                !$this->from_docblock
+                !$this->from_docblock,
+                $phantom_classes
             );
             if ($file_storage) {
                 $file_storage->referenced_classlikes[strtolower($this->value)] = $this->value;
@@ -535,6 +543,14 @@ abstract class Atomic
                     $phantom_classes
                 );
             }
+        }
+
+        if ($this instanceof Type\Atomic\TList) {
+            $this->type_param->queueClassLikesForScanning(
+                $codebase,
+                $file_storage,
+                $phantom_classes
+            );
         }
 
         if ($this instanceof Type\Atomic\TFn
@@ -762,7 +778,7 @@ abstract class Atomic
     /**
      * @return string
      */
-    public function getId()
+    public function getId(bool $nested = false)
     {
         return $this->__toString();
     }

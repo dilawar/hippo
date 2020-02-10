@@ -2623,6 +2623,7 @@ function queryAWS($query)
 function clearUpcomingAWS($speaker, $date) : array
 {
     $result = [ 'msg'=>'', 'success'=>true];
+
     $aws = getTableEntry('upcoming_aws', 'speaker,date'
         , ['speaker'=>$speaker, 'date'=>$date]);
 
@@ -2630,13 +2631,14 @@ function clearUpcomingAWS($speaker, $date) : array
         WHERE speaker='$speaker' AND date='$date'");
 
     // Remove this AWS related booking from the events..
-    if($res) {
+    if($res) 
+    {
         $result['msg'] .= "Successfully deleted upcoming AWS. ";
-        $externalID = 'upcoming_aws.' + $aws['id'];
+        $externalID = 'upcoming_aws.' . $aws['id'];
         $res2 = updateTable('events', 'external_id', 'status'
-            , ['status'=>'INVALID', 'external_id'=>$external_id]);
+            , ['status'=>'INVALID', 'external_id'=>$externalID]);
         if($res2)
-            $result['msg'] .= "Successfully removed event $external_id.";
+            $result['msg'] .= "Successfully removed event $externalID.";
     }
     return $result;
 }

@@ -299,7 +299,7 @@ class ExpressionAnalyzer
                     }
                 }
 
-                if ($unacceptable_type) {
+                if ($unacceptable_type || !$acceptable_types) {
                     $message = 'Cannot negate a non-numeric non-string type ' . $unacceptable_type;
                     if ($has_valid_operand) {
                         if (IssueBuffer::accepts(
@@ -601,10 +601,10 @@ class ExpressionAnalyzer
             }
 
             if ($statements_analyzer->node_data->getType($stmt->expr)) {
-                self::castStringAttempt($statements_analyzer, $stmt->expr);
+                $stmt_type = self::castStringAttempt($statements_analyzer, $stmt->expr, true);
+            } else {
+                $stmt_type = Type::getString();
             }
-
-            $stmt_type = Type::getString();
 
             $statements_analyzer->node_data->setType($stmt, $stmt_type);
 
@@ -648,7 +648,7 @@ class ExpressionAnalyzer
                 }
             }
 
-            if ($all_permissible) {
+            if ($permissible_atomic_types && $all_permissible) {
                 $statements_analyzer->node_data->setType(
                     $stmt,
                     TypeCombination::combineTypes($permissible_atomic_types)
@@ -847,6 +847,21 @@ class ExpressionAnalyzer
         bool $constrain_type = true,
         bool $prevent_null = false
     ) {
+        if ($stmt instanceof PhpParser\Node\Expr\PropertyFetch && $stmt->name instanceof PhpParser\Node\Identifier) {
+            $prop_name = $stmt->name->name;
+
+            Expression\Assignment\PropertyAssignmentAnalyzer::analyzeInstance(
+                $statements_analyzer,
+                $stmt,
+                $prop_name,
+                null,
+                $by_ref_out_type,
+                $context
+            );
+
+            return;
+        }
+
         $var_id = self::getVarId(
             $stmt,
             $statements_analyzer->getFQCLN(),
@@ -1203,7 +1218,7 @@ class ExpressionAnalyzer
      * @param  string|null  $self_class
      * @param  string|Type\Atomic\TNamedObject|Type\Atomic\TTemplateParam|null $static_class_type
      *
-     * @return Type\Atomic|array<int, Type\Atomic>
+     * @return Type\Atomic|non-empty-array<int, Type\Atomic>
      */
     private static function fleshOutAtomicType(
         Codebase $codebase,
@@ -1296,22 +1311,53 @@ class ExpressionAnalyzer
                     return new Type\Atomic\TLiteralClassString($return_type->fq_classlike_name);
                 }
 
-                try {
-                    $class_constant = $codebase->classlikes->getConstantForClass(
-                        $return_type->fq_classlike_name,
-                        $return_type->const_name,
-                        \ReflectionProperty::IS_PRIVATE
-                    );
-                } catch (\Psalm\Exception\CircularReferenceException $e) {
-                    $class_constant = null;
+                if (strpos($return_type->const_name, '*') !== false) {
+                    $class_storage = $codebase->classlike_storage_provider->get($return_type->fq_classlike_name);
+
+                    $matching_constants = \array_keys($class_storage->class_constant_locations);
+
+                    $const_name_part = \substr($return_type->const_name, 0, -1);
+
+                    if ($const_name_part) {
+                        $matching_constants = \array_filter(
+                            $matching_constants,
+                            function ($constant_name) use ($const_name_part) {
+                                return $constant_name !== $const_name_part
+                                    && \strpos($constant_name, $const_name_part) === 0;
+                            }
+                        );
+                    }
+                } else {
+                    $matching_constants = [$return_type->const_name];
                 }
 
-                if ($class_constant) {
-                    if ($class_constant->isSingle()) {
-                        $class_constant = clone $class_constant;
+                $matching_constant_types = [];
 
-                        return array_values($class_constant->getAtomicTypes())[0];
+                foreach ($matching_constants as $matching_constant) {
+                    try {
+                        $class_constant = $codebase->classlikes->getConstantForClass(
+                            $return_type->fq_classlike_name,
+                            $matching_constant,
+                            \ReflectionProperty::IS_PRIVATE
+                        );
+                    } catch (\Psalm\Exception\CircularReferenceException $e) {
+                        $class_constant = null;
                     }
+
+                    if ($class_constant) {
+                        if ($class_constant->isSingle()) {
+                            $class_constant = clone $class_constant;
+
+                            $matching_constant_types = \array_merge(
+                                \array_values($class_constant->getAtomicTypes()),
+                                $matching_constant_types
+                            );
+                        }
+                    }
+                }
+
+                if ($matching_constant_types) {
+                    return $matching_constant_types;
                 }
             }
 
@@ -1872,44 +1918,69 @@ class ExpressionAnalyzer
         return null;
     }
 
-    /**
-     * @return  void
-     */
     private static function castStringAttempt(
         StatementsAnalyzer $statements_analyzer,
-        PhpParser\Node\Expr $stmt
-    ) {
+        PhpParser\Node\Expr $stmt,
+        bool $explicit_cast = false
+    ) : Type\Union {
+        $codebase = $statements_analyzer->getCodebase();
+
         if (!($stmt_type = $statements_analyzer->node_data->getType($stmt))) {
-            return;
+            return Type::getString();
         }
 
-        $has_valid_cast = false;
         $invalid_casts = [];
+        $valid_strings = [];
+        $castable_types = [];
 
         foreach ($stmt_type->getAtomicTypes() as $atomic_type) {
-            $atomic_type_results = new \Psalm\Internal\Analyzer\TypeComparisonResult();
-
-            if (!$atomic_type instanceof TMixed
-                && !$atomic_type instanceof Type\Atomic\TResource
-                && !$atomic_type instanceof TNull
-                && !TypeAnalyzer::isAtomicContainedBy(
-                    $statements_analyzer->getCodebase(),
-                    $atomic_type,
-                    new TString(),
-                    false,
-                    true,
-                    $atomic_type_results
-                )
-                && !$atomic_type_results->scalar_type_match_found
-            ) {
-                $invalid_casts[] = $atomic_type->getId();
-            } else {
-                $has_valid_cast = true;
+            if ($atomic_type instanceof TString) {
+                $valid_strings[] = $atomic_type;
+                continue;
             }
+
+            if ($atomic_type instanceof TMixed
+                || $atomic_type instanceof Type\Atomic\TResource
+                || $atomic_type instanceof Type\Atomic\TNull
+                || $atomic_type instanceof Type\Atomic\Scalar
+            ) {
+                $castable_types[] = new TString();
+                continue;
+            }
+
+            if ($atomic_type instanceof TNamedObject
+                && $codebase->methods->methodExists($atomic_type->value . '::__tostring')
+            ) {
+                $return_type = $codebase->methods->getMethodReturnType(
+                    $atomic_type->value . '::__tostring',
+                    $self_class
+                );
+
+                if ($return_type) {
+                    $castable_types = array_merge(
+                        $castable_types,
+                        array_values($return_type->getAtomicTypes())
+                    );
+                } else {
+                    $castable_types[] = new TString();
+                }
+
+                continue;
+            }
+
+            if ($atomic_type instanceof Type\Atomic\TObjectWithProperties
+                && isset($atomic_type->methods['__toString'])
+            ) {
+                $castable_types[] = new TString();
+
+                continue;
+            }
+
+            $invalid_casts[] = $atomic_type->getId();
         }
 
         if ($invalid_casts) {
-            if ($has_valid_cast) {
+            if ($valid_strings || $castable_types) {
                 if (IssueBuffer::accepts(
                     new PossiblyInvalidCast(
                         $invalid_casts[0] . ' cannot be cast to string',
@@ -1930,7 +2001,20 @@ class ExpressionAnalyzer
                     // fall through
                 }
             }
+        } elseif ($explicit_cast && !$castable_types) {
+            // todo: emit error here
         }
+
+        $valid_types = array_merge($valid_strings, $castable_types);
+
+        if (!$valid_types) {
+            return Type::getString();
+        }
+
+        return \Psalm\Internal\Type\TypeCombination::combineTypes(
+            $valid_types,
+            $codebase
+        );
     }
 
     /**

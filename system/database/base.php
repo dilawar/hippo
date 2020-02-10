@@ -336,6 +336,8 @@ class BMVPDO extends PDO
                 , is_presynopsis_seminar ENUM( 'YES', 'NO' ) default 'NO'
                 , venue VARCHAR(50) NOT NULL
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
+                , status ENUM( 'VALID', 'INVALID', 'CANCELLED', 'DELETED', 'NOT_PRESENTED') DEFAULT 'VALID'
+                , last_modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 , UNIQUE KEY (speaker, date, venue)
                 )"
             );

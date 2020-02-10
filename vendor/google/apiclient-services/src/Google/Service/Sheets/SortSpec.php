@@ -19,9 +19,13 @@ class Google_Service_Sheets_SortSpec extends Google_Model
 {
   protected $backgroundColorType = 'Google_Service_Sheets_Color';
   protected $backgroundColorDataType = '';
+  protected $backgroundColorStyleType = 'Google_Service_Sheets_ColorStyle';
+  protected $backgroundColorStyleDataType = '';
   public $dimensionIndex;
   protected $foregroundColorType = 'Google_Service_Sheets_Color';
   protected $foregroundColorDataType = '';
+  protected $foregroundColorStyleType = 'Google_Service_Sheets_ColorStyle';
+  protected $foregroundColorStyleDataType = '';
   public $sortOrder;
 
   /**
@@ -37,6 +41,20 @@ class Google_Service_Sheets_SortSpec extends Google_Model
   public function getBackgroundColor()
   {
     return $this->backgroundColor;
+  }
+  /**
+   * @param Google_Service_Sheets_ColorStyle
+   */
+  public function setBackgroundColorStyle(Google_Service_Sheets_ColorStyle $backgroundColorStyle)
+  {
+    $this->backgroundColorStyle = $backgroundColorStyle;
+  }
+  /**
+   * @return Google_Service_Sheets_ColorStyle
+   */
+  public function getBackgroundColorStyle()
+  {
+    return $this->backgroundColorStyle;
   }
   public function setDimensionIndex($dimensionIndex)
   {
@@ -59,6 +77,20 @@ class Google_Service_Sheets_SortSpec extends Google_Model
   public function getForegroundColor()
   {
     return $this->foregroundColor;
+  }
+  /**
+   * @param Google_Service_Sheets_ColorStyle
+   */
+  public function setForegroundColorStyle(Google_Service_Sheets_ColorStyle $foregroundColorStyle)
+  {
+    $this->foregroundColorStyle = $foregroundColorStyle;
+  }
+  /**
+   * @return Google_Service_Sheets_ColorStyle
+   */
+  public function getForegroundColorStyle()
+  {
+    return $this->foregroundColorStyle;
   }
   public function setSortOrder($sortOrder)
   {

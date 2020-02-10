@@ -94,7 +94,7 @@ class Google_Service_Spanner_Resource_ProjectsInstancesDatabasesSessions extends
    *
    * Active sessions use additional server resources, so it is a good idea to
    * delete idle and unneeded sessions. Aside from explicit deletes, Cloud Spanner
-   * can delete sessions for which no operations are sent for more than an hour.
+   * may delete sessions for which no operations are sent for more than an hour.
    * If a session is deleted, requests to it return `NOT_FOUND`.
    *
    * Idle sessions can be kept alive by sending a trivial SQL query periodically,

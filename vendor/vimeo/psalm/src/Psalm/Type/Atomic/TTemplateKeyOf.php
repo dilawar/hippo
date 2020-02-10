@@ -1,6 +1,8 @@
 <?php
 namespace Psalm\Type\Atomic;
 
+use Psalm\Type\Union;
+
 class TTemplateKeyOf extends TArrayKey
 {
     /**
@@ -13,12 +15,19 @@ class TTemplateKeyOf extends TArrayKey
      */
     public $defining_class;
 
+    /**
+     * @var Union
+     */
+    public $as;
+
     public function __construct(
         string $param_name,
-        string $defining_class
+        string $defining_class,
+        Union $as
     ) {
         $this->param_name = $param_name;
         $this->defining_class = $defining_class;
+        $this->as = $as;
     }
 
     /**
@@ -40,9 +49,9 @@ class TTemplateKeyOf extends TArrayKey
     /**
      * @return string
      */
-    public function getId()
+    public function getId(bool $nested = false)
     {
-        return $this->getKey();
+        return 'key-of<' . $this->param_name . ':' . $this->defining_class . ' as ' . $this->as->getId() . '>';
     }
 
     /**

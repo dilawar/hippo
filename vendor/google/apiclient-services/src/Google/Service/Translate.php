@@ -82,11 +82,11 @@ class Google_Service_Translate extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'displayLanguageCode' => array(
+                'model' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'model' => array(
+                'displayLanguageCode' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
@@ -150,11 +150,11 @@ class Google_Service_Translate extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'model' => array(
+                'displayLanguageCode' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'displayLanguageCode' => array(
+                'model' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),

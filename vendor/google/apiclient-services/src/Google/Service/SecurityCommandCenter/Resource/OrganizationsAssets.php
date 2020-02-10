@@ -48,6 +48,27 @@ class Google_Service_SecurityCommandCenter_Resource_OrganizationsAssets extends 
    * to. Its format is "organizations/[organization_id]".
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string readTime Time used as a reference point when filtering
+   * assets. The filter is limited to assets existing at the supplied time and
+   * their values are those at that specific time. Absence of this field will
+   * default to the API's version of NOW.
+   * @opt_param string orderBy Expression that defines what fields and order to
+   * use for sorting. The string value should follow SQL syntax: comma separated
+   * list of fields. For example: "name,resource_properties.a_property". The
+   * default sorting order is ascending. To specify descending order for a field,
+   * a suffix " desc" should be appended to the field name. For example: "name
+   * desc,resource_properties.a_property". Redundant space characters in the
+   * syntax are insignificant. "name desc,resource_properties.a_property" and "
+   * name     desc  ,   resource_properties.a_property  " are equivalent.
+   *
+   * The following fields are supported: name update_time resource_properties
+   * security_marks.marks security_center_properties.resource_name
+   * security_center_properties.resource_display_name
+   * security_center_properties.resource_parent
+   * security_center_properties.resource_parent_display_name
+   * security_center_properties.resource_project
+   * security_center_properties.resource_project_display_name
+   * security_center_properties.resource_type
    * @opt_param string compareDuration When compare_duration is set, the
    * ListAssetsResult's "state_change" attribute is updated to indicate whether
    * the asset was added, removed, or remained present during the compare_duration
@@ -127,27 +148,6 @@ class Google_Service_SecurityCommandCenter_Resource_OrganizationsAssets extends 
    * will list all fields.
    * @opt_param int pageSize The maximum number of results to return in a single
    * response. Default is 10, minimum is 1, maximum is 1000.
-   * @opt_param string readTime Time used as a reference point when filtering
-   * assets. The filter is limited to assets existing at the supplied time and
-   * their values are those at that specific time. Absence of this field will
-   * default to the API's version of NOW.
-   * @opt_param string orderBy Expression that defines what fields and order to
-   * use for sorting. The string value should follow SQL syntax: comma separated
-   * list of fields. For example: "name,resource_properties.a_property". The
-   * default sorting order is ascending. To specify descending order for a field,
-   * a suffix " desc" should be appended to the field name. For example: "name
-   * desc,resource_properties.a_property". Redundant space characters in the
-   * syntax are insignificant. "name desc,resource_properties.a_property" and "
-   * name     desc  ,   resource_properties.a_property  " are equivalent.
-   *
-   * The following fields are supported: name update_time resource_properties
-   * security_marks.marks security_center_properties.resource_name
-   * security_center_properties.resource_display_name
-   * security_center_properties.resource_parent
-   * security_center_properties.resource_parent_display_name
-   * security_center_properties.resource_project
-   * security_center_properties.resource_project_display_name
-   * security_center_properties.resource_type
    * @return Google_Service_SecurityCommandCenter_ListAssetsResponse
    */
   public function listOrganizationsAssets($parent, $optParams = array())
@@ -186,14 +186,14 @@ class Google_Service_SecurityCommandCenter_Resource_OrganizationsAssets extends 
    * @param Google_Service_SecurityCommandCenter_SecurityMarks $postBody
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string startTime The time at which the updated SecurityMarks take
+   * effect. If not set uses current server time.  Updates will be applied to the
+   * SecurityMarks that are active immediately preceding this time.
    * @opt_param string updateMask The FieldMask to use when updating the security
    * marks resource.
    *
    * The field mask must not contain duplicate fields. If empty or set to "marks",
    * all marks will be replaced.  Individual marks can be updated using "marks.".
-   * @opt_param string startTime The time at which the updated SecurityMarks take
-   * effect. If not set uses current server time.  Updates will be applied to the
-   * SecurityMarks that are active immediately preceding this time.
    * @return Google_Service_SecurityCommandCenter_SecurityMarks
    */
   public function updateSecurityMarks($name, Google_Service_SecurityCommandCenter_SecurityMarks $postBody, $optParams = array())
