@@ -146,7 +146,7 @@ function subscribeJC(array $data): array
     $emailOrLogin = $data['login'];
     $login = explode( '@', $emailOrLogin )[0];
 
-    $info = getLoginInfo($login);
+    $info = getLoginInfo($login, true, true);
     if(! __get__($info, 'email', '') )
     {
         $final['msg']= "'$login' is not found as a valid person.  Can't subscribe. ";

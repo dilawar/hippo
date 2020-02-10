@@ -2265,7 +2265,7 @@ function nullPicPath( $default = 'null' )
 {
     $conf = getConf( );
     $datadir = $conf[ 'data' ]['user_imagedir'];
-    return $datadir . "/$default.png";
+    return $datadir . "/$default.jpg";
 }
 
 function inlineImageOfSpeakerId( $id, $height = 'auto', $width = 'auto')
