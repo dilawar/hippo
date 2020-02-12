@@ -2699,7 +2699,7 @@ function presentationToHTML( $presentation )
     $html .= '<table class="info">';
     $html .= '<tr><td>URL(s)</td><td>'
                 .  linkify( $presentation['url'] ) . '</td></tr>';
-    $html .= '<tr><td>Presention URL</td><td>'
+    $html .= '<tr><td>Presentation URL</td><td>'
                 .  linkify( $presentation['presentation_url'] ) . '</td></tr>';
     $html .= '</table>';
 
