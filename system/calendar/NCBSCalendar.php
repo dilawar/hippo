@@ -238,6 +238,8 @@ class NCBSCalendar
         $startTime = strtotime( $event['date'] . ' ' . $event[ 'start_time' ] );
         $startTime = $startTime - $this->offset;
         $endTime = strtotime( $event['date'] . ' ' . $event[ 'end_time' ] );
+        if($endTime <= $startTime)
+            $endTime = $startTime + 90*60; // default 90 minute talk
         $endTime = $endTime - $this->offset;
 
         // We need to clean up the description.

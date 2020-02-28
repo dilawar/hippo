@@ -47,7 +47,7 @@ function synchronize_google_calendar( )
         }
         catch ( Exception $e )
         {
-            printWarning( p("Failed to add or update event: " . $e->getMessage()) );
+            printWarning(p("Failed to add or update event: " . $e->getMessage()));
         }
 
     }
