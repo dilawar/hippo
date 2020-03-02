@@ -37,7 +37,7 @@ else
 
 echo '<div class="important">';
 echo "<strong>Selected semester $semester/$year.</strong>";
-echo selectYearSemesterForm( $year, $semester );
+echo selectYearSemesterForm( $year, $semester, "$ref/enrollments");
 echo '</div>';
 
 
