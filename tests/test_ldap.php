@@ -7,4 +7,5 @@ function test_ldap()
 {
     var_dump( getUserInfoFromLdap( 'raunakdutta' ) );
     var_dump( getUserInfoFromLdap( 'madan' ) );
+    var_dump( getUserInfoFromLdap( 'spatil@instem.res.in' ) );
 }
