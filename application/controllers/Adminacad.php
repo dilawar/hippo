@@ -408,9 +408,10 @@ class Adminacad extends CI_Controller
                 echo printWarning( "Unknown registration type: '$etype'. Ignoring ..." );
                 continue;
             }
-
-            $login = getLoginByEmail( $email );
-            if(! $login)
+        
+            $login = explode('@', $email)[0];
+            $info = getLoginInfo($email, true, true);
+            if(! __get__($info, 'email', '') === $email)
             {
                 echo printWarning( "No valid login found for '$email'. Ignoring ... " );
                 continue;

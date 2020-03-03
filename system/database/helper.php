@@ -1602,6 +1602,18 @@ function getLoginByEmail(string $email) : string
     return '';
 }
 
+function getLoginByEmailOrLogin(string $emailOrLogin): string
+{
+    $email = $emailOrLogin;
+    $login = explode('@', $emailOrLogin)[0];
+    $res = executeQuery("SELECT login FROM logins WHERE 
+        (email='$email' OR login='$login') AND login >''");
+    if (count($res) > 0) {
+        return $res[0]['login'];
+    }
+    return '';
+}
+
 
 function getLoginEmail(string $login)
 {
