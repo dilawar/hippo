@@ -133,6 +133,8 @@ function admin_venue_actions(array $data, string &$msg) : bool
         . 'has_projector,suitable_for_conference,quota,has_skype'
         . ',allow_booking_on_hippo,note_to_user';
 
+    $data['floor'] = intval(__get__($data, 'floor', '-1'));
+
     if( $response == 'update' ) {
         $res = updateTable('venues', 'id', $editables, $data);
         if( $res ) {
