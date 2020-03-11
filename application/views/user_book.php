@@ -264,10 +264,13 @@ if( array_key_exists( 'Response', $_POST ) && $_POST['Response'] == "scan" )
 
         /* check if admin has marked it reserved. */
         if( (! anyOfTheseRoles("BOOKMYVENUE_ADMIN,ADMIN,ACAD_ADMIN")) 
-            && ('NO' === $venue['allow_booking_on_hippo']) 
-        ){
+            && ('NO' === $venue['allow_booking_on_hippo']))
+        {
             $listData['show_booking_button'] = false;
-            $listData['reason'] = p("This venue is not available for common booking on Hippo!");
+        }
+        if('NO' === $venue['allow_booking_on_hippo'])
+        {
+            $listData['reason'] .= p("This venue is not available for common booking on Hippo!");
         }
 
         // Check if user has surpassed this quota.
