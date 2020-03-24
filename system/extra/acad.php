@@ -68,17 +68,20 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
 function cancelAWS(array $data, string $bywhom='HIPPO') : array
 {
     // If ID is given then fetch the aws.
+    $aws = [];
     if(__get__($data, 'id', ''))
         $aws = getTableEntry( 'upcoming_aws', 'id', $data);
     else 
     {
-        $speaker = $data['speaker'];
-        $date = $data['date'];
-        $reason = __get__($data, 'reason', 'None given. So rude!');
-        $aws = getTableEntry( 'upcoming_aws', 'speaker,date'
+        $aws = getTableEntry('upcoming_aws', 'speaker,date'
             , ['speaker'=>$speaker, 'date'=>dbDate($date)]
         );
     }
+
+    $speaker = $data['speaker'];
+    $date = $data['date'];
+    $reason = __get__($data, 'reason', 'None given. So rude!');
+
     $res = clearUpcomingAWS($aws['speaker'], $aws['date']);
     $piOrHost = getPIOrHost($aws['speaker']);
     $final = ['msg'=> $res['msg'], 'status'=>false];
@@ -89,7 +92,7 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
 
         // Notify the hippo list.
         $admin = whoAmI();
-        $msg = "<p>Hello " . loginToHTML( $data[ 'speaker' ] ) . "</p>";
+        $msg = "<p>Hello " . loginToHTML($aws['speaker']) . "</p>";
         $msg .= "<p>
             Your upcoming AWS schedule has been removed by Hippo admin ($bywhom).
             If this is a  mistake, please write to acadoffice@ncbs.res.in
@@ -103,11 +106,10 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
         if($piOrHost)
             $cclist .= ",$piOrHost";
 
-        sendHTMLEmail( $msg
+        sendHTMLEmail($msg
             , "Your ($speaker) upcoming AWS has been removed."
             , $to = getLoginEmail( $data[ 'speaker' ] )
-            , $cclist 
-        );
+            , $cclist);
         $final['status'] = true;
         return $final;
     }

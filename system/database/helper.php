@@ -10,6 +10,7 @@ require_once BASEPATH. 'extra/courses.php';
 $hippoDB = new BMVPDO("localhost");
 $hippoDB->initialize();
 
+
 /**
  * Replaces any parameter placeholders in a query with the value of that
  * parameter. Useful for debugging. Assumes anonymous parameters from
@@ -2393,13 +2394,13 @@ function numberOfAWSGivenBySpeaker($speaker): int
     *
     * @return
  */
-function getTentativeAWSSchedule($monday = null)
+function getTentativeAWSSchedule($awsday = null)
 {
     $hippoDB = initDB();
     ;
     $whereExpr = '';
-    if ($monday) {
-        $date = dbDate($monday);
+    if ($awsday) {
+        $date = dbDate($awsday);
         $whereExpr = " WHERE date='$date' ";
     }
     $stmt = $hippoDB->query("SELECT * FROM aws_temp_schedule $whereExpr ORDER BY date");
@@ -2412,29 +2413,31 @@ function getTentativeAWSSchedule($monday = null)
     *
     * @return Array of upcming AWS.
  */
-function getUpcomingAWS($monday = null)
+function getUpcomingAWS($awsday = null)
 {
-    if (! $monday) {
-        $date = dbDate('this monday');
+    global $GLOBAL_AwsDay;
+
+    if (! $awsday) {
+        $date = dbDate("this $GLOBAL_AwsDay");
         $whereExpr = "date >= '$date'";
     } else {
-        $date = dbDate($monday);
+        $date = dbDate($awsday);
         $whereExpr = "date >= '$date'";
     }
     $res = executeQuery("SELECT * FROM upcoming_aws WHERE $whereExpr ORDER BY date");
     return $res;
 }
 
-function getUpcomingAWSOnThisMonday($monday)
+function getUpcomingAWSOnThisMonday($awsdata)
 {
-    $date = dbDate($monday);
+    $date = dbDate($awsdata);
     $res = executeQuery("SELECT * FROM upcoming_aws WHERE date='$date'");
     return $res;
 }
 
-function getTotalUpcomingAWSOnThisMonday(string $monday): int
+function getTotalUpcomingAWSOnThisMonday(string $awsdata): int
 {
-    $date = dbDate($monday);
+    $date = dbDate($awsdata);
     $res = executeQuery("SELECT COUNT(*) as total FROM upcoming_aws 
         WHERE date='$date'", true);
     return intval($res[0]['total']);
