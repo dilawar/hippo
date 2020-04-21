@@ -2,10 +2,9 @@
 require_once BASEPATH . 'autoload.php';
 echo userHTML( );
 
-// cYear and cSemester are coming from controller.
+// cYear and cSemester are coming from controller. 
 $year = $cYear;
 $semester = $cSemester;
-$feedback = $cFeedback;
 
 function getQuestionName( &$questionBank, $qid )
 {
@@ -24,10 +23,24 @@ function one2oneMappingWithQID( $feedback, &$questionBank )
 
     return $response;
 }
+
+// year and semester can also be set by a _GET. We need to handle them here.
+if(__get__($_GET, 'year', '')) {
+    $year = $_GET['year'];
+    $semester = $_GET['semester'];
+}
+
+// Now get all the feedback available for this year and semester.
+$feedback = getTableEntries(
+    'course_feedback_responses'
+    , 'last_modified_on'
+    ,  "status='VALID' AND year='$year' AND semester='$semester'" 
+);
+
 ?>
 
 <!-- FORM to select year and semester -->
-<?= selectYearSemesterForm( $year, $semester )?>
+<?= selectYearSemesterForm( $year, $semester, "adminacad/show_course_feedback")?>
 
 <?php
 // Create a map out of feedback keys will be student id and course id.

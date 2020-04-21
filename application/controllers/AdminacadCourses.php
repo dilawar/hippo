@@ -41,13 +41,7 @@ trait AdminacadCourses
         if(! $semester)
             $semester = __get__($_POST, 'semester', getCurrentSemester());
 
-        // Now get all the feedback available for this year and semester.
-        $feedback = getTableEntries(
-            'course_feedback_responses'
-            , 'last_modified_on'
-            ,  "status='VALID' AND year='$year' AND semester='$semester'" 
-        );
-        $data = ['cYear'=>$year, 'cSemester'=>$semester, 'cFeedback'=>$feedback];
+        $data = ['cYear'=>$year, 'cSemester'=>$semester ];
         $this->load_adminacad_view( 'admin_acad_show_course_feedback', $data);
         return;
     }
