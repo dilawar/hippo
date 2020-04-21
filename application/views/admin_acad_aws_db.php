@@ -9,29 +9,27 @@ $( function() {
 
 <?php
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+echo userHTML();
 
-$awses = getTableEntries( 'annual_work_seminars', 'date', '' );
+$awses = getTableEntries('annual_work_seminars', 'date', '');
 
 // Create various maps from these AWSes.
 $awsAsTCMMembers = [];
 $awsAsSupervisor = [];
 $aswsStudent = [];
-foreach($awses as $aws)
-{
-    for( $i=1; $i <= 4; $i++)
-    {
-        $tcmMember = __get__($aws, "tcm_member_$i","");
-        if($tcmMember)
+foreach ($awses as $aws) {
+    for ($i=1; $i <= 4; $i++) {
+        $tcmMember = __get__($aws, "tcm_member_$i", "");
+        if ($tcmMember) {
             $awsAsTCMMembers[$tcmMember][] = $aws;
-
+        }
     }
 
-    for( $i=1; $i <= 2; $i++)
-    {
-        $superAWS = __get__($aws, "supervisor_$i","");
-        if($superAWS)
+    for ($i=1; $i <= 2; $i++) {
+        $superAWS = __get__($aws, "supervisor_$i", "");
+        if ($superAWS) {
             $awsAsSupervisor[$superAWS][] = $aws;
+        }
     }
 }
 
@@ -48,29 +46,31 @@ $tableStudent .= '<tr>
     </tr>
     ';
 
-foreach($awsAsSupervisor as $super => $awses ) {
+foreach ($awsAsSupervisor as $super => $awses) {
     $superName = arrayToName(findAnyoneWithEmail($super), true);
-    $students = array_unique(array_map(function($x) { return $x['speaker']; }, $awses));
+    $students = array_unique(array_map(function ($x) {
+        return $x['speaker'];
+    }, $awses));
     sort($students);
 
-    foreach($students as $i => $login)
-    {
+    foreach ($students as $i => $login) {
         $info = getLoginInfo($login);
-        if(!$info)
+        if (!$info) {
             continue;
+        }
         $row = '<tr>';
         $row .= "<td>" . ($i +1) . " </td>";
-        $row .= "<td>" . arrayToName($info) . '<br />' . 
+        $row .= "<td>" . arrayToName($info) . '<br />' .
              __get__($info, 'email', 'NA') . "</td>";
-        $row .= "<td>" . 
-            __get__($info, 'designation', __get__($info, 'title', null), 'NA') 
+        $row .= "<td>" .
+            __get__($info, 'designation', __get__($info, 'title', null), 'NA')
             . " </td>";
         $row .= "<td>" . $info['status'] . "</td>";
         $row .= "<td> $superName <br /> <tt>$super</tt> </td>";
         $row .= "</tr> ";
         $tableStudent .= $row;
     }
-} 
+}
 
 $tableStudent .= "</table>";
 
@@ -84,18 +84,28 @@ $tableA .= '<tr>
     <th>Active/All Students</th>
     </tr>
     ';
-foreach( $awsAsSupervisor as $super => $awses ) {
+foreach ($awsAsSupervisor as $super => $awses) {
     $row = '<tr>';
     $superName = arrayToName(findAnyoneWithEmail($super), true);
-    $students = array_unique(array_map(function($x) { return $x['speaker']; }, $awses));
+    $students = array_unique(array_map(function ($x) {
+        return $x['speaker'];
+    }, $awses));
     sort($students);
-    $activeStudents = array_filter($students, function($x){ return isEligibleForAWS($x); });
-    $activeStudentHTML = implode(",<br />",
-        array_map(function($st) { return getLoginHTML($st);}, $activeStudents)
-        );
-    $studentHTML = implode(",<br />",
-        array_map(function($st) { return getLoginHTML($st);}, $students)
-        );
+    $activeStudents = array_filter($students, function ($x) {
+        return isEligibleForAWS($x);
+    });
+    $activeStudentHTML = implode(
+        ",<br />",
+        array_map(function ($st) {
+            return getLoginHTML($st);
+        }, $activeStudents)
+    );
+    $studentHTML = implode(
+        ",<br />",
+        array_map(function ($st) {
+            return getLoginHTML($st);
+        }, $students)
+    );
     $row .= "<td> $superName <br /> <tt>$super</tt> </td>";
     $row .= "<td>" .count($awses) . " </td>";
     $row .= "<td> $activeStudentHTML </td>";
@@ -113,13 +123,16 @@ $tableB .= '<tr>
     <th>All TCMs</th> 
     </tr>
     ';
-foreach( $awsAsTCMMembers as $tcm => $awses )
-{
+foreach ($awsAsTCMMembers as $tcm => $awses) {
     $row = '<tr>';
     $tcmName = arrayToName(findAnyoneWithEmail($tcm), true);
-    $students = array_unique(array_map(function($x) { return $x['speaker']; }, $awses));
+    $students = array_unique(array_map(function ($x) {
+        return $x['speaker'];
+    }, $awses));
     ksort($students);
-    $activeStudents = array_filter($students, function($x){ return isEligibleForAWS($x); });
+    $activeStudents = array_filter($students, function ($x) {
+        return isEligibleForAWS($x);
+    });
     $row .= "<td> $tcmName </td>";
     $row .= "<td> $tcm </td>";
     $row .= "<td>" . count($activeStudents) . " </td>";

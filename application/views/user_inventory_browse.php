@@ -16,32 +16,39 @@ global $symbDelete;
 global $symbCross;
 
 $ref = "user";
-if(isset($controller))
+if (isset($controller)) {
     $ref=$controller;
+}
 
 $user = whoAmI();
-$piOrHost = getPIOrHost( $user );
-$items = getTableEntries( 'inventory', 'name'
-            , "status='VALID' AND requires_booking='YES' AND faculty_in_charge='$piOrHost'"
-        );
+$piOrHost = getPIOrHost($user);
+$items = getTableEntries(
+    'inventory',
+    'name',
+    "status='VALID' AND requires_booking='YES' AND faculty_in_charge='$piOrHost'"
+);
 
 $itemMap = array();
-foreach( $items as $equip )
+foreach ($items as $equip) {
     $itemMap[ $equip['id']] = $equip;
+}
 
 // Show book-equipment form only if items for booking are available.
 
 
-$equipIDS = array_map( function($x) { return $x['id']; }, $items);
+$equipIDS = array_map(function ($x) {
+    return $x['id'];
+}, $items);
 $enames = [];
-foreach( $items as $item)
+foreach ($items as $item) {
     $enames[$item['id']] = $item['name'];
+}
 
-$equipSelect = arrayToSelectList( 'inventory', $equipIDS, $enames);
+$equipSelect = arrayToSelectList('inventory', $equipIDS, $enames);
 
 $editable = 'inventory_id,date,start_time,end_time,comment';
 $default = array( 'id' => getUniqueID('inventory_bookings')
-                    , 'booked_by' => whoAmI() 
+                    , 'booked_by' => whoAmI()
                     , 'created_on' => dbDateTime('now')
                     , 'modified_on' => dbDateTime('now')
                     , 'inventory_id' => $equipSelect
@@ -87,54 +94,50 @@ $multiBook .= "
     ";
 $multiBook .= '</table>';
 
-if( count($items) > 0)
-{
+if (count($items) > 0) {
     echo '<h1>Book Equipment</h1>';
-    echo printNote( '
+    echo printNote('
         Use either of the two forms given below. First one is to book for single time only. Form on right
         can be used to book for multiple days. 
-        ' );
+        ');
     echo '<table><tr><td>';
-    echo '<form action="'. site_url( "user/book_equipment") .'" method="post" accept-charset="utf-8">';
-    echo dbTableToHTMLTable( 'inventory_bookings', $default, $editable, 'Book');
+    echo '<form action="'. site_url("user/book_equipment") .'" method="post" accept-charset="utf-8">';
+    echo dbTableToHTMLTable('inventory_bookings', $default, $editable, 'Book');
     echo '</form>';
     echo '</td><td>';
-    echo '<form action="'. site_url( "user/multibook_equipment") .'" method="post">';
+    echo '<form action="'. site_url("user/multibook_equipment") .'" method="post">';
     echo $multiBook;
     echo '</form>';
     echo '</td></tr>';
     echo '</table>';
-}
-else
-{
-    echo printNote( "I could not find any equipment which requires booking." );
+} else {
+    echo printNote("I could not find any equipment which requires booking.");
 }
 
 
 // Only select equipment which belongs to our lab.
 $whereExpr = array();
-foreach( $items as $i => $eq )
+foreach ($items as $i => $eq) {
     $whereExpr[] = "inventory_id='" . $eq['id'] . "'";
-$equipIdsWhere = implode( " OR ", $whereExpr );
+}
+$equipIdsWhere = implode(" OR ", $whereExpr);
 
 // If there is an item to book. Create it.
 $bookings = array();
-if($whereExpr)
-    $bookings = getTableEntries( 'inventory_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
+if ($whereExpr) {
+    $bookings = getTableEntries('inventory_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
+}
 
 $hide = 'id,status,modified_on,id,';
-if( count( $bookings ) > 0 )
-{
+if (count($bookings) > 0) {
     echo ' <div class="important">';
     echo ' <h2>Booking summary</h2>';
     echo '<table><tr>';
-    foreach( $bookings as $i => $booking )
-    {
+    foreach ($bookings as $i => $booking) {
         $eid = $booking['inventory_id'];
         $html = bookingToHtml($booking, $equipmentMap);
 
-        if( whoAmI() == $booking['booked_by'] )
-        {
+        if (whoAmI() == $booking['booked_by']) {
             $bid = $booking['id'];
             $html .= '<form action="'.site_url("user/cancel_equipment_booking/$bid").'">';
             $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
@@ -151,8 +154,9 @@ if( count( $bookings ) > 0 )
             $html .= '</form>';
         }
         echo "<td><div id='equipment_booking_id_$eid' class='sticker'>$html</div></td>";
-        if( ($i+1) % 5 == 0 )
+        if (($i+1) % 5 == 0) {
             echo '</tr><tr>';
+        }
     }
 
     echo '</tr></table>';
@@ -161,14 +165,14 @@ if( count( $bookings ) > 0 )
 
 echo '<h1>Available items</h1>';
 
-echo printNote( "Following " . count( $items ). " items are available for booking 
-    for faculty-in-charge " . mailto( $piOrHost )  . ". Whey  don't you 
-    <a href=\"". site_url( "user/inventory_manage") . "\">Add Items To Inventory</a>."
-    );
+echo printNote(
+    "Following " . count($items). " items are available for booking 
+    for faculty-in-charge " . mailto($piOrHost)  . ". Whey  don't you 
+    <a href=\"". site_url("user/inventory_manage") . "\">Add Items To Inventory</a>."
+);
 
-if(count($items) > 0)
-{
-    echo arraysToCombinedTableHTML( $items, 'info book', 'status,last_modified_on,edited_by' );
+if (count($items) > 0) {
+    echo arraysToCombinedTableHTML($items, 'info book', 'status,last_modified_on,edited_by');
     echo ' <table class="info" >';
     echo '</table>';
 }
@@ -176,6 +180,6 @@ if(count($items) > 0)
 
 echo ' <br />';
 
-echo goBackToPageLink( "$ref/home", "Go Home" );
+echo goBackToPageLink("$ref/home", "Go Home");
 ?>
 

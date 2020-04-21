@@ -23,17 +23,15 @@ function loginForm()
 echo loginForm();
 
 // Show background image only on index.php page.
-$thisPage = basename( $_SERVER[ 'PHP_SELF' ] );
-if( strpos( $thisPage, 'welcome' ) !== false )
-{
+$thisPage = basename($_SERVER[ 'PHP_SELF' ]);
+if (strpos($thisPage, 'welcome') !== false) {
 
     // Select one image from directory _backgrounds.
     // NOTE: In url leading ./../ is important since the url has to be relative
     // to application/views. Not sure why ./../.. did not work.
     // NOTE: When rewrite engine is on; you may have to teak this path a bit.
-    $background = random_jpeg( "temp/_backgrounds" );
-    if( $background )
-    {
+    $background = random_jpeg("temp/_backgrounds");
+    if ($background) {
         echo '<script type="text/javascript">
             window.onload = function() {
                 var div = document.getElementById("div_background_image");
@@ -45,5 +43,3 @@ if( strpos( $thisPage, 'welcome' ) !== false )
 }
 
 require_once __DIR__ . '/footer.php';
-
-?>

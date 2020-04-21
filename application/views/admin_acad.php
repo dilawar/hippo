@@ -1,14 +1,15 @@
 <?php
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+echo userHTML();
 
 $ref = "adminacad";
-if(isset($controller))
+if (isset($controller)) {
     $ref = $controller;
+}
 
-$logins = getLoginIds( );
-$pendingRequests = getPendingAWSRequests( );
-$pendingScheduleRequest = getTableEntries( 'aws_scheduling_request', 'status', "status='PENDING'" );
+$logins = getLoginIds();
+$pendingRequests = getPendingAWSRequests();
+$pendingScheduleRequest = getTableEntries('aws_scheduling_request', 'status', "status='PENDING'");
 $symbDelete = ' <i class="fa fa-trash-o fa-1x"></i>';
 $symbEdit = ' <i class="fa fa-pencil fa-1x"></i>';
 
@@ -17,7 +18,7 @@ $symbEdit = ' <i class="fa fa-pencil fa-1x"></i>';
 <!-- Script to autocomplete user -->
 <script>
 $(function() {
-    var logins = <?php echo json_encode( $logins ); ?>;
+    var logins = <?php echo json_encode($logins); ?>;
     //console.log( logins );
     $( "#autocomplete_user" ).autocomplete( { source : logins });
     $( "#autocomplete_user1" ).autocomplete( { source : logins });
@@ -32,7 +33,7 @@ echo '<table class="admin table">';
 echo '<tr>';
 echo '<td><a class="clickable" href="'.site_url('adminacad/upcoming_aws').'">Manage Upcoming AWSes</a></td>';
 echo '<td><a class="clickable" href="'.site_url('adminacad/scheduling_request'). '">
-        Manage ' . count( $pendingScheduleRequest) . ' Pending Scheduling Requests</a></td>';
+        Manage ' . count($pendingScheduleRequest) . ' Pending Scheduling Requests</a></td>';
 echo '</tr></table>';
 echo ' <br /> ';
 
@@ -66,7 +67,7 @@ echo '<table class="admin table">
     </tr>
     <tr>
         <td> <a class="clickable_small"
-            href="'.site_url('adminacad/aws_edit_requests').'">Manage ' . count( $pendingRequests) .
+            href="'.site_url('adminacad/aws_edit_requests').'">Manage ' . count($pendingRequests) .
             ' pending requests</a>
         </td>
         <td> <a class="clickable_small" href="'.site_url('adminacad/email_and_docs').'">Emails and Documents</td>
@@ -81,32 +82,31 @@ echo '<table class="admin table">
 
 $login = null;
 $date = null;
-if( isset( $_POST[ 'response' ] ))
-{
-    if( $_POST[ 'response' ] == 'Select' )
-    {
+if (isset($_POST[ 'response' ])) {
+    if ($_POST[ 'response' ] == 'Select') {
         $login = $_POST[ 'login' ];
         $date = $_POST[ 'date' ];
     }
 
     $awss = array( );
-    if( $login and $date )
-        $awss = array( getMyAwsOn( $login, $date ) );
-    else if( $login )
-        $awss = getAwsOfSpeaker( $login );
+    if ($login and $date) {
+        $awss = array( getMyAwsOn($login, $date) );
+    } elseif ($login) {
+        $awss = getAwsOfSpeaker($login);
+    }
 
     /* These AWS are upcoming */
-    foreach( $awss as $aws )
-    {
-        if( ! $aws )
+    foreach ($awss as $aws) {
+        if (! $aws) {
             continue;
+        }
 
         $speaker = $aws[ 'speaker' ];
         $date = $aws['date'];
-        echo printInfo( "<a>Entry for $speaker (" . loginToText( $speaker ) . ") on " .
-            date( 'D M d, Y', strtotime( $date ) ) . "</a>" );
+        echo printInfo("<a>Entry for $speaker (" . loginToText($speaker) . ") on " .
+            date('D M d, Y', strtotime($date)) . "</a>");
 
-        echo arrayToVerticalTableHTML( $aws, 'annual_work_seminars' );
+        echo arrayToVerticalTableHTML($aws, 'annual_work_seminars');
         echo '<br />';
 
         /* This forms remain on this page only */
@@ -121,8 +121,9 @@ if( isset( $_POST[ 'response' ] ))
             </form>
             ';
     }
-    if(count($awss) > 0)
-        echo goBackToPageLink( "adminacad/home", "Refresh" );
+    if (count($awss) > 0) {
+        echo goBackToPageLink("adminacad/home", "Refresh");
+    }
 }
 
 
@@ -198,21 +199,19 @@ echo '</table>';
 echo '<h1>Extra</h1>';
 echo "<h2>AWS Housekeeping</h2>";
 
-$badEntries = doAWSHouseKeeping( );
-if( count( $badEntries ) == 0 )
-    echo printInfo( "AWSs are in order." );
-else
-{
+$badEntries = doAWSHouseKeeping();
+if (count($badEntries) == 0) {
+    echo printInfo("AWSs are in order.");
+} else {
     // can't make two forms on same page with same action. They will merge.
     echo printNote("Following entries could not be moved to main AWS list. Most
         likely these entries have no data. You need to fix them. You need to know
         at least one supervisor to fix them. ");
 
     echo '<form action="' . site_url("adminacad/update_upcoming_aws") . '" method="post">';
-    foreach( $badEntries as $aws )
-    {
-        echo alertUser( "This AWS is incomplete.", false );
-        echo arrayToVerticalTableHTML( $aws, 'info', '', 'status,comment' );
+    foreach ($badEntries as $aws) {
+        echo alertUser("This AWS is incomplete.", false);
+        echo arrayToVerticalTableHTML($aws, 'info', '', 'status,comment');
         echo '<input type="hidden" name="response" value="update" />';
         echo '<button name="id" value="' . $aws[ 'id' ] . '">Fix</button>';
     }
@@ -240,7 +239,7 @@ echo '
   </table>';
 
 
-echo goBackToPageLink( 'adminacad', 'Go back' );
+echo goBackToPageLink('adminacad', 'Go back');
 
 ?>
 

@@ -1,7 +1,7 @@
 <?php
 require_once BASEPATH. 'autoload.php';
-echo userHTML( );
-$thisSem = getCurrentSemester( ) . ' ' . getCurrentYear( );
+echo userHTML();
+$thisSem = getCurrentSemester() . ' ' . getCurrentYear();
 $nAWS = count(getMyAws($cUserInfo['login']));
 $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
 ?>
@@ -15,7 +15,7 @@ $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
         Register/deregister courses for <?=$thisSem?> semster.
     </div>
 
-<?php if($nAWS > 0 || $eligibleForAWS): ?>
+<?php if ($nAWS > 0 || $eligibleForAWS): ?>
     <div class="col rounded menu-item m-3 p-2 text-left">
         <a class="fa fa-2x fa-graduation-cap" 
             href="<?=site_url("/user/aws")?>">My AWS</a> 
@@ -54,7 +54,7 @@ $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
     </div>
 </div>
 
-<?php if(isJCAdmin( whoAmI())): ?>
+<?php if (isJCAdmin(whoAmI())): ?>
     <div class="row">
         <div class="col rounded menu-item text-left m-3 p-2">
             <i class="fa fa-lock fa-2x"></i>
@@ -71,13 +71,15 @@ $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
 <?php
 // Count pending requests.
 $user = whoAmI();
-$reqs = getTableEntries( 'bookmyvenue_requests'
-    , 'date'
-    , "status='PENDING' AND created_by='$user' GROUP BY gid" 
+$reqs = getTableEntries(
+    'bookmyvenue_requests',
+    'date',
+    "status='PENDING' AND created_by='$user' GROUP BY gid"
 );
 $flag = '';
-if( count( $reqs ) > 0)
-    $flag = count( $reqs ) . " requests.";
+if (count($reqs) > 0) {
+    $flag = count($reqs) . " requests.";
+}
 ?>
 
 <div class="row">
@@ -132,16 +134,16 @@ common equipment booking system.</div>
 </div>
 
 <?php
-$roles =  getRoles(whoAmI() ); 
+$roles =  getRoles(whoAmI());
 ?>
 
-<?php if(anyOfTheseRoles("SERVICES_ADMIN")): ?>
+<?php if (anyOfTheseRoles("SERVICES_ADMIN")): ?>
     <div class=" p-2 my-2">
     <h1> Services Admin </h1>
     <div class="row">
         <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-bus fa-2x" 
-                href="<?=site_url( 'adminservices/transport')?>"> Manage Transport</a>
+                href="<?=site_url('adminservices/transport')?>"> Manage Transport</a>
         </div>
         <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-cutlery fa-2x"
@@ -151,18 +153,18 @@ $roles =  getRoles(whoAmI() );
     </div>
 <?php endif; ?>
 
-<?php if(anyOfTheseRoles('ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,ACAD_ADMIN')): ?>
+<?php if (anyOfTheseRoles('ADMIN,BOOKMYVENUE_ADMIN,JOURNALCLUB_ADMIN,ACAD_ADMIN')): ?>
     <h1> <i class="fa fa-cogs"></i> Admin</h1>
 
     <div class="row">
-    <?php if(in_array("ADMIN", $roles)): ?>
+    <?php if (in_array("ADMIN", $roles)): ?>
        <div class="col rounded menu-item text-left m-3 p-2"> 
             <a class="fa fa-lock fa-2x" 
                 href="<?=site_url("/admin")?>"> Admin</a>
         </div>
     <?php endif; ?>
 
-    <?php if(in_array("BOOKMYVENUE_ADMIN", $roles)): ?>
+    <?php if (in_array("BOOKMYVENUE_ADMIN", $roles)): ?>
        <div class="col rounded menu-item text-left m-3 p-2">
            <a class="fa fa-calendar-plus-o fa-2x" 
                 href="<?=site_url("/adminbmv")?>"> Book My Venue Admin</a>
@@ -171,7 +173,7 @@ $roles =  getRoles(whoAmI() );
        <div class="col rounded menu-item text-left m-3 p-2"></div>
     <?php endif; ?>
 
-    <?php if( in_array( "ACAD_ADMIN", $roles)): ?>
+    <?php if (in_array("ACAD_ADMIN", $roles)): ?>
        <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-graduation-cap fa-2x" 
                 href="<?=site_url("/adminacad")?>"> Academic Admin</a>

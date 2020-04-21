@@ -1099,10 +1099,10 @@ function dbTableToHTMLTable( string $tablename, array $defaults=[]
     $editableKeys = array( );
     foreach( $editables as $v )
     {
-        $temp = explode( ":", $v );
-        $editableKeys[ ] = $temp[0];
-        if( count( $temp ) > 1 )
-            $attribMap[ $temp[0] ] = array_slice( $temp, 1 );
+        $attr = explode( ":", $v );
+        $editableKeys[] = $attr[0];
+        if( count( $attr ) > 1 )
+            $attribMap[ $attr[0] ] = array_slice( $attr, 1 );
     }
 
     if( is_string( $hide ) )
@@ -1123,9 +1123,9 @@ function dbTableToHTMLTable( string $tablename, array $defaults=[]
         $columnText = strtoupper( prettify( $keyName ) );
 
         // Update column text if 'required' is in attributes.
-        $attribs = __get__( $attribMap, $keyName, '' );
+        $attribs = __get__($attribMap, $keyName, '');
         $required = false;
-        if( $attribs )
+        if($attribs)
             if( in_array( 'required', $attribs ) )
                 $required = true;
 
@@ -1143,8 +1143,7 @@ function dbTableToHTMLTable( string $tablename, array $defaults=[]
             $val = $default;
         else
         {
-            $val = "<input class=\"editable\"
-                   name=\"$keyName\" type=\"text\"
+            $val = "<input class=\"editable\" name=\"$keyName\" type=\"text\"
                     value=\"$default\" id=\"$inputId\"
                    />";
         }

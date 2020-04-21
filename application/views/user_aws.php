@@ -1,43 +1,37 @@
 <?php
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+echo userHTML();
 
 $user = $cUser;
 $scheduledAWS = $cScheduledAWS;
 $tempScheduleAWS = $cTempScheduleAWS;
-$awsRequests = getAwsRequestsByUser( $user );
-$awses = getMyAws( $user );
+$awsRequests = getAwsRequestsByUser($user);
+$awses = getMyAws($user);
 $eligible = isEligibleForAWS($user);
 
 // AWS schedule.
-if($scheduledAWS && $eligible)
-{
-    alertUser( "<i class='fa fa-bell'></i>
+if ($scheduledAWS && $eligible) {
+    alertUser("<i class='fa fa-bell'></i>
             Your AWS date has been confirmed. It is on " .
         humanReadableDate($scheduledAWS['date']));
 
     $disabled = '';
-    if( $scheduledAWS['acknowledged'] === 'YES' )
-    {
+    if ($scheduledAWS['acknowledged'] === 'YES') {
         echo "<div class='bg-info'>You've acknowledged your AWS schedule. </div>";
         $disabled = 'disabled';
-    }
-    else
-    {
+    } else {
         echo "<div class='info'>
             By pressing this button, you are confirming your AWS schedule.
             Please contact academic office in case you want to change your schedule.";
 
-        echo '<form method="post" action="' . site_url( 'user/aws_acknowledge' ) . "\">
+        echo '<form method="post" action="' . site_url('user/aws_acknowledge') . "\">
             <button class='btn-secondary' $disabled name=\"acknowledged\" value=\"YES\">Acknowledge schedule</button>
             <input type=\"hidden\" name=\"id\" value=\"" . $scheduledAWS[ 'id' ] . "\" >
             </form>
             ";
         echo '</div>';
     }
-}
-else if($eligible)
-{
+} elseif ($eligible) {
     // // Here user can submit preferences.
     // $prefs = getTableEntry( 'aws_scheduling_request', 'speaker,status'
     //             , array( 'speaker' => $user
@@ -65,12 +59,12 @@ else if($eligible)
     // {
     //     echo printInfo( "You preference for AWS schedule is pending. If you have
     //         changed your mind, cancel it. After approval, you wont be able to modify
-    //         this request. " 
+    //         this request. "
     //         );
 
     //     echo '<form method="post" action="' . site_url( 'user/aws/schedulingrequest' ) . '">';
     //     echo dbTableToHTMLTable( 'aws_scheduling_request', $prefs, '', 'edit' );
-    //     echo '<input type="hidden" name="created_on" value="' . dbDateTime( 'now' ) . '" >'; 
+    //     echo '<input type="hidden" name="created_on" value="' . dbDateTime( 'now' ) . '" >';
     //     echo '</form>';
 
     //     // Cancel goes directly to cancelling the request. Only non-approved
@@ -100,7 +94,7 @@ else if($eligible)
 }
 ?>
 
-<?php if(! $eligible): ?>
+<?php if (! $eligible): ?>
 <div class="alert alert-warning">
     Your name is no longer on the AWS roster.
     Usually a name is removed after one's <tt>PRESYNOPSIS SEMINARY</tt> 
@@ -108,8 +102,8 @@ else if($eligible)
 </div>
 <?php endif;?>
 
-<?php if($scheduledAWS): ?>
-    <?php $editableTill = strtotime( '-1 day', strtotime( $scheduledAWS[ 'date' ]));?>
+<?php if ($scheduledAWS): ?>
+    <?php $editableTill = strtotime('-1 day', strtotime($scheduledAWS[ 'date' ]));?>
     <div class="card">
         <div class="card-header">
         Please fill-in details of your upcoming  AWS below.
@@ -122,7 +116,7 @@ else if($eligible)
     <?php $id = $scheduledAWS[ 'id' ]; ?>
     <div class="card-body p-2 m-3">
     <form method="post" action="<?=site_url('user/aws/update_upcoming_aws')?>">
-    <?=arrayToVerticalTableHTML($scheduledAWS, 'aws', NULL, 'speaker,id')?>
+    <?=arrayToVerticalTableHTML($scheduledAWS, 'aws', null, 'speaker,id')?>
     <button class="btn btn-secondary" name="response"
         title="Update this entry" value="update">Edit</button>
         <input type="hidden" name="id" value="<?=$id?>" />
@@ -130,12 +124,12 @@ else if($eligible)
     </div>
 <?php endif; ?>
 
-<?php if( count( $awsRequests ) > 0 ): ?>
+<?php if (count($awsRequests) > 0): ?>
     <div class="h1">Update pending requests</div>
 <?php endif; ?>
-<?php foreach($awsRequests as $awsr): ?>
+<?php foreach ($awsRequests as $awsr): ?>
     <?php $id = $awsr['id']; ?>
-    <?= arrayToVerticalTableHTML( $awsr, 'aa table table-sm table-secondary' );?>
+    <?= arrayToVerticalTableHTML($awsr, 'aa table table-sm table-secondary');?>
     <form method="post" action="<?=site_url('user/aws/edit_request_cancel')?>">
         <button class='btn btn-warning' name="response" value="cancel">Cancel</button>
         <input type="hidden" name="id" value="<?=$id ?>" />
@@ -161,7 +155,7 @@ else if($eligible)
                     type="submit" name="response" value="clean_up">Cleap up</button>
         </form>
 
-        <?php if( __get__( $_POST, 'response', '' ) === 'write_my_aws'): ?>
+        <?php if (__get__($_POST, 'response', '') === 'write_my_aws'): ?>
         <?php $cmd = FCPATH . '/scripts/write_aws.sh'; ?>
         <?=hippo_shell_exec($cmd, $awsText, $stderr)?>
         <?=$awsText?>
@@ -170,7 +164,7 @@ else if($eligible)
         <?php endif; ?>
     </div>
 </div>
-<?=goBackToPageLink( "user/home", "Go back" )?>
+<?=goBackToPageLink("user/home", "Go back")?>
 
 <h1>Past Annual Work Seminar</h1>
 
@@ -182,10 +176,10 @@ else if($eligible)
     <a href=" <?= site_url("info/talks") ?> ">in list of the talks</a>.
 </div>
 
-<?php foreach( $awses as $aws): ?>
+<?php foreach ($awses as $aws): ?>
     <?php $id = $aws['id']; ?>
     <div class='py-3'>
-        <form method="post" action="<?=site_url("user/aws/edit_request" )?>">
+        <form method="post" action="<?=site_url("user/aws/edit_request")?>">
             <?= awsToHTML($aws) ?>
             <button class="btn btn-primary"
                     title="Edit this entry" name="response" value="edit">Edit</button>
@@ -194,4 +188,4 @@ else if($eligible)
     </div>
 <?php endforeach; ?>
 
-<?=goBackToPageLink( "user/home", "Go back" )?>
+<?=goBackToPageLink("user/home", "Go back")?>

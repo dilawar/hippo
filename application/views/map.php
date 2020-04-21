@@ -14,12 +14,11 @@ $imageUrl = __DIR__ . "/data/ncbs_map_route_map_to_lecture_halls.jpeg";
 
 echo "<h1> NCSB Map</h1>";
 
-if( file_exists( $imageUrl ) )
-{
+if (file_exists($imageUrl)) {
     echo  "Selected location <p id=\"location_info\"></p>";
 
     $html = '<img width="800px"  height="auto" id="ncbsmap_img" 
-            src="' . dataURI( $imageUrl, 'image/jpg' ) .  '" usemap="#ncbsmap" >';
+            src="' . dataURI($imageUrl, 'image/jpg') .  '" usemap="#ncbsmap" >';
     echo $html;
     echo '
     <map name="ncbsmap">
@@ -39,13 +38,11 @@ if( file_exists( $imageUrl ) )
             .mapster( 'set', true, 'bl,br,tl,tr,RAS' )
         </script>
     ";
-}
-else
-{
-    echo printWarning( "No map is found." );
+} else {
+    echo printWarning("No map is found.");
 }
 
-echo closePage( );
+echo closePage();
 
 ?>
 

@@ -1,6 +1,6 @@
 <?php
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+echo userHTML();
 
 echo "<h2>Send notifications to Hippo App</h2>";
 

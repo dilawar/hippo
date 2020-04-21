@@ -15,12 +15,12 @@ require_once FCPATH . './cron/lablist_every_two_months.php';
 require_once FCPATH . './cron/sync_calendar.php';
 require_once FCPATH . './cron/remove_old_aws_schedule.php';
 
-class Cron extends CI_Controller {
-
-    public function run( )
+class Cron extends CI_Controller
+{
+    public function run()
     {
         // Execute all scripts in ./views/controller/cron folder.
-        $tasks = array( 
+        $tasks = array(
              'update_database'
             , 'aws_annoy'
             , 'aws_friday_notification'
@@ -36,27 +36,25 @@ class Cron extends CI_Controller {
             , 'sync_calendar'
         );
 
-        foreach( $tasks as $i => $t )
-        {
-            echo printInfo( "Running cron job for task $t" );
-            try 
-            {
-                hippo_shell_exec( "php index.php cron $t", $stdout, $stderr );
+        foreach ($tasks as $i => $t) {
+            echo printInfo("Running cron job for task $t");
+            try {
+                hippo_shell_exec("php index.php cron $t", $stdout, $stderr);
                 echo printInfo($stderr);
-                echo printInfo( $stdout );
-            }
-            catch( Exception $e )
-            {
-                $body = p(" Hippo could not finish a scheduled task '$t' successfully." );
-                $body .= p( "Error was " . $e->getMessage() );
-                sendHTMLEmail( $body, "WARN! Hippo failed to do a routine task (cron)"
-                    , "hippo@lists.ncbs.res.in"
+                echo printInfo($stdout);
+            } catch (Exception $e) {
+                $body = p(" Hippo could not finish a scheduled task '$t' successfully.");
+                $body .= p("Error was " . $e->getMessage());
+                sendHTMLEmail(
+                    $body,
+                    "WARN! Hippo failed to do a routine task (cron)",
+                    "hippo@lists.ncbs.res.in"
                 );
             }
         }
     }
 
-    public function update_database( )
+    public function update_database()
     {
         update_database_cron();
         update_publishing_database();
@@ -67,7 +65,7 @@ class Cron extends CI_Controller {
         aws_annoy_cron();
     }
 
-    public function aws_friday_notification( )
+    public function aws_friday_notification()
     {
         aws_friday_notification_cron();
     }
@@ -77,17 +75,20 @@ class Cron extends CI_Controller {
         aws_friday_notify_faculty_cron();
     }
 
-    public function aws_monday( )
+    public function aws_monday()
     {
-        if( trueOnGivenDayAndTime( 'this monday', '10:00' ) )
+        if (trueOnGivenDayAndTime('this monday', '10:00')) {
             aws_monday_morning_cron();
+        }
 
-        if( trueOnGivenDayAndTime( 'this monday', '11:00' ) )
+        if (trueOnGivenDayAndTime('this monday', '11:00')) {
             notifyAcadOfficeUnassignedSlot();
+        }
 
         // Try at 6pm.
-        if( trueOnGivenDayAndTime( 'this monday', '18:00' ) )
+        if (trueOnGivenDayAndTime('this monday', '18:00')) {
             bookVenueForAWS();
+        }
     }
 
     public function aws_schedule_fac_student()
@@ -115,10 +116,11 @@ class Cron extends CI_Controller {
         jc_assign_n_weeks_in_advance_cron();
     }
 
-    public function remove_old_aws_prefs( )
+    public function remove_old_aws_prefs()
     {
-        if( trueOnGivenDayAndTime( 'this sunday', '14:15' ) )
-            remove_old_aws_scheduling_prefs( );
+        if (trueOnGivenDayAndTime('this sunday', '14:15')) {
+            remove_old_aws_scheduling_prefs();
+        }
     }
 
     public function jc()
@@ -135,7 +137,4 @@ class Cron extends CI_Controller {
     {
         sync_calendar_cron();
     }
-
 }
-
-?>

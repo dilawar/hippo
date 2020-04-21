@@ -1,10 +1,11 @@
 <?php
 require_once BASEPATH . 'autoload.php';
-$today = dbDate( 'today' );
+$today = dbDate('today');
 $default = array( 'date' => $today );
 
-if( __get__($_GET, 'date', '' ) )
+if (__get__($_GET, 'date', '')) {
     $default[ 'date' ] = $_GET[  'date' ];
+}
 
 $form = '
 <form method="get" action="">
@@ -23,30 +24,28 @@ $form = '
 echo "$form <br /> <br />";
 
 $whichDay = $default[ 'date' ];
-$eventTalks = getTableEntries( 'events', 'date,start_time' , "date>='$whichDay'
+$eventTalks = getTableEntries(
+    'events',
+    'date,start_time',
+    "date>='$whichDay'
         AND status='VALID' AND external_id LIKE 'talks%'"
-    );
+);
 
 // Only if a event has an external_id then push it into 'talks'
-if(count($eventTalks ) < 1)
-{
-    echo printInfo( "I could not find any public event. Is there 
+if (count($eventTalks) < 1) {
+    echo printInfo(
+        "I could not find any public event. Is there 
             nothing going on the campus? Or the World has finally ended?"
-        );
-}
-else
-{
+    );
+} else {
     $talkHtml = '';
-    foreach( $eventTalks as $event )
-    {
-        $talkId = explode( '.', $event[ 'external_id'])[1];
-        $talk = getTableEntry( 'talks', 'id', array( 'id' => $talkId ) );
-        if( $talk )
-        {
-            if( strtotime($event['date']) < strtotime( $whichDay) + 28*24*3600 )
-            {
-                $talkHtml .= '<div class="card bg-white py-1 my-2">'; 
-                // This is the where-when line at the top. 
+    foreach ($eventTalks as $event) {
+        $talkId = explode('.', $event[ 'external_id'])[1];
+        $talk = getTableEntry('talks', 'id', array( 'id' => $talkId ));
+        if ($talk) {
+            if (strtotime($event['date']) < strtotime($whichDay) + 28*24*3600) {
+                $talkHtml .= '<div class="card bg-white py-1 my-2">';
+                // This is the where-when line at the top.
                 $talkHtml .= talkToHTMLLarge($talk, $with_picture = true, $header=whereWhenHTML($event));
                 $talkHtml .= "<br>";
 
@@ -59,12 +58,10 @@ else
                         . site_url("user/downloadtalkical/".$default['date']."/$talkId") . '">
                         <i class="fa fa-calendar ">iCal</i></a>';
                 $talkHtml .= '</div>';
-                $talkHtml .= '</div>'; 
-            }
-            else
-            {
-                $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML( $event ) . '</p>';
-                $talkHtml .= talkToEventTitle( $talk );
+                $talkHtml .= '</div>';
+            } else {
+                $talkHtml .=  '<p class="wherewhen">' . whereWhenHTML($event) . '</p>';
+                $talkHtml .= talkToEventTitle($talk);
             }
         }
     }
@@ -72,6 +69,4 @@ else
     echo '<br>';
 }
 
-echo closePage( );
-
-?>
+echo closePage();

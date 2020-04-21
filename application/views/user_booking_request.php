@@ -1,15 +1,17 @@
-<?php 
+<?php
 require_once BASEPATH .'autoload.php';
-echo userHTML( );
+echo userHTML();
 
 $ref = 'user';
-if(isset($controller))
+if (isset($controller)) {
     $ref = $controller;
+}
 
-if(!isset($goback))
+if (!isset($goback)) {
     $goback = "$ref/home";
+}
 
-$venues = getVenues( $sortby = 'total_events' );
+$venues = getVenues($sortby = 'total_events');
 
 ?>
 
@@ -27,56 +29,56 @@ $venues = getVenues( $sortby = 'total_events' );
 
 <?php
 
-if(! isset($date))
-{
-    echo printErrorSevere( "No valid day is selected. Please go back and select a valid date." );
-    echo goBack( );
+if (! isset($date)) {
+    echo printErrorSevere("No valid day is selected. Please go back and select a valid date.");
+    echo goBack();
     exit;
 }
 
-$day = nameOfTheDay( $date ); 
-$events = getEvents( $date );
-$dbDate = dbDate( $date );
+$day = nameOfTheDay($date);
+$events = getEvents($date);
+$dbDate = dbDate($date);
 
 // Generate options here.
-$venue = __get__( $_POST, 'venue', '' );
-$venue = trim( $venue );
+$venue = __get__($_POST, 'venue', '');
+$venue = trim($venue);
 
-if( $venue )
+if ($venue) {
     $venueHTML = "<input name=\"venue\" type=\"text\" value=\"$venue\" readonly>";
-else
-    $venueHTML = venuesToHTMLSelect( $venues );
+} else {
+    $venueHTML = venuesToHTMLSelect($venues);
+}
 
-$startTime = dbTime( $_POST[ 'start_time' ] );
+$startTime = dbTime($_POST[ 'start_time' ]);
 
 // This is END time of event. It may have come from user from user_book.php,
 // default of 1 hrs in future from the start_time of event..
-$defaultEndTime = __get__( $_POST, 'end_time'
-    , date( 'H:i', strtotime( $startTime ) + 60*60 )
-    );
+$defaultEndTime = __get__(
+    $_POST,
+    'end_time',
+    date('H:i', strtotime($startTime) + 60*60)
+);
 
-$date = __get__( $_POST, 'date', '' );
-$title = __get__( $_POST, 'title', '' );
-$description = __get__( $_POST, 'description', '' );
+$date = __get__($_POST, 'date', '');
+$title = __get__($_POST, 'title', '');
+$description = __get__($_POST, 'description', '');
 
-$labmeetOrJCs = labmeetOrJCOnThisVenueSlot( $date, $startTime, $defaultEndTime, $venue );
+$labmeetOrJCs = labmeetOrJCOnThisVenueSlot($date, $startTime, $defaultEndTime, $venue);
 
-if( count( $labmeetOrJCs ) > 0 )
-{
-    foreach( $labmeetOrJCs as $labmeetOrJC )
-    {
+if (count($labmeetOrJCs) > 0) {
+    foreach ($labmeetOrJCs as $labmeetOrJC) {
         $ignore = 'is_public_event,url,description,status,gid,rid,'
             . 'external_id,modified_by,timestamp'
             . ',calendar_id,calendar_event_id,last_modified_on';
 
-        echo p( "<font color=\"darkblue\">
+        echo p("<font color=\"darkblue\">
             <i class=\"fa fa-flag fa-2x\"></i> Following Journal Club or Labmeet usually happens at this 
             slot.  DO NOT book here unless you are sure that following event WILL not
             happen. 
-            </font>" );
+            </font>");
 
         echo '<small>';
-        echo arrayToTableHTML( $labmeetOrJC, 'info', '', $ignore );
+        echo arrayToTableHTML($labmeetOrJC, 'info', '', $ignore);
         echo '</small>';
         echo '<br><br>';
     }
@@ -86,24 +88,27 @@ echo ' <h2>Fill-in details</h2> ';
 
 $default = array( 'created_by' => whoAmI() );
 $default[ 'end_time' ] = $defaultEndTime;
-$default = array_merge( $default, $_POST );
+$default = array_merge($default, $_POST);
 
-// If external_id is given then this needs to go into request table. This is 
-// used to fetch event data from external table. The format of this field if 
+// If external_id is given then this needs to go into request table. This is
+// used to fetch event data from external table. The format of this field if
 // TABLENAME.ID. 'SELF.-1' means the there is not external dependency.
-if(! isset($external_id))
+if (! isset($external_id)) {
     $external_id = 'SELF.-1';
+}
 
-if(__substr__('talks.', $external_id, true))
+if (__substr__('talks.', $external_id, true)) {
     $default['is_public_event'] = 'YES';
+}
 
 echo '<form method="post" action="' . site_url("user/bookingrequest_submit/$goback") . '">';
-echo dbTableToHTMLTable( 'bookmyvenue_requests'
-        , $default
-        , 'class:required,title:required,description,url,is_public_event,end_time:required' 
-        , ''
-        , $hide = 'gid,rid,modified_by,timestamp,status'
-        );
+echo dbTableToHTMLTable(
+    'bookmyvenue_requests',
+    $default,
+    'class:required,title:required,description,url,is_public_event,end_time:required',
+    '',
+    $hide = 'gid,rid,modified_by,timestamp,status'
+);
 
 echo '<input type="hidden" name="external_id" value="' . $external_id . '" >';
 
@@ -113,15 +118,15 @@ echo '<input type="hidden" name="REFERER" value="' . $ref . '" >';
 // I need to add repeat pattern here.
 echo "<br />";
 echo '<h3>Recurrent Event? (optional)</h3>';
-echo printNote( "Leave me alone if your booking is for a single event.");
-echo repeatPatternTable( );
+echo printNote("Leave me alone if your booking is for a single event.");
+echo repeatPatternTable();
 echo '<br />';
 echo '<button class="btn btn-primary pull-right" 
             name="response" value="submit">Submit</button>';
 echo '</form>';
 echo '<br /><br />';
 
-echo goBackToPageLink( $goback, "Go back" );
+echo goBackToPageLink($goback, "Go back");
 ?>
 
 <script type="text/javascript" charset="utf-8">

@@ -8,51 +8,55 @@ global $symbDelete;
 global $symbAccept;
 $symbAWSRemove = '<i class="fa fa-trash fa-2x"></i>';
 
-echo userHTML( );
+echo userHTML();
 
-$allSpeakers = array_map( function( $x ) { return $x['login']; }, getAWSSpeakers( ) );
-$upcomingAWSs = getUpcomingAWS( );
+$allSpeakers = array_map(function ($x) {
+    return $x['login'];
+}, getAWSSpeakers());
+$upcomingAWSs = getUpcomingAWS();
 
-$alreadyHaveAWS = array_map( function( $x ) { return $x['speaker']; }, $upcomingAWSs );
-$speakers = array_values( array_diff( $allSpeakers, $alreadyHaveAWS ) );
+$alreadyHaveAWS = array_map(function ($x) {
+    return $x['speaker'];
+}, $upcomingAWSs);
+$speakers = array_values(array_diff($allSpeakers, $alreadyHaveAWS));
 
 ?>
 
 <!-- Script to autocomplete user -->
 <script type="text/javascript" charset="utf-8">
 $(function() {
-    var speakers = <?php echo json_encode( $speakers ); ?>;
+    var speakers = <?php echo json_encode($speakers); ?>;
     $( ".autocomplete_speaker" ).autocomplete( { source : speakers });
 });
 </script>
 
 <?php
 
-$upcomingAWSs = getUpcomingAWS( );
+$upcomingAWSs = getUpcomingAWS();
 
 $upcomingAwsNextWeek = array( );
-foreach($upcomingAWSs as $aws)
-    if(strtotime($aws['date']) - strtotime('today')  < 7*24*3600)
-        array_push( $upcomingAwsNextWeek, $aws );
+foreach ($upcomingAWSs as $aws) {
+    if (strtotime($aws['date']) - strtotime('today')  < 7*24*3600) {
+        array_push($upcomingAwsNextWeek, $aws);
+    }
+}
 
 echo '<h1>Upcoming AWSs</h1>';
-if( count( $upcomingAwsNextWeek ) < 1 )
-    echo alertUser( "No AWS found for upcoming week.", false );
-else
-{
+if (count($upcomingAwsNextWeek) < 1) {
+    echo alertUser("No AWS found for upcoming week.", false);
+} else {
     $table = '<div style="border:1px solid lightblue">';
-    foreach( $upcomingAwsNextWeek as $upcomingAWS )
-    {
+    foreach ($upcomingAwsNextWeek as $upcomingAWS) {
         $table .= '<form action="'.site_url('adminacad/next_week_aws_action').'" method="post" >';
         $table .= '<table style="border:2px solid lightblue;" class="show_info">';
         $table .= '<tr><td>';
 
         $awsToShow = [];
-        $awsToShow['speaker'] = loginToText( $upcomingAWS['speaker'] );
+        $awsToShow['speaker'] = loginToText($upcomingAWS['speaker']);
         $awsToShow['title'] = $upcomingAWS['title'];
         $awsToShow['abstract'] = $upcomingAWS['abstract'];
-        $awsToShow['supervisors'] = getAWSSupervisorsHTML( $upcomingAWS );
-        $awsToShow['tcm members'] = getAWSTcmHTML( $upcomingAWS );
+        $awsToShow['supervisors'] = getAWSSupervisorsHTML($upcomingAWS);
+        $awsToShow['tcm members'] = getAWSTcmHTML($upcomingAWS);
         $awsToShow['is_presynopsis_seminar'] = $upcomingAWS['is_presynopsis_seminar'];
         $awsToShow['acknowledged'] = $upcomingAWS['acknowledged'];
         $awsToShow['venue'] = $upcomingAWS['venue'];
@@ -72,7 +76,7 @@ else
 }
 
 echo "<h1>Upcoming AWSs (approved)</h1>";
-echo awsAssignmentForm( );
+echo awsAssignmentForm();
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -82,8 +86,9 @@ echo awsAssignmentForm( );
 /* ----------------------------------------------------------------------------*/
 $awsThisWeek = 0;
 $awsGroupedByDate = array( );
-foreach( $upcomingAWSs as $aws )
+foreach ($upcomingAWSs as $aws) {
     $awsGroupedByDate[ $aws['date'] ][] = $aws;
+}
 
 
 /* --------------------------------------------------------------------------*/
@@ -96,48 +101,45 @@ $table = '<table class="infolarge exportable">';
 
 // This is odd way of getting first key of an associative array in PHP.
 $prevDate = key($awsGroupedByDate);
-foreach( $awsGroupedByDate as $groupDate => $awses )
-{
+foreach ($awsGroupedByDate as $groupDate => $awses) {
     // Check if the gap is more than 7 days.
-    $nWeeks = diffDates( $prevDate, $groupDate, 'week' );
-    if( $nWeeks > 1 )
-    {
-        for ($i = 1; $i < $nWeeks; $i++) 
-        {
-            $weekDate = humanReadableDate( strtotime( "+$i weeks", strtotime($prevDate)) );
+    $nWeeks = diffDates($prevDate, $groupDate, 'week');
+    if ($nWeeks > 1) {
+        for ($i = 1; $i < $nWeeks; $i++) {
+            $weekDate = humanReadableDate(strtotime("+$i weeks", strtotime($prevDate)));
             $table .= "<tr><td colspan='3'> <strong>$weekDate </strong> is missing!</td></tr>";
         }
     }
 
     $prevDate = $groupDate;
-    $awsThisWeek = count( $awses );
+    $awsThisWeek = count($awses);
 
     // Show AWSes
     $table .= '<tr style="border-top:2px solid blue">';
-    foreach( $awses as $countAWS => $aws )
-    {
+    foreach ($awses as $countAWS => $aws) {
         $table .= '<td>';
 
         // Each speaker can be a table as well.
         $speakerTable = '<table class="sticker" border=0> <tr> ';
 
-        $speakerHTML = "<strong>" . loginToText( $aws['speaker'], $withEmail = false ) 
+        $speakerHTML = "<strong>" . loginToText($aws['speaker'], $withEmail = false)
             . "</strong>" .  ' (' .  $aws['speaker'] . ')';
 
         // Check if user has requested AWS schedule and has it been approved.
-        $request = getSchedulingRequests( $aws['speaker'] );
-        if( $request )
-            $speakerHTML .= '<br />' . preferenceToHtml( $request );
+        $request = getSchedulingRequests($aws['speaker']);
+        if ($request) {
+            $speakerHTML .= '<br />' . preferenceToHtml($request);
+        }
 
-        $speakerTable .= '<td>' . $speakerHTML . ' <br /><strong>' 
+        $speakerTable .= '<td>' . $speakerHTML . ' <br /><strong>'
             . humanReadableDate($aws['date'], false) . '</strong></td>';
 
-        $pi = getPIOrHost( $aws[ 'speaker' ] );
-        $specialization = getSpecialization( $aws[ 'speaker' ], $pi );
+        $pi = getPIOrHost($aws[ 'speaker' ]);
+        $specialization = getSpecialization($aws[ 'speaker' ], $pi);
         $awsID = $aws['id'];
 
         // Speaker PI if any.
-        $speakerTable .=  '<td>' . piSpecializationHTML( $pi, $specialization, $prefix='' ) . '</td>';
+        $speakerTable .=  '<td>' . piSpecializationHTML($pi, $specialization, $prefix='') . '</td>';
         $speakerTable .= '</tr>';
 
         // Create a hidden form which gets active when someone clicks on delete
@@ -164,32 +166,34 @@ foreach( $awsGroupedByDate as $groupDate => $awses )
 
         $table .= $speakerTable;
 
-        if( $aws[ 'acknowledged' ] == 'NO'  )
-            $table .= "<blink><p class=\"note_to_user\">Acknowledged: " 
+        if ($aws[ 'acknowledged' ] == 'NO') {
+            $table .= "<blink><p class=\"note_to_user\">Acknowledged: "
                 . $aws[ 'acknowledged' ] . "</p></blink>";
+        }
     }
     
 
-    if( $awsThisWeek < 3 )
-        $table .= '<td>' . awsAssignmentForm( dbDate( $groupDate ), true ) . '</td>';
+    if ($awsThisWeek < 3) {
+        $table .= '<td>' . awsAssignmentForm(dbDate($groupDate), true) . '</td>';
+    }
 
     // Attach default venue. The admin should be able to change the venue  here.
     $table .= "</tr><tr><td colspan='2'>";
 
     // Assign venue if not already assigned.
-    $defaultVenue = trim( __get__($aws, 'venue', ''));
-    if(! $defaultVenue)
-    {
-        $venue = getDefaultAWSVenue( $groupDate );
-        $res = updateTable( 'upcoming_aws', 'date', 'venue', ['date'=>$groupDate, 'venue'=>$venue] );
-        if( ! $res )
-            printWarning( "Failed to assign venue. " );
-        else
+    $defaultVenue = trim(__get__($aws, 'venue', ''));
+    if (! $defaultVenue) {
+        $venue = getDefaultAWSVenue($groupDate);
+        $res = updateTable('upcoming_aws', 'date', 'venue', ['date'=>$groupDate, 'venue'=>$venue]);
+        if (! $res) {
+            printWarning("Failed to assign venue. ");
+        } else {
             $aws['venue'] = $venue;
+        }
     }
 
-    $v = getAWSVenue( $groupDate );
-    $venueHTML = getAWSVenueForm( $groupDate, $v );
+    $v = getAWSVenue($groupDate);
+    $venueHTML = getAWSVenueForm($groupDate, $v);
     $table .= " $venueHTML </td> ";
     $table .= '</tr>';
     $table .= '</div>';
@@ -198,7 +202,7 @@ $table .= '</table>';
 echo $table;
 
 
-echo goBackToPageLink( "adminacad/home", "Go back" );
+echo goBackToPageLink("adminacad/home", "Go back");
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -224,10 +228,11 @@ $methodTable .= '</table>';
 $methodTable .= "</form>";
 echo $methodTable;
 
-$schedule = getTentativeAWSSchedule( );
+$schedule = getTentativeAWSSchedule();
 $scheduleMap = array( );
-foreach( $schedule as $sch )
+foreach ($schedule as $sch) {
     $scheduleMap[ $sch['date'] ][ ] = $sch;
+}
 
 $header = "<tr>
     <th>Speaker</th><th>Scheduled On</th><th>Last AWS on</th><th># Day</th><th>#AWS</th>
@@ -241,59 +246,54 @@ $weekDate = $schedule[0]['date'];
 $csvdata = array( "Speaker,Scheduled on,Last AWS on,Days since last AWS,Total AWS so far" );
 
 $allDates = array( );
-foreach( $scheduleMap as $date => $schedule )
-{
+foreach ($scheduleMap as $date => $schedule) {
     $allDates[ ] = $date;
 
     // check if this date is one week away from previous date.
-    if( count( $allDates ) > 0 )
-    {
-        $prevDate = end( $allDates );
-        $noAWSWeeks =  (strtotime( $date ) -  strtotime( $prevDate )) / 7 / 24 / 3600;
-        for( $i = $noAWSWeeks - 1; $i > 0; $i-- )
-        {
-            $nextDate = humanReadableDate( strtotime( $date ) - $i*7*24*3600 );
-            echo printWarning( "No AWS is scheduled for '$nextDate'." );
+    if (count($allDates) > 0) {
+        $prevDate = end($allDates);
+        $noAWSWeeks =  (strtotime($date) -  strtotime($prevDate)) / 7 / 24 / 3600;
+        for ($i = $noAWSWeeks - 1; $i > 0; $i--) {
+            $nextDate = humanReadableDate(strtotime($date) - $i*7*24*3600);
+            echo printWarning("No AWS is scheduled for '$nextDate'.");
         }
     }
     
     // Show table.
     $table = '<table class="show_schedule">';
-    foreach( $schedule as $i => $upcomingAWS )
-    {
+    foreach ($schedule as $i => $upcomingAWS) {
         $table .= '<tr>';
         $csvLine = '';
 
         $speaker = $upcomingAWS[ 'speaker' ];
-        $speakerInfo = getLoginInfo( $speaker );
-        $pastAWSes = getAwsOfSpeaker( $speaker );
+        $speakerInfo = getLoginInfo($speaker);
+        $pastAWSes = getAwsOfSpeaker($speaker);
 
         // Get PI/HOST and speaker specialization.
-        $pi = getPIOrHost( $speaker );
-        $specialization = getSpecialization( $speaker, $pi );
+        $pi = getPIOrHost($speaker);
+        $specialization = getSpecialization($speaker, $pi);
 
         // This user may have not given any AWS in the past. We consider their
         // joining date as last AWS date.
-        if( count( $pastAWSes ) > 0 )
-        {
+        if (count($pastAWSes) > 0) {
             $lastAws = $pastAWSes[0];
             $lastAwsDate = $lastAws[ 'date' ];
+        } else {
+            $lastAwsDate = date('Y-m-d', strtotime($speakerInfo[ 'joined_on']));
         }
-        else
-            $lastAwsDate = date( 'Y-m-d', strtotime($speakerInfo[ 'joined_on']));
 
-        $nSecs = strtotime( $upcomingAWS['date'] ) - strtotime( $lastAwsDate );
-        $nDays = $nSecs / (3600 * 24 );
-        $speakerInfo = loginToText( $speaker, false ) . " ($speaker)";
-        $csvLine .= loginToText( $speaker, true ) . ',';
+        $nSecs = strtotime($upcomingAWS['date']) - strtotime($lastAwsDate);
+        $nDays = $nSecs / (3600 * 24);
+        $speakerInfo = loginToText($speaker, false) . " ($speaker)";
+        $csvLine .= loginToText($speaker, true) . ',';
 
         $table .= "<tr><td>";
         $table .= '<font style="font-size:large">' . $speakerInfo . '</font>';
 
         // Add PI and specialization info.
-        $table .= '<br />' . piSpecializationHTML( $pi, $specialization );
+        $table .= '<br />' . piSpecializationHTML($pi, $specialization);
 
-        $intranetLink = getIntranetLink( $speaker );
+        $intranetLink = getIntranetLink($speaker);
 
         $table .= "<br /> $intranetLink ";
         $table .= '<form action="'.site_url('adminacad/execute_aws_action/removespeaker').'" method="post">
@@ -305,17 +305,18 @@ foreach( $scheduleMap as $date => $schedule )
 
         // Check if user has requested AWS schedule and has it been approved.
         $request = getTableEntry(
-            'aws_scheduling_request'
-            , 'speaker,status'
-            , array( 'status' => 'APPROVED', 'speaker' => $upcomingAWS[ 'speaker' ])
+            'aws_scheduling_request',
+            'speaker,status',
+            array( 'status' => 'APPROVED', 'speaker' => $upcomingAWS[ 'speaker' ])
         );
 
         // If user request for rescheduling was approved, print it here.
-        if( $request )
-            $table .= preferenceToHtml( $request );
+        if ($request) {
+            $table .= preferenceToHtml($request);
+        }
 
         $table .= "</td><td>";
-        $table .= fontWithStyle( humanReadableDate( $upcomingAWS[ 'date' ] ), 'font-size:large' );
+        $table .= fontWithStyle(humanReadableDate($upcomingAWS[ 'date' ]), 'font-size:large');
 
         $csvLine .= $upcomingAWS['date'] . ',';
 
@@ -323,13 +324,14 @@ foreach( $scheduleMap as $date => $schedule )
         $csvLine .= $lastAwsDate . ',';
 
         $info = '<table class="info">';
-        if( count( $pastAWSes) == 0 )
+        if (count($pastAWSes) == 0) {
             $info .= "<tr><td>Joining Date</td><td> $lastAwsDate </td></tr>";
-        else
+        } else {
             $info .= "<tr><td>Last AWS on</td><td> $lastAwsDate </td></td>";
+        }
 
         $info .= "<tr><td>Days since last AWS</td><td> $nDays </td></td>";
-        $info .= "<tr><td>Number of past AWSs</td><td>" . count( $pastAWSes ) 
+        $info .= "<tr><td>Number of past AWSs</td><td>" . count($pastAWSes)
             . " </td></tr>";
         $info .= '</table>';
 
@@ -349,7 +351,7 @@ foreach( $scheduleMap as $date => $schedule )
         $table .= "</tr>";
         $table .= '</form>';
 
-        array_push( $csvdata, $csvLine );
+        array_push($csvdata, $csvLine);
 
         $table .= '</tr>';
     }
@@ -360,17 +362,18 @@ foreach( $scheduleMap as $date => $schedule )
     echo '<br />';
 }
 
-$csvText = implode( "\n", $csvdata );
+$csvText = implode("\n", $csvdata);
 
 $upcomingAWSScheduleFile = FCPATH.'/temp/upcoming_aws_schedule.csv';
 
-$res = saveDataFile( $upcomingAWSScheduleFile, $csvText );
+$res = saveDataFile($upcomingAWSScheduleFile, $csvText);
 
-if( $res )
-    echo downloadTextFile(  $upcomingAWSScheduleFile, "Download schedule" );
+if ($res) {
+    echo downloadTextFile($upcomingAWSScheduleFile, "Download schedule");
+}
 
 echo '<br><br>';
-echo goBackToPageLink( "adminacad/home", "Go back" );
+echo goBackToPageLink("adminacad/home", "Go back");
 
 ?>
 

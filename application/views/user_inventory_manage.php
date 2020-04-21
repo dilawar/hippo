@@ -2,26 +2,24 @@
 require_once BASEPATH.'autoload.php';
 echo userHTML();
 
-$piOrHost = getPIOrHost( whoAmI() );
-echo printNote( "This inventory belongs to PI or Host <tt>$piOrHost</tt>." );
+$piOrHost = getPIOrHost(whoAmI());
+echo printNote("This inventory belongs to PI or Host <tt>$piOrHost</tt>.");
 
-$items = getTableEntries( 'inventory', 'name', "faculty_in_charge='$piOrHost'");
+$items = getTableEntries('inventory', 'name', "faculty_in_charge='$piOrHost'");
 
 
 // Create link to upload data from excel sheet.
-echo uploadToDbTableLink( 'inventory', 'id', 'inventory_manage' );
+echo uploadToDbTableLink('inventory', 'id', 'inventory_manage');
 
 
-if( count($items) > 0)
-{
+if (count($items) > 0) {
     $hide = 'last_modified_on,edited_by,faculty_in_charge';
     echo '<table class="info sortable exportable" id="inventory">';
-    echo arrayToTHRow( $items[0], 'info', $hide );
-    foreach($items as $i => $item )
-    {
+    echo arrayToTHRow($items[0], 'info', $hide);
+    foreach ($items as $i => $item) {
         echo '<tr>';
         $inventoryID = $item['id'];
-        echo arrayToRowHTML( $item, 'info', $hide, true, false );
+        echo arrayToRowHTML($item, 'info', $hide, true, false);
         echo '<form action="'.site_url("user/delete_inventory/$inventoryID"). '" method="post">
                <td><button name="response" onclick="AreYouSure(this)">Delete</button>
             </form>';
@@ -36,32 +34,32 @@ if( count($items) > 0)
     echo '</table>';
 }
 
-echo goBackToPageLink( "user/home", "Go Home" );
+echo goBackToPageLink("user/home", "Go Home");
 
 echo '<h1> Add or update inventory item</h1>';
 echo ' <br />';
 
-$newID = getUniqueID( 'inventory');
+$newID = getUniqueID('inventory');
 $inventory = array( 'id' => $newID, 'faculty_in_charge' => $piOrHost
-        , 'last_modified_on' => dbDateTime( 'now' )
+        , 'last_modified_on' => dbDateTime('now')
         , 'edited_by' => whoAmI()
         );
 
 $whatToDo = 'Add';
 // If updateing the old entries, use the previous values as default parameters.
-if( __get__($_POST, 'response', '') == 'update')
-    if( __get__($_POST, 'id', 0 )  > 0 )
-    {
-        $inventory = getTableEntry( 'inventory', 'id', $_POST );
+if (__get__($_POST, 'response', '') == 'update') {
+    if (__get__($_POST, 'id', 0)  > 0) {
+        $inventory = getTableEntry('inventory', 'id', $_POST);
         $whatToDo = 'Update';
     }
+}
 
 // Button to clear up the form.
 echo '<form action="">
     <button type="submit">Clear form</button>
     </form>';
 
-$editable = 'name:required,scientific_name,vendor:required,description,' . 
+$editable = 'name:required,scientific_name,vendor:required,description,' .
     'person_in_charge:required,item_condition,expiry_date';
 $editable .= ',quantity_with_unit,edited_by,requires_booking';
 
@@ -72,7 +70,7 @@ echo dbTableToHTMLTable('inventory', $inventory, $editable, $whatToDo);
 echo '</form>';
 echo ' <br />';
 
-echo goBackToPageLink( "user/home", "Go Home" );
+echo goBackToPageLink("user/home", "Go Home");
 
 ?>
 <script type="text/javascript" charset="utf-8">

@@ -12,7 +12,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 body {
-    /* font-family: "Libre Baskerville"; */
+    font-family: "Benton Sans", "Libre Baskerville";
     /* font-size: 16px; */
     /* font-family : 'EB Garamond'; */
     /* font-family: "Open Sans", "Arial", sans-serif; */
@@ -38,7 +38,7 @@ div.menu-item {
 div.sticker {
     margin: 2px;
     font-size: small;
-    font-family: Ubuntu;
+    /* font-family: Ubuntu; */
     border-radius: 5px;
     background-color: GhostWhite;
 }
@@ -93,16 +93,6 @@ input.long {
 img.login_picture {
     /* height : auto; */
     /* max-height : 300px; */
-}
-
-
-table {
-    /* font-family : 'Ubuntu'; */
-    margin-right: 10px;
-}
-
-table tr td {
-    border: 0px;
 }
 
 
@@ -162,7 +152,6 @@ table.table_in_table tr td
     border: 1pt dotted lightblue;
     vertical-align: bottom;
     font-size: small;
-    font-family: "Roboto";
 }
 
 /* Show course */
@@ -942,7 +931,7 @@ div.human_readable p:first-of-type::first-letter {
 }
 
 td.db_table_fieldname {
-    font-size : x-small;
+    font-size : small;
     text-transform : uppercase;
 }
 

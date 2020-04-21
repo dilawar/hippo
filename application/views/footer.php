@@ -1,6 +1,6 @@
 <?php
 include_once BASEPATH . '/extra/methods.php';
-$calURL =  getConfigValue( 'CALENDAR_URL' );
+$calURL =  getConfigValue('CALENDAR_URL');
 
 echo "<footer>
     <a href=\"$calURL\"> <i class=\"fa fa-calendar fa-3x\"></i> NCBS Google Calendar</a>

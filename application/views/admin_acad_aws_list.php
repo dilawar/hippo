@@ -9,23 +9,24 @@ $( function() {
 
 <?php
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+echo userHTML();
 
 $awses = $AWSES_CI;
 
 // Create various maps from these AWSes.
 $awsByDate = [];
-foreach($awses as $aws)
+foreach ($awses as $aws) {
     $awsByDate[$aws['date']][] = $aws;
+}
 ?>
 
 
 
 <table class="table">
-<?php foreach($awsByDate as $date => $awses): ?> 
+<?php foreach ($awsByDate as $date => $awses): ?> 
     <tr>
         <td> <?= humanReadableDate($date) ?> </td>
-        <?php foreach($awses as $aws): ?>
+        <?php foreach ($awses as $aws): ?>
         <td> <?= $aws['title'] ?> </td>
         <?php endforeach; ?>
     </tr>

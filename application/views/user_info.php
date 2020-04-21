@@ -3,7 +3,7 @@
 require_once BASEPATH . 'autoload.php';
 require_once FCPATH . 'system/extra/me.php';
 
-echo userHTML( );
+echo userHTML();
 
 $picPath = getLoginPicturePath(whoAmI());
 
@@ -13,15 +13,16 @@ $picPath = getLoginPicturePath(whoAmI());
 $tab = '<table class="">';
 $tab .= '<tr><td>';
 
-if( file_exists( $picPath ) )
-    $tab .= showImage( $picPath );
-else
-    $tab .= printInfo( "I could not find your picture in my database.  Please upload one.");
+if (file_exists($picPath)) {
+    $tab .= showImage($picPath);
+} else {
+    $tab .= printInfo("I could not find your picture in my database.  Please upload one.");
+}
 
 $tab .= '</td></tr><tr><td>';
 
 // Form to upload a picture
-$picAction = '<form action="' . site_url( "/user/info/upload_picture" ) . '" 
+$picAction = '<form action="' . site_url("/user/info/upload_picture") . '" 
     method="post" enctype="multipart/form-data">';
 
 $picAction .=  '<p><small>
@@ -40,41 +41,49 @@ $picAction .=  '<br>';
 $tab .= $picAction;
 echo $tab;
 
-$info = getUserInfo( whoAmI(), true );
+$info = getUserInfo(whoAmI(), true);
 $editables = array_keys(getProfileEditables($info));
 
 echo '<h1>Your profile </h1>';
 
 $specializations = array_map(
-    function( $x ) { return $x['specialization']; }, getAllSpecialization( )
+    function ($x) {
+        return $x['specialization'];
+    },
+    getAllSpecialization()
 );
 
-$info[ 'specialization' ] = arrayToSelectList( 'specialization'
-    , $specializations, array(), false, __get__($info, 'specialization', '')
-    );
+$info[ 'specialization' ] = arrayToSelectList(
+    'specialization',
+    $specializations,
+    array(),
+    false,
+    __get__($info, 'specialization', '')
+);
 
 // Prepare select list of faculty.
-$faculty = getTableEntries( 'faculty', 'email', "status='ACTIVE'" );
+$faculty = getTableEntries('faculty', 'email', "status='ACTIVE'");
 $facultyEmails = array( );
 $facMap = array( );
-foreach( $faculty as $fac )
-{
+foreach ($faculty as $fac) {
     $facultyEmails[] = $fac[ 'email'];
-    $facMap[ $fac['email'] ] = arrayToName( $fac, $with_email = true );
+    $facMap[ $fac['email'] ] = arrayToName($fac, $with_email = true);
 }
 
-$info[ 'pi_or_host' ] = arrayToSelectList('pi_or_host'
-    , $facultyEmails, $facMap, false
-    , __get__($info, 'pi_or_host', '' )
+$info[ 'pi_or_host' ] = arrayToSelectList(
+    'pi_or_host',
+    $facultyEmails,
+    $facMap,
+    false,
+    __get__($info, 'pi_or_host', '')
 );
 
 echo '<form method="post" action="' . site_url('/user/info/action') . '" >';
-echo dbTableToHTMLTable( 'logins', $info, implode(',', $editables));
+echo dbTableToHTMLTable('logins', $info, implode(',', $editables));
 echo "</form>";
 
-if(__get__($info, 'eligible_for_aws', 'NO') =="NO")
-{
-    echo alertUser( 
+if (__get__($info, 'eligible_for_aws', 'NO') =="NO") {
+    echo alertUser(
         "If you are <tt>ELIGIBLE FOR AWS</tt>, please write to academic office to include 
         your name."
     );
@@ -99,13 +108,12 @@ $myKeys = getUserKeys(whoAmI());
 
 $table = '<table class="info">';
 $table .= '<tr><th>ID</th><th>KEY</th> <th>created on</th> <th></th></tr>';
-foreach( $myKeys as $key )
-{
+foreach ($myKeys as $key) {
     $id = $key['id'];
     $revokeForm = '<form method="post" action="'.site_url("/user/revoke_key/$id").'">';
     $revokeForm .= "<button>Revoke</button>";
     $revokeForm .= '</form>';
-    $table .= "<tr>" . arrayToRowHTML($key, 'info', 'level,login,ignore_limits', '', false) 
+    $table .= "<tr>" . arrayToRowHTML($key, 'info', 'level,login,ignore_limits', '', false)
         . "<td> $revokeForm </td></tr>";
 }
 
@@ -119,6 +127,4 @@ $form .= "</form>";
 
 echo $form;
 
-echo goBackToPageLink( "/user/home", "Go back" );
-
-?>
+echo goBackToPageLink("/user/home", "Go back");

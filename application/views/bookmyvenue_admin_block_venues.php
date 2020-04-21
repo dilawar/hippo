@@ -1,25 +1,27 @@
 <?php
 require_once BASEPATH.'autoload.php';
 
-echo userHTML( );
+echo userHTML();
 
 global $dbChoices;
 
 $ref = 'adminbmv';
-if(isset($controller))
+if (isset($controller)) {
     $ref = $controller;
+}
 
 /* Let user select venues and select the date to block them. */
 echo '<h1>Block venues on certain dates and times </h1>';
 
-echo p("Note that venues are immediately blocked. They won't go for approval." );
+echo p("Note that venues are immediately blocked. They won't go for approval.");
 
-$venues      = getVenues( );
-$venueSelect = venuesToHTMLSelect( $venues, true );
-$classSelect = arrayToSelectList( 'class'
-        , explode( ',', $dbChoices[ 'bookmyvenue_requests.class' ] )
-        , array()
-    );
+$venues      = getVenues();
+$venueSelect = venuesToHTMLSelect($venues, true);
+$classSelect = arrayToSelectList(
+    'class',
+    explode(',', $dbChoices[ 'bookmyvenue_requests.class' ]),
+    array()
+);
 
 $form   = '<form action="'. site_url("$ref/block_venue_submit") .'" method="post" accept-charset="utf-8">';
 $table  = '<table class="tasks">';
@@ -41,6 +43,4 @@ $form  .= '<button class="submit" name="response" value="Block">Block Venues</bu
 $form  .= '</form>';
 echo $form;
 echo ' <br /> <br />';
-echo goBackToPageLink( "$ref/home", 'Go Back' );
-
-?>
+echo goBackToPageLink("$ref/home", 'Go Back');
