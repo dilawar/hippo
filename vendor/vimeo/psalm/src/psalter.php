@@ -1,6 +1,7 @@
 <?php
 require_once('command_functions.php');
 
+use Psalm\DocComment;
 use Psalm\Internal\Analyzer\ProjectAnalyzer;
 use Psalm\Config;
 use Psalm\IssueBuffer;
@@ -11,7 +12,11 @@ use Psalm\Progress\DefaultProgress;
 error_reporting(-1);
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
-ini_set('memory_limit', '4096M');
+$memLimit = getMemoryLimitInBytes();
+// Magic number is 4096M in bytes
+if ($memLimit > 0 && $memLimit < 4294967296) {
+    ini_set('memory_limit', '4096M');
+}
 
 gc_collect_cycles();
 gc_disable();
@@ -26,6 +31,8 @@ $valid_long_options = [
     'plugin:', 'issues:', 'list-supported-issues', 'php-version:', 'dry-run', 'safe-types',
     'find-unused-code', 'threads:', 'codeowner:',
     'allow-backwards-incompatible-changes:',
+    'add-newline-between-docblock-annotations:',
+    'no-cache'
 ];
 
 // get options from command line
@@ -141,6 +148,11 @@ Options:
     --allow-backwards-incompatible-changes=BOOL
         Allow Psalm modify method signatures that could break code outside the project. Defaults to true.
 
+    --add-newline-between-docblock-annotations=BOOL
+        Whether to add or not add a new line between docblock annotations. Defaults to true.
+
+    --no-cache
+        Runs Psalm without using cache
 HELP;
 
     exit;
@@ -191,12 +203,20 @@ if ($config->resolve_from_config_file) {
 
 $threads = isset($options['threads']) ? (int)$options['threads'] : 1;
 
-$providers = new Psalm\Internal\Provider\Providers(
-    new Psalm\Internal\Provider\FileProvider(),
-    new Psalm\Internal\Provider\ParserCacheProvider($config),
-    new Psalm\Internal\Provider\FileStorageCacheProvider($config),
-    new Psalm\Internal\Provider\ClassLikeStorageCacheProvider($config)
-);
+if (isset($options['no-cache'])) {
+    $providers = new Psalm\Internal\Provider\Providers(
+        new Psalm\Internal\Provider\FileProvider()
+    );
+} else {
+    $providers = new Psalm\Internal\Provider\Providers(
+        new Psalm\Internal\Provider\FileProvider(),
+        new Psalm\Internal\Provider\ParserCacheProvider($config, false),
+        new Psalm\Internal\Provider\FileStorageCacheProvider($config),
+        new Psalm\Internal\Provider\ClassLikeStorageCacheProvider($config),
+        null,
+        new Psalm\Internal\Provider\ProjectCacheProvider($current_dir . DIRECTORY_SEPARATOR . 'composer.lock')
+    );
+}
 
 if (array_key_exists('list-supported-issues', $options)) {
     echo implode(',', ProjectAnalyzer::getSupportedIssuesToFix()) . PHP_EOL;
@@ -343,10 +363,24 @@ if (isset($options['allow-backwards-incompatible-changes'])) {
     );
 
     if ($allow_backwards_incompatible_changes === null) {
-        die('--allow-backwards-incompatible-changes expectes a boolean value [true|false|1|0]' . PHP_EOL);
+        die('--allow-backwards-incompatible-changes expects a boolean value [true|false|1|0]' . PHP_EOL);
     }
 
     $project_analyzer->getCodebase()->allow_backwards_incompatible_changes = $allow_backwards_incompatible_changes;
+}
+
+if (isset($options['add-newline-between-docblock-annotations'])) {
+    $doc_block_add_new_line_before_return = filter_var(
+        $options['add-newline-between-docblock-annotations'],
+        FILTER_VALIDATE_BOOLEAN,
+        ['flags' => FILTER_NULL_ON_FAILURE]
+    );
+
+    if ($doc_block_add_new_line_before_return === null) {
+        die('--add-newline-between-docblock-annotations expects a boolean value [true|false|1|0]' . PHP_EOL);
+    }
+
+    DocComment::addNewLineBetweenAnnotations($doc_block_add_new_line_before_return);
 }
 
 $plugins = [];

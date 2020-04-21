@@ -12,6 +12,7 @@ use Psalm\Config;
 use Psalm\Context;
 use Psalm\Issue\FalseOperand;
 use Psalm\Issue\ImplicitToStringCast;
+use Psalm\Issue\ImpureMethodCall;
 use Psalm\Issue\InvalidOperand;
 use Psalm\Issue\MixedOperand;
 use Psalm\Issue\NullOperand;
@@ -40,7 +41,6 @@ use Psalm\Internal\Type\TypeCombination;
 use function array_merge;
 use function array_diff_key;
 use function array_filter;
-use const ARRAY_FILTER_USE_KEY;
 use function array_intersect_key;
 use function array_values;
 use function array_map;
@@ -207,7 +207,7 @@ class BinaryOpAnalyzer
                 $left_context->referenced_var_ids
             );
 
-            if ($context->collect_references) {
+            if ($codebase->find_unused_variables) {
                 $context->unreferenced_vars = $right_context->unreferenced_vars;
             }
 
@@ -247,7 +247,7 @@ class BinaryOpAnalyzer
                     $if_context->assigned_var_ids
                 );
 
-                if ($context->collect_references) {
+                if ($codebase->find_unused_variables) {
                     $if_context->unreferenced_vars = $context->unreferenced_vars;
                 }
 
@@ -345,7 +345,7 @@ class BinaryOpAnalyzer
                     }
                 }
 
-                if ($context->collect_references) {
+                if ($codebase->find_unused_variables) {
                     $context->unreferenced_vars = $left_context->unreferenced_vars;
                 }
 
@@ -505,7 +505,7 @@ class BinaryOpAnalyzer
                 $right_context->assigned_var_ids
             );
 
-            if ($context->collect_references) {
+            if ($codebase->find_unused_variables) {
                 foreach ($right_context->unreferenced_vars as $var_id => $locations) {
                     if (!isset($context->unreferenced_vars[$var_id])) {
                         $context->unreferenced_vars[$var_id] = $locations;
@@ -547,7 +547,7 @@ class BinaryOpAnalyzer
                     $if_context->assigned_var_ids
                 );
 
-                if ($context->collect_references) {
+                if ($codebase->find_unused_variables) {
                     $if_context->unreferenced_vars = $context->unreferenced_vars;
                 }
 
@@ -733,7 +733,7 @@ class BinaryOpAnalyzer
                 $t_if_context->referenced_var_ids
             );
 
-            if ($context->collect_references) {
+            if ($codebase->find_unused_variables) {
                 $context->unreferenced_vars = array_intersect_key(
                     $t_if_context->unreferenced_vars,
                     $context->unreferenced_vars
@@ -767,7 +767,7 @@ class BinaryOpAnalyzer
                 $t_else_context->referenced_var_ids
             );
 
-            if ($context->collect_references) {
+            if ($codebase->find_unused_variables) {
                 $context->unreferenced_vars = array_intersect_key(
                     $t_else_context->unreferenced_vars,
                     $context->unreferenced_vars
@@ -923,6 +923,70 @@ class BinaryOpAnalyzer
             || $stmt instanceof PhpParser\Node\Expr\BinaryOp\SmallerOrEqual
         ) {
             $statements_analyzer->node_data->setType($stmt, Type::getBool());
+        }
+
+        if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Equal
+            && $stmt_left_type
+            && $stmt_right_type
+            && $context->mutation_free
+        ) {
+            if ($stmt_left_type->hasString() && $stmt_right_type->hasObjectType()) {
+                foreach ($stmt_right_type->getAtomicTypes() as $atomic_type) {
+                    if ($atomic_type instanceof TNamedObject) {
+                        try {
+                            $storage = $codebase->methods->getStorage(
+                                new \Psalm\Internal\MethodIdentifier(
+                                    $atomic_type->value,
+                                    '__tostring'
+                                )
+                            );
+                        } catch (\UnexpectedValueException $e) {
+                            continue;
+                        }
+
+                        if (!$storage->mutation_free) {
+                            if (IssueBuffer::accepts(
+                                new ImpureMethodCall(
+                                    'Cannot call a possibly-mutating method '
+                                        . $atomic_type->value . '::__toString from a pure context',
+                                    new CodeLocation($statements_analyzer, $stmt)
+                                ),
+                                $statements_analyzer->getSuppressedIssues()
+                            )) {
+                                // fall through
+                            }
+                        }
+                    }
+                }
+            } elseif ($stmt_right_type->hasString() && $stmt_left_type->hasObjectType()) {
+                foreach ($stmt_left_type->getAtomicTypes() as $atomic_type) {
+                    if ($atomic_type instanceof TNamedObject) {
+                        try {
+                            $storage = $codebase->methods->getStorage(
+                                new \Psalm\Internal\MethodIdentifier(
+                                    $atomic_type->value,
+                                    '__tostring'
+                                )
+                            );
+                        } catch (\UnexpectedValueException $e) {
+                            continue;
+                        }
+
+                        if (!$storage->mutation_free) {
+                            if (IssueBuffer::accepts(
+                                new ImpureMethodCall(
+                                    'Cannot call a possibly-mutating method '
+                                        . $atomic_type->value . '::__toString from a pure context',
+                                    new CodeLocation($statements_analyzer, $stmt)
+                                ),
+                                $statements_analyzer->getSuppressedIssues()
+                            )) {
+                                // fall through
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Spaceship) {
@@ -1215,6 +1279,22 @@ class BinaryOpAnalyzer
             $has_valid_right_operand = true;
 
             return;
+        }
+
+        if ($left_type_part instanceof TTemplateParam
+            && $right_type_part instanceof TTemplateParam
+        ) {
+            $combined_type = Type::combineUnionTypes(
+                $left_type_part->as,
+                $right_type_part->as
+            );
+
+            $combined_atomic_types = array_values($combined_type->getAtomicTypes());
+
+            if (\count($combined_atomic_types) <= 2) {
+                $left_type_part = $combined_atomic_types[0];
+                $right_type_part = $combined_atomic_types[1] ?? $combined_atomic_types[0];
+            }
         }
 
         if ($left_type_part instanceof TMixed
@@ -1766,6 +1846,36 @@ class BinaryOpAnalyzer
                         // fall through
                     }
                 }
+
+                if ($context->mutation_free) {
+                    foreach ($left_type->getAtomicTypes() as $atomic_type) {
+                        if ($atomic_type instanceof TNamedObject) {
+                            try {
+                                $storage = $codebase->methods->getStorage(
+                                    new \Psalm\Internal\MethodIdentifier(
+                                        $atomic_type->value,
+                                        '__tostring'
+                                    )
+                                );
+                            } catch (\UnexpectedValueException $e) {
+                                continue;
+                            }
+
+                            if (!$storage->mutation_free) {
+                                if (IssueBuffer::accepts(
+                                    new ImpureMethodCall(
+                                        'Cannot call a possibly-mutating method '
+                                            . $atomic_type->value . '::__toString from a pure context',
+                                        new CodeLocation($statements_analyzer, $left)
+                                    ),
+                                    $statements_analyzer->getSuppressedIssues()
+                                )) {
+                                    // fall through
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             foreach ($right_type->getAtomicTypes() as $right_type_part) {
@@ -1810,6 +1920,36 @@ class BinaryOpAnalyzer
                         $statements_analyzer->getSuppressedIssues()
                     )) {
                         // fall through
+                    }
+                }
+
+                if ($context->mutation_free) {
+                    foreach ($right_type->getAtomicTypes() as $atomic_type) {
+                        if ($atomic_type instanceof TNamedObject) {
+                            try {
+                                $storage = $codebase->methods->getStorage(
+                                    new \Psalm\Internal\MethodIdentifier(
+                                        $atomic_type->value,
+                                        '__tostring'
+                                    )
+                                );
+                            } catch (\UnexpectedValueException $e) {
+                                continue;
+                            }
+
+                            if (!$storage->mutation_free) {
+                                if (IssueBuffer::accepts(
+                                    new ImpureMethodCall(
+                                        'Cannot call a possibly-mutating method '
+                                            . $atomic_type->value . '::__toString from a pure context',
+                                        new CodeLocation($statements_analyzer, $right)
+                                    ),
+                                    $statements_analyzer->getSuppressedIssues()
+                                )) {
+                                    // fall through
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1878,14 +2018,30 @@ class BinaryOpAnalyzer
         } else {
             if ($left_type
                 && $right_type
-                && ($left_type->getId() === 'non-empty-string'
-                    || $right_type->getId() === 'non-empty-string'
-                    || ($left_type->isSingleStringLiteral()
-                        && $left_type->getSingleStringLiteral()->value)
-                    || ($right_type->isSingleStringLiteral()
-                        && $right_type->getSingleStringLiteral()->value))
             ) {
-                $result_type = new Type\Union([new Type\Atomic\TNonEmptyString()]);
+                $left_type_literal_value = $left_type->isSingleStringLiteral()
+                    ? $left_type->getSingleStringLiteral()->value
+                    : null;
+
+                $right_type_literal_value = $right_type->isSingleStringLiteral()
+                    ? $right_type->getSingleStringLiteral()->value
+                    : null;
+
+                if (($left_type->getId() === 'lowercase-string'
+                        || ($left_type_literal_value !== null
+                            && strtolower($left_type_literal_value) === $left_type_literal_value))
+                    && ($right_type->getId() === 'lowercase-string'
+                        || ($right_type_literal_value !== null
+                            && strtolower($right_type_literal_value) === $right_type_literal_value))
+                ) {
+                    $result_type = new Type\Union([new Type\Atomic\TLowercaseString()]);
+                } elseif ($left_type->getId() === 'non-empty-string'
+                    || $right_type->getId() === 'non-empty-string'
+                    || $left_type_literal_value
+                    || $right_type_literal_value
+                ) {
+                    $result_type = new Type\Union([new Type\Atomic\TNonEmptyString()]);
+                }
             }
         }
 

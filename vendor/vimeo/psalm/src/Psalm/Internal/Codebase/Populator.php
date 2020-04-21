@@ -40,6 +40,11 @@ class Populator
     private $file_storage_provider;
 
     /**
+     * @var array<lowercase-string, list<ClassLikeStorage>>
+     */
+    private $invalid_class_storages = [];
+
+    /**
      * @var Progress
      */
     private $progress;
@@ -117,8 +122,8 @@ class Populator
                 }
             }
 
-            foreach ($class_storage->dependent_classlikes as $dependent_classlike_name => $_) {
-                $dependee_storage = $this->classlike_storage_provider->get($dependent_classlike_name);
+            foreach ($class_storage->dependent_classlikes as $dependent_classlike_lc => $_) {
+                $dependee_storage = $this->classlike_storage_provider->get($dependent_classlike_lc);
 
                 $class_storage->dependent_classlikes += $dependee_storage->dependent_classlikes;
             }
@@ -179,10 +184,6 @@ class Populator
 
         $this->populateDataFromTraits($storage, $storage_provider, $dependent_classlikes);
 
-        if ($storage->mixin_fqcln) {
-            $this->populateDataFromMixin($storage, $storage_provider, $dependent_classlikes, $storage->mixin_fqcln);
-        }
-
         if ($storage->parent_classes) {
             $this->populateDataFromParentClass($storage, $storage_provider, $dependent_classlikes);
         }
@@ -193,12 +194,17 @@ class Populator
             && !$storage->is_interface
             && !$storage->is_trait
         ) {
+            /** @psalm-suppress PropertyTypeCoercion */
             $storage->methods['__construct'] = $storage->methods[$fq_classlike_name_lc];
         }
 
         $this->populateInterfaceDataFromParentInterfaces($storage, $storage_provider, $dependent_classlikes);
 
         $this->populateDataFromImplementedInterfaces($storage, $storage_provider, $dependent_classlikes);
+
+        if ($storage->mixin_fqcln) {
+            $this->populateDataFromMixin($storage, $storage_provider, $dependent_classlikes, $storage->mixin_fqcln);
+        }
 
         if ($storage->location) {
             $file_path = $storage->location->file_path;
@@ -258,6 +264,15 @@ class Populator
         $this->progress->debug('Have populated ' . $storage->name . "\n");
 
         $storage->populated = true;
+
+        if (isset($this->invalid_class_storages[$fq_classlike_name_lc])) {
+            foreach ($this->invalid_class_storages[$fq_classlike_name_lc] as $dependency) {
+                $dependency->populated = false;
+                $this->populateClassLikeStorage($dependency, $dependent_classlikes);
+            }
+
+            unset($this->invalid_class_storages[$fq_classlike_name_lc]);
+        }
     }
 
     /** @return void */
@@ -273,7 +288,7 @@ class Populator
                 $declaring_class_storages = [];
 
                 foreach ($overridden_method_ids as $declaring_method_id) {
-                    list($declaring_class) = explode('::', $declaring_method_id);
+                    $declaring_class = $declaring_method_id->fq_class_name;
                     $declaring_class_storage
                         = $declaring_class_storages[$declaring_class]
                         = $this->classlike_storage_provider->get($declaring_class);
@@ -281,21 +296,23 @@ class Populator
                     if ($candidate_overridden_ids === null) {
                         $candidate_overridden_ids
                             = ($declaring_class_storage->overridden_method_ids[$method_name] ?? [])
-                                + [$declaring_method_id => $declaring_method_id];
+                                + [$declaring_method_id->fq_class_name => $declaring_method_id];
                     } else {
                         $candidate_overridden_ids = \array_intersect_key(
                             $candidate_overridden_ids,
                             ($declaring_class_storage->overridden_method_ids[$method_name] ?? [])
-                                + [$declaring_method_id => $declaring_method_id]
+                                + [$declaring_method_id->fq_class_name => $declaring_method_id]
                         );
                     }
                 }
 
                 foreach ($overridden_method_ids as $declaring_method_id) {
-                    list($declaring_class, $declaring_method_name) = explode('::', $declaring_method_id);
+                    $declaring_class = $declaring_method_id->fq_class_name;
+                    $declaring_method_name = $declaring_method_id->method_name;
+                    ;
                     $declaring_class_storage = $declaring_class_storages[$declaring_class];
 
-                    $declaring_method_storage = $declaring_class_storage->methods[strtolower($declaring_method_name)];
+                    $declaring_method_storage = $declaring_class_storage->methods[$declaring_method_name];
 
                     if ($declaring_method_storage->has_docblock_param_types
                         && !$method_storage->has_docblock_param_types
@@ -321,7 +338,7 @@ class Populator
                     }
 
                     if ((count($overridden_method_ids) === 1
-                        || $candidate_overridden_ids)
+                            || $candidate_overridden_ids)
                         && $method_storage->signature_return_type
                         && !$method_storage->signature_return_type->isVoid()
                         && ($method_storage->return_type === $method_storage->signature_return_type
@@ -362,8 +379,10 @@ class Populator
     ) {
         foreach ($storage->used_traits as $used_trait_lc => $_) {
             try {
-                $used_trait_lc = $this->classlikes->getUnAliasedName(
-                    $used_trait_lc
+                $used_trait_lc = strtolower(
+                    $this->classlikes->getUnAliasedName(
+                        $used_trait_lc
+                    )
                 );
                 $trait_storage = $storage_provider->get($used_trait_lc);
             } catch (\InvalidArgumentException $e) {
@@ -390,9 +409,7 @@ class Populator
                     if ($trait_storage->template_type_extends) {
                         foreach ($trait_storage->template_type_extends as $t_storage_class => $type_map) {
                             foreach ($type_map as $i => $type) {
-                                if (isset($storage->template_type_extends[$t_storage_class][$i])
-                                    || is_int($i)
-                                ) {
+                                if (is_int($i)) {
                                     continue;
                                 }
 
@@ -434,8 +451,10 @@ class Populator
         string $mixin_fqcln
     ) {
         try {
-            $mixin_fqcln = $this->classlikes->getUnAliasedName(
-                $mixin_fqcln
+            $mixin_fqcln = strtolower(
+                $this->classlikes->getUnAliasedName(
+                    $mixin_fqcln
+                )
             );
             $mixin_storage = $storage_provider->get($mixin_fqcln);
         } catch (\InvalidArgumentException $e) {
@@ -489,114 +508,116 @@ class Populator
     ) {
         $parent_storage_class = reset($storage->parent_classes);
 
+        $parent_storage_class = strtolower(
+            $this->classlikes->getUnAliasedName(
+                $parent_storage_class
+            )
+        );
+
         try {
-            $parent_storage_class = $this->classlikes->getUnAliasedName(
-                strtolower($parent_storage_class)
-            );
             $parent_storage = $storage_provider->get($parent_storage_class);
         } catch (\InvalidArgumentException $e) {
             $this->progress->debug('Populator could not find dependency (' . __LINE__ . ")\n");
 
             $storage->invalid_dependencies[] = $parent_storage_class;
-            $parent_storage = null;
+
+            $this->invalid_class_storages[strtolower($parent_storage_class)][] = $storage;
+
+            return;
         }
 
-        if ($parent_storage && $parent_storage_class) {
-            $this->populateClassLikeStorage($parent_storage, $dependent_classlikes);
+        $this->populateClassLikeStorage($parent_storage, $dependent_classlikes);
 
-            $storage->parent_classes = array_merge($storage->parent_classes, $parent_storage->parent_classes);
+        $storage->parent_classes = array_merge($storage->parent_classes, $parent_storage->parent_classes);
 
-            if ($parent_storage->template_types) {
-                if (isset($storage->template_type_extends[$parent_storage->name])) {
-                    foreach ($storage->template_type_extends[$parent_storage->name] as $i => $type) {
-                        $parent_template_type_names = array_keys($parent_storage->template_types);
+        if ($parent_storage->template_types) {
+            if (isset($storage->template_type_extends[$parent_storage->name])) {
+                foreach ($storage->template_type_extends[$parent_storage->name] as $i => $type) {
+                    $parent_template_type_names = array_keys($parent_storage->template_types);
 
-                        $mapped_name = $parent_template_type_names[$i] ?? null;
+                    $mapped_name = $parent_template_type_names[$i] ?? null;
 
-                        if ($mapped_name) {
-                            $storage->template_type_extends[$parent_storage->name][$mapped_name] = $type;
-                        }
-                    }
-
-                    if ($parent_storage->template_type_extends) {
-                        foreach ($parent_storage->template_type_extends as $t_storage_class => $type_map) {
-                            foreach ($type_map as $i => $type) {
-                                if (isset($storage->template_type_extends[$t_storage_class][$i])
-                                    || is_int($i)
-                                ) {
-                                    continue;
-                                }
-
-                                $storage->template_type_extends[$t_storage_class][$i] = self::extendType(
-                                    $type,
-                                    $storage
-                                );
-                            }
-                        }
-                    }
-                } else {
-                    $storage->template_type_extends[$parent_storage->name] = [];
-
-                    foreach ($parent_storage->template_types as $template_name => $template_type_map) {
-                        foreach ($template_type_map as $template_type) {
-                            $default_param = clone $template_type[0];
-                            $default_param->from_docblock = false;
-                            $storage->template_type_extends[$parent_storage->name][$template_name]
-                                = $default_param;
-                        }
-                    }
-
-                    if ($parent_storage->template_type_extends) {
-                        $storage->template_type_extends = array_merge(
-                            $storage->template_type_extends,
-                            $parent_storage->template_type_extends
-                        );
+                    if ($mapped_name) {
+                        $storage->template_type_extends[$parent_storage->name][$mapped_name] = $type;
                     }
                 }
-            } elseif ($parent_storage->template_type_extends) {
-                $storage->template_type_extends = array_merge(
-                    $storage->template_type_extends ?: [],
-                    $parent_storage->template_type_extends
-                );
+
+                if ($parent_storage->template_type_extends) {
+                    foreach ($parent_storage->template_type_extends as $t_storage_class => $type_map) {
+                        foreach ($type_map as $i => $type) {
+                            if (is_int($i)) {
+                                continue;
+                            }
+
+                            $storage->template_type_extends[$t_storage_class][$i] = self::extendType(
+                                $type,
+                                $storage
+                            );
+                        }
+                    }
+                }
+            } else {
+                $storage->template_type_extends[$parent_storage->name] = [];
+
+                foreach ($parent_storage->template_types as $template_name => $template_type_map) {
+                    foreach ($template_type_map as $template_type) {
+                        $default_param = clone $template_type[0];
+                        $default_param->from_docblock = false;
+                        $storage->template_type_extends[$parent_storage->name][$template_name]
+                            = $default_param;
+                    }
+                }
+
+                if ($parent_storage->template_type_extends) {
+                    $storage->template_type_extends = array_merge(
+                        $storage->template_type_extends,
+                        $parent_storage->template_type_extends
+                    );
+                }
             }
-
-            $this->inheritMethodsFromParent($storage, $parent_storage);
-            $this->inheritPropertiesFromParent($storage, $parent_storage);
-
-            $storage->class_implements = array_merge($storage->class_implements, $parent_storage->class_implements);
-            $storage->invalid_dependencies = array_merge(
-                $storage->invalid_dependencies,
-                $parent_storage->invalid_dependencies
+        } elseif ($parent_storage->template_type_extends) {
+            $storage->template_type_extends = array_merge(
+                $storage->template_type_extends ?: [],
+                $parent_storage->template_type_extends
             );
-
-            if ($parent_storage->has_visitor_issues) {
-                $storage->has_visitor_issues = true;
-            }
-
-            $storage->public_class_constants = array_merge(
-                $parent_storage->public_class_constants,
-                $storage->public_class_constants
-            );
-            $storage->protected_class_constants = array_merge(
-                $parent_storage->protected_class_constants,
-                $storage->protected_class_constants
-            );
-
-            foreach ($parent_storage->public_class_constant_nodes as $name => $_) {
-                $storage->public_class_constants[$name] = Type::getMixed();
-            }
-
-            foreach ($parent_storage->protected_class_constant_nodes as $name => $_) {
-                $storage->protected_class_constants[$name] = Type::getMixed();
-            }
-
-            $storage->pseudo_property_get_types += $parent_storage->pseudo_property_get_types;
-            $storage->pseudo_property_set_types += $parent_storage->pseudo_property_set_types;
-
-            $parent_storage->dependent_classlikes[strtolower($storage->name)] = true;
-
-            $storage->pseudo_methods += $parent_storage->pseudo_methods;
         }
+
+        $this->inheritMethodsFromParent($storage, $parent_storage);
+        $this->inheritPropertiesFromParent($storage, $parent_storage);
+
+        $storage->class_implements = array_merge($storage->class_implements, $parent_storage->class_implements);
+        $storage->invalid_dependencies = array_merge(
+            $storage->invalid_dependencies,
+            $parent_storage->invalid_dependencies
+        );
+
+        if ($parent_storage->has_visitor_issues) {
+            $storage->has_visitor_issues = true;
+        }
+
+        $storage->public_class_constants = array_merge(
+            $parent_storage->public_class_constants,
+            $storage->public_class_constants
+        );
+        $storage->protected_class_constants = array_merge(
+            $parent_storage->protected_class_constants,
+            $storage->protected_class_constants
+        );
+
+        foreach ($parent_storage->public_class_constant_nodes as $name => $_) {
+            $storage->public_class_constants[$name] = Type::getMixed();
+        }
+
+        foreach ($parent_storage->protected_class_constant_nodes as $name => $_) {
+            $storage->protected_class_constants[$name] = Type::getMixed();
+        }
+
+        $storage->pseudo_property_get_types += $parent_storage->pseudo_property_get_types;
+        $storage->pseudo_property_set_types += $parent_storage->pseudo_property_set_types;
+
+        $parent_storage->dependent_classlikes[strtolower($storage->name)] = true;
+
+        $storage->pseudo_methods += $parent_storage->pseudo_methods;
     }
 
     /**
@@ -611,8 +632,10 @@ class Populator
 
         foreach ($storage->parent_interfaces as $parent_interface_lc => $_) {
             try {
-                $parent_interface_lc = $this->classlikes->getUnAliasedName(
-                    $parent_interface_lc
+                $parent_interface_lc = strtolower(
+                    $this->classlikes->getUnAliasedName(
+                        $parent_interface_lc
+                    )
                 );
                 $parent_interface_storage = $storage_provider->get($parent_interface_lc);
             } catch (\InvalidArgumentException $e) {
@@ -654,9 +677,7 @@ class Populator
                     if ($parent_interface_storage->template_type_extends) {
                         foreach ($parent_interface_storage->template_type_extends as $t_storage_class => $type_map) {
                             foreach ($type_map as $i => $type) {
-                                if (isset($storage->template_type_extends[$t_storage_class][$i])
-                                    || is_int($i)
-                                ) {
+                                if (is_int($i)) {
                                     continue;
                                 }
 
@@ -705,8 +726,10 @@ class Populator
 
         foreach ($storage->class_implements as $implemented_interface_lc => $_) {
             try {
-                $implemented_interface_lc = $this->classlikes->getUnAliasedName(
-                    strtolower($implemented_interface_lc)
+                $implemented_interface_lc = strtolower(
+                    $this->classlikes->getUnAliasedName(
+                        $implemented_interface_lc
+                    )
                 );
                 $implemented_interface_storage = $storage_provider->get($implemented_interface_lc);
             } catch (\InvalidArgumentException $e) {
@@ -746,12 +769,17 @@ class Populator
                     }
 
                     if ($implemented_interface_storage->template_type_extends) {
-                        foreach ($implemented_interface_storage->template_type_extends as $e_i => $type) {
-                            if (isset($storage->template_type_extends[$e_i])) {
-                                continue;
-                            }
+                        foreach ($implemented_interface_storage->template_type_extends as $e_i => $type_map) {
+                            foreach ($type_map as $i => $type) {
+                                if (is_int($i)) {
+                                    continue;
+                                }
 
-                            $storage->template_type_extends[$e_i] = $type;
+                                $storage->template_type_extends[$e_i][$i] = self::extendType(
+                                    $type,
+                                    $storage
+                                );
+                            }
                         }
                     }
                 } else {
@@ -782,8 +810,10 @@ class Populator
 
         foreach ($storage->class_implements as $implemented_interface_lc => $_) {
             try {
-                $implemented_interface = $this->classlikes->getUnAliasedName(
-                    $implemented_interface_lc
+                $implemented_interface = strtolower(
+                    $this->classlikes->getUnAliasedName(
+                        $implemented_interface_lc
+                    )
                 );
                 $implemented_interface_storage = $storage_provider->get($implemented_interface);
             } catch (\InvalidArgumentException $e) {
@@ -794,8 +824,10 @@ class Populator
 
             foreach ($implemented_interface_storage->methods as $method_name => $method) {
                 if ($method->visibility === ClassLikeAnalyzer::VISIBILITY_PUBLIC) {
-                    $mentioned_method_id = $implemented_interface . '::' . $method_name;
-                    $interface_method_implementers[$method_name][] = $mentioned_method_id;
+                    $interface_method_implementers[$method_name][] = new \Psalm\Internal\MethodIdentifier(
+                        $implemented_interface_storage->name,
+                        $method_name
+                    );
                 }
             }
         }
@@ -809,7 +841,7 @@ class Populator
                         && !$method_storage->signature_return_type->isVoid()
                         && $method_storage->return_type === $method_storage->signature_return_type
                     ) {
-                        list($interface_fqcln) = explode('::', $interface_method_ids[0]);
+                        $interface_fqcln = $interface_method_ids[0]->fq_class_name;
                         $interface_storage = $storage_provider->get($interface_fqcln);
 
                         if (isset($interface_storage->methods[$method_name])) {
@@ -835,7 +867,8 @@ class Populator
             }
 
             foreach ($interface_method_ids as $interface_method_id) {
-                $storage->overridden_method_ids[$method_name][$interface_method_id] = $interface_method_id;
+                $storage->overridden_method_ids[$method_name][$interface_method_id->fq_class_name]
+                    = $interface_method_id;
             }
         }
     }
@@ -1047,17 +1080,18 @@ class Populator
         bool $is_mixin = false
     ) {
         $fq_class_name = $storage->name;
+        $fq_class_name_lc = strtolower($fq_class_name);
 
         // register where they appear (can never be in a trait)
-        foreach ($parent_storage->appearing_method_ids as $method_name => $appearing_method_id) {
-            $aliased_method_names = [$method_name];
+        foreach ($parent_storage->appearing_method_ids as $method_name_lc => $appearing_method_id) {
+            $aliased_method_names = [$method_name_lc];
 
             if ($parent_storage->is_trait
                 && $storage->trait_alias_map
             ) {
                 $aliased_method_names = array_merge(
                     $aliased_method_names,
-                    array_keys($storage->trait_alias_map, $method_name, true)
+                    array_keys($storage->trait_alias_map, $method_name_lc, true)
                 );
             }
 
@@ -1066,12 +1100,15 @@ class Populator
                     continue;
                 }
 
-                $implemented_method_id = $fq_class_name . '::' . $aliased_method_name;
+                $implemented_method_id = new \Psalm\Internal\MethodIdentifier(
+                    $fq_class_name,
+                    $aliased_method_name
+                );
 
                 $storage->appearing_method_ids[$aliased_method_name] =
                     $parent_storage->is_trait ? $implemented_method_id : $appearing_method_id;
 
-                $this_method_id = strtolower($fq_class_name . '::' . $method_name);
+                $this_method_id = $fq_class_name_lc . '::' . $method_name_lc;
 
                 if (isset($storage->methods[$aliased_method_name])) {
                     $storage->potential_declaring_method_ids[$aliased_method_name] = [$this_method_id => true];
@@ -1083,66 +1120,69 @@ class Populator
 
                     $storage->potential_declaring_method_ids[$aliased_method_name][$this_method_id] = true;
 
-                    $parent_method_id = strtolower($parent_storage->name . '::' . $method_name);
+                    $parent_method_id = strtolower($parent_storage->name) . '::' . $method_name_lc;
                     $storage->potential_declaring_method_ids[$aliased_method_name][$parent_method_id] = true;
                 }
             }
         }
 
         // register where they're declared
-        foreach ($parent_storage->inheritable_method_ids as $method_name => $declaring_method_id) {
-            if ($is_mixin && isset($storage->declaring_method_ids[$method_name])) {
+        foreach ($parent_storage->inheritable_method_ids as $method_name_lc => $declaring_method_id) {
+            if ($is_mixin && isset($storage->declaring_method_ids[$method_name_lc])) {
                 continue;
             }
 
-            if ($method_name !== '__construct') {
+            if ($method_name_lc !== '__construct') {
                 if ($parent_storage->is_trait) {
-                    $declaring_class = explode('::', $declaring_method_id)[0];
+                    $declaring_class = $declaring_method_id->fq_class_name;
                     $declaring_class_storage = $this->classlike_storage_provider->get($declaring_class);
 
-                    if (isset($declaring_class_storage->methods[$method_name])
-                        && $declaring_class_storage->methods[$method_name]->abstract
+                    if (isset($declaring_class_storage->methods[$method_name_lc])
+                        && $declaring_class_storage->methods[$method_name_lc]->abstract
                     ) {
-                        $storage->overridden_method_ids[$method_name][$declaring_method_id] = $declaring_method_id;
+                        $storage->overridden_method_ids[$method_name_lc][$declaring_method_id->fq_class_name]
+                            = $declaring_method_id;
                     }
                 } else {
-                    $storage->overridden_method_ids[$method_name][$declaring_method_id] = $declaring_method_id;
+                    $storage->overridden_method_ids[$method_name_lc][$declaring_method_id->fq_class_name]
+                        = $declaring_method_id;
                 }
 
-                if (isset($parent_storage->overridden_method_ids[$method_name])
-                    && isset($storage->overridden_method_ids[$method_name])
+                if (isset($parent_storage->overridden_method_ids[$method_name_lc])
+                    && isset($storage->overridden_method_ids[$method_name_lc])
                 ) {
-                    $storage->overridden_method_ids[$method_name]
-                        += $parent_storage->overridden_method_ids[$method_name];
+                    $storage->overridden_method_ids[$method_name_lc]
+                        += $parent_storage->overridden_method_ids[$method_name_lc];
                 }
             }
 
-            $aliased_method_names = [$method_name];
+            $aliased_method_names = [$method_name_lc];
 
             if ($parent_storage->is_trait
                 && $storage->trait_alias_map
             ) {
                 $aliased_method_names = array_merge(
                     $aliased_method_names,
-                    array_keys($storage->trait_alias_map, $method_name, true)
+                    array_keys($storage->trait_alias_map, $method_name_lc, true)
                 );
             }
 
             foreach ($aliased_method_names as $aliased_method_name) {
                 if (isset($storage->declaring_method_ids[$aliased_method_name])) {
-                    list($implementing_fq_class_name, $implementing_method_name) = explode(
-                        '::',
-                        $storage->declaring_method_ids[$aliased_method_name]
+                    $implementing_method_id = $storage->declaring_method_ids[$aliased_method_name];
+
+                    $implementing_class_storage = $this->classlike_storage_provider->get(
+                        $implementing_method_id->fq_class_name
                     );
 
-                    $implementing_class_storage = $this->classlike_storage_provider->get($implementing_fq_class_name);
-
-                    if (!$implementing_class_storage->methods[$implementing_method_name]->abstract) {
+                    if (!$implementing_class_storage->methods[$implementing_method_id->method_name]->abstract) {
                         continue;
                     }
                 }
 
+                /** @psalm-suppress PropertyTypeCoercion */
                 $storage->declaring_method_ids[$aliased_method_name] = $declaring_method_id;
+                /** @psalm-suppress PropertyTypeCoercion */
                 $storage->inheritable_method_ids[$aliased_method_name] = $declaring_method_id;
             }
         }

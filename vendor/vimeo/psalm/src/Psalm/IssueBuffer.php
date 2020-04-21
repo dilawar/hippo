@@ -11,6 +11,7 @@ use function get_class;
 use function memory_get_peak_usage;
 use function microtime;
 use function number_format;
+use Psalm\Internal\Analyzer\IssueData;
 use Psalm\Internal\Analyzer\ProjectAnalyzer;
 use Psalm\Issue\CodeIssue;
 use Psalm\Issue\UnusedPsalmSuppress;
@@ -36,9 +37,7 @@ use function array_values;
 class IssueBuffer
 {
     /**
-     * @var array<string, list<array{severity: string, line_from: int, line_to: int, type: string, message: string,
-     * file_name: string, file_path: string, snippet: string, from: int, to: int,
-     * snippet_from: int, snippet_to: int, column_from: int, column_to: int, selected_text: string}>>
+     * @var array<string, list<IssueData>>
      */
     protected static $issues_data = [];
 
@@ -211,7 +210,7 @@ class IssueBuffer
 
         if ($reporting_level === Config::REPORT_INFO) {
             if (!self::alreadyEmitted($emitted_key)) {
-                self::$issues_data[$e->getFilePath()][] = $e->toArray(Config::REPORT_INFO);
+                self::$issues_data[$e->getFilePath()][] = $e->toIssueData(Config::REPORT_INFO);
             }
 
             return false;
@@ -230,7 +229,7 @@ class IssueBuffer
 
         if (!self::alreadyEmitted($emitted_key)) {
             ++self::$error_count;
-            self::$issues_data[$e->getFilePath()][] = $e->toArray(Config::REPORT_ERROR);
+            self::$issues_data[$e->getFilePath()][] = $e->toIssueData(Config::REPORT_ERROR);
         }
 
         if ($is_fixable) {
@@ -238,6 +237,23 @@ class IssueBuffer
         }
 
         return true;
+    }
+
+    public static function remove(string $file_path, string $issue_type, int $file_offset) : void
+    {
+        if (!isset(self::$issues_data[$file_path])) {
+            return;
+        }
+
+        $filtered_issues = [];
+
+        foreach (self::$issues_data[$file_path] as $issue) {
+            if ($issue->type !== $issue_type || $issue->from !== $file_offset) {
+                $filtered_issues[] = $issue;
+            }
+        }
+
+        self::$issues_data[$file_path] = $filtered_issues;
     }
 
     public static function addFixableIssue(string $issue_type) : void
@@ -250,9 +266,7 @@ class IssueBuffer
     }
 
     /**
-     * @return array<string, list<array{severity: string, line_from: int, line_to: int, type: string, message: string,
-     *  file_name: string, file_path: string, snippet: string, from: int, to: int, snippet_from: int, snippet_to: int,
-     *  column_from: int, column_to: int, selected_text: string}>>
+     * @return array<string, list<IssueData>>
      */
     public static function getIssuesData()
     {
@@ -260,9 +274,7 @@ class IssueBuffer
     }
 
     /**
-     * @return list<array{severity: string, line_from: int, line_to: int, type: string, message: string,
-     *  file_name: string, file_path: string, snippet: string, from: int, to: int, snippet_from: int, snippet_to: int,
-     *  column_from: int, column_to: int, selected_text: string}>
+     * @return list<IssueData>
      */
     public static function getIssuesDataForFile(string $file_path)
     {
@@ -370,9 +382,7 @@ class IssueBuffer
     }
 
     /**
-     * @param array<string, list<array{severity: string, line_from: int, line_to: int, type: string, message: string,
-     *  file_name: string, file_path: string, snippet: string, from: int, to: int, snippet_from: int,
-     *  snippet_to: int, column_from: int, column_to: int, selected_text: string}>> $issues_data
+     * @param array<string, list<IssueData>> $issues_data
      *
      * @return void
      */
@@ -380,10 +390,10 @@ class IssueBuffer
     {
         foreach ($issues_data as $file_path => $file_issues) {
             foreach ($file_issues as $issue) {
-                $emitted_key = $issue['type']
-                    . '-' . $issue['file_name']
-                    . ':' . $issue['line_from']
-                    . ':' . $issue['column_from'];
+                $emitted_key = $issue->type
+                    . '-' . $issue->file_name
+                    . ':' . $issue->line_from
+                    . ':' . $issue->column_from;
 
                 if (!self::alreadyEmitted($emitted_key)) {
                     self::$issues_data[$file_path][] = $issue;
@@ -421,78 +431,80 @@ class IssueBuffer
         $error_count = 0;
         $info_count = 0;
 
+        $issues_data = [];
+
         if (self::$issues_data) {
             \ksort(self::$issues_data);
 
             foreach (self::$issues_data as $file_path => $file_issues) {
                 usort(
                     $file_issues,
-                    /**
-                     * @param array{file_path: string, line_from: int, column_from: int} $d1
-                     * @param array{file_path: string, line_from: int, column_from: int} $d2
-                     */
-                    function (array $d1, array $d2) : int {
-                        if ($d1['file_path'] === $d2['file_path']) {
-                            if ($d1['line_from'] === $d2['line_from']) {
-                                if ($d1['column_from'] === $d2['column_from']) {
+                    function (IssueData $d1, IssueData $d2) : int {
+                        if ($d1->file_path === $d2->file_path) {
+                            if ($d1->line_from === $d2->line_from) {
+                                if ($d1->column_from === $d2->column_from) {
                                     return 0;
                                 }
 
-                                return $d1['column_from'] > $d2['column_from'] ? 1 : -1;
+                                return $d1->column_from > $d2->column_from ? 1 : -1;
                             }
 
-                            return $d1['line_from'] > $d2['line_from'] ? 1 : -1;
+                            return $d1->line_from > $d2->line_from ? 1 : -1;
                         }
 
-                        return $d1['file_path'] > $d2['file_path'] ? 1 : -1;
+                        return $d1->file_path > $d2->file_path ? 1 : -1;
                     }
                 );
                 self::$issues_data[$file_path] = $file_issues;
             }
 
+            // make a copy so what gets saved in cache is unaffected by baseline
+            $issues_data = self::$issues_data;
+
             if (!empty($issue_baseline)) {
                 // Set severity for issues in baseline to INFO
-                foreach (self::$issues_data as $file_path => $file_issues) {
+                foreach ($issues_data as $file_path => $file_issues) {
                     foreach ($file_issues as $key => $issue_data) {
-                        $file = $issue_data['file_name'];
+                        $file = $issue_data->file_name;
                         $file = str_replace('\\', '/', $file);
-                        $type = $issue_data['type'];
+                        $type = $issue_data->type;
 
                         if (isset($issue_baseline[$file][$type]) && $issue_baseline[$file][$type]['o'] > 0) {
                             if ($issue_baseline[$file][$type]['o'] === count($issue_baseline[$file][$type]['s'])) {
                                 $position = array_search(
-                                    $issue_data['selected_text'],
+                                    $issue_data->selected_text,
                                     $issue_baseline[$file][$type]['s'],
                                     true
                                 );
 
                                 if ($position !== false) {
-                                    $issue_data['severity'] = Config::REPORT_INFO;
+                                    $issue_data->severity = Config::REPORT_INFO;
                                     array_splice($issue_baseline[$file][$type]['s'], $position, 1);
                                     $issue_baseline[$file][$type]['o'] = $issue_baseline[$file][$type]['o'] - 1;
                                 }
                             } else {
                                 $issue_baseline[$file][$type]['s'] = [];
-                                $issue_data['severity'] = Config::REPORT_INFO;
+                                $issue_data->severity = Config::REPORT_INFO;
                                 $issue_baseline[$file][$type]['o'] = $issue_baseline[$file][$type]['o'] - 1;
                             }
                         }
 
                         /** @psalm-suppress PropertyTypeCoercion due to Psalm bug */
-                        self::$issues_data[$file_path][$key] = $issue_data;
+                        $issues_data[$file_path][$key] = $issue_data;
                     }
                 }
             }
 
             echo self::getOutput(
+                $issues_data,
                 $project_analyzer->stdout_report_options,
                 $codebase->analyzer->getTotalTypeCoverage($codebase)
             );
         }
 
-        foreach (self::$issues_data as $file_issues) {
+        foreach ($issues_data as $file_issues) {
             foreach ($file_issues as $issue_data) {
-                if ($issue_data['severity'] === Config::REPORT_ERROR) {
+                if ($issue_data->severity === Config::REPORT_ERROR) {
                     ++$error_count;
                 } else {
                     ++$info_count;
@@ -516,7 +528,7 @@ class IssueBuffer
                 /** @psalm-suppress ArgumentTypeCoercion due to Psalm bug */
                 $after_analysis_hook::afterAnalysis(
                     $codebase,
-                    self::$issues_data,
+                    $issues_data,
                     $build_info,
                     $source_control_info
                 );
@@ -531,6 +543,7 @@ class IssueBuffer
             file_put_contents(
                 $report_options->output_path,
                 self::getOutput(
+                    $issues_data,
                     $report_options,
                     $codebase->analyzer->getTotalTypeCoverage($codebase)
                 )
@@ -557,11 +570,11 @@ class IssueBuffer
 
                 echo $info_count . ' other issues found.' . "\n";
 
-                if ($show_info) {
-                    echo 'You can hide them with ' .
+                if (!$show_info) {
+                    echo 'You can display them with ' .
                         ($project_analyzer->stdout_report_options->use_color
-                            ? "\e[30;48;5;195m--show-info=false\e[0m"
-                            : '--show-info=false') . "\n";
+                            ? "\e[30;48;5;195m--show-info=true\e[0m"
+                            : '--show-info=true') . "\n";
                 }
             }
 
@@ -573,7 +586,7 @@ class IssueBuffer
                 $command .= ' --dry-run';
 
                 echo 'Psalm can automatically fix ' . $total_count
-                    . ($show_info ? ' issues' : ' of them') . ".\n"
+                    . ($show_info ? ' issues' : ' of these issues') . ".\n"
                     . 'Run Psalm again with ' . "\n"
                     . ($project_analyzer->stdout_report_options->use_color
                         ? "\e[30;48;5;195m" . $command . "\e[0m"
@@ -598,32 +611,38 @@ class IssueBuffer
             }
         }
 
-        if ($error_count) {
-            exit(1);
-        }
-
         if ($is_full && $start_time) {
             $codebase->file_reference_provider->removeDeletedFilesFromReferences();
 
-            if ($codebase->statements_provider->parser_cache_provider) {
-                $codebase->statements_provider->parser_cache_provider->processSuccessfulRun($start_time);
+            if ($project_analyzer->project_cache_provider) {
+                $project_analyzer->project_cache_provider->processSuccessfulRun($start_time);
             }
+
+            if ($codebase->statements_provider->parser_cache_provider) {
+                $codebase->statements_provider->parser_cache_provider->processSuccessfulRun();
+            }
+        }
+
+        if ($error_count) {
+            exit(1);
         }
     }
 
     /**
+     * @param array<string, array<int, IssueData>> $issues_data
      * @param array{int, int} $mixed_counts
      *
      * @return string
      */
     public static function getOutput(
+        array $issues_data,
         \Psalm\Report\ReportOptions $report_options,
         array $mixed_counts = [0, 0]
     ) {
         $total_expression_count = $mixed_counts[0] + $mixed_counts[1];
         $mixed_expression_count = $mixed_counts[0];
 
-        $normalized_data = self::$issues_data === [] ? [] : array_merge(...array_values(self::$issues_data));
+        $normalized_data = $issues_data === [] ? [] : array_merge(...array_values($issues_data));
 
         switch ($report_options->format) {
             case Report::TYPE_COMPACT:
@@ -718,9 +737,7 @@ class IssueBuffer
     }
 
     /**
-     * @return array<string, list<array{severity: string, line_from: int, line_to: int, type: string, message: string,
-     *  file_name: string, file_path: string, snippet: string, from: int, to: int, snippet_from: int, snippet_to: int,
-     *  column_from: int, column_to: int}>>
+     * @return array<string, list<IssueData>>
      */
     public static function clear()
     {

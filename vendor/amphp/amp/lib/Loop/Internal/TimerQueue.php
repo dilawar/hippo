@@ -9,11 +9,11 @@ use Amp\Loop\Watcher;
  */
 final class TimerQueue
 {
-    /** @var object[] */
+    /** @var TimerQueueEntry[] */
     private $data = [];
 
     /** @var int[] */
-    private $pointers;
+    private $pointers = [];
 
     /**
      * Inserts the watcher into the queue. Time complexity: O(log(n)).
@@ -21,17 +21,13 @@ final class TimerQueue
      * @param Watcher $watcher
      * @param int     $expiration
      *
+     * @psalm-param Watcher<int> $watcher
+     *
      * @return void
      */
     public function insert(Watcher $watcher, int $expiration)
     {
-        $entry = new class {
-            public $watcher;
-            public $expiration;
-        };
-
-        $entry->watcher = $watcher;
-        $entry->expiration = $expiration;
+        $entry = new TimerQueueEntry($watcher, $expiration);
 
         $node = \count($this->data);
         $this->data[$node] = $entry;
@@ -54,6 +50,8 @@ final class TimerQueue
      *
      * @param Watcher $watcher
      *
+     * @psalm-param Watcher<int> $watcher
+     *
      * @return void
      */
     public function remove(Watcher $watcher)
@@ -74,6 +72,8 @@ final class TimerQueue
      * @param int $now Current loop time.
      *
      * @return Watcher|null Expired watcher at the top of the heap or null if the watcher has not expired.
+     *
+     * @psalm-return Watcher<int>|null
      */
     public function extract(int $now)
     {

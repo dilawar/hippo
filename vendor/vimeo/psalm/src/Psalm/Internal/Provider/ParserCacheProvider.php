@@ -34,12 +34,6 @@ class ParserCacheProvider
     const FILE_HASHES = 'file_hashes_json';
     const PARSER_CACHE_DIRECTORY = 'php-parser';
     const FILE_CONTENTS_CACHE_DIRECTORY = 'file-caches';
-    const GOOD_RUN_NAME = 'good_run';
-
-    /**
-     * @var int|null
-     */
-    private $last_good_run = null;
 
     /**
      * A map of filename hashes to contents hashes
@@ -55,12 +49,18 @@ class ParserCacheProvider
      */
     private $new_file_content_hashes = [];
 
+    /**
+     * @var bool
+     */
+    private $use_file_cache;
+
     /** @var bool */
     private $use_igbinary;
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, bool $use_file_cache = true)
     {
         $this->use_igbinary = $config->use_igbinary;
+        $this->use_file_cache = $use_file_cache;
     }
 
     /**
@@ -148,6 +148,10 @@ class ParserCacheProvider
      */
     public function loadExistingFileContentsFromCache($file_path)
     {
+        if (!$this->use_file_cache) {
+            return null;
+        }
+
         $root_cache_directory = Config::getInstance()->getCacheDirectory();
 
         if (!$root_cache_directory) {
@@ -298,6 +302,10 @@ class ParserCacheProvider
      */
     public function cacheFileContents($file_path, $file_contents)
     {
+        if (!$this->use_file_cache) {
+            return;
+        }
+
         $root_cache_directory = Config::getInstance()->getCacheDirectory();
 
         if (!$root_cache_directory) {
@@ -317,68 +325,6 @@ class ParserCacheProvider
         }
 
         file_put_contents($cache_location, $file_contents);
-    }
-
-    /**
-     * @return bool
-     */
-    public function canDiffFiles()
-    {
-        $cache_directory = Config::getInstance()->getCacheDirectory();
-
-        return $cache_directory && file_exists($cache_directory . DIRECTORY_SEPARATOR . self::GOOD_RUN_NAME);
-    }
-
-    /**
-     * @param float $start_time
-     *
-     * @return void
-     */
-    public function processSuccessfulRun($start_time)
-    {
-        $cache_directory = Config::getInstance()->getCacheDirectory();
-
-        if (!$cache_directory) {
-            return;
-        }
-
-        $run_cache_location = $cache_directory . DIRECTORY_SEPARATOR . self::GOOD_RUN_NAME;
-
-        touch($run_cache_location, (int)$start_time);
-
-        $cache_directory .= DIRECTORY_SEPARATOR . self::PARSER_CACHE_DIRECTORY;
-
-        if (is_dir($cache_directory)) {
-            $directory_files = scandir($cache_directory);
-
-            foreach ($directory_files as $directory_file) {
-                $full_path = $cache_directory . DIRECTORY_SEPARATOR . $directory_file;
-
-                if ($directory_file[0] === '.') {
-                    continue;
-                }
-
-                touch($full_path);
-            }
-        }
-    }
-
-    /**
-     * @return int
-     */
-    public function getLastGoodRun()
-    {
-        if ($this->last_good_run === null) {
-            $cache_directory = Config::getInstance()->getCacheDirectory();
-
-            if (file_exists($cache_directory . DIRECTORY_SEPARATOR . self::GOOD_RUN_NAME)) {
-                $this->last_good_run = filemtime($cache_directory . DIRECTORY_SEPARATOR . self::GOOD_RUN_NAME);
-            } else {
-                $this->last_good_run = 0;
-            }
-        }
-
-        return $this->last_good_run;
     }
 
     /**
@@ -416,6 +362,36 @@ class ParserCacheProvider
         }
 
         return $removed_count;
+    }
+
+    /**
+     * @param float $start_time
+     *
+     * @return void
+     */
+    public function processSuccessfulRun()
+    {
+        $cache_directory = Config::getInstance()->getCacheDirectory();
+
+        if (!$cache_directory) {
+            return;
+        }
+
+        $cache_directory .= DIRECTORY_SEPARATOR . self::PARSER_CACHE_DIRECTORY;
+
+        if (is_dir($cache_directory)) {
+            $directory_files = scandir($cache_directory);
+
+            foreach ($directory_files as $directory_file) {
+                $full_path = $cache_directory . DIRECTORY_SEPARATOR . $directory_file;
+
+                if ($directory_file[0] === '.') {
+                    continue;
+                }
+
+                touch($full_path);
+            }
+        }
     }
 
     /**

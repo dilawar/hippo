@@ -160,10 +160,14 @@ class IncludeAnalyzer
                         $global_context
                     );
                 } catch (\Psalm\Exception\UnpreparedAnalysisException $e) {
-                    $context->check_classes = false;
-                    $context->check_variables = false;
-                    $context->check_functions = false;
+                    if ($config->skip_checks_on_unresolvable_includes) {
+                        $context->check_classes = false;
+                        $context->check_variables = false;
+                        $context->check_functions = false;
+                    }
                 }
+
+                $context->has_returned = false;
 
                 foreach ($include_file_analyzer->getRequiredFilePaths() as $required_file_path) {
                     $current_file_analyzer->addRequiredFilePath($required_file_path);
@@ -203,9 +207,11 @@ class IncludeAnalyzer
             }
         }
 
-        $context->check_classes = false;
-        $context->check_variables = false;
-        $context->check_functions = false;
+        if ($config->skip_checks_on_unresolvable_includes) {
+            $context->check_classes = false;
+            $context->check_variables = false;
+            $context->check_functions = false;
+        }
 
         return null;
     }

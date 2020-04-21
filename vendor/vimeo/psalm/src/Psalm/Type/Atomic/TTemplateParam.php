@@ -4,11 +4,13 @@ namespace Psalm\Type\Atomic;
 use function implode;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
+use Psalm\Internal\Type\TemplateResult;
 use Psalm\StatementsSource;
 use Psalm\Type;
 use Psalm\Type\Union;
 use Psalm\Storage\MethodStorage;
 use function array_map;
+use function strtolower;
 
 class TTemplateParam extends \Psalm\Type\Atomic
 {
@@ -47,9 +49,9 @@ class TTemplateParam extends \Psalm\Type\Atomic
     /**
      * @return string
      */
-    public function getKey()
+    public function getKey(bool $include_extra = true)
     {
-        if ($this->extra_types) {
+        if ($include_extra && $this->extra_types) {
             return $this->param_name . ':' . $this->defining_class . '&' . implode('&', $this->extra_types);
         }
 
@@ -130,6 +132,11 @@ class TTemplateParam extends \Psalm\Type\Atomic
         return $this->param_name . $intersection_types;
     }
 
+    public function getChildNodes() : array
+    {
+        return [$this->as];
+    }
+
     /**
      * @return bool
      */
@@ -138,97 +145,10 @@ class TTemplateParam extends \Psalm\Type\Atomic
         return false;
     }
 
-    /**
-     * @return void
-     */
-    public function setFromDocblock()
-    {
-        $this->from_docblock = true;
-
-        if (!$this->as->isMixed()) {
-            $this->as->setFromDocblock();
-        }
-    }
-
-    /**
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>  $template_types
-     *
-     * @return void
-     */
-    public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
-    {
-        $this->replaceIntersectionTemplateTypesWithArgTypes($template_types, $codebase);
-    }
-
-    /**
-     * @param  StatementsSource $source
-     * @param  CodeLocation     $code_location
-     * @param  array<string>    $suppressed_issues
-     * @param  array<string, bool> $phantom_classes
-     * @param  bool             $inferred
-     *
-     * @return void
-     */
-    public function check(
-        StatementsSource $source,
-        CodeLocation $code_location,
-        array $suppressed_issues,
-        array $phantom_classes = [],
-        bool $inferred = true,
-        bool $prevent_template_covariance = false
-    ) {
-        if ($this->checked) {
-            return;
-        }
-
-        if ($prevent_template_covariance
-            && \substr($this->defining_class, 0, 3) !== 'fn-'
-        ) {
-            $codebase = $source->getCodebase();
-
-            $class_storage = $codebase->classlike_storage_provider->get($this->defining_class);
-
-            $template_offset = $class_storage->template_types
-                ? \array_search($this->param_name, \array_keys($class_storage->template_types), true)
-                : false;
-
-            if ($template_offset !== false
-                && isset($class_storage->template_covariants[$template_offset])
-                && $class_storage->template_covariants[$template_offset]
-            ) {
-                $method_storage = $source instanceof \Psalm\Internal\Analyzer\MethodAnalyzer
-                    ? $source->getFunctionLikeStorage()
-                    : null;
-
-                if ($method_storage instanceof MethodStorage
-                    && $method_storage->mutation_free
-                    && !$method_storage->mutation_free_inferred
-                ) {
-                    // do nothing
-                } else {
-                    if (\Psalm\IssueBuffer::accepts(
-                        new \Psalm\Issue\InvalidTemplateParam(
-                            'Template param ' . $this->param_name . ' of '
-                                . $this->defining_class . ' is marked covariant and cannot be used here',
-                            $code_location
-                        ),
-                        $source->getSuppressedIssues()
-                    )) {
-                        // fall through
-                    }
-                }
-            }
-        }
-
-        $this->as->check($source, $code_location, $suppressed_issues, $phantom_classes, $inferred);
-
-        $this->checkIntersectionTypes(
-            $source,
-            $code_location,
-            $suppressed_issues,
-            $phantom_classes,
-            $inferred,
-            $prevent_template_covariance
-        );
+    public function replaceTemplateTypesWithArgTypes(
+        TemplateResult $template_result,
+        ?Codebase $codebase
+    ) : void {
+        $this->replaceIntersectionTemplateTypesWithArgTypes($template_result, $codebase);
     }
 }

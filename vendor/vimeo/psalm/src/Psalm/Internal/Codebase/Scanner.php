@@ -14,6 +14,7 @@ use function min;
 use const PHP_EOL;
 use Psalm\Codebase;
 use Psalm\Config;
+use Psalm\Internal\Analyzer\IssueData;
 use Psalm\Internal\Provider\FileProvider;
 use Psalm\Internal\Provider\FileReferenceProvider;
 use Psalm\Internal\Provider\FileStorageProvider;
@@ -24,35 +25,15 @@ use function strtolower;
 use function substr;
 
 /**
- * @psalm-type  IssueData = array{
- *     severity: string,
- *     line_from: int,
- *     line_to: int,
- *     type: string,
- *     message: string,
- *     file_name: string,
- *     file_path: string,
- *     snippet: string,
- *     from: int,
- *     to: int,
- *     snippet_from: int,
- *     snippet_to: int,
- *     column_from: int,
- *     column_to: int,
- *     selected_text: string
- * }
- *
  * @psalm-type  PoolData = array{
  *     classlikes_data:array{
- *         0:array<string, bool>,
- *         1:array<string, bool>,
- *         2:array<string, bool>,
+ *         0:array<lowercase-string, bool>,
+ *         1:array<lowercase-string, bool>,
+ *         2:array<lowercase-string, bool>,
  *         3:array<string, bool>,
- *         4:array<string, bool>,
+ *         4:array<lowercase-string, bool>,
  *         5:array<string, bool>,
- *         6:array<string, bool>,
- *         7:array<string, \PhpParser\Node\Stmt\Trait_>,
- *         8:array<string, \Psalm\Aliases>
+ *         6:array<string, bool>
  *     },
  *     scanner_data:array{
  *         0:array<string, string>,
@@ -286,7 +267,6 @@ class Scanner
      */
     public function queueClassLikeForScanning(
         $fq_classlike_name,
-        $referencing_file_path = null,
         $analyze_too = false,
         $store_failure = true,
         array $phantom_classes = []
@@ -331,10 +311,6 @@ class Scanner
                     );
                 }
             }
-        }
-
-        if ($referencing_file_path) {
-            $this->file_reference_provider->addFileReferenceToClass($referencing_file_path, $fq_classlike_name_lc);
         }
     }
 
@@ -505,6 +481,8 @@ class Scanner
             $this->codebase->statements_provider->parser_cache_provider->saveFileContentHashes();
         }
 
+        $this->file_reference_provider->addClassLikeFiles($this->classlike_files);
+
         return true;
     }
 
@@ -624,19 +602,19 @@ class Scanner
             }
 
             foreach ($file_storage->classlikes_in_file as $fq_classlike_name) {
-                $this->codebase->exhumeClassLikeStorage($fq_classlike_name, $file_path);
+                $this->codebase->exhumeClassLikeStorage(strtolower($fq_classlike_name), $file_path);
             }
 
             foreach ($file_storage->required_classes as $fq_classlike_name) {
-                $this->queueClassLikeForScanning($fq_classlike_name, $file_path, $will_analyze, false);
+                $this->queueClassLikeForScanning($fq_classlike_name, $will_analyze, false);
             }
 
             foreach ($file_storage->required_interfaces as $fq_classlike_name) {
-                $this->queueClassLikeForScanning($fq_classlike_name, $file_path, false, false);
+                $this->queueClassLikeForScanning($fq_classlike_name, false, false);
             }
 
             foreach ($file_storage->referenced_classlikes as $fq_classlike_name) {
-                $this->queueClassLikeForScanning($fq_classlike_name, $file_path, false, false);
+                $this->queueClassLikeForScanning($fq_classlike_name, false, false);
             }
 
             if ($this->codebase->register_autoload_files) {
@@ -761,10 +739,11 @@ class Scanner
         }
 
         $new_fq_class_name = $reflected_class->getName();
+        $new_fq_class_name_lc = strtolower($new_fq_class_name);
 
-        if (strtolower($new_fq_class_name) !== strtolower($fq_class_name)) {
-            $classlikes->addClassAlias($new_fq_class_name, strtolower($fq_class_name));
-            $fq_class_name_lc = strtolower($new_fq_class_name);
+        if ($new_fq_class_name_lc !== $fq_class_name_lc) {
+            $classlikes->addClassAlias($new_fq_class_name, $fq_class_name_lc);
+            $fq_class_name_lc = $new_fq_class_name_lc;
         }
 
         $fq_class_name = $new_fq_class_name;

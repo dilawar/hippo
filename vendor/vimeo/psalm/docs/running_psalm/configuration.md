@@ -38,6 +38,24 @@ Configuration file may be split into several files using [XInclude](https://www.
 
 ### Coding style
 
+#### errorLevel
+
+```xml
+<psalm
+  errorLevel="[int]"
+/>
+```
+This corresponds to Psalm‘s [error-detection level](error_levels.md).
+
+#### reportMixedIssues
+
+```xml
+<psalm
+  reportMixedIssues="[bool]"
+/>
+```
+Setting this to `"false"` hides all issues with `Mixed` types in Psalm’s output. If not given, this defaults to `"false"` when `errorLevel` is 3 or higher, and `"true"` when the error level is 1 or 2.
+
 #### totallyTyped
 
 ```xml
@@ -45,7 +63,10 @@ Configuration file may be split into several files using [XInclude](https://www.
   totallyTyped="[bool]"
 />
 ```
-Enabling this will make Psalm very strict, such that it needs to be able to evaluate the type of every single statement, and emitting a bevy of `Mixed*` issues if the types cannot be determined. Defaults to `false`.
+
+\(Deprecated\) Setting `totallyTyped` to `"true"` is equivalent to setting `errorLevel` to `"1"`. Setting `totallyTyped` to `"false"` is equivalent to setting `errorLevel` to `"2"` and `reportMixedIssues` to `"false"`
+
+
 
 #### resolveFromConfigFile
 
@@ -199,7 +220,7 @@ When `true`, Psalm will check that the developer has caught every exception in g
   ignoreInternalFunctionFalseReturn="[bool]"
 >
 ```
-When `true`, Psalm ignores possibly-false issues stemming from return values of internal functions (like `preg_split`) that may return false, but do so rarely). Defaults to `true`.
+When `true`, Psalm ignores possibly-false issues stemming from return values of internal functions (like `preg_split`) that may return false, but do so rarely). Defaults to `false`.
 
 #### ignoreInternalFunctionNullReturn
 
@@ -253,6 +274,17 @@ When `true`, Psalm will complain when referencing an explicit string offset on a
 Set the php version psalm should assume when checking and/or fixing the project. If this attribute is not set, psalm uses the declaration in `composer.json` if one is present. It will check against the earliest version of PHP that satisfies the declared `php` dependency
 
 This can be overridden on the command-line using the `--php-version=` flag which takes the highest precedence over both the `phpVersion` setting and the version derived from `composer.json`.
+
+#### skipChecksOnUnresolvableIncludes
+```xml
+<psalm
+  skipChecksOnUnresolvableIncludes="[bool]"
+>
+```
+
+When `true`, Psalm will skip checking classes, variables and functions after it comes across an `include` or `require` it cannot resolve. This allows code to reference functions and classes unknown to Psalm.
+
+For backwards compatibility, this defaults to `true`, but if you do not rely on dynamically generated includes to cause classes otherwise unknown to psalm to come into existence, it's recommended you set this to `false` in order to reliably detect errors that would be fatal to PHP at runtime.
 
 ### Running Psalm
 

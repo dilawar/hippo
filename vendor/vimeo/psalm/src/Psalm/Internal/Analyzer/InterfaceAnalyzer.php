@@ -4,7 +4,6 @@ namespace Psalm\Internal\Analyzer;
 use PhpParser;
 use Psalm\CodeLocation;
 use Psalm\Issue\UndefinedInterface;
-use UnexpectedValueException;
 
 /**
  * @internal
@@ -103,7 +102,7 @@ class InterfaceAnalyzer extends ClassLikeAnalyzer
 
                 $method_analyzer->analyze(new \Psalm\Context($this->getFQCLN()), $type_provider);
 
-                $actual_method_id = (string)$method_analyzer->getMethodId();
+                $actual_method_id = $method_analyzer->getMethodId();
 
                 if ($stmt->name->name !== '__construct'
                     && $config->reportIssueInFile('InvalidReturnType', $this->getFilePath())
@@ -117,7 +116,8 @@ class InterfaceAnalyzer extends ClassLikeAnalyzer
                         $class_storage,
                         $fq_interface_name,
                         $actual_method_id,
-                        $actual_method_id
+                        $actual_method_id,
+                        false
                     );
                 }
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Property) {

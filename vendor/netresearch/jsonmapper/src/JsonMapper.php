@@ -120,12 +120,21 @@ class JsonMapper
     protected $arInspectedClasses = array();
 
     /**
+     * Method to call on each object after deserialization is done.
+     *
+     * Is only called if it exists on the object.
+     *
+     * @var string|null
+     */
+    public $postMappingMethod = null;
+
+    /**
      * Map data all data in $json into the given $object instance.
      *
      * @param object $json   JSON object structure from json_decode()
      * @param object $object Object to map $json data into
      *
-     * @return object Mapped object is returned.
+     * @return mixed Mapped object is returned.
      * @see    mapArray()
      */
     public function map($json, $object)
@@ -294,6 +303,16 @@ class JsonMapper
 
         if ($this->bRemoveUndefinedAttributes) {
             $this->removeUndefinedAttributes($object, $providedProperties);
+        }
+
+        if ($this->postMappingMethod !== null
+            && $rc->hasMethod($this->postMappingMethod)
+        ) {
+            $refDeserializePostMethod = $rc->getMethod(
+                $this->postMappingMethod
+            );
+            $refDeserializePostMethod->setAccessible(true);
+            $refDeserializePostMethod->invoke($object);
         }
 
         return $object;
@@ -480,6 +499,12 @@ class JsonMapper
                     if (PHP_MAJOR_VERSION >= 7) {
                         $ptype = $rparams[0]->getType();
                         if ($ptype !== null) {
+                            // ReflectionType::__toString() is deprecated
+                            if (PHP_VERSION >= 7.1
+                                && $ptype instanceof ReflectionNamedType
+                            ) {
+                                $ptype = $ptype->getName();
+                            }
                             return array(true, $rmeth, $ptype . $nullability);
                         }
                     }
@@ -602,7 +627,7 @@ class JsonMapper
      *
      * @return object Freshly created object
      */
-    public function createInstance(
+    protected function createInstance(
         $class, $useParameter = false, $jvalue = null
     ) {
         if ($useParameter) {

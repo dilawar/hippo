@@ -8,7 +8,7 @@ use Psalm\FileSource;
 use Psalm\Progress\Progress;
 use Psalm\Progress\VoidProgress;
 use Psalm\Storage\FileStorage;
-use Psalm\Internal\Visitor\ReflectorVisitor;
+use Psalm\Internal\PhpVisitor\ReflectorVisitor;
 
 /**
  * @internal
@@ -59,8 +59,6 @@ class FileScanner implements FileSource
 
         if ((!$this->will_analyze || $file_storage->deep_scan)
             && $storage_from_cache
-            && !$file_storage->has_trait
-            && !$file_storage->has_docblock_issues
             && !$codebase->register_stub_files
         ) {
             return;

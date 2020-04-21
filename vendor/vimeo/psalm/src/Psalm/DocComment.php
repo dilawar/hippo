@@ -22,6 +22,25 @@ use function trim;
 
 class DocComment
 {
+    private const PSALM_ANNOTATIONS = [
+        'return', 'param', 'template', 'var', 'type',
+        'template-covariant', 'property', 'property-read', 'property-write', 'method',
+        'assert', 'assert-if-true', 'assert-if-false', 'suppress',
+        'ignore-nullable-return', 'override-property-visibility',
+        'override-method-visibility', 'seal-properties', 'seal-methods',
+        'generator-return', 'ignore-falsable-return', 'variadic', 'pure',
+        'ignore-variable-method', 'ignore-variable-property', 'internal',
+        'taint-sink', 'taint-source', 'assert-untainted', 'scope-this',
+        'mutation-free', 'external-mutation-free', 'immutable', 'readonly',
+        'remove-taint', 'allow-private-mutation', 'readonly-allow-private-mutation',
+        'yield', 'trace',
+    ];
+
+    /**
+     * @var bool
+     */
+    private static $shouldAddNewLineBetweenAnnotations = true;
+
     /**
      * Parse a docblock comment into its parts.
      *
@@ -141,18 +160,7 @@ class DocComment
 
                 if (!in_array(
                     $special_key,
-                    [
-                        'return', 'param', 'template', 'var', 'type',
-                        'template-covariant', 'property', 'method',
-                        'assert', 'assert-if-true', 'assert-if-false', 'suppress',
-                        'ignore-nullable-return', 'override-property-visibility',
-                        'override-method-visibility', 'seal-properties', 'seal-methods',
-                        'generator-return', 'ignore-falsable-return', 'variadic', 'pure',
-                        'ignore-variable-method', 'ignore-variable-property', 'internal',
-                        'taint-sink', 'taint-source', 'assert-untainted', 'scope-this',
-                        'mutation-free', 'external-mutation-free', 'immutable', 'readonly',
-                        'remove-taint', 'allow-private-mutation', 'readonly-allow-private-mutation',
-                    ],
+                    self::PSALM_ANNOTATIONS,
                     true
                 )) {
                     throw new DocblockParseException('Unrecognised annotation @psalm-' . $special_key);
@@ -186,7 +194,7 @@ class DocComment
         $docblock = trim($docblock);
 
         $docblock = preg_replace('@^/\*\*@', '', $docblock);
-        $docblock = preg_replace('@\*/$@', '', $docblock);
+        $docblock = preg_replace('@\*\*?/$@', '', $docblock);
 
         // Normalize multi-line @specials.
         $lines = explode("\n", $docblock);
@@ -197,7 +205,7 @@ class DocComment
         foreach ($lines as $k => $line) {
             if (preg_match('/^[ \t]*\*?\s?@\w/i', $line)) {
                 $last = $k;
-            } elseif (preg_match('/^\s*$/', $line)) {
+            } elseif (preg_match('/^\s*\r?$/', $line)) {
                 $last = false;
             } elseif ($last !== false) {
                 $old_last_line = $lines[$last];
@@ -210,6 +218,10 @@ class DocComment
         $line_offset = 0;
 
         foreach ($lines as $line) {
+            $original_line_length = strlen($line);
+
+            $line = str_replace("\r", '', $line);
+
             if (preg_match('/^[ \t]*\*?\s?@([\w\-:]+)[\t ]*(.*)$/sm', $line, $matches, PREG_OFFSET_CAPTURE)) {
                 /** @var array<int, array{string, int}> $matches */
                 list($full_match_info, $type_info, $data_info) = $matches;
@@ -219,7 +231,7 @@ class DocComment
                 list($data, $data_offset) = $data_info;
 
                 if (strpos($data, '*')) {
-                    $data = rtrim(preg_replace('/[ \t]*\*\s*$/', '', $data));
+                    $data = rtrim(preg_replace('/^[ \t]*\*\s*$/m', '', $data));
                 }
 
                 $docblock = str_replace($full_match, '', $docblock);
@@ -233,7 +245,7 @@ class DocComment
                 $special[$type][$data_offset + 3] = $data;
             }
 
-            $line_offset += strlen($line) + 1;
+            $line_offset += $original_line_length + 1;
         }
 
         $docblock = str_replace("\t", '  ', $docblock);
@@ -265,18 +277,7 @@ class DocComment
 
                 if (!in_array(
                     $special_key,
-                    [
-                        'return', 'param', 'template', 'var', 'type',
-                        'template-covariant', 'property', 'method',
-                        'assert', 'assert-if-true', 'assert-if-false', 'suppress',
-                        'ignore-nullable-return', 'override-property-visibility',
-                        'override-method-visibility', 'seal-properties', 'seal-methods',
-                        'generator-return', 'ignore-falsable-return', 'variadic', 'pure',
-                        'ignore-variable-method', 'ignore-variable-property', 'internal',
-                        'taint-sink', 'taint-source', 'assert-untainted', 'scope-this',
-                        'mutation-free', 'external-mutation-free', 'immutable', 'readonly',
-                        'remove-taint', 'allow-private-mutation', 'readonly-allow-private-mutation',
-                    ],
+                    self::PSALM_ANNOTATIONS,
                     true
                 )) {
                     throw new DocblockParseException('Unrecognised annotation @psalm-' . $special_key);
@@ -320,7 +321,10 @@ class DocComment
             $last_type = null;
 
             foreach ($parsed_doc_comment['specials'] as $type => $lines) {
-                if ($last_type !== null && $last_type !== 'psalm-return') {
+                if ($last_type !== null
+                    && $last_type !== 'psalm-return'
+                    && static::shouldAddNewLineBetweenAnnotations()
+                ) {
                     $doc_comment_text .= $left_padding . ' *' . "\n";
                 }
 
@@ -336,5 +340,20 @@ class DocComment
         $doc_comment_text .= $left_padding . ' */' . "\n" . $left_padding;
 
         return $doc_comment_text;
+    }
+
+    private static function shouldAddNewLineBetweenAnnotations(): bool
+    {
+        return static::$shouldAddNewLineBetweenAnnotations;
+    }
+
+    /**
+     * Sets whether a new line should be added between the annotations or not.
+     *
+     * @param bool $should
+     */
+    public static function addNewLineBetweenAnnotations(bool $should = true): void
+    {
+        static::$shouldAddNewLineBetweenAnnotations = $should;
     }
 }

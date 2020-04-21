@@ -16,13 +16,13 @@ final class ResourceOutputStream implements OutputStream
     const MAX_CONSECUTIVE_EMPTY_WRITES = 3;
     const LARGE_CHUNK_SIZE = 128 * 1024;
 
-    /** @var resource */
+    /** @var resource|null */
     private $resource;
 
     /** @var string */
     private $watcher;
 
-    /** @var \SplQueue */
+    /** @var \SplQueue<array> */
     private $writes;
 
     /** @var bool */
@@ -62,7 +62,7 @@ final class ResourceOutputStream implements OutputStream
 
             try {
                 while (!$writes->isEmpty()) {
-                    /** @var \Amp\Deferred $deferred */
+                    /** @var Deferred $deferred */
                     list($data, $previous, $deferred) = $writes->shift();
                     $length = \strlen($data);
 
@@ -125,6 +125,7 @@ final class ResourceOutputStream implements OutputStream
                 $resource = null;
                 $writable = false;
 
+                /** @psalm-suppress PossiblyUndefinedVariable */
                 $deferred->fail($exception);
                 while (!$writes->isEmpty()) {
                     list(, , $deferred) = $writes->shift();
@@ -265,6 +266,7 @@ final class ResourceOutputStream implements OutputStream
             if ($meta && \strpos($meta["mode"], "+") !== false) {
                 @\stream_socket_shutdown($this->resource, \STREAM_SHUT_WR);
             } else {
+                /** @psalm-suppress InvalidPropertyAssignmentValue psalm reports this as closed-resource */
                 @\fclose($this->resource);
             }
         }
@@ -274,6 +276,8 @@ final class ResourceOutputStream implements OutputStream
 
     /**
      * Nulls reference to resource, marks stream unwritable, and fails any pending write.
+     *
+     * @return void
      */
     private function free()
     {
@@ -283,7 +287,7 @@ final class ResourceOutputStream implements OutputStream
         if (!$this->writes->isEmpty()) {
             $exception = new ClosedException("The socket was closed before writing completed");
             do {
-                /** @var \Amp\Deferred $deferred */
+                /** @var Deferred $deferred */
                 list(, , $deferred) = $this->writes->shift();
                 $deferred->fail($exception);
             } while (!$this->writes->isEmpty());
@@ -300,6 +304,9 @@ final class ResourceOutputStream implements OutputStream
         return $this->resource;
     }
 
+    /**
+     * @return void
+     */
     public function setChunkSize(int $chunkSize)
     {
         $this->chunkSize = $chunkSize;

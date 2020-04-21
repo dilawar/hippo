@@ -28,8 +28,8 @@ return [
         function ($filePath, $prefix, $contents) {
             if ($filePath === 'src/Psalm/Config.php') {
                 return str_replace(
-                    $prefix . '\Composer\Autoload\ClassLoader',
-                    'Composer\Autoload\ClassLoader',
+                    [$prefix . '\Composer\Autoload\ClassLoader', '\'Psalm\\\\Issue\\\\\''],
+                    ['Composer\Autoload\ClassLoader', '\'' . $prefix . '\\\\Psalm\\\\Issue\\\\\''],
                     $contents
                 );
             }
@@ -118,8 +118,8 @@ return [
     'files-whitelist' => [
         'src/Psalm/Internal/PropertyMap.php',
         'src/Psalm/Internal/CallMap.php',
-        'src/Psalm/Internal/Stubs/CoreGenericFunctions.php',
-        'src/Psalm/Internal/Stubs/CoreGenericClasses.php',
+        'src/Psalm/Internal/Stubs/CoreGenericFunctions.phpstub',
+        'src/Psalm/Internal/Stubs/CoreGenericClasses.phpstub',
         'src/spl_object_id.php',
     ],
 ];

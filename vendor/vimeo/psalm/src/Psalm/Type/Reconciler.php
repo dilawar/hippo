@@ -49,6 +49,7 @@ use function str_split;
 use function strpos;
 use function strtolower;
 use function substr;
+use Exception;
 
 class Reconciler
 {
@@ -85,6 +86,8 @@ class Reconciler
         }
 
         $suppressed_issues = $statements_analyzer->getSuppressedIssues();
+
+        $old_new_types = $new_types;
 
         foreach ($new_types as $nk => $type) {
             if (strpos($nk, '[') || strpos($nk, '->')) {
@@ -190,6 +193,7 @@ class Reconciler
             $has_falsyish = false;
             $has_empty = false;
             $has_count_check = false;
+            $is_equality = ($old_new_types[$key] ?? null) === $new_type_parts;
 
             foreach ($new_type_parts as $new_type_part_parts) {
                 foreach ($new_type_part_parts as $new_type_part_part) {
@@ -202,13 +206,18 @@ class Reconciler
                     $has_isset = $has_isset
                         || $new_type_part_part === 'isset'
                         || $new_type_part_part === '=isset'
-                        || $new_type_part_part === 'array-key-exists';
+                        || $new_type_part_part === 'array-key-exists'
+                        || $new_type_part_part === '=string-array-access';
 
                     $has_empty = $has_empty || $new_type_part_part === 'empty';
 
                     $has_falsyish = $has_falsyish
                         || $new_type_part_part === 'empty'
                         || $new_type_part_part === 'falsy';
+
+                    $is_equality = $is_equality
+                        && $new_type_part_part[0] === '='
+                        && $new_type_part_part !== '=isset';
 
                     $has_inverted_isset = $has_inverted_isset || $new_type_part_part === '!isset';
 
@@ -218,6 +227,8 @@ class Reconciler
             }
 
             $did_type_exist = isset($existing_types[$key]);
+
+            $has_object_array_access = false;
 
             $result_type = isset($existing_types[$key])
                 ? clone $existing_types[$key]
@@ -229,7 +240,9 @@ class Reconciler
                     $code_location,
                     $has_isset,
                     $has_inverted_isset,
-                    $has_empty
+                    $has_empty,
+                    $inside_loop,
+                    $has_object_array_access
                 );
 
             if ($result_type && empty($result_type->getAtomicTypes())) {
@@ -289,7 +302,7 @@ class Reconciler
             if ($type_changed || $failed_reconciliation) {
                 $changed_var_ids[$key] = true;
 
-                if (substr($key, -1) === ']' && !$has_inverted_isset && !$has_empty) {
+                if (substr($key, -1) === ']' && !$has_inverted_isset && !$has_empty && !$is_equality) {
                     $key_parts = self::breakUpPathIntoParts($key);
                     self::adjustObjectLikeType(
                         $key_parts,
@@ -306,7 +319,9 @@ class Reconciler
                 $result_type->failed_reconciliation = true;
             }
 
-            $existing_types[$key] = $result_type;
+            if (!$has_object_array_access) {
+                $existing_types[$key] = $result_type;
+            }
         }
 
         return $existing_types;
@@ -437,7 +452,9 @@ class Reconciler
         ?CodeLocation $code_location,
         bool $has_isset,
         bool $has_inverted_isset,
-        bool $has_empty
+        bool $has_empty,
+        bool $inside_loop,
+        bool &$has_object_array_access
     ) {
         $key_parts = self::breakUpPathIntoParts($key);
 
@@ -493,6 +510,10 @@ class Reconciler
 
                             $new_base_type_candidate = clone $existing_key_type_part->type_params[1];
 
+                            if ($new_base_type_candidate->isMixed() && !$has_isset && !$has_inverted_isset) {
+                                return $new_base_type_candidate;
+                            }
+
                             if (($has_isset || $has_inverted_isset) && isset($new_assertions[$new_base_key])) {
                                 if ($has_inverted_isset && $new_base_key === $key) {
                                     $new_base_type_candidate->addType(new Type\Atomic\TNull);
@@ -514,10 +535,28 @@ class Reconciler
 
                                 $new_base_type_candidate->possibly_undefined = true;
                             }
-                        } elseif ($existing_key_type_part instanceof Type\Atomic\TNull) {
+                        } elseif ($existing_key_type_part instanceof Type\Atomic\TNull
+                            || $existing_key_type_part instanceof Type\Atomic\TFalse
+                        ) {
                             $new_base_type_candidate = Type::getNull();
+
+                            if ($existing_keys[$base_key]->ignore_nullable_issues) {
+                                $new_base_type_candidate->ignore_nullable_issues = true;
+                            }
                         } elseif ($existing_key_type_part instanceof Type\Atomic\TClassStringMap) {
                             return Type::getMixed();
+                        } elseif ($existing_key_type_part instanceof Type\Atomic\TEmpty
+                            || ($existing_key_type_part instanceof Type\Atomic\TMixed
+                                && $existing_key_type_part->from_loop_isset)
+                        ) {
+                            return Type::getMixed($inside_loop);
+                        } elseif ($existing_key_type_part instanceof TString) {
+                            $new_base_type_candidate = Type::getString();
+                        } elseif ($existing_key_type_part instanceof Type\Atomic\TNamedObject
+                            && ($has_isset || $has_inverted_isset)
+                        ) {
+                            $has_object_array_access = true;
+                            return null;
                         } elseif (!$existing_key_type_part instanceof Type\Atomic\ObjectLike) {
                             return Type::getMixed();
                         } elseif ($array_key[0] === '$' || ($array_key[0] !== '\'' && !\is_numeric($array_key[0]))) {
@@ -552,9 +591,9 @@ class Reconciler
                                 $codebase
                             );
                         }
-
-                        $existing_keys[$new_base_key] = $new_base_type;
                     }
+
+                    $existing_keys[$new_base_key] = $new_base_type;
                 }
 
                 $base_key = $new_base_key;
@@ -580,7 +619,10 @@ class Reconciler
                                 $class_property_type = Type::getMixed();
                             } else {
                                 if (substr($property_name, -2) === '()') {
-                                    $method_id = $existing_key_type_part->value . '::' . substr($property_name, 0, -2);
+                                    $method_id = new \Psalm\Internal\MethodIdentifier(
+                                        $existing_key_type_part->value,
+                                        strtolower(substr($property_name, 0, -2))
+                                    );
 
                                     if (!$codebase->methods->methodExists($method_id)) {
                                         return null;
@@ -590,7 +632,11 @@ class Reconciler
                                         $method_id
                                     );
 
-                                    $declaring_class = explode('::', (string) $declaring_method_id)[0];
+                                    if ($declaring_method_id === null) {
+                                        return null;
+                                    }
+
+                                    $declaring_class = $declaring_method_id->fq_class_name;
 
                                     $method_return_type = $codebase->methods->getMethodReturnType(
                                         $method_id,
@@ -622,6 +668,10 @@ class Reconciler
                                         true
                                     );
 
+                                    if ($declaring_property_class === null) {
+                                        return null;
+                                    }
+
                                     $class_property_type = $codebase->properties->getPropertyType(
                                         $property_id,
                                         false,
@@ -629,12 +679,16 @@ class Reconciler
                                         null
                                     );
 
+                                    $declaring_class_storage = $codebase->classlike_storage_provider->get(
+                                        $declaring_property_class
+                                    );
+
                                     if ($class_property_type) {
                                         $class_property_type = ExpressionAnalyzer::fleshOutType(
                                             $codebase,
                                             clone $class_property_type,
-                                            $declaring_property_class,
-                                            $declaring_property_class,
+                                            $declaring_class_storage->name,
+                                            $declaring_class_storage->name,
                                             null
                                         );
                                     } else {

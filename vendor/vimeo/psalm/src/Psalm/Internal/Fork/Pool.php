@@ -9,6 +9,7 @@ use function base64_decode;
 use function base64_encode;
 use function count;
 use function error_log;
+use function error_get_last;
 use function explode;
 use function extension_loaded;
 use function fclose;
@@ -38,6 +39,7 @@ use const STREAM_SOCK_STREAM;
 use function stream_socket_pair;
 use function strlen;
 use function strpos;
+use function stripos;
 use function substr;
 use function unserialize;
 use function usleep;
@@ -54,8 +56,8 @@ use function version_compare;
  */
 class Pool
 {
-    const EXIT_SUCCESS = 1;
-    const EXIT_FAILURE = 0;
+    const EXIT_SUCCESS = 0;
+    const EXIT_FAILURE = 1;
 
     /** @var int[] */
     private $child_pid_list = [];
@@ -177,30 +179,41 @@ class Pool
 
         $task_done_buffer = '';
 
-        foreach ($task_data_iterator as $i => $task_data) {
-            $task_result = $task_closure($i, $task_data);
-            $task_done_message = new ForkTaskDoneMessage($task_result);
-            $serialized_message = $task_done_buffer . base64_encode(serialize($task_done_message)) . "\n";
+        try {
+            foreach ($task_data_iterator as $i => $task_data) {
+                $task_result = $task_closure($i, $task_data);
 
-            if (strlen($serialized_message) > 200) {
-                $bytes_written = @fwrite($write_stream, $serialized_message);
+                $task_done_message = new ForkTaskDoneMessage($task_result);
+                $serialized_message = $task_done_buffer . base64_encode(serialize($task_done_message)) . "\n";
 
-                if (strlen($serialized_message) !== $bytes_written) {
-                    $task_done_buffer = substr($serialized_message, $bytes_written);
+                if (strlen($serialized_message) > 200) {
+                    $bytes_written = @fwrite($write_stream, $serialized_message);
+
+                    if (strlen($serialized_message) !== $bytes_written) {
+                        $task_done_buffer = substr($serialized_message, $bytes_written);
+                    } else {
+                        $task_done_buffer = '';
+                    }
                 } else {
-                    $task_done_buffer = '';
+                    $task_done_buffer = $serialized_message;
                 }
-            } else {
-                $task_done_buffer = $serialized_message;
             }
+
+            // Execute each child's shutdown closure before
+            // exiting the process
+            $results = $shutdown_closure();
+
+            // Serialize this child's produced results and send them to the parent.
+            $process_done_message = new ForkProcessDoneMessage($results ?: []);
+        } catch (\Throwable $t) {
+            // This can happen when developing Psalm from source without running `composer update`,
+            // or because of rare bugs in Psalm.
+            /** @psalm-suppress MixedArgument on Windows, for some reason */
+            $process_done_message = new ForkProcessErrorMessage(
+                $t->getMessage() . "\nStack trace in the forked worker:\n" . $t->getTraceAsString()
+            );
         }
 
-        // Execute each child's shutdown closure before
-        // exiting the process
-        $results = $shutdown_closure();
-
-        // Serialize this child's produced results and send them to the parent.
-        $process_done_message = new ForkProcessDoneMessage($results ?: []);
         $serialized_message = $task_done_buffer . base64_encode(serialize($process_done_message)) . "\n";
 
         $bytes_to_write = strlen($serialized_message);
@@ -298,10 +311,17 @@ class Pool
             $needs_except = null;
 
             // Wait for data on at least one stream.
-            $num = stream_select($needs_read, $needs_write, $needs_except, null /* no timeout */);
+            $num = @stream_select($needs_read, $needs_write, $needs_except, null /* no timeout */);
             if ($num === false) {
-                error_log('unable to select on read stream');
-                exit(self::EXIT_FAILURE);
+                $err = error_get_last();
+
+                // stream_select returns false when the `select` system call is interrupted by an incoming signal
+                if (isset($err['message']) && stripos($err['message'], 'interrupted system call') === false) {
+                    error_log('unable to select on read stream');
+                    exit(self::EXIT_FAILURE);
+                }
+
+                continue;
             }
 
             // For each stream that was ready, read the content.
@@ -324,6 +344,8 @@ class Pool
                             if ($this->task_done_closure !== null) {
                                 ($this->task_done_closure)($message->data);
                             }
+                        } elseif ($message instanceof ForkProcessErrorMessage) {
+                            throw new \Exception($message->message);
                         } else {
                             error_log('Child should return ForkMessage - response type=' . gettype($message));
                             $this->did_have_error = true;

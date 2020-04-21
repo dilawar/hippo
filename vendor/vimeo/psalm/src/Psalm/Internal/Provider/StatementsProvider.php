@@ -99,7 +99,11 @@ class StatementsProvider
         $file_contents = $this->file_provider->getContents($file_path);
         $modified_time = $this->file_provider->getModifiedTime($file_path);
 
-        if (!$this->parser_cache_provider) {
+        $config = \Psalm\Config::getInstance();
+
+        if (!$this->parser_cache_provider
+            || (!$config->isInProjectDirs($file_path) && \strpos($file_path, 'vendor'))
+        ) {
             $progress->debug('Parsing ' . $file_path . "\n");
 
             $stmts = self::parseStatements($file_contents, $file_path);
@@ -152,7 +156,7 @@ class StatementsProvider
 
                 if (count($file_changes) < 10) {
                     $traverser = new PhpParser\NodeTraverser;
-                    $traverser->addVisitor(new \Psalm\Internal\Visitor\CloningVisitor);
+                    $traverser->addVisitor(new \Psalm\Internal\PhpVisitor\CloningVisitor);
                     // performs a deep clone
                     /** @var list<PhpParser\Node\Stmt> */
                     $existing_statements_copy = $traverser->traverse($existing_statements);
@@ -385,8 +389,8 @@ class StatementsProvider
         $error_handler = new \PhpParser\ErrorHandler\Collecting();
 
         if ($existing_statements && $file_changes && $existing_file_contents) {
-            $clashing_traverser = new \Psalm\Internal\Traverser\CustomTraverser;
-            $offset_analyzer = new \Psalm\Internal\Visitor\PartialParserVisitor(
+            $clashing_traverser = new \Psalm\Internal\PhpTraverser\CustomTraverser;
+            $offset_analyzer = new \Psalm\Internal\PhpVisitor\PartialParserVisitor(
                 self::$parser,
                 $error_handler,
                 $file_changes,
@@ -443,7 +447,7 @@ class StatementsProvider
         $error_handler->clearErrors();
 
         $resolving_traverser = new PhpParser\NodeTraverser;
-        $name_resolver = new \Psalm\Internal\Visitor\SimpleNameResolver(
+        $name_resolver = new \Psalm\Internal\PhpVisitor\SimpleNameResolver(
             $error_handler,
             $used_cached_statements ? $file_changes : []
         );

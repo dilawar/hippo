@@ -5,6 +5,7 @@ use function array_map;
 use function implode;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
+use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
 use Psalm\Internal\Analyzer\TypeAnalyzer;
 use Psalm\Internal\Type\TemplateResult;
@@ -18,6 +19,7 @@ use Psalm\Type;
 use Psalm\Type\Atomic;
 use Psalm\Type\Union;
 use function substr;
+use function strtolower;
 
 trait GenericTrait
 {
@@ -150,21 +152,19 @@ trait GenericTrait
     }
 
     /**
-     * @return void
+     * @return array<\Psalm\Type\TypeNode>
      */
-    public function setFromDocblock()
+    public function getChildNodes() : array
     {
-        $this->from_docblock = true;
-
-        foreach ($this->type_params as $type_param) {
-            $type_param->setFromDocblock();
-        }
+        return $this->type_params;
     }
 
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,
-        Codebase $codebase = null,
+        ?Codebase $codebase = null,
+        ?StatementsAnalyzer $statements_analyzer = null,
         Atomic $input_type = null,
+        ?int $input_arg_offset = null,
         ?string $calling_class = null,
         ?string $calling_function = null,
         bool $replace = true,
@@ -202,7 +202,9 @@ trait GenericTrait
                 $type_param,
                 $template_result,
                 $codebase,
+                $statements_analyzer,
                 $input_type_param,
+                $input_arg_offset,
                 $calling_class,
                 $calling_function,
                 $replace,
@@ -214,15 +216,16 @@ trait GenericTrait
         return $atomic;
     }
 
-    /**
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>     $template_types
-     *
-     * @return void
-     */
-    public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
-    {
-        foreach ($this->type_params as $type_param) {
-            $type_param->replaceTemplateTypesWithArgTypes($template_types, $codebase);
+    public function replaceTemplateTypesWithArgTypes(
+        TemplateResult $template_result,
+        ?Codebase $codebase
+    ) : void {
+        foreach ($this->type_params as $offset => $type_param) {
+            $type_param->replaceTemplateTypesWithArgTypes($template_result, $codebase);
+
+            if ($this instanceof Atomic\TArray && $offset === 0 && $type_param->isMixed()) {
+                $this->type_params[0] = \Psalm\Type::getArrayKey();
+            }
         }
 
         if ($this instanceof TGenericObject) {
@@ -230,135 +233,7 @@ trait GenericTrait
         }
 
         if ($this instanceof TGenericObject || $this instanceof TIterable) {
-            $this->replaceIntersectionTemplateTypesWithArgTypes($template_types, $codebase);
-        }
-    }
-
-    /**
-     * @return list<Type\Atomic\TTemplateParam>
-     */
-    public function getTemplateTypes() : array
-    {
-        $template_types = [];
-
-        foreach ($this->type_params as $type_param) {
-            $template_types = \array_merge($template_types, $type_param->getTemplateTypes());
-        }
-
-        return $template_types;
-    }
-
-    /**
-     * @param  StatementsSource $source
-     * @param  CodeLocation     $code_location
-     * @param  array<string>    $suppressed_issues
-     * @param  array<string, bool> $phantom_classes
-     * @param  bool             $inferred
-     *
-     * @return false|null
-     */
-    public function checkGenericParams(
-        StatementsSource $source,
-        CodeLocation $code_location,
-        array $suppressed_issues,
-        array $phantom_classes = [],
-        bool $inferred = true,
-        bool $prevent_template_covariance = false
-    ) {
-        $codebase = $source->getCodebase();
-
-        if ($this instanceof Type\Atomic\TGenericObject) {
-            try {
-                $class_storage = $codebase->classlike_storage_provider->get($this->value);
-            } catch (\InvalidArgumentException $e) {
-                return;
-            }
-
-            $expected_type_params = $class_storage->template_types ?: [];
-            $expected_param_covariants = $class_storage->template_covariants;
-        } else {
-            $expected_type_params = [
-                'TKey' => [
-                    '' => [Type::getMixed(), null],
-                ],
-                'TValue' => [
-                    '' => [Type::getMixed(), null],
-                ],
-            ];
-        }
-
-        $template_type_count = \count($expected_type_params);
-        $template_param_count = \count($this->type_params);
-
-        if ($template_type_count > $template_param_count) {
-            if (IssueBuffer::accepts(
-                new MissingTemplateParam(
-                    $this->value . ' has missing template params, expecting '
-                        . $template_type_count,
-                    $code_location
-                ),
-                $suppressed_issues
-            )) {
-                // fall through
-            }
-        } elseif ($template_type_count < $template_param_count) {
-            if (IssueBuffer::accepts(
-                new TooManyTemplateParams(
-                    $this->getId(). ' has too many template params, expecting '
-                        . $template_type_count,
-                    $code_location
-                ),
-                $suppressed_issues
-            )) {
-                // fall through
-            }
-        }
-
-        foreach ($this->type_params as $i => $type_param) {
-            /** @psalm-suppress RedundantCondition */
-            if ($type_param->check(
-                $source,
-                $code_location,
-                $suppressed_issues,
-                $phantom_classes,
-                $inferred,
-                $source instanceof \Psalm\Internal\Analyzer\MethodAnalyzer
-                    && $source->getMethodName() !== '__construct'
-                    && empty($expected_param_covariants[$i])
-                    && !$this instanceof TArray
-                    && !$this instanceof TIterable
-            ) === false) {
-                return false;
-            }
-
-            if (isset(\array_values($expected_type_params)[$i])) {
-                $expected_type_param = \reset(\array_values($expected_type_params)[$i])[0];
-                $template_name = \array_keys($expected_type_params)[$i];
-
-                $type_param = ExpressionAnalyzer::fleshOutType(
-                    $codebase,
-                    $type_param,
-                    $source->getFQCLN(),
-                    $source->getFQCLN(),
-                    $source->getParentFQCLN()
-                );
-
-                if (!TypeAnalyzer::isContainedBy($codebase, $type_param, $expected_type_param)) {
-                    if (IssueBuffer::accepts(
-                        new InvalidTemplateParam(
-                            'Extended template param ' . $template_name
-                                . ' of ' . $this->getId()
-                                . ' expects type '
-                                . $expected_type_param->getId()
-                                . ', type ' . $type_param->getId() . ' given',
-                            $code_location
-                        ),
-                        $suppressed_issues
-                    )) {
-                        // fall through
-                    }
-                }
-            }
+            $this->replaceIntersectionTemplateTypesWithArgTypes($template_result, $codebase);
         }
     }
 }

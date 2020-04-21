@@ -25,6 +25,7 @@ use Psalm\Type\Atomic\TCallable;
 use Psalm\Type\Atomic\TClassString;
 use Psalm\Type\Atomic\TEmpty;
 use Psalm\Type\Atomic\TFalse;
+use Psalm\Type\Atomic\TFloat;
 use Psalm\Type\Atomic\TInt;
 use Psalm\Type\Atomic\TMixed;
 use Psalm\Type\Atomic\TNamedObject;
@@ -47,6 +48,7 @@ class NegatedAssertionReconciler extends Reconciler
      * @param  string     $assertion
      * @param  bool       $is_strict_equality
      * @param  bool       $is_loose_equality
+     * @param   array<string, array<string, array{Type\Union}>> $template_type_map
      * @param  string     $old_var_type_string
      * @param  string|null $key
      * @param  CodeLocation|null $code_location
@@ -61,6 +63,7 @@ class NegatedAssertionReconciler extends Reconciler
         $is_strict_equality,
         $is_loose_equality,
         Type\Union $existing_var_type,
+        array $template_type_map,
         $old_var_type_string,
         $key,
         $code_location,
@@ -192,6 +195,28 @@ class NegatedAssertionReconciler extends Reconciler
             );
         }
 
+        if ($assertion === 'float' && !$existing_var_type->hasMixed()) {
+            return self::reconcileFloat(
+                $existing_var_type,
+                $key,
+                $code_location,
+                $suppressed_issues,
+                $failed_reconciliation,
+                $is_equality
+            );
+        }
+
+        if ($assertion === 'int' && !$existing_var_type->hasMixed()) {
+            return self::reconcileInt(
+                $existing_var_type,
+                $key,
+                $code_location,
+                $suppressed_issues,
+                $failed_reconciliation,
+                $is_equality
+            );
+        }
+
         if ($assertion === 'string' && !$existing_var_type->hasMixed()) {
             return self::reconcileString(
                 $existing_var_type,
@@ -306,8 +331,8 @@ class NegatedAssertionReconciler extends Reconciler
             $existing_var_type->removeType('iterable');
             $existing_var_type->addType(new TArray(
                 [
-                    $iterable->type_params[0],
-                    $iterable->type_params[1],
+                    $iterable->type_params[0]->isMixed() ? Type::getArrayKey() : clone $iterable->type_params[0],
+                    clone $iterable->type_params[1],
                 ]
             ));
         } elseif (strtolower($assertion) === 'int'
@@ -359,7 +384,7 @@ class NegatedAssertionReconciler extends Reconciler
             && ($key !== '$this'
                 || !($statements_analyzer->getSource()->getSource() instanceof TraitAnalyzer))
         ) {
-            $assertion = Type::parseString($assertion);
+            $assertion = Type::parseString($assertion, null, $template_type_map);
 
             if ($key
                 && $code_location
@@ -454,10 +479,13 @@ class NegatedAssertionReconciler extends Reconciler
             } elseif (!$type instanceof TBool
                 || ($is_equality && get_class($type) === TBool::class)
             ) {
-                $non_bool_types[] = $type;
-
                 if ($type instanceof TScalar) {
                     $did_remove_type = true;
+                    $non_bool_types[] = new TString();
+                    $non_bool_types[] = new TInt();
+                    $non_bool_types[] = new TFloat();
+                } else {
+                    $non_bool_types[] = $type;
                 }
             } else {
                 $did_remove_type = true;
@@ -764,9 +792,11 @@ class NegatedAssertionReconciler extends Reconciler
         if (isset($existing_var_atomic_types['string'])) {
             if (!$existing_var_atomic_types['string'] instanceof Type\Atomic\TNonEmptyString) {
                 $did_remove_type = true;
-                $existing_var_type->removeType('string');
+                if (!$existing_var_atomic_types['string'] instanceof Type\Atomic\TLowercaseString) {
+                    $existing_var_type->removeType('string');
 
-                $existing_var_type->addType(new Type\Atomic\TNonEmptyString);
+                    $existing_var_type->addType(new Type\Atomic\TNonEmptyString);
+                }
             } elseif ($existing_var_type->isSingle() && !$is_equality) {
                 if ($code_location
                     && $key
@@ -858,7 +888,7 @@ class NegatedAssertionReconciler extends Reconciler
 
         foreach ($existing_var_type->getAtomicTypes() as $type) {
             if ($type instanceof TTemplateParam) {
-                if (!$type->as->hasScalar()) {
+                if (!$type->as->hasScalar() || $is_equality) {
                     $non_scalar_types[] = $type;
                 }
 
@@ -923,7 +953,7 @@ class NegatedAssertionReconciler extends Reconciler
 
         foreach ($existing_var_type->getAtomicTypes() as $type) {
             if ($type instanceof TTemplateParam) {
-                if (!$type->as->hasObject()) {
+                if (!$type->as->hasObject() || $is_equality) {
                     $non_object_types[] = $type;
                 }
 
@@ -996,13 +1026,16 @@ class NegatedAssertionReconciler extends Reconciler
 
         foreach ($existing_var_type->getAtomicTypes() as $type) {
             if ($type instanceof TTemplateParam) {
-                if (!$type->as->hasNumeric()) {
+                if (!$type->as->hasNumeric() || $is_equality) {
                     if ($type->as->hasMixed()) {
                         $did_remove_type = true;
                     }
 
                     $non_numeric_types[] = $type;
                 }
+            } elseif ($type instanceof TArrayKey) {
+                $did_remove_type = true;
+                $non_numeric_types[] = new TString();
             } elseif (!$type->isNumericType()) {
                 $non_numeric_types[] = $type;
             } else {
@@ -1049,6 +1082,155 @@ class NegatedAssertionReconciler extends Reconciler
      * @param   string[]  $suppressed_issues
      * @param   0|1|2    $failed_reconciliation
      */
+    private static function reconcileInt(
+        Type\Union $existing_var_type,
+        ?string $key,
+        ?CodeLocation $code_location,
+        array $suppressed_issues,
+        int &$failed_reconciliation,
+        bool $is_equality
+    ) : Type\Union {
+        $old_var_type_string = $existing_var_type->getId();
+        $non_int_types = [];
+        $did_remove_type = false;
+
+        foreach ($existing_var_type->getAtomicTypes() as $type) {
+            if ($type instanceof TTemplateParam) {
+                if (!$type->as->hasInt() || $is_equality) {
+                    if ($type->as->hasMixed()) {
+                        $did_remove_type = true;
+                    }
+
+                    $non_int_types[] = $type;
+                }
+            } elseif ($type instanceof TArrayKey) {
+                $did_remove_type = true;
+                $non_int_types[] = new TString();
+            } elseif ($type instanceof TScalar) {
+                $did_remove_type = true;
+                $non_int_types[] = new TString();
+                $non_int_types[] = new TFloat();
+                $non_int_types[] = new TBool();
+            } elseif ($type instanceof TInt) {
+                $did_remove_type = true;
+
+                if ($is_equality) {
+                    $non_int_types[] = $type;
+                } elseif ($existing_var_type->from_calculation) {
+                    $non_int_types[] = new TFloat();
+                }
+            } else {
+                $non_int_types[] = $type;
+            }
+        }
+
+        if (!$non_int_types || !$did_remove_type) {
+            if ($key && $code_location && !$is_equality) {
+                self::triggerIssueForImpossible(
+                    $existing_var_type,
+                    $old_var_type_string,
+                    $key,
+                    '!int',
+                    !$did_remove_type,
+                    $code_location,
+                    $suppressed_issues
+                );
+            }
+
+            if (!$did_remove_type) {
+                $failed_reconciliation = 1;
+            }
+        }
+
+        if ($non_int_types) {
+            $type = new Type\Union($non_int_types);
+            $type->ignore_falsable_issues = $existing_var_type->ignore_falsable_issues;
+            $type->ignore_nullable_issues = $existing_var_type->ignore_nullable_issues;
+            $type->from_docblock = $existing_var_type->from_docblock;
+            return $type;
+        }
+
+        $failed_reconciliation = 2;
+
+        return Type::getMixed();
+    }
+
+    /**
+     * @param   string[]  $suppressed_issues
+     * @param   0|1|2    $failed_reconciliation
+     */
+    private static function reconcileFloat(
+        Type\Union $existing_var_type,
+        ?string $key,
+        ?CodeLocation $code_location,
+        array $suppressed_issues,
+        int &$failed_reconciliation,
+        bool $is_equality
+    ) : Type\Union {
+        $old_var_type_string = $existing_var_type->getId();
+        $non_float_types = [];
+        $did_remove_type = false;
+
+        foreach ($existing_var_type->getAtomicTypes() as $type) {
+            if ($type instanceof TTemplateParam) {
+                if (!$type->as->hasFloat() || $is_equality) {
+                    if ($type->as->hasMixed()) {
+                        $did_remove_type = true;
+                    }
+
+                    $non_float_types[] = $type;
+                }
+            } elseif ($type instanceof TScalar) {
+                $did_remove_type = true;
+                $non_float_types[] = new TString();
+                $non_float_types[] = new TInt();
+                $non_float_types[] = new TBool();
+            } elseif ($type instanceof TFloat) {
+                $did_remove_type = true;
+
+                if ($is_equality) {
+                    $non_float_types[] = $type;
+                }
+            } else {
+                $non_float_types[] = $type;
+            }
+        }
+
+        if (!$non_float_types || !$did_remove_type) {
+            if ($key && $code_location && !$is_equality) {
+                self::triggerIssueForImpossible(
+                    $existing_var_type,
+                    $old_var_type_string,
+                    $key,
+                    '!float',
+                    !$did_remove_type,
+                    $code_location,
+                    $suppressed_issues
+                );
+            }
+
+            if (!$did_remove_type) {
+                $failed_reconciliation = 1;
+            }
+        }
+
+        if ($non_float_types) {
+            $type = new Type\Union($non_float_types);
+            $type->ignore_falsable_issues = $existing_var_type->ignore_falsable_issues;
+            $type->ignore_nullable_issues = $existing_var_type->ignore_nullable_issues;
+            $type->from_docblock = $existing_var_type->from_docblock;
+            return $type;
+        }
+
+        $failed_reconciliation = 2;
+
+        return Type::getMixed();
+    }
+
+    /**
+     * @param   string[]  $suppressed_issues
+     * @param   0|1|2    $failed_reconciliation
+     */
     private static function reconcileString(
         Type\Union $existing_var_type,
         ?string $key,
@@ -1063,7 +1245,7 @@ class NegatedAssertionReconciler extends Reconciler
 
         foreach ($existing_var_type->getAtomicTypes() as $type) {
             if ($type instanceof TTemplateParam) {
-                if (!$type->as->hasString()) {
+                if (!$type->as->hasString() || $is_equality) {
                     if ($type->as->hasMixed()) {
                         $did_remove_type = true;
                     }
@@ -1083,6 +1265,11 @@ class NegatedAssertionReconciler extends Reconciler
             } elseif ($type instanceof TNumeric) {
                 $non_string_types[] = $type;
                 $did_remove_type = true;
+            } elseif ($type instanceof TScalar) {
+                $did_remove_type = true;
+                $non_string_types[] = new TFloat();
+                $non_string_types[] = new TInt();
+                $non_string_types[] = new TBool();
             } elseif (!$type instanceof TString) {
                 $non_string_types[] = $type;
             } else {
@@ -1143,7 +1330,7 @@ class NegatedAssertionReconciler extends Reconciler
 
         foreach ($existing_var_type->getAtomicTypes() as $type) {
             if ($type instanceof TTemplateParam) {
-                if (!$type->as->hasArray()) {
+                if (!$type->as->hasArray() || $is_equality) {
                     if ($type->as->hasMixed()) {
                         $did_remove_type = true;
                     }

@@ -43,6 +43,7 @@ $valid_long_options = [
     'monochrome',
     'no-cache',
     'no-reflection-cache',
+    'no-file-cache',
     'output-format:',
     'plugin:',
     'report:',
@@ -69,6 +70,7 @@ $valid_long_options = [
     'include-php-versions', // used for baseline
     'track-tainted-input',
     'find-unused-psalm-suppress',
+    'error-level:',
 ];
 
 gc_collect_cycles();
@@ -208,9 +210,18 @@ $vendor_dir = getVendorDir($current_dir);
 
 $first_autoloader = requireAutoloaders($current_dir, isset($options['r']), $vendor_dir);
 
+
+if (array_key_exists('v', $options)) {
+    echo 'Psalm ' . PSALM_VERSION . PHP_EOL;
+    exit;
+}
+
 $output_format = isset($options['output-format']) && is_string($options['output-format'])
     ? $options['output-format']
     : \Psalm\Report::TYPE_CONSOLE;
+
+$init_level = null;
+$init_source_dir = null;
 
 if (isset($options['i'])) {
     if (file_exists($current_dir . 'psalm.xml')) {
@@ -229,14 +240,13 @@ if (isset($options['i'])) {
                 && $arg !== '--no-ansi'
                 && $arg !== '-i'
                 && $arg !== '--init'
+                && $arg !== '--debug'
+                && $arg !== '--debug-by-line'
                 && strpos($arg, '--disable-extension=') !== 0
                 && strpos($arg, '--root=') !== 0
                 && strpos($arg, '--r=') !== 0;
         }
     ));
-
-    $level = 3;
-    $source_dir = null;
 
     if (count($args)) {
         if (count($args) > 2) {
@@ -248,42 +258,83 @@ if (isset($options['i'])) {
                 die('Config strictness must be a number between 1 and 8 inclusive' . PHP_EOL);
             }
 
-            $level = (int)$args[1];
+            $init_level = (int)$args[1];
         }
 
-        $source_dir = $args[0];
+        $init_source_dir = $args[0];
     }
 
     $vendor_dir = getVendorDir($current_dir);
 
-    try {
-        $template_contents = Psalm\Config\Creator::getContents($current_dir, $source_dir, $level, $vendor_dir);
-    } catch (Psalm\Exception\ConfigCreationException $e) {
-        die($e->getMessage() . PHP_EOL);
+    if ($init_level === null) {
+        echo "Calculating best config level based on project files\n";
+        Psalm\Config\Creator::createBareConfig($current_dir, $init_source_dir, $vendor_dir);
+        $config = \Psalm\Config::getInstance();
+    } else {
+        try {
+            $template_contents = Psalm\Config\Creator::getContents(
+                $current_dir,
+                $init_source_dir,
+                $init_level,
+                $vendor_dir
+            );
+        } catch (Psalm\Exception\ConfigCreationException $e) {
+            die($e->getMessage() . PHP_EOL);
+        }
+
+        if (!file_put_contents($current_dir . 'psalm.xml', $template_contents)) {
+            die('Could not write to psalm.xml' . PHP_EOL);
+        }
+
+        exit('Config file created successfully. Please re-run psalm.' . PHP_EOL);
     }
+} else {
+    $config = initialiseConfig($path_to_config, $current_dir, $output_format, $first_autoloader);
 
-    if (!file_put_contents($current_dir . 'psalm.xml', $template_contents)) {
-        die('Could not write to psalm.xml' . PHP_EOL);
+    if (isset($options['error-level'])
+        && is_numeric($options['error-level'])
+    ) {
+        $config_level = (int) $options['error-level'];
+
+        if (!in_array($config_level, [1, 2, 3, 4, 5, 6, 7, 8], true)) {
+            throw new \Psalm\Exception\ConfigException(
+                'Invalid error level ' . $config_level
+            );
+        }
+
+        $config->level = $config_level;
     }
-
-    exit('Config file created successfully. Please re-run psalm.' . PHP_EOL);
 }
-
-if (array_key_exists('v', $options)) {
-    echo 'Psalm ' . PSALM_VERSION . PHP_EOL;
-    exit;
-}
-
-$config = initialiseConfig($path_to_config, $current_dir, $output_format, $first_autoloader);
 
 if ($config->resolve_from_config_file) {
     $current_dir = $config->base_dir;
     chdir($current_dir);
 }
 
-$threads = isset($options['threads']) ? (int)$options['threads'] : 1;
+$in_ci = isset($_SERVER['TRAVIS'])
+    || isset($_SERVER['CIRCLECI'])
+    || isset($_SERVER['APPVEYOR'])
+    || isset($_SERVER['JENKINS_URL'])
+    || isset($_SERVER['SCRUTINIZER'])
+    || isset($_SERVER['GITLAB_CI'])
+    || isset($_SERVER['GITHUB_WORKFLOW']);
 
-if ($threads === 1
+// disable progressbar on CI
+if ($in_ci) {
+    $options['long-progress'] = true;
+}
+
+if (isset($options['threads'])) {
+    $threads = (int)$options['threads'];
+} elseif (isset($options['debug']) || $in_ci) {
+    $threads = 1;
+} else {
+    $threads = max(1, ProjectAnalyzer::getCpuCount() - 1);
+}
+
+if (!isset($options['threads'])
+    && !isset($options['debug'])
+    && $threads === 1
     && ini_get('pcre.jit') === '1'
     && PHP_OS === 'Darwin'
     && version_compare(PHP_VERSION, '7.3.0') >= 0
@@ -359,8 +410,8 @@ if (isset($options['plugin'])) {
 
 
 $show_info = isset($options['show-info'])
-    ? $options['show-info'] !== 'false' && $options['show-info'] !== '0'
-    : true;
+    ? $options['show-info'] === 'true' || $options['show-info'] === '1'
+    : false;
 
 $is_diff = isset($options['diff']);
 
@@ -383,8 +434,6 @@ $find_unused_variables = isset($options['find-unused-variables']);
 $find_references_to = isset($options['find-references-to']) && is_string($options['find-references-to'])
     ? $options['find-references-to']
     : null;
-
-
 
 if (isset($options['shepherd'])) {
     if (is_string($options['shepherd'])) {
@@ -418,18 +467,6 @@ if (isset($options['clear-global-cache'])) {
     exit;
 }
 
-// disable progressbar on CI
-if (isset($_SERVER['TRAVIS'])
-    || isset($_SERVER['CIRCLECI'])
-    || isset($_SERVER['APPVEYOR'])
-    || isset($_SERVER['JENKINS_URL'])
-    || isset($_SERVER['SCRUTINIZER'])
-    || isset($_SERVER['GITLAB_CI'])
-    || isset($_SERVER['GITHUB_WORKFLOW'])
-) {
-    $options['long-progress'] = true;
-}
-
 $debug = array_key_exists('debug', $options) || array_key_exists('debug-by-line', $options);
 
 if ($debug) {
@@ -445,12 +482,13 @@ if ($debug) {
     }
 }
 
-if (isset($options['no-cache'])) {
+if (isset($options['no-cache']) || isset($options['i'])) {
     $providers = new Provider\Providers(
         new Provider\FileProvider
     );
 } else {
     $no_reflection_cache = isset($options['no-reflection-cache']);
+    $no_file_cache = isset($options['no-file-cache']);
 
     $file_storage_cache_provider = $no_reflection_cache
         ? null
@@ -462,10 +500,11 @@ if (isset($options['no-cache'])) {
 
     $providers = new Provider\Providers(
         new Provider\FileProvider,
-        new Provider\ParserCacheProvider($config),
+        new Provider\ParserCacheProvider($config, !$no_file_cache),
         $file_storage_cache_provider,
         $classlike_storage_cache_provider,
-        new Provider\FileReferenceCacheProvider($config)
+        new Provider\FileReferenceCacheProvider($config),
+        new Provider\ProjectCacheProvider($current_dir . DIRECTORY_SEPARATOR . 'composer.lock')
     );
 }
 
@@ -505,19 +544,11 @@ if (isset($options['php-version'])) {
     $project_analyzer->setPhpVersion($options['php-version']);
 }
 
-$project_analyzer->getCodebase()->diff_methods = isset($options['diff-methods']);
-
 if ($type_map_location) {
     $project_analyzer->getCodebase()->store_node_types = true;
 }
 
 $start_time = microtime(true);
-
-$config->visitComposerAutoloadFiles($project_analyzer, $progress);
-
-$now_time = microtime(true);
-
-$progress->debug('Visiting autoload files took ' . number_format($now_time - $start_time, 3) . 's' . "\n");
 
 if (array_key_exists('debug-by-line', $options)) {
     $project_analyzer->debug_lines = true;
@@ -656,48 +687,10 @@ if ($type_map_location) {
         $name_file_map[$file_name] = $map;
     }
 
-    $reference_dictionary = [];
-
-    foreach ($providers->classlike_storage_provider->getAll() as $storage) {
-        if (!$storage->location) {
-            continue;
-        }
-
-        $fq_classlike_name = $storage->name;
-
-        if (isset($expected_references[$fq_classlike_name])) {
-            $reference_dictionary[$fq_classlike_name]
-                = $storage->location->file_name
-                    . ':' . $storage->location->getLineNumber()
-                    . ':' . $storage->location->getColumn();
-        }
-
-        foreach ($storage->methods as $method_name => $method_storage) {
-            if (!$method_storage->location) {
-                continue;
-            }
-
-            if (isset($expected_references[$fq_classlike_name . '::' . $method_name . '()'])) {
-                $reference_dictionary[$fq_classlike_name . '::' . $method_name . '()']
-                    = $method_storage->location->file_name
-                        . ':' . $method_storage->location->getLineNumber()
-                        . ':' . $method_storage->location->getColumn();
-            }
-        }
-
-        foreach ($storage->properties as $property_name => $property_storage) {
-            if (!$property_storage->location) {
-                continue;
-            }
-
-            if (isset($expected_references[$fq_classlike_name . '::$' . $property_name])) {
-                $reference_dictionary[$fq_classlike_name . '::$' . $property_name]
-                    = $property_storage->location->file_name
-                        . ':' . $property_storage->location->getLineNumber()
-                        . ':' . $property_storage->location->getColumn();
-            }
-        }
-    }
+    $reference_dictionary = \Psalm\Internal\Codebase\ReferenceMapGenerator::getReferenceMap(
+        $providers->classlike_storage_provider,
+        $expected_references
+    );
 
     $type_map_string = json_encode(['files' => $name_file_map, 'references' => $reference_dictionary]);
 
@@ -718,10 +711,45 @@ if ($stubs_location) {
     );
 }
 
-IssueBuffer::finish(
-    $project_analyzer,
-    !$paths_to_check,
-    $start_time,
-    isset($options['stats']),
-    $issue_baseline
-);
+if (!isset($options['i'])) {
+    IssueBuffer::finish(
+        $project_analyzer,
+        !$paths_to_check,
+        $start_time,
+        isset($options['stats']),
+        $issue_baseline
+    );
+} else {
+    $issues_by_file = IssueBuffer::getIssuesData();
+
+    if (!$issues_by_file) {
+        $init_level = 1;
+    } else {
+        $codebase = $project_analyzer->getCodebase();
+        $mixed_counts = $codebase->analyzer->getTotalTypeCoverage($codebase);
+
+        $init_level = \Psalm\Config\Creator::getLevel(
+            array_merge(...array_values($issues_by_file)),
+            (int) array_sum($mixed_counts)
+        );
+    }
+
+    echo "\n" . 'Detected level ' . $init_level . ' as a suitable initial default' . "\n";
+
+    try {
+        $template_contents = Psalm\Config\Creator::getContents(
+            $current_dir,
+            $init_source_dir,
+            $init_level,
+            $vendor_dir
+        );
+    } catch (Psalm\Exception\ConfigCreationException $e) {
+        die($e->getMessage() . PHP_EOL);
+    }
+
+    if (!file_put_contents($current_dir . 'psalm.xml', $template_contents)) {
+        die('Could not write to psalm.xml' . PHP_EOL);
+    }
+
+    exit('Config file created successfully. Please re-run psalm.' . PHP_EOL);
+}

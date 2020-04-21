@@ -5,6 +5,7 @@ use function get_class;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\StatementsSource;
+use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Type\TemplateResult;
 use Psalm\Internal\Type\UnionTemplateHandler;
 use Psalm\Type;
@@ -103,21 +104,17 @@ class TList extends \Psalm\Type\Atomic
     /**
      * @return string
      */
-    public function getKey()
+    public function getKey(bool $include_extra = true)
     {
         return 'array';
     }
 
-    public function setFromDocblock()
-    {
-        $this->from_docblock = true;
-        $this->type_param->setFromDocblock();
-    }
-
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,
-        Codebase $codebase = null,
+        ?Codebase $codebase = null,
+        ?StatementsAnalyzer $statements_analyzer = null,
         Atomic $input_type = null,
+        ?int $input_arg_offset = null,
         ?string $calling_class = null,
         ?string $calling_function = null,
         bool $replace = true,
@@ -154,7 +151,9 @@ class TList extends \Psalm\Type\Atomic
                 $type_param,
                 $template_result,
                 $codebase,
+                $statements_analyzer,
                 $input_type_param,
+                $input_arg_offset,
                 $calling_class,
                 $calling_function,
                 $replace,
@@ -170,22 +169,11 @@ class TList extends \Psalm\Type\Atomic
         return $list;
     }
 
-    /**
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>  $template_types
-     *
-     * @return void
-     */
-    public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
-    {
-        $this->type_param->replaceTemplateTypesWithArgTypes($template_types);
-    }
-
-    /**
-     * @return list<Type\Atomic\TTemplateParam>
-     */
-    public function getTemplateTypes() : array
-    {
-        return $this->type_param->getTemplateTypes();
+    public function replaceTemplateTypesWithArgTypes(
+        TemplateResult $template_result,
+        ?Codebase $codebase
+    ) : void {
+        $this->type_param->replaceTemplateTypesWithArgTypes($template_result, $codebase);
     }
 
     /**
@@ -212,36 +200,8 @@ class TList extends \Psalm\Type\Atomic
         return 'list';
     }
 
-    /**
-     * @param  StatementsSource $source
-     * @param  CodeLocation     $code_location
-     * @param  array<string>    $suppressed_issues
-     * @param  array<string, bool> $phantom_classes
-     * @param  bool             $inferred
-     *
-     * @return void
-     */
-    public function check(
-        StatementsSource $source,
-        CodeLocation $code_location,
-        array $suppressed_issues,
-        array $phantom_classes = [],
-        bool $inferred = true,
-        bool $prevent_template_covariance = false
-    ) {
-        if ($this->checked) {
-            return;
-        }
-
-        $this->type_param->check(
-            $source,
-            $code_location,
-            $suppressed_issues,
-            $phantom_classes,
-            $inferred,
-            $prevent_template_covariance
-        );
-
-        $this->checked = true;
+    public function getChildNodes() : array
+    {
+        return [$this->type_param];
     }
 }

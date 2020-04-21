@@ -14,7 +14,6 @@ use Psalm\Type\Atomic\TNamedObject;
 use Psalm\Type\Union;
 use function in_array;
 use function array_merge;
-use function array_diff;
 use function array_intersect_key;
 use function array_diff_key;
 use function is_string;
@@ -86,6 +85,8 @@ class TryAnalyzer
             return false;
         }
 
+        $context->has_returned = false;
+
         $stmt_control_actions = ScopeAnalyzer::getFinalControlActions(
             $stmt->stmts,
             $statements_analyzer->node_data,
@@ -120,13 +121,14 @@ class TryAnalyzer
             }
 
             $try_context->vars_possibly_in_scope = $context->vars_possibly_in_scope;
+            $try_context->possibly_thrown_exceptions = $context->possibly_thrown_exceptions;
 
             $context->referenced_var_ids = array_intersect_key(
                 $try_context->referenced_var_ids,
                 $context->referenced_var_ids
             );
 
-            if ($context->collect_references) {
+            if ($codebase->find_unused_variables) {
                 $newly_unreferenced_vars = array_merge(
                     $newly_unreferenced_vars,
                     array_diff_key(
@@ -168,6 +170,7 @@ class TryAnalyzer
         /** @var int $i */
         foreach ($stmt->catches as $i => $catch) {
             $catch_context = clone $original_context;
+            $catch_context->has_returned = false;
 
             foreach ($catch_context->vars_in_scope as $var_id => $type) {
                 if (!isset($old_context->vars_in_scope[$var_id])) {
@@ -214,7 +217,7 @@ class TryAnalyzer
                         $statements_analyzer,
                         $catch_type,
                         $fq_catch_class,
-                        $context->calling_function_id
+                        $context->calling_method_id
                     );
                 }
 
@@ -223,6 +226,8 @@ class TryAnalyzer
                         $statements_analyzer,
                         $fq_catch_class,
                         new CodeLocation($statements_analyzer->getSource(), $catch_type, $context->include_location),
+                        $context->self,
+                        $context->calling_method_id,
                         $statements_analyzer->getSuppressedIssues(),
                         false
                     ) === false) {
@@ -257,40 +262,26 @@ class TryAnalyzer
                 foreach ($fq_catch_classes as $fq_catch_class) {
                     $fq_catch_class_lower = strtolower($fq_catch_class);
 
-                    foreach ($context->possibly_thrown_exceptions as $exception_fqcln => $_) {
+                    foreach ($catch_context->possibly_thrown_exceptions as $exception_fqcln => $_) {
                         $exception_fqcln_lower = strtolower($exception_fqcln);
 
-                        if ($exception_fqcln_lower === $fq_catch_class_lower) {
-                            unset($context->possibly_thrown_exceptions[$exception_fqcln]);
-                            unset($catch_context->possibly_thrown_exceptions[$exception_fqcln]);
-                            continue;
-                        }
-
-                        if ($codebase->classExists($exception_fqcln)
-                            && $codebase->classExtendsOrImplements(
-                                $exception_fqcln,
-                                $fq_catch_class
-                            )
+                        if ($exception_fqcln_lower === $fq_catch_class_lower
+                            || ($codebase->classExists($exception_fqcln)
+                                && $codebase->classExtendsOrImplements($exception_fqcln, $fq_catch_class))
+                            || ($codebase->interfaceExists($exception_fqcln)
+                                && $codebase->interfaceExtends($exception_fqcln, $fq_catch_class))
                         ) {
+                            unset($original_context->possibly_thrown_exceptions[$exception_fqcln]);
                             unset($context->possibly_thrown_exceptions[$exception_fqcln]);
                             unset($catch_context->possibly_thrown_exceptions[$exception_fqcln]);
-                            continue;
-                        }
-
-                        if ($codebase->interfaceExists($exception_fqcln)
-                            && $codebase->interfaceExtends(
-                                $exception_fqcln,
-                                $fq_catch_class
-                            )
-                        ) {
-                            unset($context->possibly_thrown_exceptions[$exception_fqcln]);
-                            unset($catch_context->possibly_thrown_exceptions[$exception_fqcln]);
-                            continue;
                         }
                     }
                 }
 
-                $context->mergeExceptions($catch_context);
+                /**
+                 * @var array<string, array<array-key, CodeLocation>>
+                 */
+                $catch_context->possibly_thrown_exceptions = [];
             }
 
             $catch_var_id = '$' . $catch_var_name;
@@ -306,6 +297,7 @@ class TryAnalyzer
                         $catch_class_type = new TNamedObject($fq_catch_class);
 
                         if (version_compare(PHP_VERSION, '7.0.0dev', '>=')
+                            && strtolower($fq_catch_class) !== 'throwable'
                             && $codebase->interfaceExists($fq_catch_class)
                             && !$codebase->interfaceExtends($fq_catch_class, 'Throwable')
                         ) {
@@ -383,7 +375,7 @@ class TryAnalyzer
                 $possibly_referenced_var_ids
             );
 
-            if ($context->collect_references && $catch_actions[$i] !== [ScopeAnalyzer::ACTION_END]) {
+            if ($codebase->find_unused_variables && $catch_actions[$i] !== [ScopeAnalyzer::ACTION_END]) {
                 $newly_unreferenced_vars = array_merge(
                     $newly_unreferenced_vars,
                     array_diff_key(
@@ -456,6 +448,8 @@ class TryAnalyzer
                     }
                 }
 
+                $catch_context->has_returned = false;
+
                 $statements_analyzer->analyze($stmt->finally->stmts, $catch_context);
 
                 foreach ($issues_to_suppress as $issue_to_suppress) {
@@ -486,7 +480,7 @@ class TryAnalyzer
             $old_referenced_var_ids
         );
 
-        if ($context->collect_references) {
+        if ($codebase->find_unused_variables) {
             foreach ($old_unreferenced_vars as $var_id => $locations) {
                 if ((isset($context->unreferenced_vars[$var_id]) && $context->unreferenced_vars[$var_id] !== $locations)
                     || (!isset($newly_referenced_var_ids[$var_id]) && isset($possibly_referenced_var_ids[$var_id]))

@@ -11,6 +11,7 @@ use function preg_quote;
 use function preg_replace;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Clause;
+use Psalm\Internal\MethodIdentifier;
 use Psalm\Storage\FunctionLikeStorage;
 use Psalm\Internal\Type\AssertionReconciler;
 use Psalm\Type\Union;
@@ -78,6 +79,13 @@ class Context
      * @var bool
      */
     public $inside_call = false;
+
+    /**
+     * Whether or not we're inside a throw
+     *
+     * @var bool
+     */
+    public $inside_throw = false;
 
     /**
      * Whether or not we're inside an assignment
@@ -179,13 +187,6 @@ class Context
      * @var array<string, Type\Union>
      */
     public $constants = [];
-
-    /**
-     * Whether or not to track how many times a variable is used
-     *
-     * @var bool
-     */
-    public $collect_references = false;
 
     /**
      * Whether or not to track exceptions
@@ -311,6 +312,11 @@ class Context
     public $calling_function_id;
 
     /**
+     * @var lowercase-string|null
+     */
+    public $calling_method_id;
+
+    /**
      * @var bool
      */
     public $inside_negation = false;
@@ -344,6 +350,11 @@ class Context
      * @var bool
      */
     public $error_suppressing = false;
+
+    /**
+     * @var bool
+     */
+    public $has_returned = false;
 
     /**
      * @param string|null $self
@@ -769,7 +780,7 @@ class Context
                 return false;
             }
 
-            if ($this->collect_references && $statements_analyzer) {
+            if ($statements_analyzer && $statements_analyzer->getCodebase()->find_unused_variables) {
                 if (isset($this->unreferenced_vars[$var_name])) {
                     $statements_analyzer->registerVariableUses($this->unreferenced_vars[$var_name]);
                 }

@@ -11,6 +11,7 @@ use Psalm\Internal\Provider\ClassLikeStorageProvider;
 use Psalm\Internal\Provider\FileProvider;
 use Psalm\Internal\Provider\FileReferenceProvider;
 use Psalm\Internal\Provider\ParserCacheProvider;
+use Psalm\Internal\Provider\ProjectCacheProvider;
 use Psalm\Internal\Provider\Providers;
 use Psalm\Issue\InvalidFalsableReturnType;
 use Psalm\Issue\InvalidNullableReturnType;
@@ -35,7 +36,6 @@ use Psalm\Report;
 use Psalm\Report\ReportOptions;
 use Psalm\Type;
 use Psalm\Issue\CodeIssue;
-use function in_array;
 use function substr;
 use function strlen;
 use function cli_set_process_title;
@@ -118,6 +118,9 @@ class ProjectAnalyzer
     /** @var ?ParserCacheProvider */
     private $parser_cache_provider;
 
+    /** @var ?ProjectCacheProvider */
+    public $project_cache_provider;
+
     /** @var FileReferenceProvider */
     private $file_reference_provider;
 
@@ -172,7 +175,7 @@ class ProjectAnalyzer
     /**
      * @var array<string,string>
      */
-    private $project_files;
+    private $project_files = [];
 
     /**
      * @var array<string, string>
@@ -230,6 +233,7 @@ class ProjectAnalyzer
         }
 
         $this->parser_cache_provider = $providers->parser_cache_provider;
+        $this->project_cache_provider = $providers->project_cache_provider;
         $this->file_provider = $providers->file_provider;
         $this->classlike_storage_provider = $providers->classlike_storage_provider;
         $this->file_reference_provider = $providers->file_reference_provider;
@@ -247,8 +251,6 @@ class ProjectAnalyzer
         $this->stdout_report_options = $stdout_report_options;
         $this->generated_report_options = $generated_report_options;
 
-        $project_files = [];
-
         foreach ($this->config->getProjectDirectories() as $dir_name) {
             $file_extensions = $this->config->getFileExtensions();
 
@@ -256,16 +258,24 @@ class ProjectAnalyzer
 
             foreach ($file_paths as $file_path) {
                 if ($this->config->isInProjectDirs($file_path)) {
-                    $project_files[$file_path] = $file_path;
+                    $this->addProjectFile($file_path);
                 }
             }
         }
 
         foreach ($this->config->getProjectFiles() as $file_path) {
-            $project_files[$file_path] = $file_path;
+            $this->addProjectFile($file_path);
         }
 
-        $this->project_files = $project_files;
+        if ($this->project_cache_provider && $this->project_cache_provider->hasLockfileChanged()) {
+            $this->progress->debug(
+                'Composer lockfile change detected, clearing cache' . "\n"
+            );
+
+            Config::removeCacheDirectory($config->getCacheDirectory());
+
+            $this->project_cache_provider->updateComposerLockHash();
+        }
 
         self::$instance = $this;
     }
@@ -310,12 +320,26 @@ class ProjectAnalyzer
         return $report_options;
     }
 
+    private function visitAutoloadFiles() : void
+    {
+        $start_time = microtime(true);
+
+        $this->config->visitComposerAutoloadFiles($this, $this->progress);
+
+        $now_time = microtime(true);
+
+        $this->progress->debug(
+            'Visiting autoload files took ' . \number_format($now_time - $start_time, 3) . 's' . "\n"
+        );
+    }
+
     /**
      * @param  string|null $address
      * @return void
      */
     public function server($address = '127.0.0.1:12345', bool $socket_server_mode = false)
     {
+        $this->visitAutoloadFiles();
         $this->codebase->diff_methods = true;
         $this->file_reference_provider->loadReferenceCache();
         $this->codebase->enterServerMode();
@@ -462,10 +486,12 @@ class ProjectAnalyzer
 
         $reference_cache = $this->file_reference_provider->loadReferenceCache(true);
 
+        $this->codebase->diff_methods = $is_diff;
+
         if ($is_diff
             && $reference_cache
-            && $this->parser_cache_provider
-            && $this->parser_cache_provider->canDiffFiles()
+            && $this->project_cache_provider
+            && $this->project_cache_provider->canDiffFiles()
         ) {
             $deleted_files = $this->file_reference_provider->getDeletedReferencedFiles();
             $diff_files = $deleted_files;
@@ -477,18 +503,16 @@ class ProjectAnalyzer
 
         $this->progress->startScanningFiles();
 
-        if ($diff_files === null
-            || $deleted_files === null
-            || count($diff_files) > 200
-            || $this->codebase->find_unused_code) {
-            $this->codebase->scanner->addFilesToDeepScan($this->project_files);
-        }
+        $diff_no_files = false;
 
         if ($diff_files === null
             || $deleted_files === null
             || count($diff_files) > 200
         ) {
-            $this->codebase->analyzer->addFiles($this->project_files);
+            $this->visitAutoloadFiles();
+
+            $this->codebase->scanner->addFilesToDeepScan($this->project_files);
+            $this->codebase->analyzer->addFilesToAnalyze($this->project_files);
 
             $this->config->initializePlugins($this);
 
@@ -499,37 +523,54 @@ class ProjectAnalyzer
             $this->progress->debug(count($diff_files) . ' changed files: ' . "\n");
             $this->progress->debug('    ' . implode("\n    ", $diff_files) . "\n");
 
-            if ($diff_files || $this->codebase->find_unused_code) {
+            $this->codebase->analyzer->addFilesToShowResults($this->project_files);
+
+            if ($diff_files) {
                 $file_list = $this->getReferencedFilesFromDiff($diff_files);
 
                 // strip out deleted files
                 $file_list = array_diff($file_list, $deleted_files);
 
-                $this->checkDiffFilesWithConfig($this->config, $file_list);
+                if ($file_list) {
+                    $this->visitAutoloadFiles();
 
-                $this->config->initializePlugins($this);
+                    $this->checkDiffFilesWithConfig($this->config, $file_list);
 
-                $this->codebase->scanFiles($this->threads);
+                    $this->config->initializePlugins($this);
+
+                    $this->codebase->scanFiles($this->threads);
+                } else {
+                    $diff_no_files = true;
+                }
+            } else {
+                $diff_no_files = true;
             }
         }
 
-        $this->config->visitStubFiles($this->codebase, $this->progress);
+        if (!$diff_no_files) {
+            $this->config->visitStubFiles($this->codebase, $this->progress);
 
-        $plugin_classes = $this->config->after_codebase_populated;
+            $plugin_classes = $this->config->after_codebase_populated;
 
-        if ($plugin_classes) {
-            foreach ($plugin_classes as $plugin_fq_class_name) {
-                $plugin_fq_class_name::afterCodebasePopulated($this->codebase);
+            if ($plugin_classes) {
+                foreach ($plugin_classes as $plugin_fq_class_name) {
+                    $plugin_fq_class_name::afterCodebasePopulated($this->codebase);
+                }
             }
         }
 
         $this->progress->startAnalyzingFiles();
 
-        $this->codebase->analyzer->analyzeFiles($this, $this->threads, $this->codebase->alter_code);
+        $this->codebase->analyzer->analyzeFiles(
+            $this,
+            $this->threads,
+            $this->codebase->alter_code,
+            true
+        );
 
-        if ($this->parser_cache_provider) {
+        if ($this->project_cache_provider && $this->parser_cache_provider) {
             $removed_parser_files = $this->parser_cache_provider->deleteOldParserCaches(
-                $is_diff ? $this->parser_cache_provider->getLastGoodRun() : $start_checks
+                $is_diff ? $this->project_cache_provider->getLastRun() : $start_checks
             );
 
             if ($removed_parser_files) {
@@ -638,8 +679,18 @@ class ProjectAnalyzer
                 continue;
             }
 
-            if ($this->codebase->methods->methodExists($source)) {
-                if ($this->codebase->methods->methodExists($destination)) {
+            $source_method_id = new \Psalm\Internal\MethodIdentifier(
+                $source_parts[0],
+                strtolower($source_parts[1])
+            );
+
+            if ($this->codebase->methods->methodExists($source_method_id)) {
+                if ($this->codebase->methods->methodExists(
+                    new \Psalm\Internal\MethodIdentifier(
+                        $destination_parts[0],
+                        strtolower($destination_parts[1])
+                    )
+                )) {
                     throw new \Psalm\Exception\RefactorException(
                         'Destination method ' . $destination . ' already exists'
                     );
@@ -652,12 +703,14 @@ class ProjectAnalyzer
                 }
 
                 if (strtolower($source_parts[0]) !== strtolower($destination_parts[0])) {
-                    $source_method_storage = $this->codebase->methods->getStorage($source);
+                    $source_method_storage = $this->codebase->methods->getStorage($source_method_id);
                     $destination_class_storage
                         = $this->codebase->classlike_storage_provider->get($destination_parts[0]);
 
                     if (!$source_method_storage->is_static
-                        && !isset($destination_class_storage->parent_classes[strtolower($source_parts[0])])
+                        && !isset(
+                            $destination_class_storage->parent_classes[strtolower($source_method_id->fq_class_name)]
+                        )
                     ) {
                         throw new \Psalm\Exception\RefactorException(
                             'Cannot move non-static method ' . $source
@@ -665,7 +718,7 @@ class ProjectAnalyzer
                         );
                     }
 
-                    $this->codebase->methods_to_move[strtolower($source)] = $destination;
+                    $this->codebase->methods_to_move[strtolower($source)]= $destination;
                 } else {
                     $this->codebase->methods_to_rename[strtolower($source)] = $destination_parts[1];
                 }
@@ -898,7 +951,12 @@ class ProjectAnalyzer
 
         $this->progress->startAnalyzingFiles();
 
-        $this->codebase->analyzer->analyzeFiles($this, $this->threads, $this->codebase->alter_code);
+        $this->codebase->analyzer->analyzeFiles(
+            $this,
+            $this->threads,
+            $this->codebase->alter_code,
+            $this->codebase->find_unused_code === 'always'
+        );
     }
 
     /**
@@ -946,6 +1004,17 @@ class ProjectAnalyzer
     }
 
     /**
+     * @param  string  $dir_name
+     *
+     * @return void
+     */
+    public function addProjectFile(string $file_path)
+    {
+        $this->project_files[$file_path] = $file_path;
+    }
+
+
+    /**
      * @param  string $dir_name
      * @param  Config $config
      *
@@ -955,19 +1024,22 @@ class ProjectAnalyzer
     {
         $file_extensions = $config->getFileExtensions();
 
-        if (!$this->parser_cache_provider) {
+        if (!$this->parser_cache_provider || !$this->project_cache_provider) {
             throw new \UnexpectedValueException('Parser cache provider cannot be null here');
         }
 
         $diff_files = [];
 
-        $last_good_run = $this->parser_cache_provider->getLastGoodRun();
+        $last_run = $this->project_cache_provider->getLastRun();
 
         $file_paths = $this->file_provider->getFilesInDir($dir_name, $file_extensions);
 
         foreach ($file_paths as $file_path) {
             if ($config->isInProjectDirs($file_path)) {
-                if ($this->file_provider->getModifiedTime($file_path) > $last_good_run) {
+                if ($this->file_provider->getModifiedTime($file_path) > $last_run
+                    && $this->parser_cache_provider->loadExistingFileContentsFromCache($file_path)
+                        !== $this->file_provider->getContents($file_path)
+                ) {
                     $diff_files[] = $file_path;
                 }
             }
@@ -1028,7 +1100,12 @@ class ProjectAnalyzer
 
         $this->progress->startAnalyzingFiles();
 
-        $this->codebase->analyzer->analyzeFiles($this, $this->threads, $this->codebase->alter_code);
+        $this->codebase->analyzer->analyzeFiles(
+            $this,
+            $this->threads,
+            $this->codebase->alter_code,
+            $this->codebase->find_unused_code === 'always'
+        );
     }
 
     /**
@@ -1037,6 +1114,8 @@ class ProjectAnalyzer
      */
     public function checkPaths(array $paths_to_check)
     {
+        $this->visitAutoloadFiles();
+
         foreach ($paths_to_check as $path) {
             $this->progress->debug('Checking ' . $path . "\n");
 
@@ -1060,7 +1139,12 @@ class ProjectAnalyzer
 
         $this->progress->startAnalyzingFiles();
 
-        $this->codebase->analyzer->analyzeFiles($this, $this->threads, $this->codebase->alter_code);
+        $this->codebase->analyzer->analyzeFiles(
+            $this,
+            $this->threads,
+            $this->codebase->alter_code,
+            $this->codebase->find_unused_code === 'always'
+        );
 
         if ($this->stdout_report_options
             && $this->stdout_report_options->format === Report::TYPE_CONSOLE
@@ -1237,18 +1321,17 @@ class ProjectAnalyzer
     }
 
     /**
-     * @param  string   $original_method_id
      * @param  Context  $this_context
      *
      * @return void
      */
     public function getMethodMutations(
-        $original_method_id,
+        \Psalm\Internal\MethodIdentifier $original_method_id,
         Context $this_context,
         string $root_file_path,
         string $root_file_name
     ) {
-        list($fq_class_name) = explode('::', $original_method_id);
+        $fq_class_name = $original_method_id->fq_class_name;
 
         $appearing_method_id = $this->codebase->methods->getAppearingMethodId($original_method_id);
 
@@ -1257,7 +1340,7 @@ class ProjectAnalyzer
             return;
         }
 
-        list($appearing_fq_class_name) = explode('::', $appearing_method_id);
+        $appearing_fq_class_name = $appearing_method_id->fq_class_name;
 
         $appearing_class_storage = $this->classlike_storage_provider->get($appearing_fq_class_name);
 
@@ -1269,7 +1352,7 @@ class ProjectAnalyzer
 
         $file_analyzer->setRootFilePath($root_file_path, $root_file_name);
 
-        if (strtolower($appearing_fq_class_name) !== strtolower($fq_class_name)) {
+        if ($appearing_fq_class_name !== $fq_class_name) {
             $file_analyzer = $this->getFileAnalyzerForClassLike($appearing_fq_class_name);
         }
 
@@ -1291,8 +1374,10 @@ class ProjectAnalyzer
         $file_analyzer->clearSourceBeforeDestruction();
     }
 
-    public function getFunctionLikeAnalyzer(string $method_id, string $file_path) : ?FunctionLikeAnalyzer
-    {
+    public function getFunctionLikeAnalyzer(
+        \Psalm\Internal\MethodIdentifier $method_id,
+        string $file_path
+    ) : ?FunctionLikeAnalyzer {
         $file_analyzer = new FileAnalyzer(
             $this,
             $file_path,
@@ -1332,6 +1417,14 @@ class ProjectAnalyzer
             }
             return ((int) $matches [1]);
             */
+            return 1;
+        }
+
+        if (\ini_get('pcre.jit') === '1'
+            && \PHP_OS === 'Darwin'
+            && \version_compare(\PHP_VERSION, '7.3.0') >= 0
+            && \version_compare(\PHP_VERSION, '7.4.0') < 0
+        ) {
             return 1;
         }
 

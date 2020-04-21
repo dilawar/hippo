@@ -12,12 +12,9 @@ use Psalm\StatementsSource;
 use Psalm\Type;
 use function implode;
 use function strtolower;
-use function explode;
 use function strpos;
 use function array_keys;
 use function count;
-use function array_merge;
-use function array_diff;
 
 /**
  * @internal
@@ -82,7 +79,7 @@ class FileAnalyzer extends SourceAnalyzer implements StatementsSource
     public $interface_analyzers_to_analyze = [];
 
     /**
-     * @var array<string, ClassAnalyzer>
+     * @var array<lowercase-string, ClassAnalyzer>
      */
     public $class_analyzers_to_analyze = [];
 
@@ -150,7 +147,6 @@ class FileAnalyzer extends SourceAnalyzer implements StatementsSource
 
         if (!$this->context) {
             $this->context = new Context();
-            $this->context->collect_references = $codebase->collect_references;
         }
 
         if ($codebase->config->useStrictTypesForFile($this->file_path)) {
@@ -183,6 +179,10 @@ class FileAnalyzer extends SourceAnalyzer implements StatementsSource
 
         $this->node_data = new \Psalm\Internal\Provider\NodeDataProvider();
         $statements_analyzer = new StatementsAnalyzer($this, $this->node_data);
+
+        foreach ($file_storage->docblock_issues as $docblock_issue) {
+            IssueBuffer::add($docblock_issue);
+        }
 
         // if there are any leftover statements, evaluate them,
         // in turn causing the classes/interfaces be evaluated
@@ -319,17 +319,19 @@ class FileAnalyzer extends SourceAnalyzer implements StatementsSource
     }
 
     /**
-     * @param  string   $method_id
-     * @param  Context  $this_context
-     *
      * @return void
      */
-    public function getMethodMutations($method_id, Context $this_context, bool $from_project_analyzer = false)
-    {
-        list($fq_class_name, $method_name) = explode('::', $method_id);
+    public function getMethodMutations(
+        \Psalm\Internal\MethodIdentifier $method_id,
+        Context $this_context,
+        bool $from_project_analyzer = false
+    ) {
+        $fq_class_name = $method_id->fq_class_name;
+        $method_name = $method_id->method_name;
+        $fq_class_name_lc = strtolower($fq_class_name);
 
-        if (isset($this->class_analyzers_to_analyze[strtolower($fq_class_name)])) {
-            $class_analyzer_to_examine = $this->class_analyzers_to_analyze[strtolower($fq_class_name)];
+        if (isset($this->class_analyzers_to_analyze[$fq_class_name_lc])) {
+            $class_analyzer_to_examine = $this->class_analyzers_to_analyze[$fq_class_name_lc];
         } else {
             if (!$from_project_analyzer) {
                 $this->project_analyzer->getMethodMutations(
@@ -348,6 +350,7 @@ class FileAnalyzer extends SourceAnalyzer implements StatementsSource
         $call_context->collect_initializations = $this_context->collect_initializations;
         $call_context->initialized_methods = $this_context->initialized_methods;
         $call_context->include_location = $this_context->include_location;
+        $call_context->calling_method_id = $this_context->calling_method_id;
 
         foreach ($this_context->vars_possibly_in_scope as $var => $_) {
             if (strpos($var, '$this->') === 0) {
@@ -378,15 +381,18 @@ class FileAnalyzer extends SourceAnalyzer implements StatementsSource
         }
     }
 
-    public function getFunctionLikeAnalyzer(string $method_id) : ?FunctionLikeAnalyzer
+    public function getFunctionLikeAnalyzer(\Psalm\Internal\MethodIdentifier $method_id) : ?FunctionLikeAnalyzer
     {
-        list($fq_class_name, $method_name) = explode('::', $method_id);
+        $fq_class_name = $method_id->fq_class_name;
+        $method_name = $method_id->method_name;
 
-        if (!isset($this->class_analyzers_to_analyze[strtolower($fq_class_name)])) {
+        $fq_class_name_lc = strtolower($fq_class_name);
+
+        if (!isset($this->class_analyzers_to_analyze[$fq_class_name_lc])) {
             return null;
         }
 
-        $class_analyzer_to_examine = $this->class_analyzers_to_analyze[strtolower($fq_class_name)];
+        $class_analyzer_to_examine = $this->class_analyzers_to_analyze[$fq_class_name_lc];
 
         return $class_analyzer_to_examine->getFunctionLikeAnalyzer($method_name);
     }

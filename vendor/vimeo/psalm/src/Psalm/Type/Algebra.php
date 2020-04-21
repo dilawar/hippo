@@ -546,28 +546,51 @@ class Algebra
     }
 
     /**
-     * @param  array<int, Clause>  $clauses
+     * @param  non-empty-array<int, Clause>  $clauses
      *
      * @return array<int, Clause>
      */
-    private static function groupImpossibilities(array $clauses, int &$complexity = 1)
+    public static function groupImpossibilities(array $clauses)
     {
-        if ($complexity > 50000) {
-            throw new ComplicatedExpressionException();
-        }
+        $complexity = 1;
 
-        $clause = array_shift($clauses);
+        $seed_clauses = [];
 
-        $new_clauses = [];
+        $clause = array_pop($clauses);
 
-        if ($clauses) {
-            $grouped_clauses = self::groupImpossibilities($clauses, $complexity);
-
-            if ($complexity > 50000) {
-                throw new ComplicatedExpressionException();
+        if (!$clause->wedge) {
+            if ($clause->impossibilities === null) {
+                throw new \UnexpectedValueException('$clause->impossibilities should not be null');
             }
 
-            foreach ($grouped_clauses as $grouped_clause) {
+            foreach ($clause->impossibilities as $var => $impossible_types) {
+                foreach ($impossible_types as $impossible_type) {
+                    $seed_clause = new Clause(
+                        [$var => [$impossible_type]],
+                        false,
+                        true,
+                        false,
+                        [],
+                        $clause->creating_object_id
+                    );
+
+                    $seed_clauses[] = $seed_clause;
+
+                    ++$complexity;
+                }
+            }
+        }
+
+        if (!$clauses || !$seed_clauses) {
+            return $seed_clauses;
+        }
+
+        while ($clauses) {
+            $clause = array_pop($clauses);
+
+            $new_clauses = [];
+
+            foreach ($seed_clauses as $grouped_clause) {
                 if ($clause->impossibilities === null) {
                     throw new \UnexpectedValueException('$clause->impossibilities should not be null');
                 }
@@ -595,34 +618,19 @@ class Algebra
 
                         $new_clauses[] = $new_clause;
 
-                        $complexity += count($new_clause_possibilities);
+                        ++$complexity;
+
+                        if ($complexity > 20000) {
+                            throw new ComplicatedExpressionException();
+                        }
                     }
                 }
             }
-        } elseif ($clause && !$clause->wedge) {
-            if ($clause->impossibilities === null) {
-                throw new \UnexpectedValueException('$clause->impossibilities should not be null');
-            }
 
-            foreach ($clause->impossibilities as $var => $impossible_types) {
-                foreach ($impossible_types as $impossible_type) {
-                    $new_clause = new Clause(
-                        [$var => [$impossible_type]],
-                        false,
-                        true,
-                        false,
-                        [],
-                        $clause->creating_object_id
-                    );
-
-                    $new_clauses[] = $new_clause;
-
-                    ++$complexity;
-                }
-            }
+            $seed_clauses = $new_clauses;
         }
 
-        return $new_clauses;
+        return $seed_clauses;
     }
 
     /**
@@ -705,6 +713,10 @@ class Algebra
                     }
                 }
 
+                $creating_object_id = $right_clause->creating_object_id === $left_clause->creating_object_id
+                    ? $right_clause->creating_object_id
+                    : null;
+
                 $clauses[] = new Clause(
                     $possibilities,
                     false,
@@ -712,7 +724,9 @@ class Algebra
                     $right_clause->generated
                         || $left_clause->generated
                         || count($left_clauses) > 1
-                        || count($right_clauses) > 1
+                        || count($right_clauses) > 1,
+                    [],
+                    $creating_object_id
                 );
             }
         }
@@ -741,19 +755,29 @@ class Algebra
      *
      * @param  array<int, Clause>  $clauses
      *
-     * @return list<Clause>
+     * @return non-empty-list<Clause>
      */
-    public static function negateFormula(array $clauses, int $complexity = null)
+    public static function negateFormula(array $clauses)
     {
+        if (!$clauses) {
+            return [new Clause([], true)];
+        }
+
         foreach ($clauses as $clause) {
             self::calculateNegation($clause);
         }
 
-        if ($complexity === null) {
-            $complexity = count($clauses);
+        $impossible_clauses = self::groupImpossibilities($clauses);
+
+        if (!$impossible_clauses) {
+            return [new Clause([], true)];
         }
 
-        $negated = self::simplifyCNF(self::groupImpossibilities($clauses, $complexity));
+        $negated = self::simplifyCNF($impossible_clauses);
+
+        if (!$negated) {
+            return [new Clause([], true)];
+        }
 
         return $negated;
     }

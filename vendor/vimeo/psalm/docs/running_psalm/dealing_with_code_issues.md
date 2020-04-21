@@ -45,6 +45,11 @@ Some issue types allow the use of `referencedMethod` and `referencedClass` to is
       <referencedClass name="Bar\Bat\Baz" />
     </errorLevel>
   </UndefinedClass>
+  <PropertyNotSetInConstructor>
+    <errorLevel type="suppress">
+        <referencedProperty name="Symfony\Component\Validator\ConstraintValidator::$context" />
+    </errorLevel>
+  </PropertyNotSetInConstructor>
 </issueHandlers>
 ```
 
@@ -53,6 +58,7 @@ Some issue types allow the use of `referencedMethod` and `referencedClass` to is
 You can also use `@psalm-suppress IssueName` on a function's docblock to suppress Psalm issues e.g.
 
 ```php
+<?php
 /**
  * @psalm-suppress InvalidReturnType
  */
@@ -64,6 +70,7 @@ function (int $a) : string {
 You can also suppress issues at the line level e.g.
 
 ```php
+<?php
 /**
  * @psalm-suppress InvalidReturnType
  */

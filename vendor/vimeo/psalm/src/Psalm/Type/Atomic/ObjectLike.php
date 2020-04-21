@@ -11,6 +11,7 @@ use function sort;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\StatementsSource;
+use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Type\TypeCombination;
 use Psalm\Internal\Type\TemplateResult;
 use Psalm\Internal\Type\UnionTemplateHandler;
@@ -296,25 +297,18 @@ class ObjectLike extends \Psalm\Type\Atomic
     /**
      * @return string
      */
-    public function getKey()
+    public function getKey(bool $include_extra = true)
     {
         /** @var string */
         return static::KEY;
     }
 
-    public function setFromDocblock()
-    {
-        $this->from_docblock = true;
-
-        foreach ($this->properties as $property_type) {
-            $property_type->setFromDocblock();
-        }
-    }
-
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,
-        Codebase $codebase = null,
+        ?Codebase $codebase = null,
+        ?StatementsAnalyzer $statements_analyzer = null,
         Atomic $input_type = null,
+        ?int $input_arg_offset = null,
         ?string $calling_class = null,
         ?string $calling_function = null,
         bool $replace = true,
@@ -336,7 +330,9 @@ class ObjectLike extends \Psalm\Type\Atomic
                 $property,
                 $template_result,
                 $codebase,
+                $statements_analyzer,
                 $input_type_param,
+                $input_arg_offset,
                 $calling_class,
                 $calling_function,
                 $replace,
@@ -348,33 +344,21 @@ class ObjectLike extends \Psalm\Type\Atomic
         return $object_like;
     }
 
-    /**
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>     $template_types
-     *
-     * @return void
-     */
-    public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
-    {
+    public function replaceTemplateTypesWithArgTypes(
+        TemplateResult $template_result,
+        ?Codebase $codebase
+    ) : void {
         foreach ($this->properties as $property) {
             $property->replaceTemplateTypesWithArgTypes(
-                $template_types,
+                $template_result,
                 $codebase
             );
         }
     }
 
-    /**
-     * @return list<Type\Atomic\TTemplateParam>
-     */
-    public function getTemplateTypes() : array
+    public function getChildNodes() : array
     {
-        $template_types = [];
-
-        foreach ($this->properties as $property) {
-            $template_types = \array_merge($template_types, $property->getTemplateTypes());
-        }
-
-        return $template_types;
+        return $this->properties;
     }
 
     /**
@@ -413,41 +397,6 @@ class ObjectLike extends \Psalm\Type\Atomic
     public function getAssertionString()
     {
         return $this->getKey();
-    }
-
-    /**
-     * @param  StatementsSource $source
-     * @param  CodeLocation     $code_location
-     * @param  array<string>    $suppressed_issues
-     * @param  array<string, bool> $phantom_classes
-     * @param  bool             $inferred
-     *
-     * @return void
-     */
-    public function check(
-        StatementsSource $source,
-        CodeLocation $code_location,
-        array $suppressed_issues,
-        array $phantom_classes = [],
-        bool $inferred = true,
-        bool $prevent_template_covariance = false
-    ) {
-        if ($this->checked) {
-            return;
-        }
-
-        foreach ($this->properties as $property_type) {
-            $property_type->check(
-                $source,
-                $code_location,
-                $suppressed_issues,
-                $phantom_classes,
-                $inferred,
-                $prevent_template_covariance
-            );
-        }
-
-        $this->checked = true;
     }
 
     public function getList() : TList

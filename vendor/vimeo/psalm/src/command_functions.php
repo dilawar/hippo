@@ -115,6 +115,7 @@ function requireAutoloaders($current_dir, $has_explicit_root, $vendor_dir)
  *
  * @psalm-suppress MixedArrayAccess
  * @psalm-suppress MixedAssignment
+ * @psalm-suppress PossiblyUndefinedStringArrayOffset
  */
 function getVendorDir($current_dir)
 {
@@ -132,8 +133,12 @@ function getVendorDir($current_dir)
         exit(1);
     }
 
-    if (isset($composer_json['config']['vendor-dir'])) {
-        return (string) $composer_json['config']['vendor-dir'];
+    if (isset($composer_json['config'])
+        && is_array($composer_json['config'])
+        && isset($composer_json['config']['vendor-dir'])
+        && is_string($composer_json['config']['vendor-dir'])
+    ) {
+        return $composer_json['config']['vendor-dir'];
     }
 
     return 'vendor';
@@ -291,7 +296,7 @@ Basic configuration:
 
 Surfacing issues:
     --show-info[=BOOLEAN]
-        Show non-exception parser findings
+        Show non-exception parser findings (defaults to false).
 
     --show-snippet[=true]
         Show code snippets with errors. Options are 'true' or 'false'
@@ -334,7 +339,7 @@ Output:
 
     --output-format=console
         Changes the output format.
-        Available formats: compact, console, emacs, json, pylint, xml, checkstyle, junit, sonarqube, github
+        Available formats: compact, console, text, emacs, json, pylint, xml, checkstyle, junit, sonarqube, github
 
     --no-progress
         Disable the progress indicator
@@ -366,6 +371,10 @@ Caching:
     --no-reflection-cache
         Runs Psalm without using cached representations of unchanged classes and files.
         Useful if you want the afterClassLikeVisit plugin hook to run every time you visit a file.
+
+    --no-file-cache
+        Runs Psalm without using caching every single file for later diffing.
+        This reduces the space Psalm uses on disk and file I/O.
 
 Miscellaneous:
     -h, --help
@@ -486,4 +495,30 @@ function get_path_to_config(array $options): ?string
         exit(1);
     }
     return $path_to_config;
+}
+
+function getMemoryLimitInBytes(): int
+{
+    $limit = ini_get('memory_limit');
+    // for unlimited = -1
+    if ($limit < 0) {
+        return -1;
+    }
+
+    if (preg_match('/^(\d+)(\D?)$/', $limit, $matches)) {
+        $limit = (int)$matches[1];
+        switch (strtoupper($matches[2] ?? '')) {
+            case 'G':
+                $limit *= 1024 * 1024 * 1024;
+                break;
+            case 'M':
+                $limit *= 1024 * 1024;
+                break;
+            case 'K':
+                $limit *= 1024;
+                break;
+        }
+    }
+
+    return (int)$limit;
 }

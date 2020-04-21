@@ -12,6 +12,7 @@ use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
+use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Analyzer\TypeAnalyzer;
 use Psalm\Internal\Type\TemplateResult;
 use Psalm\Issue\InvalidTemplateParam;
@@ -65,7 +66,7 @@ use function strpos;
 use function strtolower;
 use function substr;
 
-abstract class Atomic
+abstract class Atomic implements TypeNode
 {
     const KEY = 'atomic';
 
@@ -74,7 +75,7 @@ abstract class Atomic
      *
      * @var bool
      */
-    protected $checked = false;
+    public $checked = false;
 
     /**
      * Whether or not the type comes from a docblock
@@ -178,6 +179,9 @@ abstract class Atomic
             case 'non-empty-string':
                 return new Type\Atomic\TNonEmptyString();
 
+            case 'lowercase-string':
+                return new Type\Atomic\TLowercaseString();
+
             case 'resource':
                 return $php_version !== null ? new TNamedObject($value) : new TResource();
 
@@ -256,7 +260,7 @@ abstract class Atomic
     /**
      * @return string
      */
-    abstract public function getKey();
+    abstract public function getKey(bool $include_extra = true);
 
     /**
      * @return bool
@@ -278,6 +282,24 @@ abstract class Atomic
             || $this instanceof TNamedObject
             || ($this instanceof TTemplateParam
                 && $this->as->hasObjectType());
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNamedObjectType()
+    {
+        return $this instanceof TNamedObject
+            || ($this instanceof TTemplateParam
+                && ($this->as->hasNamedObjectType()
+                    || array_filter(
+                        $this->extra_types ?: [],
+                        function ($extra_type) {
+                            return $extra_type->isNamedObjectType();
+                        }
+                    )
+                )
+            );
     }
 
     /**
@@ -423,252 +445,9 @@ abstract class Atomic
             );
     }
 
-    /**
-     * @param  StatementsSource $source
-     * @param  CodeLocation     $code_location
-     * @param  array<string>    $suppressed_issues
-     * @param  array<string, bool> $phantom_classes
-     * @param  bool             $inferred
-     *
-     * @return false|null
-     */
-    public function check(
-        StatementsSource $source,
-        CodeLocation $code_location,
-        array $suppressed_issues,
-        array $phantom_classes = [],
-        bool $inferred = true,
-        bool $prevent_template_covariance = false
-    ) {
-    }
-
-    /**
-     * @param  array<string, mixed> $phantom_classes
-     *
-     * @return void
-     */
-    public function queueClassLikesForScanning(
-        Codebase $codebase,
-        FileStorage $file_storage = null,
-        array $phantom_classes = []
-    ) {
-        if ($this instanceof TNamedObject) {
-            if (!isset($phantom_classes[$this->value]) && !isset($phantom_classes[strtolower($this->value)])) {
-                $codebase->scanner->queueClassLikeForScanning(
-                    $this->value,
-                    $file_storage ? $file_storage->file_path : null,
-                    false,
-                    !$this->from_docblock,
-                    $phantom_classes
-                );
-
-                if ($file_storage) {
-                    $file_storage->referenced_classlikes[strtolower($this->value)] = $this->value;
-                }
-            }
-        }
-
-        if ($this instanceof TNamedObject
-            || $this instanceof TIterable
-            || $this instanceof TTemplateParam
-        ) {
-            if ($this->extra_types) {
-                foreach ($this->extra_types as $extra_type) {
-                    $extra_type->queueClassLikesForScanning(
-                        $codebase,
-                        $file_storage,
-                        $phantom_classes
-                    );
-                }
-            }
-        }
-
-        if ($this instanceof TScalarClassConstant) {
-            $codebase->scanner->queueClassLikeForScanning(
-                $this->fq_classlike_name,
-                $file_storage ? $file_storage->file_path : null,
-                false,
-                !$this->from_docblock,
-                $phantom_classes
-            );
-            if ($file_storage) {
-                $file_storage->referenced_classlikes[strtolower($this->fq_classlike_name)] = $this->fq_classlike_name;
-            }
-        }
-
-        if ($this instanceof TClassString && $this->as !== 'object') {
-            if (!isset($phantom_classes[$this->as]) && !isset($phantom_classes[strtolower($this->as)])) {
-                $codebase->scanner->queueClassLikeForScanning(
-                    $this->as,
-                    $file_storage ? $file_storage->file_path : null,
-                    false,
-                    !$this->from_docblock,
-                    $phantom_classes
-                );
-                if ($file_storage) {
-                    $file_storage->referenced_classlikes[strtolower($this->as)] = $this->as;
-                }
-            }
-        }
-
-        if ($this instanceof TTemplateParam) {
-            $this->as->queueClassLikesForScanning(
-                $codebase,
-                $file_storage,
-                $phantom_classes
-            );
-        }
-
-        if ($this instanceof TLiteralClassString) {
-            $codebase->scanner->queueClassLikeForScanning(
-                $this->value,
-                $file_storage ? $file_storage->file_path : null,
-                false,
-                !$this->from_docblock,
-                $phantom_classes
-            );
-            if ($file_storage) {
-                $file_storage->referenced_classlikes[strtolower($this->value)] = $this->value;
-            }
-        }
-
-        if ($this instanceof Type\Atomic\TArray
-            || $this instanceof Type\Atomic\TGenericObject
-            || $this instanceof Type\Atomic\TIterable
-        ) {
-            foreach ($this->type_params as $type_param) {
-                $type_param->queueClassLikesForScanning(
-                    $codebase,
-                    $file_storage,
-                    $phantom_classes
-                );
-            }
-        }
-
-        if ($this instanceof Type\Atomic\TList) {
-            $this->type_param->queueClassLikesForScanning(
-                $codebase,
-                $file_storage,
-                $phantom_classes
-            );
-        }
-
-        if ($this instanceof Type\Atomic\TFn
-            || $this instanceof Type\Atomic\TCallable
-        ) {
-            if ($this->params) {
-                foreach ($this->params as $param) {
-                    if ($param->type) {
-                        $param->type->queueClassLikesForScanning(
-                            $codebase,
-                            $file_storage,
-                            $phantom_classes
-                        );
-                    }
-                }
-            }
-
-            if ($this->return_type) {
-                $this->return_type->queueClassLikesForScanning(
-                    $codebase,
-                    $file_storage,
-                    $phantom_classes
-                );
-            }
-        }
-
-        if ($this instanceof ObjectLike) {
-            foreach ($this->properties as $property) {
-                $property->queueClassLikesForScanning(
-                    $codebase,
-                    $file_storage,
-                    $phantom_classes
-                );
-            }
-        }
-    }
-
-    public function containsClassLike(string $fq_classlike_name) : bool
+    public function getChildNodes() : array
     {
-        if ($this instanceof TNamedObject) {
-            if (strtolower($this->value) === $fq_classlike_name) {
-                return true;
-            }
-        }
-
-        if ($this instanceof TNamedObject
-            || $this instanceof TIterable
-            || $this instanceof TTemplateParam
-        ) {
-            if ($this->extra_types) {
-                foreach ($this->extra_types as $extra_type) {
-                    if ($extra_type->containsClassLike($fq_classlike_name)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if ($this instanceof TScalarClassConstant) {
-            if (strtolower($this->fq_classlike_name) === $fq_classlike_name) {
-                return true;
-            }
-        }
-
-        if ($this instanceof TClassString && $this->as !== 'object') {
-            if (strtolower($this->as) === $fq_classlike_name) {
-                return true;
-            }
-        }
-
-        if ($this instanceof TTemplateParam) {
-            if ($this->as->containsClassLike($fq_classlike_name)) {
-                return true;
-            }
-        }
-
-        if ($this instanceof TLiteralClassString) {
-            if (strtolower($this->value) === $fq_classlike_name) {
-                return true;
-            }
-        }
-
-        if ($this instanceof Type\Atomic\TArray
-            || $this instanceof Type\Atomic\TGenericObject
-            || $this instanceof Type\Atomic\TIterable
-        ) {
-            foreach ($this->type_params as $type_param) {
-                if ($type_param->containsClassLike($fq_classlike_name)) {
-                    return true;
-                }
-            }
-        }
-
-        if ($this instanceof Type\Atomic\ObjectLike) {
-            foreach ($this->properties as $property_type) {
-                if ($property_type->containsClassLike($fq_classlike_name)) {
-                    return true;
-                }
-            }
-        }
-
-        if ($this instanceof Type\Atomic\TFn
-            || $this instanceof Type\Atomic\TCallable
-        ) {
-            if ($this->params) {
-                foreach ($this->params as $param) {
-                    if ($param->type && $param->type->containsClassLike($fq_classlike_name)) {
-                        return true;
-                    }
-                }
-            }
-
-            if ($this->return_type && $this->return_type->containsClassLike($fq_classlike_name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return [];
     }
 
     public function replaceClassLike(string $old, string $new) : void
@@ -827,18 +606,12 @@ abstract class Atomic
      */
     abstract public function canBeFullyExpressedInPhp();
 
-    /**
-     * @return void
-     */
-    public function setFromDocblock()
-    {
-        $this->from_docblock = true;
-    }
-
     public function replaceTemplateTypesWithStandins(
         TemplateResult $template_result,
         Codebase $codebase = null,
+        ?StatementsAnalyzer $statements_analyer = null,
         Type\Atomic $input_type = null,
+        ?int $input_arg_offset = null,
         ?string $calling_class = null,
         ?string $calling_function = null,
         bool $replace = true,
@@ -848,22 +621,11 @@ abstract class Atomic
         return $this;
     }
 
-    /**
-     * @param  array<string, array<string, array{Type\Union, 1?:int}>>     $template_types
-     *
-     * @return void
-     */
-    public function replaceTemplateTypesWithArgTypes(array $template_types, ?Codebase $codebase)
-    {
+    public function replaceTemplateTypesWithArgTypes(
+        TemplateResult $template_result,
+        ?Codebase $codebase
+    ) : void {
         // do nothing
-    }
-
-    /**
-     * @return list<Type\Atomic\TTemplateParam>
-     */
-    public function getTemplateTypes() : array
-    {
-        return [];
     }
 
     /**

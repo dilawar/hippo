@@ -12,15 +12,21 @@ namespace Amp
      *
      * Use this function to create a coroutine-aware callable for a promise-aware callback caller.
      *
-     * @param callable(mixed ...$args): mixed $callback
+     * @template TReturn
+     * @template TGeneratorReturn
      *
-     * @return callable(mixed ...$args): \Amp\Promise
+     * @param callable(...mixed):mixed $callback
+     *
+     * @return callable
+     * @psalm-return callable(...mixed):Promise
+     *
+     * @todo Fix return type once https://github.com/vimeo/psalm/issues/3071 has been fixed
      *
      * @see asyncCoroutine()
      */
     function coroutine(callable $callback): callable
     {
-        return function (...$args) use ($callback): Promise {
+        return static function (...$args) use ($callback): Promise {
             return call($callback, ...$args);
         };
     }
@@ -32,15 +38,19 @@ namespace Amp
      *
      * Use this function to create a coroutine-aware callable for a non-promise-aware callback caller.
      *
-     * @param callable(...$args): \Generator|\Amp\Promise|mixed $callback
+     * @template TReturn
+     * @template TGeneratorReturn
      *
-     * @return callable(...$args): void
+     * @param callable(...mixed):mixed $callback
+     *
+     * @return callable
+     * @psalm-return callable(...mixed):void
      *
      * @see coroutine()
      */
     function asyncCoroutine(callable $callback): callable
     {
-        return function (...$args) use ($callback) {
+        return static function (...$args) use ($callback) {
             Promise\rethrow(call($callback, ...$args));
         };
     }
@@ -49,10 +59,20 @@ namespace Amp
      * Calls the given function, always returning a promise. If the function returns a Generator, it will be run as a
      * coroutine. If the function throws, a failed promise will be returned.
      *
-     * @param callable(mixed ...$args):\Generator|mixed $callback
+     * @template TReturn
+     * @template TReturnPromise
+     * @template TGenerator
+     * @template TGeneratorPromise
+     *
+     * @formatter:off
+     *
+     * @param callable(...mixed):(TReturn|Promise<TReturnPromise>|\Generator<mixed, mixed, mixed, TGenerator|Promise<TGeneratorPromise>>) $callback
      * @param mixed ...$args Arguments to pass to the function.
      *
-     * @return \Amp\Promise
+     * @return Promise
+     * @psalm-return (TReturn is Promise ? Promise<TReturnPromise> : (TReturn is \Generator ? (TGenerator is Promise ? Promise<TGeneratorPromise> : Promise<TGenerator>) : Promise<TReturn>))
+     *
+     * @formatter:on
      */
     function call(callable $callback, ...$args): Promise
     {
@@ -81,8 +101,19 @@ namespace Amp
      * Calls the given function. If the function returns a Generator, it will be run as a coroutine. If the function
      * throws or returns a failing promise, the failure is forwarded to the loop error handler.
      *
-     * @param callable(mixed ...$args):\Generator|mixed $callback
-     * @param mixed ...$args
+     * @template TReturn
+     * @template TReturnPromise
+     * @template TGenerator
+     * @template TGeneratorPromise
+     *
+     * @formatter:off
+     *
+     * @param callable(...mixed):(TReturn|Promise<TReturnPromise>|\Generator<mixed, mixed, mixed, TGenerator|Promise<TGeneratorPromise>>) $callback
+     * @param mixed ...$args Arguments to pass to the function.
+     *
+     * @return void
+     *
+     * @formatter:on
      *
      * @throws \TypeError
      */
@@ -98,7 +129,7 @@ namespace Amp
      *
      * @return Delayed
      */
-    function delay(int $milliseconds): Promise
+    function delay(int $milliseconds): Delayed
     {
         return new Delayed($milliseconds);
     }
@@ -135,7 +166,9 @@ namespace Amp\Promise
      *
      * @param Promise|ReactPromise $promise Promise to register the handler on.
      *
+     * @return void
      * @throws \TypeError If $promise is not an instance of \Amp\Promise or \React\Promise\PromiseInterface.
+     *
      */
     function rethrow($promise)
     {
@@ -147,7 +180,7 @@ namespace Amp\Promise
             }
         }
 
-        $promise->onResolve(function ($exception) {
+        $promise->onResolve(static function ($exception) {
             if ($exception) {
                 throw $exception;
             }
@@ -210,10 +243,12 @@ namespace Amp\Promise
      * If the timeout expires before the promise is resolved, the returned promise fails with an instance of
      * `Amp\TimeoutException`.
      *
-     * @param Promise|ReactPromise $promise Promise to which the timeout is applied.
-     * @param int                  $timeout Timeout in milliseconds.
+     * @template TReturn
      *
-     * @return Promise
+     * @param Promise<TReturn>|ReactPromise $promise Promise to which the timeout is applied.
+     * @param int                           $timeout Timeout in milliseconds.
+     *
+     * @return Promise<TReturn>
      *
      * @throws \TypeError If $promise is not an instance of \Amp\Promise or \React\Promise\PromiseInterface.
      */
@@ -229,7 +264,7 @@ namespace Amp\Promise
 
         $deferred = new Deferred;
 
-        $watcher = Loop::delay($timeout, function () use (&$deferred) {
+        $watcher = Loop::delay($timeout, static function () use (&$deferred) {
             $temp = $deferred; // prevent double resolve
             $deferred = null;
             $temp->fail(new TimeoutException);
@@ -253,11 +288,13 @@ namespace Amp\Promise
      *
      * If the timeout expires before the promise is resolved, a default value is returned
      *
-     * @param Promise|ReactPromise $promise Promise to which the timeout is applied.
-     * @param int                  $timeout Timeout in milliseconds.
-     * @param mixed                $default
+     * @template TReturn
      *
-     * @return Promise
+     * @param Promise<TReturn>|ReactPromise $promise Promise to which the timeout is applied.
+     * @param int                           $timeout Timeout in milliseconds.
+     * @param TReturn                       $default
+     *
+     * @return Promise<TReturn>
      *
      * @throws \TypeError If $promise is not an instance of \Amp\Promise or \React\Promise\PromiseInterface.
      */
@@ -265,7 +302,7 @@ namespace Amp\Promise
     {
         $promise = timeout($promise, $timeout);
 
-        return call(function () use ($promise, $default) {
+        return call(static function () use ($promise, $default) {
             try {
                 return yield $promise;
             } catch (TimeoutException $exception) {
@@ -329,6 +366,12 @@ namespace Amp\Promise
      * @return Promise
      *
      * @throws \Error If a non-Promise is in the array.
+     *
+     * @template TValue
+     *
+     * @psalm-param array<array-key, Promise<TValue>|ReactPromise> $promises
+     * @psalm-assert array<array-key, Promise<TValue>|ReactPromise> $promises $promises
+     * @psalm-return Promise<array<array-key, TValue>>
      */
     function all(array $promises): Promise
     {
@@ -465,7 +508,7 @@ namespace Amp\Promise
             }
 
             $values[$key] = $exceptions[$key] = null; // add entry to arrays to preserve order
-            $promise->onResolve(function ($exception, $value) use (
+            $promise->onResolve(static function ($exception, $value) use (
                 &$values,
                 &$exceptions,
                 &$pending,
@@ -512,7 +555,7 @@ namespace Amp\Promise
 
         $deferred = new Deferred();
 
-        $promise->onResolve(function (\Throwable $exception = null, $result) use ($deferred, $callback) {
+        $promise->onResolve(static function (\Throwable $exception = null, $result) use ($deferred, $callback) {
             try {
                 $result = $callback($exception, $result);
             } catch (\Throwable $exception) {
@@ -547,7 +590,7 @@ namespace Amp\Iterator
      * @param array|\Traversable $iterable Elements to emit.
      * @param int                $delay Delay between element emissions in milliseconds.
      *
-     * @return \Amp\Iterator
+     * @return Iterator
      *
      * @throws \TypeError If the argument is not an array or instance of \Traversable.
      */
@@ -559,26 +602,34 @@ namespace Amp\Iterator
             throw createTypeError(["array", "Traversable"], $iterable);
         }
 
-        return new Producer(function (callable $emit) use ($iterable, $delay) {
-            foreach ($iterable as $value) {
-                if ($delay) {
+        if ($delay) {
+            return new Producer(static function (callable $emit) use ($iterable, $delay) {
+                foreach ($iterable as $value) {
                     yield new Delayed($delay);
+                    yield $emit($value);
                 }
+            });
+        }
 
+        return new Producer(static function (callable $emit) use ($iterable) {
+            foreach ($iterable as $value) {
                 yield $emit($value);
             }
         });
     }
 
     /**
-     * @param \Amp\Iterator $iterator
-     * @param callable (mixed $value): mixed $onEmit
+     * @template TValue
+     * @template TReturn
      *
-     * @return \Amp\Iterator
+     * @param Iterator<TValue> $iterator
+     * @param callable (TValue $value): TReturn $onEmit
+     *
+     * @return Iterator<TReturn>
      */
     function map(Iterator $iterator, callable $onEmit): Iterator
     {
-        return new Producer(function (callable $emit) use ($iterator, $onEmit) {
+        return new Producer(static function (callable $emit) use ($iterator, $onEmit) {
             while (yield $iterator->advance()) {
                 yield $emit($onEmit($iterator->getCurrent()));
             }
@@ -586,14 +637,16 @@ namespace Amp\Iterator
     }
 
     /**
-     * @param \Amp\Iterator $iterator
-     * @param callable (mixed $value): bool $filter
+     * @template TValue
      *
-     * @return \Amp\Iterator
+     * @param Iterator<TValue> $iterator
+     * @param callable(TValue $value):bool $filter
+     *
+     * @return Iterator<TValue>
      */
     function filter(Iterator $iterator, callable $filter): Iterator
     {
-        return new Producer(function (callable $emit) use ($iterator, $filter) {
+        return new Producer(static function (callable $emit) use ($iterator, $filter) {
             while (yield $iterator->advance()) {
                 if ($filter($iterator->getCurrent())) {
                     yield $emit($iterator->getCurrent());
@@ -605,16 +658,16 @@ namespace Amp\Iterator
     /**
      * Creates an iterator that emits values emitted from any iterator in the array of iterators.
      *
-     * @param \Amp\Iterator[] $iterators
+     * @param Iterator[] $iterators
      *
-     * @return \Amp\Iterator
+     * @return Iterator
      */
     function merge(array $iterators): Iterator
     {
         $emitter = new Emitter;
         $result = $emitter->iterate();
 
-        $coroutine = coroutine(function (Iterator $iterator) use (&$emitter) {
+        $coroutine = coroutine(static function (Iterator $iterator) use (&$emitter) {
             while ((yield $iterator->advance()) && $emitter !== null) {
                 yield $emitter->emit($iterator->getCurrent());
             }
@@ -625,10 +678,11 @@ namespace Amp\Iterator
             if (!$iterator instanceof Iterator) {
                 throw createTypeError([Iterator::class], $iterator);
             }
+
             $coroutines[] = $coroutine($iterator);
         }
 
-        Promise\all($coroutines)->onResolve(function ($exception) use (&$emitter) {
+        Promise\all($coroutines)->onResolve(static function ($exception) use (&$emitter) {
             if ($exception) {
                 $emitter->fail($exception);
                 $emitter = null;
@@ -645,9 +699,9 @@ namespace Amp\Iterator
      * prior iterator must complete before values are emitted from any subsequent iterators. Iterators are concatenated
      * in the order given (iteration order of the array).
      *
-     * @param array $iterators
+     * @param Iterator[] $iterators
      *
-     * @return \Amp\Iterator
+     * @return Iterator
      */
     function concat(array $iterators): Iterator
     {
@@ -661,14 +715,14 @@ namespace Amp\Iterator
         $previous = [];
         $promise = Promise\all($previous);
 
-        $coroutine = coroutine(function (Iterator $iterator, callable $emit) {
+        $coroutine = coroutine(static function (Iterator $iterator, callable $emit) {
             while (yield $iterator->advance()) {
                 yield $emit($iterator->getCurrent());
             }
         });
 
         foreach ($iterators as $iterator) {
-            $emit = coroutine(function ($value) use ($emitter, $promise) {
+            $emit = coroutine(static function ($value) use ($emitter, $promise) {
                 static $pending = true, $failed = false;
 
                 if ($failed) {
@@ -691,7 +745,7 @@ namespace Amp\Iterator
             $promise = Promise\all($previous);
         }
 
-        $promise->onResolve(function ($exception) use ($emitter) {
+        $promise->onResolve(static function ($exception) use ($emitter) {
             if ($exception) {
                 $emitter->fail($exception);
                 return;
@@ -706,14 +760,21 @@ namespace Amp\Iterator
     /**
      * Collects all items from an iterator into an array.
      *
+     * @template TValue
+     *
      * @param Iterator $iterator
      *
-     * @return Promise<array>
+     * @psalm-param Iterator<TValue> $iterator
+     *
+     * @return Promise
+     * @psalm-return Promise<array<array-key, TValue>>
      */
     function toArray(Iterator $iterator): Promise
     {
-        return call(function () use ($iterator) {
+        return call(static function () use ($iterator) {
+            /** @psalm-var list $array */
             $array = [];
+
             while (yield $iterator->advance()) {
                 $array[] = $iterator->getCurrent();
             }

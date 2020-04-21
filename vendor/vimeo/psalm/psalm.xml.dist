@@ -4,7 +4,7 @@
     xmlns="https://getpsalm.org/schema/config"
     name="Psalm for Psalm"
     useDocblockTypes="true"
-    totallyTyped="true"
+    errorLevel="1"
     strictBinaryOperands="false"
     rememberPropertyAssignmentsAfterCall="true"
     checkForThrowsDocblock="false"
@@ -21,11 +21,12 @@
         <directory name="examples"/>
         <ignoreFiles>
             <file name="src/Psalm/Internal/CallMap.php"/>
-            <file name="src/Psalm/Internal/Traverser/CustomTraverser.php"/>
+            <file name="src/Psalm/Internal/PhpTraverser/CustomTraverser.php"/>
             <file name="tests/ErrorBaselineTest.php"/>
             <file name="vendor/symfony/console/Command/Command.php"/>
             <file name="src/spl_object_id.php"/>
             <file name="src/Psalm/Internal/Stubs/*.php"/>
+            <file name="src/Psalm/Internal/Stubs/*.phpstub"/>
             <directory name="tests/fixtures"/>
             <file name="vendor/felixfbecker/advanced-json-rpc/lib/Dispatcher.php" />
             <directory name="vendor/netresearch/jsonmapper" />
@@ -39,10 +40,6 @@
         <class name="LogicException"/>
     </ignoreExceptions>
 
-    <stubs>
-        <file name="src/Psalm/Internal/Stubs/Amp.php"/>
-    </stubs>
-
     <plugins>
         <plugin filename="examples/plugins/FunctionCasingChecker.php"/>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
@@ -54,12 +51,8 @@
         <DeprecatedMethod>
             <errorLevel type="suppress">
                 <directory name="tests" />
-            </errorLevel>
-        </DeprecatedMethod>
-
-        <DeprecatedMethod>
-            <errorLevel type="suppress">
-                <directory name="tests" />
+                <referencedMethod name="PhpParser\Comment::getFilePos" />
+                <referencedMethod name="PhpParser\Comment::getLine" />
             </errorLevel>
         </DeprecatedMethod>
 
@@ -103,6 +96,12 @@
             </errorLevel>
         </PossiblyUnusedProperty>
 
+        <MissingConstructor>
+            <errorLevel type="suppress">
+                <directory name="tests"/>
+            </errorLevel>
+        </MissingConstructor>
+
         <MissingThrowsDocblock errorLevel="info"/>
 
         <PossiblyUnusedMethod>
@@ -127,12 +126,6 @@
                 <referencedMethod name="Psalm\Codebase::getMethodReturnsByRef"/>
             </errorLevel>
         </PossiblyUnusedMethod>
-
-        <PropertyNotSetInConstructor>
-            <errorLevel type="suppress">
-                <file name="src/Psalm/Config.php"/>
-            </errorLevel>
-        </PropertyNotSetInConstructor>
 
         <InternalMethod>
             <errorLevel type="suppress">

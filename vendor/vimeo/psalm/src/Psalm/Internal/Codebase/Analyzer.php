@@ -12,6 +12,7 @@ use PhpParser;
 use function preg_replace;
 use Psalm\Config;
 use Psalm\FileManipulation;
+use Psalm\Internal\Analyzer\IssueData;
 use Psalm\Internal\Analyzer\FileAnalyzer;
 use Psalm\Internal\Analyzer\ProjectAnalyzer;
 use Psalm\Internal\FileManipulation\FileManipulationBuffer;
@@ -23,32 +24,17 @@ use Psalm\Progress\Progress;
 use function strpos;
 use function substr;
 use function usort;
+use function array_diff_key;
+use function array_values;
 
 /**
- * @psalm-type  IssueData = array{
- *     severity: string,
- *     line_from: int,
- *     line_to: int,
- *     type: string,
- *     message: string,
- *     file_name: string,
- *     file_path: string,
- *     snippet: string,
- *     from: int,
- *     to: int,
- *     snippet_from: int,
- *     snippet_to: int,
- *     column_from: int,
- *     column_to: int,
- *     selected_text: string
- * }
- *
  * @psalm-type  TaggedCodeType = array<int, array{0: int, 1: string}>
  *
  * @psalm-type  WorkerData = array{
  *      issues: array<string, list<IssueData>>,
  *      fixable_issue_counts: array<string, int>,
- *      file_references_to_classes: array<string, array<string,bool>>,
+ *      nonmethod_references_to_classes: array<string, array<string,bool>>,
+ *      method_references_to_classes: array<string, array<string,bool>>,
  *      file_references_to_class_members: array<string, array<string,bool>>,
  *      file_references_to_missing_class_members: array<string, array<string,bool>>,
  *      mixed_counts: array<string, array{0: int, 1: int}>,
@@ -130,6 +116,14 @@ class Analyzer
     private $files_to_analyze = [];
 
     /**
+     * We can show analysis results on more files than we analyze
+     * because the results can be cached
+     *
+     * @var array<string, string>
+     */
+    private $files_with_analysis_results = [];
+
+    /**
      * We may update fewer files than we analyse (i.e. for dead code detection)
      *
      * @var array<string>|null
@@ -183,9 +177,20 @@ class Analyzer
      *
      * @return void
      */
-    public function addFiles(array $files_to_analyze)
+    public function addFilesToAnalyze(array $files_to_analyze)
     {
         $this->files_to_analyze += $files_to_analyze;
+        $this->files_with_analysis_results += $files_to_analyze;
+    }
+
+    /**
+     * @param array<string, string> $files_to_analyze
+     *
+     * @return void
+     */
+    public function addFilesToShowResults(array $files_to_analyze)
+    {
+        $this->files_with_analysis_results += $files_to_analyze;
     }
 
     /**
@@ -205,7 +210,7 @@ class Analyzer
      */
     public function canReportIssues($file_path)
     {
-        return isset($this->files_to_analyze[$file_path]);
+        return isset($this->files_with_analysis_results[$file_path]);
     }
 
     /**
@@ -238,8 +243,12 @@ class Analyzer
      *
      * @return void
      */
-    public function analyzeFiles(ProjectAnalyzer $project_analyzer, $pool_size, $alter_code)
-    {
+    public function analyzeFiles(
+        ProjectAnalyzer $project_analyzer,
+        int $pool_size,
+        bool $alter_code,
+        bool $consolidate_analyzed_data = false
+    ) {
         $this->loadCachedResults($project_analyzer);
 
         $codebase = $project_analyzer->getCodebase();
@@ -258,7 +267,6 @@ class Analyzer
         $this->doAnalysis($project_analyzer, $pool_size);
 
         $scanned_files = $codebase->scanner->getScannedFiles();
-        $codebase->file_reference_provider->updateReferenceCache($codebase, $scanned_files);
 
         if ($codebase->taint) {
             $i = 0;
@@ -276,12 +284,24 @@ class Analyzer
 
                 $this->doAnalysis($project_analyzer, $pool_size, true);
             }
-        }
 
-        $this->progress->finish();
+            $this->progress->finish();
+        } else {
+            $this->progress->finish();
 
-        if ($project_analyzer->full_run || $codebase->find_unused_code === 'always') {
-            $project_analyzer->consolidateAnalyzedData();
+            if ($consolidate_analyzed_data) {
+                $project_analyzer->consolidateAnalyzedData();
+            }
+
+            foreach (IssueBuffer::getIssuesData() as $file_path => $file_issues) {
+                $codebase->file_reference_provider->clearExistingIssuesForFile($file_path);
+
+                foreach ($file_issues as $issue_data) {
+                    $codebase->file_reference_provider->addIssue($file_path, $issue_data);
+                }
+            }
+
+            $codebase->file_reference_provider->updateReferenceCache($codebase, $scanned_files);
         }
 
         if ($codebase->track_unused_suppressions) {
@@ -316,6 +336,8 @@ class Analyzer
     {
         $this->progress->start(count($this->files_to_analyze));
 
+        \ksort($this->files_to_analyze);
+
         $codebase = $project_analyzer->getCodebase();
 
         $filetype_analyzers = $this->config->getFiletypeAnalyzers();
@@ -349,12 +371,12 @@ class Analyzer
                 $has_info = false;
 
                 foreach ($issues as $issue) {
-                    if ($issue['severity'] === 'error') {
+                    if ($issue->severity === 'error') {
                         $has_error = true;
                         break;
                     }
 
-                    if ($issue['severity'] === 'info') {
+                    if ($issue->severity === 'info') {
                         $has_info = true;
                     }
                 }
@@ -406,7 +428,7 @@ class Analyzer
 
                     $file_reference_provider = $codebase->file_reference_provider;
 
-                    $file_reference_provider->setFileReferencesToClasses([]);
+                    $file_reference_provider->setNonMethodReferencesToClasses([]);
                     $file_reference_provider->setCallingMethodReferencesToClassMembers([]);
                     $file_reference_provider->setFileReferencesToClassMembers([]);
                     $file_reference_provider->setCallingMethodReferencesToMissingClassMembers([]);
@@ -428,7 +450,8 @@ class Analyzer
                     return [
                         'issues' => IssueBuffer::getIssuesData(),
                         'fixable_issue_counts' => IssueBuffer::getFixableIssues(),
-                        'file_references_to_classes' => $rerun ? [] : $file_reference_provider->getAllFileReferencesToClasses(),
+                        'nonmethod_references_to_classes' => $rerun ? [] : $file_reference_provider->getAllNonMethodReferencesToClasses(),
+                        'method_references_to_classes' => $rerun ? [] : $file_reference_provider->getAllMethodReferencesToClasses(),
                         'file_references_to_class_members' => $rerun ? [] : $file_reference_provider->getAllFileReferencesToClassMembers(),
                         'method_references_to_class_members' => $rerun ? [] : $file_reference_provider->getAllMethodReferencesToClassMembers(),
                         'file_references_to_missing_class_members' => $rerun ? [] : $file_reference_provider->getAllFileReferencesToMissingClassMembers(),
@@ -479,14 +502,11 @@ class Analyzer
                     continue;
                 }
 
-                foreach ($pool_data['issues'] as $file_path => $file_issues) {
-                    foreach ($file_issues as $issue_data) {
-                        $codebase->file_reference_provider->addIssue($file_path, $issue_data);
-                    }
-                }
-
-                $codebase->file_reference_provider->addFileReferencesToClasses(
-                    $pool_data['file_references_to_classes']
+                $codebase->file_reference_provider->addNonMethodReferencesToClasses(
+                    $pool_data['nonmethod_references_to_classes']
+                );
+                $codebase->file_reference_provider->addMethodReferencesToClasses(
+                    $pool_data['method_references_to_classes']
                 );
                 $codebase->file_reference_provider->addFileReferencesToClassMembers(
                     $pool_data['file_references_to_class_members']
@@ -572,12 +592,6 @@ class Analyzer
                 $issues = IssueBuffer::getIssuesDataForFile($file_path);
                 $task_done_closure($issues);
             }
-
-            foreach (IssueBuffer::getIssuesData() as $file_path => $file_issues) {
-                foreach ($file_issues as $issue_data) {
-                    $codebase->file_reference_provider->addIssue($file_path, $issue_data);
-                }
-            }
         }
     }
 
@@ -587,9 +601,8 @@ class Analyzer
     public function loadCachedResults(ProjectAnalyzer $project_analyzer)
     {
         $codebase = $project_analyzer->getCodebase();
-        if ($codebase->diff_methods
-            && (!$codebase->collect_references || $codebase->server_mode)
-        ) {
+
+        if ($codebase->diff_methods) {
             $this->analyzed_methods = $codebase->file_reference_provider->getAnalyzedMethods();
             $this->existing_issues = $codebase->file_reference_provider->getExistingIssues();
             $file_maps = $codebase->file_reference_provider->getFileMaps();
@@ -616,7 +629,9 @@ class Analyzer
 
         $all_referencing_methods = $method_references_to_class_members + $method_references_to_missing_class_members;
 
-        $file_references_to_classes = $file_reference_provider->getAllFileReferencesToClasses();
+        $nonmethod_references_to_classes = $file_reference_provider->getAllNonMethodReferencesToClasses();
+
+        $method_references_to_classes = $file_reference_provider->getAllMethodReferencesToClasses();
 
         $method_param_uses = $file_reference_provider->getAllMethodParamUses();
 
@@ -629,23 +644,25 @@ class Analyzer
 
         $this->mixed_counts = $file_reference_provider->getTypeCoverage();
 
-        $classlikes = $codebase->classlikes;
+        foreach ($changed_members as $file_path => $members_by_file) {
+            foreach ($members_by_file as $changed_member => $_) {
+                if (!strpos($changed_member, '&')) {
+                    continue;
+                }
 
-        foreach ($all_referencing_methods as $member_id => $referencing_method_ids) {
-            $member_class_name = preg_replace('/::.*$/', '', $member_id);
+                list($base_class, $trait) = explode('&', $changed_member);
 
-            if ($classlikes->hasFullyQualifiedClassLikeName($member_class_name)
-                && !$classlikes->hasFullyQualifiedTraitName($member_class_name)
-            ) {
-                continue;
-            }
+                foreach ($all_referencing_methods as $member_id => $_) {
+                    if (strpos($member_id, $base_class . '::') !== 0) {
+                        continue;
+                    }
 
-            $member_stub = $member_class_name . '::*';
+                    $member_bit = substr($member_id, \strlen($base_class) + 2);
 
-            if (!isset($all_referencing_methods[$member_stub])) {
-                $all_referencing_methods[$member_stub] = $referencing_method_ids;
-            } else {
-                $all_referencing_methods[$member_stub] += $referencing_method_ids;
+                    if (isset($all_referencing_methods[$trait . '::' . $member_bit])) {
+                        $changed_members[$file_path][$member_id] = true;
+                    }
+                }
             }
         }
 
@@ -659,7 +676,22 @@ class Analyzer
                 if (isset($all_referencing_methods[$unchanged_signature_member_id])) {
                     foreach ($all_referencing_methods[$unchanged_signature_member_id] as $referencing_method_id => $_) {
                         if (substr($referencing_method_id, -13) === '::__construct') {
-                            $newly_invalidated_methods[$referencing_method_id] = true;
+                            $referencing_base_classlike = explode('::', $referencing_method_id)[0];
+                            $unchanged_signature_classlike = explode('::', $unchanged_signature_member_id)[0];
+
+                            if ($referencing_base_classlike === $unchanged_signature_classlike) {
+                                $newly_invalidated_methods[$referencing_method_id] = true;
+                            } else {
+                                $referencing_storage = $codebase->classlike_storage_provider->get(
+                                    $referencing_base_classlike
+                                );
+
+                                if (isset($referencing_storage->used_traits[$unchanged_signature_classlike])
+                                    || isset($referencing_storage->parent_classes[$unchanged_signature_classlike])
+                                ) {
+                                    $newly_invalidated_methods[$referencing_method_id] = true;
+                                }
+                            }
                         }
                     }
                 }
@@ -688,11 +720,6 @@ class Analyzer
 
                 $member_stub = preg_replace('/::.*$/', '::*', $member_id);
 
-                if (strpos($member_id, '::')) {
-                    $fqcln = explode('::', $member_id)[0];
-                    unset($file_references_to_classes[$fqcln]);
-                }
-
                 if (isset($all_referencing_methods[$member_stub])) {
                     $newly_invalidated_methods = array_merge(
                         $all_referencing_methods[$member_stub],
@@ -703,21 +730,25 @@ class Analyzer
         }
 
         foreach ($newly_invalidated_methods as $method_id => $_) {
-            foreach ($method_references_to_class_members as &$referencing_method_ids) {
-                unset($referencing_method_ids[$method_id]);
+            foreach ($method_references_to_class_members as $i => $_) {
+                unset($method_references_to_class_members[$i][$method_id]);
             }
 
-            foreach ($method_references_to_missing_class_members as &$referencing_method_ids) {
-                unset($referencing_method_ids[$method_id]);
+            foreach ($method_references_to_classes as $i => $_) {
+                unset($method_references_to_classes[$i][$method_id]);
             }
 
-            foreach ($references_to_mixed_member_names as &$references) {
-                unset($references[$method_id]);
+            foreach ($method_references_to_missing_class_members as $i => $_) {
+                unset($method_references_to_missing_class_members[$i][$method_id]);
             }
 
-            foreach ($method_param_uses as &$references) {
-                foreach ($references as &$method_refs) {
-                    unset($method_refs[$method_id]);
+            foreach ($references_to_mixed_member_names as $i => $_) {
+                unset($references_to_mixed_member_names[$i][$method_id]);
+            }
+
+            foreach ($method_param_uses as $i => $_) {
+                foreach ($method_param_uses[$i] as $j => $_) {
+                    unset($method_param_uses[$i][$j][$method_id]);
                 }
             }
         }
@@ -747,70 +778,63 @@ class Analyzer
 
             $this->setMixedCountsForFile($file_path, [0, 0]);
 
-            foreach ($file_references_to_class_members as &$referencing_file_paths) {
-                unset($referencing_file_paths[$file_path]);
+            foreach ($file_references_to_class_members as $i => $_) {
+                unset($file_references_to_class_members[$i][$file_path]);
             }
 
-            foreach ($file_references_to_classes as &$referencing_file_paths) {
-                unset($referencing_file_paths[$file_path]);
+            foreach ($nonmethod_references_to_classes as $i => $_) {
+                unset($nonmethod_references_to_classes[$i][$file_path]);
             }
 
-            foreach ($references_to_mixed_member_names as &$references) {
-                unset($references[$file_path]);
+            foreach ($references_to_mixed_member_names as $i => $_) {
+                unset($references_to_mixed_member_names[$i][$file_path]);
             }
 
-            foreach ($file_references_to_missing_class_members as &$referencing_file_paths) {
-                unset($referencing_file_paths[$file_path]);
+            foreach ($file_references_to_missing_class_members as $i => $_) {
+                unset($file_references_to_missing_class_members[$i][$file_path]);
+            }
+        }
+
+        foreach ($this->existing_issues as $file_path => $issues) {
+            if (!isset($this->files_to_analyze[$file_path])) {
+                unset($this->existing_issues[$file_path]);
+
+                if ($this->file_provider->fileExists($file_path)) {
+                    IssueBuffer::addIssues([$file_path => array_values($issues)]);
+                }
             }
         }
 
         $method_references_to_class_members = array_filter(
-            $method_references_to_class_members,
-            function (array $a) : bool {
-                return (bool)$a;
-            }
+            $method_references_to_class_members
         );
 
         $method_references_to_missing_class_members = array_filter(
-            $method_references_to_missing_class_members,
-            function (array $a) : bool {
-                return (bool)$a;
-            }
+            $method_references_to_missing_class_members
         );
 
         $file_references_to_class_members = array_filter(
-            $file_references_to_class_members,
-            function (array $a) : bool {
-                return (bool)$a;
-            }
+            $file_references_to_class_members
         );
 
         $file_references_to_missing_class_members = array_filter(
-            $file_references_to_missing_class_members,
-            function (array $a) : bool {
-                return (bool)$a;
-            }
+            $file_references_to_missing_class_members
         );
 
         $references_to_mixed_member_names = array_filter(
-            $references_to_mixed_member_names,
-            function (array $a) : bool {
-                return (bool)$a;
-            }
+            $references_to_mixed_member_names
         );
 
-        $file_references_to_classes = array_filter(
-            $file_references_to_classes,
-            function (array $a) : bool {
-                return (bool)$a;
-            }
+        $nonmethod_references_to_classes = array_filter(
+            $nonmethod_references_to_classes
+        );
+
+        $method_references_to_classes = array_filter(
+            $method_references_to_classes
         );
 
         $method_param_uses = array_filter(
-            $method_param_uses,
-            function (array $a) : bool {
-                return (bool)$a;
-            }
+            $method_param_uses
         );
 
         $file_reference_provider->setCallingMethodReferencesToClassMembers(
@@ -833,8 +857,12 @@ class Analyzer
             $references_to_mixed_member_names
         );
 
-        $file_reference_provider->setFileReferencesToClasses(
-            $file_references_to_classes
+        $file_reference_provider->setCallingMethodReferencesToClasses(
+            $method_references_to_classes
+        );
+
+        $file_reference_provider->setNonMethodReferencesToClasses(
+            $nonmethod_references_to_classes
         );
 
         $file_reference_provider->setMethodParamUses(
@@ -851,7 +879,6 @@ class Analyzer
     {
         foreach ($this->existing_issues as $file_path => &$file_issues) {
             if (!isset($this->analyzed_methods[$file_path])) {
-                unset($this->existing_issues[$file_path]);
                 continue;
             }
 
@@ -865,7 +892,7 @@ class Analyzer
             $last_diff_offset = $file_diff_map[count($file_diff_map) - 1][1];
 
             foreach ($file_issues as $i => &$issue_data) {
-                if ($issue_data['to'] < $first_diff_offset || $issue_data['from'] > $last_diff_offset) {
+                if ($issue_data->to < $first_diff_offset || $issue_data->from > $last_diff_offset) {
                     unset($file_issues[$i]);
                     continue;
                 }
@@ -873,16 +900,16 @@ class Analyzer
                 $matched = false;
 
                 foreach ($file_diff_map as list($from, $to, $file_offset, $line_offset)) {
-                    if ($issue_data['from'] >= $from
-                        && $issue_data['from'] <= $to
+                    if ($issue_data->from >= $from
+                        && $issue_data->from <= $to
                         && !$matched
                     ) {
-                        $issue_data['from'] += $file_offset;
-                        $issue_data['to'] += $file_offset;
-                        $issue_data['snippet_from'] += $file_offset;
-                        $issue_data['snippet_to'] += $file_offset;
-                        $issue_data['line_from'] += $line_offset;
-                        $issue_data['line_to'] += $line_offset;
+                        $issue_data->from += $file_offset;
+                        $issue_data->to += $file_offset;
+                        $issue_data->snippet_from += $file_offset;
+                        $issue_data->snippet_to += $file_offset;
+                        $issue_data->line_from += $line_offset;
+                        $issue_data->line_to += $line_offset;
                         $matched = true;
                     }
                 }
@@ -1351,8 +1378,8 @@ class Analyzer
         $applicable_issues = [];
 
         foreach ($this->existing_issues[$file_path] as $issue_data) {
-            if ($issue_data['from'] >= $start && $issue_data['from'] <= $end) {
-                if ($issue_type === null || $issue_type === $issue_data['type']) {
+            if ($issue_data->from >= $start && $issue_data->from <= $end) {
+                if ($issue_type === null || $issue_type === $issue_data->type) {
                     $applicable_issues[] = $issue_data;
                 }
             }
@@ -1372,8 +1399,8 @@ class Analyzer
     {
         if (isset($this->existing_issues[$file_path])) {
             foreach ($this->existing_issues[$file_path] as $i => $issue_data) {
-                if ($issue_data['from'] >= $start && $issue_data['from'] <= $end) {
-                    if ($issue_type === null || $issue_type === $issue_data['type']) {
+                if ($issue_data->from >= $start && $issue_data->from <= $end) {
+                    if ($issue_type === null || $issue_type === $issue_data->type) {
                         unset($this->existing_issues[$file_path][$i]);
                     }
                 }

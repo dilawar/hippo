@@ -42,6 +42,7 @@ class EventDriver extends Driver
 
     public function __construct()
     {
+        /** @psalm-suppress TooFewArguments https://github.com/JetBrains/phpstorm-stubs/pull/763 */
         $this->handle = new \EventBase;
         $this->nowOffset = getCurrentTime();
         $this->now = \random_int(0, $this->nowOffset);
@@ -51,7 +52,16 @@ class EventDriver extends Driver
             self::$activeSignals = &$this->signals;
         }
 
+        /**
+         * @param         $resource
+         * @param         $what
+         * @param Watcher $watcher
+         *
+         * @return void
+         */
         $this->ioCallback = function ($resource, $what, Watcher $watcher) {
+            \assert(\is_resource($watcher->value));
+
             try {
                 $result = ($watcher->callback)($watcher->id, $watcher->value, $watcher->data);
 
@@ -71,7 +81,16 @@ class EventDriver extends Driver
             }
         };
 
+        /**
+         * @param         $resource
+         * @param         $what
+         * @param Watcher $watcher
+         *
+         * @return void
+         */
         $this->timerCallback = function ($resource, $what, Watcher $watcher) {
+            \assert(\is_int($watcher->value));
+
             if ($watcher->type & Watcher::DELAY) {
                 $this->cancel($watcher->id);
             } else {
@@ -97,6 +116,13 @@ class EventDriver extends Driver
             }
         };
 
+        /**
+         * @param         $signum
+         * @param         $what
+         * @param Watcher $watcher
+         *
+         * @return void
+         */
         $this->signalCallback = function ($signum, $what, Watcher $watcher) {
             try {
                 $result = ($watcher->callback)($watcher->id, $watcher->value, $watcher->data);
@@ -166,6 +192,8 @@ class EventDriver extends Driver
     {
         $active = self::$activeSignals;
 
+        \assert($active !== null);
+
         foreach ($active as $event) {
             $event->del();
         }
@@ -173,6 +201,7 @@ class EventDriver extends Driver
         self::$activeSignals = &$this->signals;
 
         foreach ($this->signals as $event) {
+            /** @psalm-suppress TooFewArguments https://github.com/JetBrains/phpstorm-stubs/pull/763 */
             $event->add();
         }
 
@@ -186,6 +215,7 @@ class EventDriver extends Driver
             self::$activeSignals = &$active;
 
             foreach ($active as $event) {
+                /** @psalm-suppress TooFewArguments https://github.com/JetBrains/phpstorm-stubs/pull/763 */
                 $event->add();
             }
         }
@@ -223,6 +253,8 @@ class EventDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function dispatch(bool $blocking)
     {
@@ -232,6 +264,8 @@ class EventDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function activate(array $watchers)
     {
@@ -241,6 +275,8 @@ class EventDriver extends Driver
             if (!isset($this->events[$id = $watcher->id])) {
                 switch ($watcher->type) {
                     case Watcher::READABLE:
+                        \assert(\is_resource($watcher->value));
+
                         $this->events[$id] = new \Event(
                             $this->handle,
                             $watcher->value,
@@ -251,6 +287,8 @@ class EventDriver extends Driver
                         break;
 
                     case Watcher::WRITABLE:
+                        \assert(\is_resource($watcher->value));
+
                         $this->events[$id] = new \Event(
                             $this->handle,
                             $watcher->value,
@@ -262,6 +300,8 @@ class EventDriver extends Driver
 
                     case Watcher::DELAY:
                     case Watcher::REPEAT:
+                        \assert(\is_int($watcher->value));
+
                         $this->events[$id] = new \Event(
                             $this->handle,
                             -1,
@@ -272,6 +312,8 @@ class EventDriver extends Driver
                         break;
 
                     case Watcher::SIGNAL:
+                        \assert(\is_int($watcher->value));
+
                         $this->events[$id] = new \Event(
                             $this->handle,
                             $watcher->value,
@@ -291,6 +333,8 @@ class EventDriver extends Driver
             switch ($watcher->type) {
                 case Watcher::DELAY:
                 case Watcher::REPEAT:
+                    \assert(\is_int($watcher->value));
+
                     $interval = $watcher->value - ($now - $this->now());
                     $this->events[$id]->add($interval > 0 ? $interval / self::MILLISEC_PER_SEC : 0);
                     break;
@@ -300,6 +344,7 @@ class EventDriver extends Driver
                 // no break
 
                 default:
+                    /** @psalm-suppress TooFewArguments https://github.com/JetBrains/phpstorm-stubs/pull/763 */
                     $this->events[$id]->add();
                     break;
             }
@@ -308,6 +353,8 @@ class EventDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function deactivate(Watcher $watcher)
     {

@@ -5,37 +5,35 @@ Psalm is a static analysis tool that attempts to dig into your program and find 
 It has a few features that go further than other similar tools:
 
 - **Mixed type warnings**<br />
-  If Psalm cannot infer a type for an expression then it uses a `mixed` placeholder. Any `mixed` type is a sign of an insufficiently-documented codebase. You can configure Psalm warn when encountering `mixed` types by adding *`totallyTyped="true"`* attribute to your XML config file.
+  If Psalm cannot infer a type for an expression then it uses a `mixed` placeholder type. `mixed` types can sometimes mask bugs, so keeping track of them helps you avoid a number of common pitfalls.
 
-- **Logic checks**<br />
+- **Intelligent logic checks**<br />
   Psalm keeps track of logical assertions made about your code, so `if ($a && $a) {}` and `if ($a && !$a) {}` are both treated as issues. Psalm also keeps track of logical assertions made in prior code paths, preventing issues like `if ($a) {} elseif ($a) {}`.
 
 - **Property initialisation checks**<br />
   Psalm checks that all properties of a given object have values after the constructor is called.
 
-- **Support for complicated array shapes**<br />
-  Psalm has support for [object-like arrays](annotating_code/docblock_type_syntax.md#object-like-arrays), allowing you to specify types for all keys of an array if you so wish.
-
 Psalm also has a few features to make it perform as well as possible on large codebases:
 
 - **Multi-threaded mode**<br />
-  Using the `--threads=[X]` command line option will run Psalm's analysis stage on [X] threads. Useful for large codebases, it has a massive impact on performance.
+  Whereever possible Psalm will run its analysis in parallel to save time. Useful for large codebases, it has a massive impact on performance.
 
 - **Incremental checks**<br />
   When using the `--diff` command line option, Psalm will only analyse files that have changed *and* files that reference them.
 
 ## Example output
 
+Given a file `implode_strings.php`:
+
 ```php
-// somefile.php
 <?php
 $a = ['foo', 'bar'];
 echo implode($a, ' ');
 ```
 
 ```bash
-> ./vendor/bin/psalm somefile.php
-ERROR: InvalidArgument - somefile.php:3:14 - Argument 1 of implode expects `string`, `array` provided
+> ./vendor/bin/psalm implode_strings.php
+ERROR: InvalidArgument - somefile.php:3:14 - Argument 1 of implode expects `string`, `array` provided (see https://psalm.dev/004)
 ```
 
 ## Inspirations
@@ -62,7 +60,6 @@ There are two main inspirations for Psalm:
     - [Checking non-PHP files](running_psalm/checking_non_php_files.md)
 - Annotating code:
     - [Typing in Psalm](annotating_code/typing_in_psalm.md)
-    - [Docblock Type Syntax](annotating_code/docblock_type_syntax.md)
     - [Supported Annotations](annotating_code/supported_annotations.md)
     - [Template Annotations](annotating_code/templated_annotations.md)
 - Manipulating code:

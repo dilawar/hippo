@@ -4,6 +4,9 @@ namespace Amp;
 
 /**
  * Representation of the future value of an asynchronous operation.
+ *
+ * @template-covariant TValue
+ * @psalm-yield TValue
  */
 interface Promise
 {
@@ -21,8 +24,12 @@ interface Promise
      * Note: You shouldn't implement this interface yourself. Instead, provide a method that returns a promise for the
      * operation you're implementing. Objects other than pure placeholders implementing it are a very bad idea.
      *
-     * @param callable(\Throwable|null $reason, $value) $onResolved `$reason` shall be `null` on
-     *     success, `$value` shall be `null` on failure.
+     * @param callable $onResolved The first argument shall be `null` on success, while the second shall be `null` on
+     *     failure.
+     *
+     * @psalm-param callable(\Throwable|null, mixed): (Promise|\React\Promise\PromiseInterface|\Generator<mixed,
+     *     Promise|\React\Promise\PromiseInterface|array<array-key, Promise|\React\Promise\PromiseInterface>, mixed,
+     *     mixed>|null) | callable(\Throwable|null, mixed): void $onResolved
      *
      * @return void
      */

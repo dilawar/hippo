@@ -15,7 +15,7 @@ class UvDriver extends Driver
     /** @var resource[] */
     private $events = [];
 
-    /** @var \Amp\Loop\Watcher[][] */
+    /** @var Watcher[][] */
     private $watchers = [];
 
     /** @var resource[] */
@@ -34,6 +34,14 @@ class UvDriver extends Driver
     {
         $this->handle = \uv_loop_new();
 
+        /**
+         * @param $event
+         * @param $status
+         * @param $events
+         * @param $resource
+         *
+         * @return void
+         */
         $this->ioCallback = function ($event, $status, $events, $resource) {
             $watchers = $this->watchers[(int) $event];
 
@@ -44,7 +52,7 @@ class UvDriver extends Driver
                 default: // Invoke the callback on errors, as this matches behavior with other loop back-ends.
                     // Re-enable watcher as libuv disables the watcher on non-zero status.
                     $flags = 0;
-                    foreach ($this->watchers[(int) $event] as $watcher) {
+                    foreach ($watchers as $watcher) {
                         $flags |= $watcher->enabled ? $watcher->type : 0;
                     }
                     \uv_poll_start($event, $flags, $this->ioCallback);
@@ -78,8 +86,13 @@ class UvDriver extends Driver
             }
         };
 
+        /**
+         * @param $event
+         *
+         * @return void
+         */
         $this->timerCallback = function ($event) {
-            $watcher = $this->watchers[(int) $event];
+            $watcher = $this->watchers[(int) $event][0];
 
             if ($watcher->type & Watcher::DELAY) {
                 unset($this->events[$watcher->id], $this->watchers[(int) $event]); // Avoid call to uv_is_active().
@@ -110,8 +123,14 @@ class UvDriver extends Driver
             }
         };
 
+        /**
+         * @param $event
+         * @param $signo
+         *
+         * @return void
+         */
         $this->signalCallback = function ($event, $signo) {
-            $watcher = $this->watchers[(int) $event];
+            $watcher = $this->watchers[(int) $event][0];
 
             try {
                 $result = ($watcher->callback)($watcher->id, $signo, $watcher->data);
@@ -147,7 +166,7 @@ class UvDriver extends Driver
         $event = $this->events[$watcherId];
         $eventId = (int) $event;
 
-        if ($this->watchers[$eventId] instanceof Watcher) { // All except IO watchers.
+        if (isset($this->watchers[$eventId][0])) { // All except IO watchers.
             unset($this->watchers[$eventId]);
         } else {
             $watcher = $this->watchers[$eventId][$watcherId];
@@ -171,6 +190,7 @@ class UvDriver extends Driver
      */
     public function now(): int
     {
+        /** @psalm-suppress TooManyArguments */
         return \uv_now($this->handle);
     }
 
@@ -184,14 +204,19 @@ class UvDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function dispatch(bool $blocking)
     {
+        /** @psalm-suppress TooManyArguments */
         \uv_run($this->handle, $blocking ? \UV::RUN_ONCE : \UV::RUN_NOWAIT);
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function activate(array $watchers)
     {
@@ -201,6 +226,8 @@ class UvDriver extends Driver
             switch ($watcher->type) {
                 case Watcher::READABLE:
                 case Watcher::WRITABLE:
+                    \assert(\is_resource($watcher->value));
+
                     $streamId = (int) $watcher->value;
 
                     if (isset($this->streams[$streamId])) {
@@ -208,6 +235,7 @@ class UvDriver extends Driver
                     } elseif (isset($this->events[$id])) {
                         $event = $this->streams[$streamId] = $this->events[$id];
                     } else {
+                        /** @psalm-suppress UndefinedFunction */
                         $event = $this->streams[$streamId] = \uv_poll_init_socket($this->handle, $watcher->value);
                     }
 
@@ -216,39 +244,45 @@ class UvDriver extends Driver
                     $this->watchers[$eventId][$id] = $watcher;
 
                     $flags = 0;
-                    foreach ($this->watchers[$eventId] as $watcher) {
-                        $flags |= $watcher->enabled ? $watcher->type : 0;
+                    foreach ($this->watchers[$eventId] as $w) {
+                        $flags |= $w->enabled ? $w->type : 0;
                     }
                     \uv_poll_start($event, $flags, $this->ioCallback);
                     break;
 
                 case Watcher::DELAY:
                 case Watcher::REPEAT:
+                    \assert(\is_int($watcher->value));
+
                     if (isset($this->events[$id])) {
                         $event = $this->events[$id];
                     } else {
                         $event = $this->events[$id] = \uv_timer_init($this->handle);
                     }
 
-                    $this->watchers[(int) $event] = $watcher;
+                    $this->watchers[(int) $event] = [$watcher];
 
                     \uv_timer_start(
                         $event,
                         $watcher->value,
-                        $watcher->type & Watcher::REPEAT ? $watcher->value : 0,
+                        ($watcher->type & Watcher::REPEAT) ? $watcher->value : 0,
                         $this->timerCallback
                     );
                     break;
 
                 case Watcher::SIGNAL:
+                    \assert(\is_int($watcher->value));
+
                     if (isset($this->events[$id])) {
                         $event = $this->events[$id];
                     } else {
+                        /** @psalm-suppress UndefinedFunction */
                         $event = $this->events[$id] = \uv_signal_init($this->handle);
                     }
 
-                    $this->watchers[(int) $event] = $watcher;
+                    $this->watchers[(int) $event] = [$watcher];
 
+                    /** @psalm-suppress UndefinedFunction */
                     \uv_signal_start($event, $this->signalCallback, $watcher->value);
                     break;
 
@@ -262,6 +296,8 @@ class UvDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function deactivate(Watcher $watcher)
     {
@@ -281,8 +317,8 @@ class UvDriver extends Driver
             case Watcher::READABLE:
             case Watcher::WRITABLE:
                 $flags = 0;
-                foreach ($this->watchers[(int) $event] as $watcher) {
-                    $flags |= $watcher->enabled ? $watcher->type : 0;
+                foreach ($this->watchers[(int) $event] as $w) {
+                    $flags |= $w->enabled ? $w->type : 0;
                 }
 
                 if ($flags) {

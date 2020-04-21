@@ -3,6 +3,8 @@ namespace Psalm\Report;
 
 use LSS\Array2XML;
 use Psalm\Report;
+use Psalm\Internal\Analyzer\IssueData;
+use function array_map;
 
 class XmlReport extends Report
 {
@@ -11,7 +13,17 @@ class XmlReport extends Report
      */
     public function create(): string
     {
-        $xml = Array2XML::createXML('report', ['item' => $this->issues_data]);
+        $xml = Array2XML::createXML(
+            'report',
+            [
+                'item' => array_map(
+                    function (IssueData $issue_data) {
+                        return (array) $issue_data;
+                    },
+                    $this->issues_data
+                )
+            ]
+        );
 
         return $xml->saveXML();
     }

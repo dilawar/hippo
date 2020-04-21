@@ -61,10 +61,14 @@
         <xs:attribute name="strictBinaryOperands" type="xs:boolean" default="false" />
         <xs:attribute name="throwExceptionOnError" type="xs:boolean" default="false" />
         <xs:attribute name="totallyTyped" type="xs:boolean" default="false" />
+        <xs:attribute name="errorLevel" type="xs:integer" default="1" />
+        <xs:attribute name="reportMixedIssues" type="xs:boolean" default="true" />
         <xs:attribute name="useAssertForType" type="xs:boolean" default="true" />
         <xs:attribute name="useDocblockTypes" type="xs:boolean" default="true" />
         <xs:attribute name="useDocblockPropertyTypes" type="xs:boolean" default="false" />
         <xs:attribute name="usePhpDocMethodsWithoutMagicCall" type="xs:boolean" default="false" />
+        <xs:attribute name="usePhpDocPropertiesWithoutMagicCall" type="xs:boolean" default="false" />
+        <xs:attribute name="skipChecksOnUnresolvableIncludes" type="xs:boolean" default="true" />
     </xs:complexType>
 
     <xs:complexType name="ProjectFilesType">
@@ -153,6 +157,7 @@
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="PluginIssue" type="PluginIssueHandlerType" minOccurs="0" />
             <xs:element name="AbstractInstantiation" type="IssueHandlerType" minOccurs="0" />
+            <xs:element name="AbstractMethodCall" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="ArgumentTypeCoercion" type="ArgumentIssueHandlerType" minOccurs="0" />
             <xs:element name="AssignmentToVoid" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="CircularReference" type="IssueHandlerType" minOccurs="0" />
@@ -180,6 +185,7 @@
             <xs:element name="ImplementedParamTypeMismatch" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="ImplementedReturnTypeMismatch" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="ImplicitToStringCast" type="IssueHandlerType" minOccurs="0" />
+            <xs:element name="ImpureArgument" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="ImpureByReferenceAssignment" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="ImpureFunctionCall" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="ImpureMethodCall" type="IssueHandlerType" minOccurs="0" />
@@ -267,6 +273,7 @@
             <xs:element name="MixedPropertyTypeCoercion" type="PropertyIssueHandlerType" minOccurs="0" />
             <xs:element name="MoreSpecificReturnType" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="MoreSpecificImplementedParamType" type="IssueHandlerType" minOccurs="0" />
+            <xs:element name="MutableDependency" type="PropertyIssueHandlerType" minOccurs="0" />
             <xs:element name="NoInterfaceProperties" type="ClassIssueHandlerType" minOccurs="0" />
             <xs:element name="NonStaticSelfCall" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="NullableReturnStatement" type="IssueHandlerType" minOccurs="0" />
@@ -330,6 +337,7 @@
             <xs:element name="ReservedWord" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="StringIncrement" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="TaintedInput" type="IssueHandlerType" minOccurs="0" />
+            <xs:element name="Trace" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="TraitMethodSignatureMismatch" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="TooFewArguments" type="ArgumentIssueHandlerType" minOccurs="0" />
             <xs:element name="TooManyArguments" type="ArgumentIssueHandlerType" minOccurs="0" />
@@ -352,6 +360,7 @@
             <xs:element name="UndefinedPropertyFetch" type="PropertyIssueHandlerType" minOccurs="0" />
             <xs:element name="UndefinedThisPropertyAssignment" type="PropertyIssueHandlerType" minOccurs="0" />
             <xs:element name="UndefinedThisPropertyFetch" type="PropertyIssueHandlerType" minOccurs="0" />
+            <xs:element name="UndefinedTrace" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="UndefinedTrait" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="UndefinedGlobalVariable" type="IssueHandlerType" minOccurs="0" />
             <xs:element name="UndefinedVariable" type="IssueHandlerType" minOccurs="0" />

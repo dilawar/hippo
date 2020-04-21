@@ -317,6 +317,19 @@ class ParseTree
                         break;
                     }
 
+                    while ($current_parent instanceof ParseTree\UnionTree
+                        && $current_leaf->parent
+                    ) {
+                        $current_leaf = $current_leaf->parent;
+                        $current_parent = $current_leaf->parent;
+                    }
+
+                    if ($current_parent && $current_parent instanceof ParseTree\ConditionalTree) {
+                        $current_leaf = $current_parent;
+                        $current_parent = $current_parent->parent;
+                        break;
+                    }
+
                     if (!$current_parent) {
                         throw new TypeParseTreeException('Cannot process colon without parent');
                     }
@@ -372,22 +385,44 @@ class ParseTree
 
                 case '?':
                     if ($next_token === null || $next_token[0] !== ':') {
-                        $new_parent = !$current_leaf instanceof ParseTree\Root ? $current_leaf : null;
-
-                        $new_leaf = new ParseTree\NullableTree(
-                            $new_parent
-                        );
-
-                        if ($current_leaf instanceof ParseTree\Root) {
-                            $current_leaf = $parse_tree = $new_leaf;
-                            break;
+                        while (($current_leaf instanceof ParseTree\Value
+                                || $current_leaf instanceof ParseTree\UnionTree)
+                            && $current_leaf->parent
+                        ) {
+                            $current_leaf = $current_leaf->parent;
                         }
 
-                        if ($new_leaf->parent) {
-                            $new_leaf->parent->children[] = $new_leaf;
-                        }
+                        if ($current_leaf instanceof ParseTree\TemplateIsTree && $current_leaf->parent) {
+                            $current_parent = $current_leaf->parent;
 
-                        $current_leaf = $new_leaf;
+                            $new_leaf = new ParseTree\ConditionalTree(
+                                $current_leaf,
+                                $current_leaf->parent
+                            );
+
+                            $current_leaf->parent = $new_leaf;
+
+                            array_pop($current_parent->children);
+                            $current_parent->children[] = $new_leaf;
+                            $current_leaf = $new_leaf;
+                        } else {
+                            $new_parent = !$current_leaf instanceof ParseTree\Root ? $current_leaf : null;
+
+                            $new_leaf = new ParseTree\NullableTree(
+                                $new_parent
+                            );
+
+                            if ($current_leaf instanceof ParseTree\Root) {
+                                $current_leaf = $parse_tree = $new_leaf;
+                                break;
+                            }
+
+                            if ($new_leaf->parent) {
+                                $new_leaf->parent->children[] = $new_leaf;
+                            }
+
+                            $current_leaf = $new_leaf;
+                        }
                     }
 
                     break;
@@ -423,9 +458,16 @@ class ParseTree
                         $current_parent = $current_leaf->parent;
                     }
 
-                    $new_parent_leaf = new ParseTree\UnionTree($current_parent);
-                    $new_parent_leaf->children = [$current_leaf];
-                    $current_leaf->parent = $new_parent_leaf;
+                    if ($current_parent instanceof ParseTree\TemplateIsTree) {
+                        $new_parent_leaf = new ParseTree\UnionTree($current_leaf);
+                        $new_parent_leaf->children = [$current_leaf];
+                        $new_parent_leaf->parent = $current_parent;
+                        $current_leaf->parent = $new_parent_leaf;
+                    } else {
+                        $new_parent_leaf = new ParseTree\UnionTree($current_parent);
+                        $new_parent_leaf->children = [$current_leaf];
+                        $current_leaf->parent = $new_parent_leaf;
+                    }
 
                     if ($current_parent) {
                         array_pop($current_parent->children);
@@ -472,28 +514,46 @@ class ParseTree
 
                     break;
 
+                case 'is':
                 case 'as':
-                    $current_parent = $current_leaf->parent;
+                    if ($i > 0) {
+                        $current_parent = $current_leaf->parent;
 
-                    if (!$current_leaf instanceof ParseTree\Value
-                        || !$current_parent instanceof ParseTree\GenericTree
-                        || !$next_token
-                    ) {
-                        throw new TypeParseTreeException('Unexpected token ' . $type_token[0]);
+                        if ($current_parent) {
+                            array_pop($current_parent->children);
+                        }
+
+                        if ($type_token[0] === 'as') {
+                            if (!$current_leaf instanceof ParseTree\Value
+                                || !$current_parent instanceof ParseTree\GenericTree
+                                || !$next_token
+                            ) {
+                                throw new TypeParseTreeException('Unexpected token ' . $type_token[0]);
+                            }
+
+                            $current_leaf = new ParseTree\TemplateAsTree(
+                                $current_leaf->value,
+                                $next_token[0],
+                                $current_parent
+                            );
+
+                            $current_parent->children[] = $current_leaf;
+                            ++$i;
+                        } elseif ($current_leaf instanceof ParseTree\Value) {
+                            $current_leaf = new ParseTree\TemplateIsTree(
+                                $current_leaf->value,
+                                $current_parent
+                            );
+
+                            if ($current_parent) {
+                                $current_parent->children[] = $current_leaf;
+                            }
+                        }
+
+                        break;
                     }
 
-                    array_pop($current_parent->children);
-
-                    $current_leaf = new ParseTree\TemplateAsTree(
-                        $current_leaf->value,
-                        $next_token[0],
-                        $current_parent
-                    );
-
-                    $current_parent->children[] = $current_leaf;
-                    ++$i;
-
-                    break;
+                    // falling through for methods named 'as' or 'is'
 
                 default:
                     $new_parent = !$current_leaf instanceof ParseTree\Root ? $current_leaf : null;
@@ -551,7 +611,7 @@ class ParseTree
                                     && strtolower($nexter_token[0]) !== 'class')
                             ) {
                                 throw new TypeParseTreeException(
-                                    'Invalid class constant'
+                                    'Invalid class constant ' . ($nexter_token[0] ?? '<empty>')
                                 );
                             }
 

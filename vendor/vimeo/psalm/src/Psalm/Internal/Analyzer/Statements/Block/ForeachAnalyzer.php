@@ -141,7 +141,7 @@ class ForeachAnalyzer
                         $statements_analyzer,
                         $comment_type,
                         $type_location,
-                        $context->calling_function_id
+                        $context->calling_method_id
                     );
                 }
             }
@@ -240,7 +240,7 @@ class ForeachAnalyzer
 
             $location = new CodeLocation($statements_analyzer, $stmt->keyVar);
 
-            if ($context->collect_references && !isset($foreach_context->byref_constraints[$key_var_id])) {
+            if ($codebase->find_unused_variables && !isset($foreach_context->byref_constraints[$key_var_id])) {
                 $foreach_context->unreferenced_vars[$key_var_id] = [$location->getHash() => $location];
                 unset($foreach_context->referenced_var_ids[$key_var_id]);
             }
@@ -258,12 +258,12 @@ class ForeachAnalyzer
                 );
             }
 
-            if ($stmt->byRef && $context->collect_references) {
+            if ($stmt->byRef && $codebase->find_unused_variables) {
                 $statements_analyzer->registerVariableUses([$location->getHash() => $location]);
             }
         }
 
-        if ($context->collect_references
+        if ($codebase->find_unused_variables
             && $stmt->byRef
             && $stmt->valueVar instanceof PhpParser\Node\Expr\Variable
             && is_string($stmt->valueVar->name)
@@ -322,7 +322,7 @@ class ForeachAnalyzer
                         );
                     }
                 } else {
-                    if ($context->collect_references
+                    if ($codebase->find_unused_variables
                         && !isset($context->vars_in_scope[$var_id])
                         && isset($inner_loop_context->unreferenced_vars[$var_id])
                     ) {
@@ -350,7 +350,7 @@ class ForeachAnalyzer
             $context->mergeExceptions($foreach_context);
         }
 
-        if ($context->collect_references) {
+        if ($codebase->find_unused_variables) {
             foreach ($foreach_context->unreferenced_vars as $var_id => $locations) {
                 if (isset($context->unreferenced_vars[$var_id])) {
                     $context->unreferenced_vars[$var_id] += $locations;
@@ -518,7 +518,8 @@ class ForeachAnalyzer
                     } else {
                         $intersection_value_type = Type::intersectUnionTypes(
                             $intersection_value_type,
-                            $value_type_part
+                            $value_type_part,
+                            $codebase
                         ) ?: Type::getMixed();
                     }
 
@@ -527,7 +528,8 @@ class ForeachAnalyzer
                     } else {
                         $intersection_key_type = Type::intersectUnionTypes(
                             $intersection_key_type,
-                            $key_type_part
+                            $key_type_part,
+                            $codebase
                         ) ?: Type::getMixed();
                     }
                 }
@@ -557,6 +559,8 @@ class ForeachAnalyzer
                         $statements_analyzer,
                         $iterator_atomic_type->value,
                         new CodeLocation($statements_analyzer->getSource(), $stmt->expr),
+                        $context->self,
+                        $context->calling_method_id,
                         $statements_analyzer->getSuppressedIssues()
                     ) === false) {
                         return false;
@@ -617,7 +621,7 @@ class ForeachAnalyzer
                     ),
                     $statements_analyzer->getSuppressedIssues()
                 )) {
-                    return false;
+                    // fall through
                 }
             } else {
                 if (IssueBuffer::accepts(
@@ -627,7 +631,7 @@ class ForeachAnalyzer
                     ),
                     $statements_analyzer->getSuppressedIssues()
                 )) {
-                    return false;
+                    // fall through
                 }
             }
         }
@@ -937,9 +941,15 @@ class ForeachAnalyzer
         }
 
         if ($iterator_atomic_type instanceof Type\Atomic\TNamedObject
-            && $codebase->classImplements(
-                $iterator_atomic_type->value,
-                'Traversable'
+            && (
+                $codebase->classImplements(
+                    $iterator_atomic_type->value,
+                    'Traversable'
+                )
+                || $codebase->interfaceExtends(
+                    $iterator_atomic_type->value,
+                    'Traversable'
+                )
             )
         ) {
             $generic_storage = $codebase->classlike_storage_provider->get(

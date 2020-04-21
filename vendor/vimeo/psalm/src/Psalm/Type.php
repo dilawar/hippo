@@ -20,6 +20,8 @@ use function preg_match;
 use function preg_quote;
 use function preg_replace;
 use Psalm\Exception\TypeParseTreeException;
+use Psalm\Internal\Analyzer\ProjectAnalyzer;
+use Psalm\Internal\Analyzer\TypeAnalyzer;
 use Psalm\Internal\Type\ParseTree;
 use Psalm\Internal\Type\TypeCombination;
 use Psalm\Storage\FunctionLikeParameter;
@@ -57,6 +59,7 @@ use Psalm\Type\Atomic\TTemplateParam;
 use Psalm\Type\Atomic\TTrue;
 use Psalm\Type\Atomic\TVoid;
 use Psalm\Type\Union;
+use function array_key_exists;
 use function str_split;
 use function stripos;
 use function strlen;
@@ -92,6 +95,7 @@ abstract class Type
         'trait-string' => true,
         'mysql-escaped-string' => true,
         'html-escaped-string' => true,
+        'lowercase-string' => true,
         'boolean' => true,
         'integer' => true,
         'double' => true,
@@ -175,7 +179,13 @@ abstract class Type
         }
 
         $parse_tree = ParseTree::createFromTokens($type_tokens);
-        $parsed_type = self::getTypeFromTree($parse_tree, $php_version, $template_type_map);
+        $codebase = ProjectAnalyzer::getInstance()->getCodebase();
+        $parsed_type = self::getTypeFromTree(
+            $parse_tree,
+            $codebase,
+            $php_version,
+            $template_type_map
+        );
 
         if (!($parsed_type instanceof Union)) {
             $parsed_type = new Union([$parsed_type]);
@@ -206,7 +216,6 @@ abstract class Type
             case 'iterable':
             case 'array':
             case 'object':
-            case 'numeric':
             case 'true':
             case 'false':
             case 'null':
@@ -238,6 +247,7 @@ abstract class Type
      */
     public static function getTypeFromTree(
         ParseTree $parse_tree,
+        Codebase $codebase,
         array $php_version = null,
         array $template_type_map = []
     ) {
@@ -247,7 +257,12 @@ abstract class Type
             $generic_params = [];
 
             foreach ($parse_tree->children as $i => $child_tree) {
-                $tree_type = self::getTypeFromTree($child_tree, null, $template_type_map);
+                $tree_type = self::getTypeFromTree(
+                    $child_tree,
+                    $codebase,
+                    null,
+                    $template_type_map
+                );
 
                 if ($generic_type === 'class-string-map'
                     && $i === 0
@@ -289,10 +304,18 @@ abstract class Type
             }
 
             if ($generic_type_value === 'array' || $generic_type_value === 'associative-array') {
+                if ($generic_params[0]->isMixed()) {
+                    $generic_params[0] = Type::getArrayKey();
+                }
+
                 return new TArray($generic_params);
             }
 
             if ($generic_type_value === 'non-empty-array') {
+                if ($generic_params[0]->isMixed()) {
+                    $generic_params[0] = Type::getArrayKey();
+                }
+
                 return new Type\Atomic\TNonEmptyArray($generic_params);
             }
 
@@ -451,10 +474,20 @@ abstract class Type
 
             foreach ($parse_tree->children as $child_tree) {
                 if ($child_tree instanceof ParseTree\NullableTree) {
-                    $atomic_type = self::getTypeFromTree($child_tree->children[0], null, $template_type_map);
+                    $atomic_type = self::getTypeFromTree(
+                        $child_tree->children[0],
+                        $codebase,
+                        null,
+                        $template_type_map
+                    );
                     $has_null = true;
                 } else {
-                    $atomic_type = self::getTypeFromTree($child_tree, null, $template_type_map);
+                    $atomic_type = self::getTypeFromTree(
+                        $child_tree,
+                        $codebase,
+                        null,
+                        $template_type_map
+                    );
                 }
 
                 if ($atomic_type instanceof Union) {
@@ -486,8 +519,13 @@ abstract class Type
                 /**
                  * @return Atomic
                  */
-                function (ParseTree $child_tree) use ($template_type_map) {
-                    $atomic_type = self::getTypeFromTree($child_tree, null, $template_type_map);
+                function (ParseTree $child_tree) use ($codebase, $template_type_map) {
+                    $atomic_type = self::getTypeFromTree(
+                        $child_tree,
+                        $codebase,
+                        null,
+                        $template_type_map
+                    );
 
                     if (!$atomic_type instanceof Atomic) {
                         throw new TypeParseTreeException(
@@ -500,6 +538,43 @@ abstract class Type
                 $parse_tree->children
             );
 
+            $onlyObjectLike = true;
+            foreach ($intersection_types as $intersection_type) {
+                if (!$intersection_type instanceof ObjectLike) {
+                    $onlyObjectLike = false;
+                    break;
+                }
+            }
+
+            if ($onlyObjectLike) {
+                /** @var non-empty-array<string|int, Union> */
+                $properties = [];
+                /** @var ObjectLike $intersection_type */
+                foreach ($intersection_types as $intersection_type) {
+                    foreach ($intersection_type->properties as $property => $property_type) {
+                        if (!array_key_exists($property, $properties)) {
+                            $properties[$property] = clone $property_type;
+                            continue;
+                        }
+
+                        $intersection_type = Type::intersectUnionTypes(
+                            $properties[$property],
+                            $property_type,
+                            $codebase
+                        );
+                        if ($intersection_type === null) {
+                            throw new TypeParseTreeException(
+                                'Incompatible intersection types for "' . $property . '", '
+                                    . $properties[$property] . ' and ' . $property_type
+                                    . ' provided'
+                            );
+                        }
+                        $properties[$property] = $intersection_type;
+                    }
+                }
+                return new ObjectLike($properties);
+            }
+
             $keyed_intersection_types = [];
 
             foreach ($intersection_types as $intersection_type) {
@@ -509,7 +584,8 @@ abstract class Type
                     && !$intersection_type instanceof TObjectWithProperties
                 ) {
                     throw new TypeParseTreeException(
-                        'Intersection types must all be objects, ' . get_class($intersection_type) . ' provided'
+                        'Intersection types must be all objects or all object-like arrays, '
+                            . get_class($intersection_type) . ' provided'
                     );
                 }
 
@@ -520,9 +596,24 @@ abstract class Type
                     ] = $intersection_type;
             }
 
+            $intersect_static = false;
+
+            if (isset($keyed_intersection_types['static'])) {
+                unset($keyed_intersection_types['static']);
+                $intersect_static = true;
+            }
+
             $first_type = array_shift($keyed_intersection_types);
 
-            $first_type->extra_types = $keyed_intersection_types;
+            if ($intersect_static
+                && $first_type instanceof TNamedObject
+            ) {
+                $first_type->was_static = true;
+            }
+
+            if ($keyed_intersection_types) {
+                $first_type->extra_types = $keyed_intersection_types;
+            }
 
             return $first_type;
         }
@@ -534,11 +625,21 @@ abstract class Type
 
             foreach ($parse_tree->children as $i => $property_branch) {
                 if (!$property_branch instanceof ParseTree\ObjectLikePropertyTree) {
-                    $property_type = self::getTypeFromTree($property_branch, null, $template_type_map);
+                    $property_type = self::getTypeFromTree(
+                        $property_branch,
+                        $codebase,
+                        null,
+                        $template_type_map
+                    );
                     $property_maybe_undefined = false;
                     $property_key = (string)$i;
                 } elseif (count($property_branch->children) === 1) {
-                    $property_type = self::getTypeFromTree($property_branch->children[0], null, $template_type_map);
+                    $property_type = self::getTypeFromTree(
+                        $property_branch->children[0],
+                        $codebase,
+                        null,
+                        $template_type_map
+                    );
                     $property_maybe_undefined = $property_branch->possibly_undefined;
                     $property_key = $property_branch->value;
                 } else {
@@ -558,7 +659,7 @@ abstract class Type
                 $properties[$property_key] = $property_type;
             }
 
-            if ($type !== 'array' && $type !== 'object') {
+            if ($type !== 'array' && $type !== 'object' && $type !== 'callable-array') {
                 throw new TypeParseTreeException('Unexpected brace character');
             }
 
@@ -570,11 +671,20 @@ abstract class Type
                 return new TObjectWithProperties($properties);
             }
 
+            if ($type === 'callable-array') {
+                return new Atomic\TCallableObjectLikeArray($properties);
+            }
+
             return new ObjectLike($properties);
         }
 
         if ($parse_tree instanceof ParseTree\CallableWithReturnTypeTree) {
-            $callable_type = self::getTypeFromTree($parse_tree->children[0], null, $template_type_map);
+            $callable_type = self::getTypeFromTree(
+                $parse_tree->children[0],
+                $codebase,
+                null,
+                $template_type_map
+            );
 
             if (!$callable_type instanceof TCallable && !$callable_type instanceof Type\Atomic\TFn) {
                 throw new \InvalidArgumentException('Parsing callable tree node should return TCallable');
@@ -584,7 +694,12 @@ abstract class Type
                 throw new TypeParseTreeException('Invalid return type');
             }
 
-            $return_type = self::getTypeFromTree($parse_tree->children[1], null, $template_type_map);
+            $return_type = self::getTypeFromTree(
+                $parse_tree->children[1],
+                $codebase,
+                null,
+                $template_type_map
+            );
 
             $callable_type->return_type = $return_type instanceof Union ? $return_type : new Union([$return_type]);
 
@@ -596,12 +711,17 @@ abstract class Type
                 /**
                  * @return FunctionLikeParameter
                  */
-                function (ParseTree $child_tree) use ($template_type_map) {
+                function (ParseTree $child_tree) use ($codebase, $template_type_map) {
                     $is_variadic = false;
                     $is_optional = false;
 
                     if ($child_tree instanceof ParseTree\CallableParamTree) {
-                        $tree_type = self::getTypeFromTree($child_tree->children[0], null, $template_type_map);
+                        $tree_type = self::getTypeFromTree(
+                            $child_tree->children[0],
+                            $codebase,
+                            null,
+                            $template_type_map
+                        );
                         $is_variadic = $child_tree->variadic;
                         $is_optional = $child_tree->has_default;
                     } else {
@@ -609,7 +729,7 @@ abstract class Type
                             $child_tree->value = preg_replace('/(.+)\$.*/', '$1', $child_tree->value);
                         }
 
-                        $tree_type = self::getTypeFromTree($child_tree, null, $template_type_map);
+                        $tree_type = self::getTypeFromTree($child_tree, $codebase, null, $template_type_map);
                     }
 
                     $tree_type = $tree_type instanceof Union ? $tree_type : new Union([$tree_type]);
@@ -641,7 +761,7 @@ abstract class Type
         }
 
         if ($parse_tree instanceof ParseTree\EncapsulationTree) {
-            return self::getTypeFromTree($parse_tree->children[0], null, $template_type_map);
+            return self::getTypeFromTree($parse_tree->children[0], $codebase, null, $template_type_map);
         }
 
         if ($parse_tree instanceof ParseTree\NullableTree) {
@@ -649,7 +769,12 @@ abstract class Type
                 throw new TypeParseTreeException('Misplaced question mark');
             }
 
-            $non_nullable_type = self::getTypeFromTree($parse_tree->children[0], null, $template_type_map);
+            $non_nullable_type = self::getTypeFromTree(
+                $parse_tree->children[0],
+                $codebase,
+                null,
+                $template_type_map
+            );
 
             if ($non_nullable_type instanceof Union) {
                 $non_nullable_type->addType(new TNull);
@@ -720,6 +845,58 @@ abstract class Type
                 $parse_tree->param_name,
                 new Union([new TNamedObject($parse_tree->as)]),
                 'class-string-map'
+            );
+        }
+
+        if ($parse_tree instanceof ParseTree\ConditionalTree) {
+            $template_param_name = $parse_tree->condition->param_name;
+
+            if (!isset($template_type_map[$template_param_name])) {
+                throw new TypeParseTreeException('Unrecognized template \'' . $template_param_name . '\'');
+            }
+
+            $first_class = array_keys($template_type_map[$template_param_name])[0];
+
+            $conditional_type = self::getTypeFromTree(
+                $parse_tree->condition->children[0],
+                $codebase,
+                null,
+                $template_type_map
+            );
+
+            $if_type = self::getTypeFromTree(
+                $parse_tree->children[0],
+                $codebase,
+                null,
+                $template_type_map
+            );
+
+            $else_type = self::getTypeFromTree(
+                $parse_tree->children[1],
+                $codebase,
+                null,
+                $template_type_map
+            );
+
+            if ($conditional_type instanceof Type\Atomic) {
+                $conditional_type = new Type\Union([$conditional_type]);
+            }
+
+            if ($if_type instanceof Type\Atomic) {
+                $if_type = new Type\Union([$if_type]);
+            }
+
+            if ($else_type instanceof Type\Atomic) {
+                $else_type = new Type\Union([$else_type]);
+            }
+
+            return new Atomic\TConditional(
+                $template_param_name,
+                $first_class,
+                $template_type_map[$template_param_name][$first_class][0],
+                $conditional_type,
+                $if_type,
+                $else_type
             );
         }
 
@@ -893,11 +1070,11 @@ abstract class Type
                 $type_tokens[++$rtc] = [' ', $i - 1];
                 $type_tokens[++$rtc] = ['', $i];
             } elseif ($was_space
-                && $char === 'a'
+                && ($char === 'a' || $char === 'i')
                 && ($chars[$i + 1] ?? null) === 's'
                 && ($chars[$i + 2] ?? null) === ' '
             ) {
-                $type_tokens[++$rtc] = ['as', $i - 1];
+                $type_tokens[++$rtc] = [$char . 's', $i - 1];
                 $type_tokens[++$rtc] = ['', ++$i];
                 continue;
             } elseif ($was_char) {
@@ -1067,7 +1244,7 @@ abstract class Type
             if (in_array(
                 $string_type_token[0],
                 [
-                    '<', '>', '|', '?', ',', '{', '}', ':', '::', '[', ']', '(', ')', '&', '=', '...', 'as',
+                    '<', '>', '|', '?', ',', '{', '}', ':', '::', '[', ']', '(', ')', '&', '=', '...', 'as', 'is',
                 ],
                 true
             )) {
@@ -1618,8 +1795,8 @@ abstract class Type
                 $combined_type->had_template = true;
             }
 
-            if ($type_1->external_mutation_free && $type_2->external_mutation_free) {
-                $combined_type->external_mutation_free = true;
+            if ($type_1->reference_free && $type_2->reference_free) {
+                $combined_type->reference_free = true;
             }
 
             if ($both_failed_reconciliation) {
@@ -1654,7 +1831,8 @@ abstract class Type
      */
     public static function intersectUnionTypes(
         Union $type_1,
-        Union $type_2
+        Union $type_2,
+        Codebase $codebase
     ) {
         $intersection_performed = false;
 
@@ -1684,6 +1862,28 @@ abstract class Type
 
                 foreach ($combined_type->getAtomicTypes() as $t1_key => $type_1_atomic) {
                     foreach ($type_2->getAtomicTypes() as $t2_key => $type_2_atomic) {
+                        if ($type_1_atomic instanceof TNamedObject
+                            && $type_2_atomic instanceof TNamedObject
+                        ) {
+                            if (TypeAnalyzer::isAtomicContainedBy(
+                                $codebase,
+                                $type_2_atomic,
+                                $type_1_atomic
+                            )) {
+                                $combined_type->removeType($t1_key);
+                                $combined_type->addType(clone $type_2_atomic);
+                                $intersection_performed = true;
+                            } elseif (TypeAnalyzer::isAtomicContainedBy(
+                                $codebase,
+                                $type_1_atomic,
+                                $type_2_atomic
+                            )) {
+                                $combined_type->removeType($t2_key);
+                                $combined_type->addType(clone $type_1_atomic);
+                                $intersection_performed = true;
+                            }
+                        }
+
                         if (($type_1_atomic instanceof TIterable
                                 || $type_1_atomic instanceof TNamedObject
                                 || $type_1_atomic instanceof TTemplateParam

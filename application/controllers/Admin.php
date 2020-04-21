@@ -230,8 +230,8 @@ class Admin extends CI_Controller
         $msg = "";
         $res = admin_venue_actions($_POST, $msg);
         flashMessage($msg);
-        redirect('admin');
-        return;
+        //redirect('admin');
+        //return;
     }
 }
 

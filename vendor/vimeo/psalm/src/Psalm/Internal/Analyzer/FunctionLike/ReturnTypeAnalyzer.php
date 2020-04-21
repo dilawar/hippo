@@ -13,7 +13,7 @@ use Psalm\Internal\Analyzer\ProjectAnalyzer;
 use Psalm\Internal\Analyzer\ScopeAnalyzer;
 use Psalm\Internal\Analyzer\SourceAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
-use Psalm\Internal\Analyzer\Statements\Expression\Call\MethodCallAnalyzer;
+use Psalm\Internal\Analyzer\Statements\Expression\Call\ClassTemplateParamCollector;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Analyzer\TypeAnalyzer;
 use Psalm\CodeLocation;
@@ -67,6 +67,7 @@ class ReturnTypeAnalyzer
         $fq_class_name = null,
         CodeLocation $return_type_location = null,
         array $compatible_method_ids = [],
+        bool $did_explicitly_return = false,
         bool $closure_inside_call = false
     ) {
         $suppressed_issues = $function_like_analyzer->getSuppressedIssues();
@@ -137,6 +138,10 @@ class ReturnTypeAnalyzer
             true
         );
 
+        if (!$inferred_return_type_parts) {
+            $did_explicitly_return = true;
+        }
+
         if ((!$return_type || $return_type->from_docblock)
             && ScopeAnalyzer::getFinalControlActions(
                 $function_stmts,
@@ -145,6 +150,7 @@ class ReturnTypeAnalyzer
             ) !== [ScopeAnalyzer::ACTION_END]
             && !$inferred_yield_types
             && count($inferred_return_type_parts)
+            && !$did_explicitly_return
         ) {
             // only add null if we have a return statement elsewhere and it wasn't void
             foreach ($inferred_return_type_parts as $inferred_return_type_part) {
@@ -161,6 +167,7 @@ class ReturnTypeAnalyzer
             && !$return_type->from_docblock
             && !$return_type->isVoid()
             && !$inferred_yield_types
+            && (!$function_like_storage || !$function_like_storage->has_yield)
             && ScopeAnalyzer::getFinalControlActions(
                 $function_stmts,
                 $type_provider,
@@ -244,6 +251,15 @@ class ReturnTypeAnalyzer
             )
         );
 
+        // hack until we have proper yield type collection
+        if ($function_like_storage
+            && $function_like_storage->has_yield
+            && !$inferred_yield_type
+            && !$inferred_return_type->isVoid()
+        ) {
+            $inferred_return_type = new Type\Union([new Type\Atomic\TNamedObject('Generator')]);
+        }
+
         if ($is_to_string) {
             if (!$inferred_return_type->hasMixed() &&
                 !TypeAnalyzer::isContainedBy(
@@ -324,6 +340,7 @@ class ReturnTypeAnalyzer
                     $source,
                     $function_like_analyzer,
                     $compatible_method_ids
+                        || !$did_explicitly_return
                         || (($project_analyzer->only_replace_php_types_with_non_docblock_types
                                 || $unsafe_return_type)
                             && $inferred_return_type->from_docblock),
@@ -363,10 +380,16 @@ class ReturnTypeAnalyzer
             $return_type,
             $self_fq_class_name,
             $self_fq_class_name,
-            $parent_class
+            $parent_class,
+            true,
+            true,
+            $function_like_storage instanceof MethodStorage && $function_like_storage->final
         );
 
-        if (!$inferred_return_type_parts && !$inferred_yield_types) {
+        if (!$inferred_return_type_parts
+            && !$inferred_yield_types
+            && (!$function_like_storage || !$function_like_storage->has_yield)
+        ) {
             if ($declared_return_type->isVoid() || $declared_return_type->isNever()) {
                 return null;
             }
@@ -414,7 +437,9 @@ class ReturnTypeAnalyzer
         }
 
         if (!$declared_return_type->hasMixed()) {
-            if ($inferred_return_type->isVoid() && $declared_return_type->isVoid()) {
+            if ($inferred_return_type->isVoid()
+                && ($declared_return_type->isVoid() || ($function_like_storage && $function_like_storage->has_yield))
+            ) {
                 return null;
             }
 
@@ -494,8 +519,11 @@ class ReturnTypeAnalyzer
 
                     if (IssueBuffer::accepts(
                         new InvalidReturnType(
-                            'The declared return type \'' . $declared_return_type . '\' for ' . $cased_method_id .
-                                ' is incorrect, got \'' . $inferred_return_type . '\'',
+                            'The declared return type \''
+                                . $declared_return_type->getId()
+                                . '\' for ' . $cased_method_id
+                                . ' is incorrect, got \''
+                                . $inferred_return_type->getId() . '\'',
                             $return_type_location
                         ),
                         $suppressed_issues,
@@ -690,11 +718,12 @@ class ReturnTypeAnalyzer
                     return null;
                 }
             }
+
             $fleshed_out_return_type = ExpressionAnalyzer::fleshOutType(
                 $codebase,
                 $storage->return_type,
-                $context->self,
-                $context->self,
+                $classlike_storage ? $classlike_storage->name : null,
+                $classlike_storage ? $classlike_storage->name : null,
                 $parent_class
             );
 
@@ -712,8 +741,8 @@ class ReturnTypeAnalyzer
         $fleshed_out_signature_type = ExpressionAnalyzer::fleshOutType(
             $codebase,
             $storage->signature_return_type,
-            $context->self,
-            $context->self,
+            $classlike_storage ? $classlike_storage->name : null,
+            $classlike_storage ? $classlike_storage->name : null,
             $parent_class
         );
 
@@ -734,8 +763,8 @@ class ReturnTypeAnalyzer
         $fleshed_out_return_type = ExpressionAnalyzer::fleshOutType(
             $codebase,
             $storage->return_type,
-            $context->self,
-            $context->self,
+            $classlike_storage ? $classlike_storage->name : null,
+            $classlike_storage ? $classlike_storage->name : null,
             $parent_class
         );
 
@@ -743,13 +772,15 @@ class ReturnTypeAnalyzer
             $function_like_analyzer,
             $storage->return_type_location,
             $storage->suppressed_issues,
-            []
+            [],
+            false,
+            $storage instanceof MethodStorage && $storage->inherited_return_type
         ) === false) {
             return false;
         }
 
         if ($classlike_storage && $context->self) {
-            $class_template_params = MethodCallAnalyzer::getClassTemplateParams(
+            $class_template_params = ClassTemplateParamCollector::collect(
                 $codebase,
                 $classlike_storage,
                 $context->self,
@@ -770,6 +801,7 @@ class ReturnTypeAnalyzer
                     $fleshed_out_return_type,
                     $template_result,
                     $codebase,
+                    null,
                     null,
                     null
                 );
@@ -828,7 +860,7 @@ class ReturnTypeAnalyzer
         $manipulator = FunctionDocblockManipulator::getForFunction(
             $project_analyzer,
             $source->getFilePath(),
-            $function_like_analyzer->getMethodId(),
+            $function_like_analyzer->getId(),
             $function
         );
 

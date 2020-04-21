@@ -16,19 +16,19 @@ class NativeDriver extends Driver
     /** @var resource[] */
     private $readStreams = [];
 
-    /** @var \Amp\Loop\Watcher[][] */
+    /** @var Watcher[][] */
     private $readWatchers = [];
 
     /** @var resource[] */
     private $writeStreams = [];
 
-    /** @var \Amp\Loop\Watcher[][] */
+    /** @var Watcher[][] */
     private $writeWatchers = [];
 
     /** @var Internal\TimerQueue */
     private $timerQueue;
 
-    /** @var \Amp\Loop\Watcher[][] */
+    /** @var Watcher[][] */
     private $signalWatchers = [];
 
     /** @var bool */
@@ -87,6 +87,13 @@ class NativeDriver extends Driver
         return null;
     }
 
+    /**
+     * @param bool $blocking
+     *
+     * @return void
+     *
+     * @throws \Throwable
+     */
     protected function dispatch(bool $blocking)
     {
         $this->nowUpdateNeeded = true;
@@ -146,6 +153,8 @@ class NativeDriver extends Driver
      * @param resource[] $read
      * @param resource[] $write
      * @param int        $timeout
+     *
+     * @return void
      */
     private function selectStreams(array $read, array $write, int $timeout)
     {
@@ -170,11 +179,11 @@ class NativeDriver extends Driver
 
                 $error = \error_get_last();
 
-                if (\strpos($error["message"], "unable to select") !== 0) {
+                if (\strpos($error["message"] ?? '', "unable to select") !== 0) {
                     return;
                 }
 
-                $this->error(new \Exception($error["message"]));
+                $this->error(new \Exception($error["message"] ?? 'Unknown error during stream_select'));
             }
 
             foreach ($read as $stream) {
@@ -207,6 +216,8 @@ class NativeDriver extends Driver
                     }
                 }
             }
+
+            \assert(\is_array($write)); // See https://github.com/vimeo/psalm/issues/3036
 
             foreach ($write as $stream) {
                 $streamId = (int) $stream;
@@ -243,7 +254,7 @@ class NativeDriver extends Driver
         }
 
         if ($timeout > 0) { // Otherwise sleep with usleep() if $timeout > 0.
-            \usleep($timeout * self::MICROSEC_PER_SEC);
+            \usleep((int) ($timeout * self::MICROSEC_PER_SEC));
         }
     }
 
@@ -265,18 +276,24 @@ class NativeDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function activate(array $watchers)
     {
         foreach ($watchers as $watcher) {
             switch ($watcher->type) {
                 case Watcher::READABLE:
+                    \assert(\is_resource($watcher->value));
+
                     $streamId = (int) $watcher->value;
                     $this->readWatchers[$streamId][$watcher->id] = $watcher;
                     $this->readStreams[$streamId] = $watcher->value;
                     break;
 
                 case Watcher::WRITABLE:
+                    \assert(\is_resource($watcher->value));
+
                     $streamId = (int) $watcher->value;
                     $this->writeWatchers[$streamId][$watcher->id] = $watcher;
                     $this->writeStreams[$streamId] = $watcher->value;
@@ -284,11 +301,15 @@ class NativeDriver extends Driver
 
                 case Watcher::DELAY:
                 case Watcher::REPEAT:
+                    \assert(\is_int($watcher->value));
+
                     $expiration = $this->now() + $watcher->value;
                     $this->timerQueue->insert($watcher, $expiration);
                     break;
 
                 case Watcher::SIGNAL:
+                    \assert(\is_int($watcher->value));
+
                     if (!isset($this->signalWatchers[$watcher->value])) {
                         if (!@\pcntl_signal($watcher->value, $this->callableFromInstanceMethod('handleSignal'))) {
                             $message = "Failed to register signal handler";
@@ -312,6 +333,8 @@ class NativeDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function deactivate(Watcher $watcher)
     {
@@ -338,6 +361,8 @@ class NativeDriver extends Driver
                 break;
 
             case Watcher::SIGNAL:
+                \assert(\is_int($watcher->value));
+
                 if (isset($this->signalWatchers[$watcher->value])) {
                     unset($this->signalWatchers[$watcher->value][$watcher->id]);
 
@@ -357,6 +382,8 @@ class NativeDriver extends Driver
 
     /**
      * @param int $signo
+     *
+     * @return void
      */
     private function handleSignal(int $signo)
     {

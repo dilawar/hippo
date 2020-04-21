@@ -4,6 +4,11 @@ namespace Amp\Loop;
 
 use Amp\Struct;
 
+/**
+ * @template TValue as (int|resource|null)
+ *
+ * @psalm-suppress MissingConstructor
+ */
 class Watcher
 {
     use Struct;
@@ -42,7 +47,8 @@ class Watcher
     /**
      * Watcher-dependent value storage. Stream for IO watchers, signal number for signal watchers, interval for timers.
      *
-     * @var mixed
+     * @var resource|int|null
+     * @psalm-var TValue
      */
     public $value;
 }

@@ -2,6 +2,7 @@
 namespace Psalm\Storage;
 
 use Psalm\CodeLocation;
+use Psalm\Internal\MethodIdentifier;
 use Psalm\Type;
 
 class ClassLikeStorage
@@ -153,21 +154,21 @@ class ClassLikeStorage
     /**
      * Interfaces this class implements explicitly and implicitly
      *
-     * @var array<string, string>
+     * @var array<lowercase-string, string>
      */
     public $class_implements = [];
 
     /**
      * Parent interfaces listed explicitly
      *
-     * @var array<string, string>
+     * @var array<lowercase-string, string>
      */
     public $direct_interface_parents = [];
 
     /**
      * Parent interfaces
      *
-     * @var  array<string, string>
+     * @var  array<lowercase-string, string>
      */
     public $parent_interfaces = [];
 
@@ -181,7 +182,7 @@ class ClassLikeStorage
     /**
      * Parent classes
      *
-     * @var array<string, string>
+     * @var array<lowercase-string, string>
      */
     public $parent_classes = [];
 
@@ -211,12 +212,12 @@ class ClassLikeStorage
     public $final = false;
 
     /**
-     * @var array<string, string>
+     * @var array<lowercase-string, string>
      */
     public $used_traits = [];
 
     /**
-     * @var array<string, string>
+     * @var array<lowercase-string, lowercase-string>
      */
     public $trait_alias_map = [];
 
@@ -246,47 +247,47 @@ class ClassLikeStorage
     public $mutation_free = false;
 
     /**
-     * @var array<string, MethodStorage>
+     * @var array<lowercase-string, MethodStorage>
      */
     public $methods = [];
 
     /**
-     * @var array<string, MethodStorage>
+     * @var array<lowercase-string, MethodStorage>
      */
     public $pseudo_methods = [];
 
     /**
-     * @var array<string, MethodStorage>
+     * @var array<lowercase-string, MethodStorage>
      */
     public $pseudo_static_methods = [];
 
     /**
-     * @var array<string, string>
+     * @var array<lowercase-string, MethodIdentifier>
      */
     public $declaring_method_ids = [];
 
     /**
-     * @var array<string, string>
+     * @var array<lowercase-string, MethodIdentifier>
      */
     public $appearing_method_ids = [];
 
     /**
-     * @var array<string, array<string, string>>
+     * @var array<lowercase-string, array<string, MethodIdentifier>>
      */
     public $overridden_method_ids = [];
 
     /**
-     * @var array<string, string>
+     * @var array<lowercase-string, MethodIdentifier>
      */
     public $documenting_method_ids = [];
 
     /**
-     * @var array<string, string>
+     * @var array<lowercase-string, MethodIdentifier>
      */
     public $inheritable_method_ids = [];
 
     /**
-     * @var array<string, array<string, bool>>
+     * @var array<lowercase-string, array<string, bool>>
      */
     public $potential_declaring_method_ids = [];
 
@@ -326,7 +327,7 @@ class ClassLikeStorage
     public $overridden_property_ids = [];
 
     /**
-     * @var array<string, array<string, array{Type\Union}>>|null
+     * @var array<string, non-empty-array<string, array{Type\Union}>>|null
      */
     public $template_types;
 
@@ -351,6 +352,11 @@ class ClassLikeStorage
     public $template_type_implements_count;
 
     /**
+     * @var ?Type\Union
+     */
+    public $yield;
+
+    /**
      * @var array<string, int>|null
      */
     public $template_type_uses_count;
@@ -366,7 +372,7 @@ class ClassLikeStorage
     public $invalid_dependencies = [];
 
     /**
-     * @var array<string, bool>
+     * @var array<lowercase-string, bool>
      */
     public $dependent_classlikes = [];
 
@@ -383,9 +389,9 @@ class ClassLikeStorage
     public $has_visitor_issues = false;
 
     /**
-     * @var bool
+     * @var list<\Psalm\Issue\CodeIssue>
      */
-    public $has_docblock_issues = false;
+    public $docblock_issues = [];
 
     /**
      * @param string $name

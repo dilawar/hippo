@@ -6,6 +6,9 @@ use React\Promise\PromiseInterface as ReactPromise;
 
 /**
  * Creates a failed promise using the given exception.
+ *
+ * @template-covariant TValue
+ * @template-implements Promise<TValue>
  */
 final class Failure implements Promise
 {
@@ -26,6 +29,7 @@ final class Failure implements Promise
     public function onResolve(callable $onResolved)
     {
         try {
+            /** @var mixed $result */
             $result = $onResolved($this->exception, null);
 
             if ($result === null) {

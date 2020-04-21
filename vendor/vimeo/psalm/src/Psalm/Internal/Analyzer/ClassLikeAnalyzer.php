@@ -137,6 +137,8 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
                 $method_analyzer = new MethodAnalyzer($stmt, $this);
 
                 $method_analyzer->analyze($context, new \Psalm\Internal\Provider\NodeDataProvider(), null, true);
+
+                $context->clauses = [];
             } elseif ($stmt instanceof PhpParser\Node\Stmt\TraitUse) {
                 foreach ($stmt->traits as $trait) {
                     $fq_trait_name = self::getFQCLNFromNameObject(
@@ -146,7 +148,13 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
 
                     $trait_file_analyzer = $project_analyzer->getFileAnalyzerForClassLike($fq_trait_name);
                     $trait_node = $codebase->classlikes->getTraitNode($fq_trait_name);
-                    $trait_aliases = $codebase->classlikes->getTraitAliases($fq_trait_name);
+                    $trait_storage = $codebase->classlike_storage_provider->get($fq_trait_name);
+                    $trait_aliases = $trait_storage->aliases;
+
+                    if ($trait_aliases === null) {
+                        continue;
+                    }
+
                     $trait_analyzer = new TraitAnalyzer(
                         $trait_node,
                         $trait_file_analyzer,
@@ -160,13 +168,13 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
                         ) {
                             $method_analyzer = new MethodAnalyzer($trait_stmt, $trait_analyzer);
 
-                            $actual_method_id = (string)$method_analyzer->getMethodId();
+                            $actual_method_id = $method_analyzer->getMethodId();
 
                             if ($context->self && $context->self !== $this->fq_class_name) {
-                                $analyzed_method_id = (string)$method_analyzer->getMethodId($context->self);
+                                $analyzed_method_id = $method_analyzer->getMethodId($context->self);
                                 $declaring_method_id = $codebase->methods->getDeclaringMethodId($analyzed_method_id);
 
-                                if ($actual_method_id !== $declaring_method_id) {
+                                if ((string) $actual_method_id !== (string) $declaring_method_id) {
                                     break;
                                 }
                             }
@@ -210,6 +218,8 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
         StatementsSource $statements_source,
         string $fq_class_name,
         CodeLocation $code_location,
+        ?string $calling_fq_class_name,
+        ?string $calling_method_id,
         array $suppressed_issues,
         bool $inferred = true,
         bool $allow_trait = false,
@@ -239,7 +249,7 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
         }
 
         if (preg_match(
-            '/(^|\\\)(int|float|bool|string|void|null|false|true|object|numeric|mixed)$/i',
+            '/(^|\\\)(int|float|bool|string|void|null|false|true|object|mixed)$/i',
             $fq_class_name
         ) || strtolower($fq_class_name) === 'resource'
         ) {
@@ -262,11 +272,15 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
 
         $class_exists = $codebase->classlikes->classExists(
             $fq_class_name,
-            !$inferred ? $code_location : null
+            !$inferred ? $code_location : null,
+            $calling_fq_class_name,
+            $calling_method_id
         );
         $interface_exists = $codebase->classlikes->interfaceExists(
             $fq_class_name,
-            !$inferred ? $code_location : null
+            !$inferred ? $code_location : null,
+            $calling_fq_class_name,
+            $calling_method_id
         );
 
         if (!$class_exists && !$interface_exists) {
@@ -310,12 +324,12 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
             }
         }
 
-        $aliased_name_lc = $codebase->classlikes->getUnAliasedName(
-            strtolower($fq_class_name)
+        $aliased_name = $codebase->classlikes->getUnAliasedName(
+            $fq_class_name
         );
 
         try {
-            $class_storage = $codebase->classlike_storage_provider->get($aliased_name_lc);
+            $class_storage = $codebase->classlike_storage_provider->get($aliased_name);
         } catch (\InvalidArgumentException $e) {
             if (!$inferred) {
                 throw $e;
@@ -344,19 +358,21 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
             }
         }
 
-        if (($class_exists && !$codebase->classHasCorrectCasing($fq_class_name)) ||
-            ($interface_exists && !$codebase->interfaceHasCorrectCasing($fq_class_name))
-        ) {
-            if ($codebase->classlikes->isUserDefined($aliased_name_lc)) {
-                if (IssueBuffer::accepts(
-                    new InvalidClass(
-                        'Class or interface ' . $fq_class_name . ' has wrong casing',
-                        $code_location,
-                        $fq_class_name
-                    ),
-                    $suppressed_issues
-                )) {
-                    // fall through here
+        if (!$inferred) {
+            if (($class_exists && !$codebase->classHasCorrectCasing($fq_class_name)) ||
+                ($interface_exists && !$codebase->interfaceHasCorrectCasing($fq_class_name))
+            ) {
+                if ($codebase->classlikes->isUserDefined(strtolower($aliased_name))) {
+                    if (IssueBuffer::accepts(
+                        new InvalidClass(
+                            'Class or interface ' . $fq_class_name . ' has wrong casing',
+                            $code_location,
+                            $fq_class_name
+                        ),
+                        $suppressed_issues
+                    )) {
+                        // fall through here
+                    }
                 }
             }
         }
@@ -576,7 +592,9 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
             return $emit_issues ? null : true;
         }
 
-        if ($source->getSource() instanceof TraitAnalyzer && $declaring_property_class === $source->getFQCLN()) {
+        if ($source->getSource() instanceof TraitAnalyzer
+            && strtolower($declaring_property_class) === strtolower((string) $source->getFQCLN())
+        ) {
             return $emit_issues ? null : true;
         }
 
@@ -601,7 +619,7 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
                         ),
                         $suppressed_issues
                     )) {
-                        return false;
+                        // fall through
                     }
 
                     return null;
@@ -622,7 +640,7 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
                         ),
                         $suppressed_issues
                     )) {
-                        return false;
+                        // fall through
                     }
 
                     return null;
@@ -640,7 +658,7 @@ abstract class ClassLikeAnalyzer extends SourceAnalyzer implements StatementsSou
                         ),
                         $suppressed_issues
                     )) {
-                        return false;
+                        // fall through
                     }
 
                     return null;

@@ -14,6 +14,11 @@ use function count;
  */
 class FunctionAnalyzer extends FunctionLikeAnalyzer
 {
+    /**
+     * @var PhpParser\Node\Stmt\Function_
+     */
+    protected $function;
+
     public function __construct(PhpParser\Node\Stmt\Function_ $function, SourceAnalyzer $source)
     {
         $codebase = $source->getCodebase();
@@ -84,7 +89,12 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     ]);
 
                 case 'get_called_class':
-                    return new Type\Union([new Type\Atomic\TClassString($context->self ?: 'object')]);
+                    return new Type\Union([
+                        new Type\Atomic\TClassString(
+                            $context->self ?: 'object',
+                            $context->self ? new Type\Atomic\TNamedObject($context->self, true) : null
+                        )
+                    ]);
 
                 case 'get_parent_class':
                     if ($context->self && $codebase->classExists($context->self)) {
@@ -114,82 +124,41 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
 
                         if (count($atomic_types) === 1) {
                             if (isset($atomic_types['array'])) {
+                                if ($atomic_types['array'] instanceof Type\Atomic\TCallableArray
+                                    || $atomic_types['array'] instanceof Type\Atomic\TCallableList
+                                    || $atomic_types['array'] instanceof Type\Atomic\TCallableObjectLikeArray
+                                ) {
+                                    return Type::getInt(false, 2);
+                                }
+
                                 if ($atomic_types['array'] instanceof Type\Atomic\TNonEmptyArray) {
                                     return new Type\Union([
                                         $atomic_types['array']->count !== null
                                             ? new Type\Atomic\TLiteralInt($atomic_types['array']->count)
                                             : new Type\Atomic\TInt
                                     ]);
-                                } elseif ($atomic_types['array'] instanceof Type\Atomic\TNonEmptyList) {
+                                }
+
+                                if ($atomic_types['array'] instanceof Type\Atomic\TNonEmptyList) {
                                     return new Type\Union([
                                         $atomic_types['array']->count !== null
                                             ? new Type\Atomic\TLiteralInt($atomic_types['array']->count)
                                             : new Type\Atomic\TInt
                                     ]);
-                                } elseif ($atomic_types['array'] instanceof Type\Atomic\ObjectLike
+                                }
+
+                                if ($atomic_types['array'] instanceof Type\Atomic\ObjectLike
                                     && $atomic_types['array']->sealed
                                 ) {
                                     return new Type\Union([
                                         new Type\Atomic\TLiteralInt(count($atomic_types['array']->properties))
                                     ]);
                                 }
-                            } elseif (isset($atomic_types['callable-array'])
-                                || isset($atomic_types['callable-list'])
-                            ) {
-                                return Type::getInt(false, 2);
                             }
                         }
                     }
 
                     break;
-
-                case 'var_export':
-                case 'highlight_string':
-                case 'highlight_file':
-                    if (isset($call_args[1])
-                        && ($second_arg_type = $statements_analyzer->node_data->getType($call_args[1]->value))
-                    ) {
-                        if ((string) $second_arg_type === 'true') {
-                            return Type::getString();
-                        }
-
-                        return new Type\Union([
-                            new Type\Atomic\TString,
-                            $call_map_key === 'var_export' ? new Type\Atomic\TNull : new Type\Atomic\TBool
-                        ]);
-                    }
-
-                    return $call_map_key === 'var_export' ? Type::getVoid() : Type::getBool();
-
-                case 'print_r':
-                    if (isset($call_args[1])
-                        && ($second_arg_type = $statements_analyzer->node_data->getType($call_args[1]->value))
-                    ) {
-                        if ((string) $second_arg_type === 'true') {
-                            return Type::getString();
-                        }
-                    }
-
-                    return new Type\Union([
-                        new Type\Atomic\TString,
-                        new Type\Atomic\TTrue
-                    ]);
-
-                case 'microtime':
-                    if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))) {
-                        if ((string) $first_arg_type === 'true') {
-                            return Type::getFloat();
-                        }
-
-                        if ((string) $first_arg_type === 'false') {
-                            return Type::getString();
-                        }
-                    }
-
-                    return new Type\Union([
-                        new Type\Atomic\TFloat,
-                        new Type\Atomic\TString
-                    ]);
 
                 case 'hrtime':
                     if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))) {
@@ -224,45 +193,6 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                 case 'getenv':
                     return new Type\Union([new Type\Atomic\TString, new Type\Atomic\TFalse]);
 
-                case 'gettimeofday':
-                    if (($first_arg_type = $statements_analyzer->node_data->getType($call_args[0]->value))) {
-                        if ((string) $first_arg_type === 'true') {
-                            return Type::getFloat();
-                        }
-
-                        if ((string) $first_arg_type === 'false') {
-                            return new Type\Union([
-                                new Type\Atomic\TArray([
-                                    Type::getString(),
-                                    Type::getInt()
-                                ])
-                            ]);
-                        }
-                    }
-
-                    break;
-
-                case 'abs':
-                    if (isset($call_args[0]->value)) {
-                        $first_arg = $call_args[0]->value;
-
-                        if ($first_arg_type = $statements_analyzer->node_data->getType($first_arg)) {
-                            $numeric_types = [];
-
-                            foreach ($first_arg_type->getAtomicTypes() as $inner_type) {
-                                if ($inner_type->isNumericType()) {
-                                    $numeric_types[] = $inner_type;
-                                }
-                            }
-
-                            if ($numeric_types) {
-                                return new Type\Union($numeric_types);
-                            }
-                        }
-                    }
-
-                    break;
-
                 case 'min':
                 case 'max':
                     if (isset($call_args[0])) {
@@ -295,26 +225,6 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                     }
 
                     break;
-
-                case 'round':
-                    if (isset($call_args[1])) {
-                        $second_arg = $call_args[1]->value;
-
-                        if (($second_arg_type = $statements_analyzer->node_data->getType($second_arg))
-                            && $second_arg_type->isSingleIntLiteral()
-                        ) {
-                            switch ($second_arg_type->getSingleIntLiteral()->value) {
-                                case 0:
-                                    return Type::getInt(true);
-                                default:
-                                    return Type::getFloat();
-                            }
-                        }
-
-                        return new Type\Union([new Type\Atomic\TInt, new Type\Atomic\TFloat]);
-                    }
-
-                    return Type::getInt(true);
 
                 case 'get_parent_class':
                     // this is unreliable, as it's hard to know exactly what's wanted - attempted this in
@@ -356,6 +266,15 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                 ) {
                     $call_map_return_type->ignore_falsable_issues = true;
                 }
+        }
+
+        switch ($call_map_key) {
+            case 'array_replace':
+            case 'array_replace_recursive':
+                if ($codebase->config->ignore_internal_nullable_issues) {
+                    $call_map_return_type->ignore_nullable_issues = true;
+                }
+                break;
         }
 
         return $call_map_return_type;
@@ -428,5 +347,15 @@ class FunctionAnalyzer extends FunctionLikeAnalyzer
                 }
                 break;
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getFunctionId()
+    {
+        $namespace = $this->source->getNamespace();
+
+        return ($namespace ? strtolower($namespace) . '\\' : '') . strtolower($this->function->name->name);
     }
 }

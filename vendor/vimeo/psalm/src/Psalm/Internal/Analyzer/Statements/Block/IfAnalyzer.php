@@ -12,6 +12,10 @@ use Psalm\Internal\Clause;
 use Psalm\CodeLocation;
 use Psalm\Context;
 use Psalm\Issue\ConflictingReferenceConstraint;
+use Psalm\Issue\DocblockTypeContradiction;
+use Psalm\Issue\RedundantConditionGivenDocblockType;
+use Psalm\Issue\TypeDoesNotContainType;
+use Psalm\Issue\RedundantCondition;
 use Psalm\IssueBuffer;
 use Psalm\Internal\Scope\IfScope;
 use Psalm\Type;
@@ -21,7 +25,6 @@ use function array_merge;
 use function array_map;
 use function array_diff_key;
 use function array_filter;
-use const ARRAY_FILTER_USE_KEY;
 use function array_values;
 use function array_keys;
 use function array_reduce;
@@ -315,7 +318,7 @@ class IfAnalyzer
         );
 
         // this captures statements in the if conditional
-        if ($context->collect_references) {
+        if ($codebase->find_unused_variables) {
             foreach ($if_context->unreferenced_vars as $var_id => $locations) {
                 if (!isset($context->unreferenced_vars[$var_id])) {
                     if (isset($if_scope->new_unreferenced_vars[$var_id])) {
@@ -474,7 +477,7 @@ class IfAnalyzer
             }
         }
 
-        if ($context->collect_references) {
+        if ($codebase->find_unused_variables) {
             foreach ($if_scope->new_unreferenced_vars as $var_id => $locations) {
                 if (($stmt->else
                         && (isset($if_scope->assigned_var_ids[$var_id]) || isset($if_scope->new_vars[$var_id])))
@@ -495,6 +498,10 @@ class IfAnalyzer
             }
 
             $context->possibly_assigned_var_ids += $if_scope->possibly_assigned_var_ids;
+        }
+
+        if (!in_array(ScopeAnalyzer::ACTION_NONE, $if_scope->final_actions, true)) {
+            $context->has_returned = true;
         }
 
         return null;
@@ -691,6 +698,56 @@ class IfAnalyzer
             )
         );
 
+        $cond_type = $statements_analyzer->node_data->getType($cond);
+
+        if ($cond_type !== null) {
+            if ($cond_type->isFalse()) {
+                if ($cond_type->from_docblock) {
+                    if (IssueBuffer::accepts(
+                        new DocblockTypeContradiction(
+                            'if (false) is impossible',
+                            new CodeLocation($statements_analyzer, $cond)
+                        ),
+                        $statements_analyzer->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                } else {
+                    if (IssueBuffer::accepts(
+                        new TypeDoesNotContainType(
+                            'if (false) is impossible',
+                            new CodeLocation($statements_analyzer, $cond)
+                        ),
+                        $statements_analyzer->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                }
+            } elseif ($cond_type->isTrue()) {
+                if ($cond_type->from_docblock) {
+                    if (IssueBuffer::accepts(
+                        new RedundantConditionGivenDocblockType(
+                            'if (true) is redundant',
+                            new CodeLocation($statements_analyzer, $cond)
+                        ),
+                        $statements_analyzer->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                } else {
+                    if (IssueBuffer::accepts(
+                        new RedundantCondition(
+                            'if (true) is redundant',
+                            new CodeLocation($statements_analyzer, $cond)
+                        ),
+                        $statements_analyzer->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                }
+            }
+        }
+
         // get all the var ids that were referened in the conditional, but not assigned in it
         $cond_referenced_var_ids = array_diff_key($cond_referenced_var_ids, $cond_assigned_var_ids);
 
@@ -798,7 +855,7 @@ class IfAnalyzer
             }
         }
 
-        if ($outer_context->collect_references) {
+        if ($codebase->find_unused_variables) {
             $outer_context->referenced_var_ids = array_merge(
                 $outer_context->referenced_var_ids,
                 $if_context->referenced_var_ids
@@ -952,7 +1009,7 @@ class IfAnalyzer
                 $if_scope->new_vars_possibly_in_scope = $vars_possibly_in_scope;
             }
 
-            if ($if_context->collect_references && (!$has_leaving_statements || $has_leave_switch_statement)) {
+            if ($codebase->find_unused_variables && (!$has_leaving_statements || $has_leave_switch_statement)) {
                 foreach ($if_context->unreferenced_vars as $var_id => $locations) {
                     if (!isset($outer_context->unreferenced_vars[$var_id])) {
                         if (isset($if_scope->new_unreferenced_vars[$var_id])) {
@@ -1014,7 +1071,6 @@ class IfAnalyzer
             );
 
             $elseif_context = $if_conditional_scope->if_context;
-            $original_context = $if_conditional_scope->original_context;
             $cond_referenced_var_ids = $if_conditional_scope->cond_referenced_var_ids;
             $cond_assigned_var_ids = $if_conditional_scope->cond_assigned_var_ids;
             $entry_clauses = $if_conditional_scope->entry_clauses;
@@ -1268,7 +1324,7 @@ class IfAnalyzer
         $if_scope->final_actions = array_merge($final_actions, $if_scope->final_actions);
 
         // update the parent context as necessary
-        $elseif_redefined_vars = $elseif_context->getRedefinedVars($original_context->vars_in_scope);
+        $elseif_redefined_vars = $elseif_context->getRedefinedVars($outer_context->vars_in_scope);
 
         if (!$has_leaving_statements) {
             if ($if_scope->new_vars === null) {
@@ -1330,9 +1386,7 @@ class IfAnalyzer
                 }
 
                 foreach ($possibly_redefined_vars as $var => $type) {
-                    if ($type->hasMixed()) {
-                        $if_scope->possibly_redefined_vars[$var] = $type;
-                    } elseif (isset($if_scope->possibly_redefined_vars[$var])) {
+                    if (isset($if_scope->possibly_redefined_vars[$var])) {
                         $if_scope->possibly_redefined_vars[$var] = Type::combineUnionTypes(
                             $type,
                             $if_scope->possibly_redefined_vars[$var],
@@ -1422,7 +1476,7 @@ class IfAnalyzer
                 );
             }
 
-            if ($outer_context->collect_references &&  (!$has_leaving_statements || $has_leave_switch_statement)) {
+            if ($codebase->find_unused_variables &&  (!$has_leaving_statements || $has_leave_switch_statement)) {
                 foreach ($elseif_context->unreferenced_vars as $var_id => $locations) {
                     if (!isset($outer_context->unreferenced_vars[$var_id])) {
                         if (isset($if_scope->new_unreferenced_vars[$var_id])) {
@@ -1448,7 +1502,7 @@ class IfAnalyzer
             }
         }
 
-        if ($outer_context->collect_references) {
+        if ($codebase->find_unused_variables) {
             $outer_context->referenced_var_ids = array_merge(
                 $outer_context->referenced_var_ids,
                 $elseif_context->referenced_var_ids
@@ -1460,9 +1514,11 @@ class IfAnalyzer
         }
 
         try {
-            $if_scope->negated_clauses = array_merge(
-                $if_scope->negated_clauses,
-                Algebra::negateFormula($elseif_clauses)
+            $if_scope->negated_clauses = Algebra::simplifyCNF(
+                array_merge(
+                    $if_scope->negated_clauses,
+                    Algebra::negateFormula($elseif_clauses)
+                )
             );
         } catch (\Psalm\Exception\ComplicatedExpressionException $e) {
             $if_scope->negated_clauses = [];
@@ -1593,7 +1649,7 @@ class IfAnalyzer
             }
         }
 
-        if ($else && $outer_context->collect_references) {
+        if ($else && $codebase->find_unused_variables) {
             $outer_context->referenced_var_ids = array_merge(
                 $outer_context->referenced_var_ids,
                 $else_context->referenced_var_ids
@@ -1662,9 +1718,7 @@ class IfAnalyzer
                 }
 
                 foreach ($else_redefined_vars as $var => $type) {
-                    if ($type->hasMixed()) {
-                        $if_scope->possibly_redefined_vars[$var] = $type;
-                    } elseif (isset($if_scope->possibly_redefined_vars[$var])) {
+                    if (isset($if_scope->possibly_redefined_vars[$var])) {
                         $if_scope->possibly_redefined_vars[$var] = Type::combineUnionTypes(
                             $type,
                             $if_scope->possibly_redefined_vars[$var],
@@ -1727,7 +1781,7 @@ class IfAnalyzer
                 );
             }
 
-            if ($outer_context->collect_references && (!$has_leaving_statements || $has_leave_switch_statement)) {
+            if ($codebase->find_unused_variables && (!$has_leaving_statements || $has_leave_switch_statement)) {
                 foreach ($else_context->unreferenced_vars as $var_id => $locations) {
                     if (!isset($outer_context->unreferenced_vars[$var_id])) {
                         if (isset($if_scope->new_unreferenced_vars[$var_id])) {

@@ -15,16 +15,17 @@ use React\Promise\PromiseInterface as ReactPromise;
  * before emitting values.
  *
  * @internal
+ * @template-covariant TValue
  */
 trait Producer
 {
-    /** @var \Amp\Promise|null */
+    /** @var Promise|null */
     private $complete;
 
     /** @var mixed[] */
     private $values = [];
 
-    /** @var \Amp\Deferred[] */
+    /** @var Deferred[] */
     private $backPressure = [];
 
     /** @var int */
@@ -33,7 +34,7 @@ trait Producer
     /** @var int */
     private $emitPosition = -1;
 
-    /** @var \Amp\Deferred|null */
+    /** @var Deferred|null */
     private $waiting;
 
     /** @var null|array */
@@ -41,6 +42,8 @@ trait Producer
 
     /**
      * {@inheritdoc}
+     *
+     * @return Promise<bool>
      */
     public function advance(): Promise
     {
@@ -72,6 +75,8 @@ trait Producer
 
     /**
      * {@inheritdoc}
+     *
+     * @return TValue
      */
     public function getCurrent()
     {
@@ -91,7 +96,8 @@ trait Producer
      *
      * @param mixed $value
      *
-     * @return \Amp\Promise
+     * @return Promise
+     * @psalm-return Promise<null>
      *
      * @throws \Error If the iterator has completed.
      */
@@ -146,6 +152,8 @@ trait Producer
     /**
      * Completes the iterator.
      *
+     * @return void
+     *
      * @throws \Error If the iterator has already been completed.
      */
     private function complete()
@@ -186,6 +194,11 @@ trait Producer
         }
     }
 
+    /**
+     * @param \Throwable $exception
+     *
+     * @return void
+     */
     private function fail(\Throwable $exception)
     {
         $this->complete = new Failure($exception);

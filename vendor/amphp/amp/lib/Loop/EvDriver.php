@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpComposerExtensionStubsInspection */
 
 namespace Amp\Loop;
 
@@ -13,30 +13,27 @@ class EvDriver extends Driver
     /** @var \EvSignal[]|null */
     private static $activeSignals;
 
+    public static function isSupported(): bool
+    {
+        return \extension_loaded("ev");
+    }
+
     /** @var \EvLoop */
     private $handle;
-
     /** @var \EvWatcher[] */
     private $events = [];
-
     /** @var callable */
     private $ioCallback;
-
     /** @var callable */
     private $timerCallback;
-
     /** @var callable */
     private $signalCallback;
-
     /** @var \EvSignal[] */
     private $signals = [];
-
     /** @var int Internal timestamp for now. */
     private $now;
-
     /** @var bool */
     private $nowUpdateNeeded = false;
-
     /** @var int Loop time offset */
     private $nowOffset;
 
@@ -51,8 +48,13 @@ class EvDriver extends Driver
             self::$activeSignals = &$this->signals;
         }
 
+        /**
+         * @param \EvIO $event
+         *
+         * @return void
+         */
         $this->ioCallback = function (\EvIO $event) {
-            /** @var \Amp\Loop\Watcher $watcher */
+            /** @var Watcher $watcher */
             $watcher = $event->data;
 
             try {
@@ -74,8 +76,13 @@ class EvDriver extends Driver
             }
         };
 
+        /**
+         * @param \EvTimer $event
+         *
+         * @return void
+         */
         $this->timerCallback = function (\EvTimer $event) {
-            /** @var \Amp\Loop\Watcher $watcher */
+            /** @var Watcher $watcher */
             $watcher = $event->data;
 
             if ($watcher->type & Watcher::DELAY) {
@@ -106,8 +113,13 @@ class EvDriver extends Driver
             }
         };
 
+        /**
+         * @param \EvSignal $event
+         *
+         * @return void
+         */
         $this->signalCallback = function (\EvSignal $event) {
-            /** @var \Amp\Loop\Watcher $watcher */
+            /** @var Watcher $watcher */
             $watcher = $event->data;
 
             try {
@@ -139,14 +151,10 @@ class EvDriver extends Driver
         unset($this->events[$watcherId]);
     }
 
-    public static function isSupported(): bool
-    {
-        return \extension_loaded("ev");
-    }
-
     public function __destruct()
     {
         foreach ($this->events as $event) {
+            /** @psalm-suppress all */
             if ($event !== null) { // Events may have been nulled in extension depending on destruct order.
                 $event->stop();
             }
@@ -163,6 +171,8 @@ class EvDriver extends Driver
     public function run()
     {
         $active = self::$activeSignals;
+
+        \assert($active !== null);
 
         foreach ($active as $event) {
             $event->stop();
@@ -221,6 +231,8 @@ class EvDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function dispatch(bool $blocking)
     {
@@ -230,6 +242,8 @@ class EvDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function activate(array $watchers)
     {
@@ -237,25 +251,38 @@ class EvDriver extends Driver
             if (!isset($this->events[$id = $watcher->id])) {
                 switch ($watcher->type) {
                     case Watcher::READABLE:
+                        \assert(\is_resource($watcher->value));
+
                         $this->events[$id] = $this->handle->io($watcher->value, \Ev::READ, $this->ioCallback, $watcher);
                         break;
 
                     case Watcher::WRITABLE:
-                        $this->events[$id] = $this->handle->io($watcher->value, \Ev::WRITE, $this->ioCallback, $watcher);
+                        \assert(\is_resource($watcher->value));
+
+                        $this->events[$id] = $this->handle->io(
+                            $watcher->value,
+                            \Ev::WRITE,
+                            $this->ioCallback,
+                            $watcher
+                        );
                         break;
 
                     case Watcher::DELAY:
                     case Watcher::REPEAT:
+                        \assert(\is_int($watcher->value));
+
                         $interval = $watcher->value / self::MILLISEC_PER_SEC;
                         $this->events[$id] = $this->handle->timer(
                             $interval,
-                            $watcher->type & Watcher::REPEAT ? $interval : 0,
+                            ($watcher->type & Watcher::REPEAT) ? $interval : 0,
                             $this->timerCallback,
                             $watcher
                         );
                         break;
 
                     case Watcher::SIGNAL:
+                        \assert(\is_int($watcher->value));
+
                         $this->events[$id] = $this->handle->signal($watcher->value, $this->signalCallback, $watcher);
                         break;
 
@@ -269,6 +296,7 @@ class EvDriver extends Driver
             }
 
             if ($watcher->type === Watcher::SIGNAL) {
+                /** @psalm-suppress PropertyTypeCoercion */
                 $this->signals[$id] = $this->events[$id];
             }
         }
@@ -276,6 +304,8 @@ class EvDriver extends Driver
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function deactivate(Watcher $watcher)
     {

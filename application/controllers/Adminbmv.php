@@ -277,8 +277,8 @@ class Adminbmv extends CI_Controller
         $msg = "";
         $res = admin_venue_actions($_POST, $msg);
         flashMessage($msg);
-        redirect('adminbmv/venues');
-        return;
+        if($res) 
+            redirect('adminbmv/venues');
     }
 
     // Views with action.

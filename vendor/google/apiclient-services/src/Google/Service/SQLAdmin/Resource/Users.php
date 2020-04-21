@@ -35,8 +35,6 @@ class Google_Service_SQLAdmin_Resource_Users extends Google_Service_Resource
    *
    * @opt_param string host Host of the user in the instance.
    * @opt_param string name Name of the user in the instance.
-   * @opt_param string resourceName The name of the user to delete. Format:
-   * projects/{project}/locations/{location}/instances/{instance}/users
    * @return Google_Service_SQLAdmin_Operation
    */
   public function delete($project, $instance, $optParams = array())
@@ -53,9 +51,6 @@ class Google_Service_SQLAdmin_Resource_Users extends Google_Service_Resource
    * project ID.
    * @param Google_Service_SQLAdmin_User $postBody
    * @param array $optParams Optional parameters.
-   *
-   * @opt_param string parent The parent resource where Cloud SQL creates this
-   * user. Format: projects/{project}/locations/{location}/instances/{instance}
    * @return Google_Service_SQLAdmin_Operation
    */
   public function insert($project, $instance, Google_Service_SQLAdmin_User $postBody, $optParams = array())
@@ -71,9 +66,6 @@ class Google_Service_SQLAdmin_Resource_Users extends Google_Service_Resource
    * @param string $instance Database instance ID. This does not include the
    * project ID.
    * @param array $optParams Optional parameters.
-   *
-   * @opt_param string parent The parent, which owns this collection of users.
-   * Format: projects/{project}/locations/{location}/instances/{instance}
    * @return Google_Service_SQLAdmin_UsersListResponse
    */
   public function listUsers($project, $instance, $optParams = array())
@@ -93,8 +85,6 @@ class Google_Service_SQLAdmin_Resource_Users extends Google_Service_Resource
    *
    * @opt_param string host Optional. Host of the user in the instance.
    * @opt_param string name Name of the user in the instance.
-   * @opt_param string resourceName The name of the user for Cloud SQL to update.
-   * Format: projects/{project}/locations/{location}/instances/{instance}/users
    * @return Google_Service_SQLAdmin_Operation
    */
   public function update($project, $instance, Google_Service_SQLAdmin_User $postBody, $optParams = array())

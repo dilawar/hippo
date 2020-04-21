@@ -51,13 +51,13 @@ echo p("<strong><tt>QUOTA</tt></strong>: Add quota on a venue. If a user exceed 
 
 echo '<form method="post" action="'.site_url('adminbmv/venues_action').'">';
 // Append id to the editable since we are creating new entry.
-if ($task == 'add new') {
+if ($task === 'add new') {
     $editables .= ',id';
 }
 
 echo dbTableToHTMLTable('venues', $default, $editables, $task, $hide);
 
-if (strtolower($task) != 'add new') {
+if (strtolower($task) !== 'add new') {
     echo '<button class="btn btn-primary" 
         name="response" value="delete" onClick="AreYouSure(this)" 
         title="Delete this entry">' . $symbDelete . '</button>';
@@ -72,10 +72,6 @@ echo '<table class="info sortable exportable" id="venues">';
 echo arrayHeaderRow($venues[0], 'venue', $hide);
 foreach ($venues as $venue) {
     echo arrayToRowHTML($venue, 'venue', $hide);
-    //echo '<form action="'.site_url('adminbmv/venues_action') .'" method="post">';
-    //echo ' <td></td> ';
-    //echo ' <td></td> ';
-    //echo '</form>';
 }
 echo '</table>';
 

@@ -17,8 +17,7 @@ use Psalm\Internal\Analyzer\Statements\Expression\Fetch\ConstFetchAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ReturnAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ThrowAnalyzer;
-use Psalm\Internal\Provider\FileProvider;
-use Psalm\Internal\Visitor\CheckTrivialExprVisitor;
+use Psalm\Internal\PhpVisitor\CheckTrivialExprVisitor;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\Config;
@@ -30,8 +29,11 @@ use Psalm\Internal\FileManipulation\FileManipulationBuffer;
 use Psalm\Issue\ContinueOutsideLoop;
 use Psalm\Issue\ForbiddenCode;
 use Psalm\Issue\ForbiddenEcho;
+use Psalm\Issue\ImpureFunctionCall;
 use Psalm\Issue\InvalidDocblock;
 use Psalm\Issue\InvalidGlobal;
+use Psalm\Issue\Trace;
+use Psalm\Issue\UndefinedTrace;
 use Psalm\Issue\UnevaluatedCode;
 use Psalm\Issue\UnrecognizedStatement;
 use Psalm\Issue\UnusedVariable;
@@ -43,8 +45,8 @@ use function fwrite;
 use const STDERR;
 use function array_filter;
 use function array_map;
+use function array_merge;
 use function preg_split;
-use function array_diff;
 use function is_string;
 use function get_class;
 use function in_array;
@@ -59,7 +61,6 @@ use function array_pop;
 use function implode;
 use function array_change_key_case;
 use function token_get_all;
-use function token_name;
 use function array_slice;
 use function array_reverse;
 use function is_array;
@@ -171,8 +172,6 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
         Context $global_context = null,
         $root_scope = false
     ) {
-        $has_returned = false;
-
         // hoist functions to the top
         foreach ($stmts as $stmt) {
             if ($stmt instanceof PhpParser\Node\Stmt\Function_) {
@@ -241,10 +240,13 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
             $ignore_variable_property = false;
             $ignore_variable_method = false;
 
-            if ($has_returned && !($stmt instanceof PhpParser\Node\Stmt\Nop) &&
-                !($stmt instanceof PhpParser\Node\Stmt\InlineHTML)
+            if ($context->has_returned
+                && !$context->collect_initializations
+                && !$context->collect_mutations
+                && !($stmt instanceof PhpParser\Node\Stmt\Nop)
+                && !($stmt instanceof PhpParser\Node\Stmt\InlineHTML)
             ) {
-                if ($context->collect_references) {
+                if ($codebase->find_unused_variables) {
                     if (IssueBuffer::accepts(
                         new UnevaluatedCode(
                             'Expressions after return/throw/continue',
@@ -269,6 +271,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
             */
 
             $new_issues = null;
+            $traced_variables = [];
 
             if ($docblock = $stmt->getDocComment()) {
                 try {
@@ -351,6 +354,18 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 if (isset($comments['specials']['psalm-ignore-variable-property'])) {
                     $context->ignore_variable_property = $ignore_variable_property = true;
                 }
+
+                if (isset($comments['specials']['psalm-trace'])) {
+                    foreach ($comments['specials']['psalm-trace'] as $traced_variable_line) {
+                        $possible_traced_variable_names = preg_split('/[\s]+/', $traced_variable_line);
+                        if ($possible_traced_variable_names) {
+                            $traced_variables = array_merge(
+                                $traced_variables,
+                                array_filter($possible_traced_variable_names)
+                            );
+                        }
+                    }
+                }
             } else {
                 $this->parsed_docblock = null;
             }
@@ -382,11 +397,11 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Unset_) {
                 $this->analyzeUnset($stmt, $context);
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Return_) {
-                $has_returned = true;
                 ReturnAnalyzer::analyze($this, $stmt, $context);
+                $context->has_returned = true;
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Throw_) {
-                $has_returned = true;
                 ThrowAnalyzer::analyze($this, $stmt, $context);
+                $context->has_returned = true;
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Switch_) {
                 SwitchAnalyzer::analyze($this, $stmt, $context);
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Break_) {
@@ -443,7 +458,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                         }
                     }
 
-                    if ($context->collect_references && !$leaving_switch) {
+                    if ($codebase->find_unused_variables && !$leaving_switch) {
                         foreach ($context->unreferenced_vars as $var_id => $locations) {
                             if (isset($loop_scope->unreferenced_vars[$var_id])) {
                                 $loop_scope->unreferenced_vars[$var_id] += $locations;
@@ -474,7 +489,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                             }
                         }
                     }
-                    if ($context->collect_references) {
+                    if ($codebase->find_unused_variables) {
                         foreach ($context->unreferenced_vars as $var_id => $locations) {
                             if (isset($case_scope->unreferenced_vars[$var_id])) {
                                 $case_scope->unreferenced_vars[$var_id] += $locations;
@@ -485,7 +500,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     }
                 }
 
-                $has_returned = true;
+                $context->has_returned = true;
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Continue_) {
                 $loop_scope = $context->loop_scope;
 
@@ -547,7 +562,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                         }
                     }
 
-                    if ($context->collect_references && (!$context->case_scope || $stmt->num)) {
+                    if ($codebase->find_unused_variables && (!$context->case_scope || $stmt->num)) {
                         foreach ($context->unreferenced_vars as $var_id => $locations) {
                             if (isset($loop_scope->unreferenced_vars[$var_id])) {
                                 $loop_scope->unreferenced_vars[$var_id] += $locations;
@@ -567,7 +582,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 }
 
                 $case_scope = $context->case_scope;
-                if ($case_scope && $context->collect_references && $leaving_switch) {
+                if ($case_scope && $codebase->find_unused_variables && $leaving_switch) {
                     foreach ($context->unreferenced_vars as $var_id => $locations) {
                         if (isset($case_scope->unreferenced_vars[$var_id])) {
                             $case_scope->unreferenced_vars[$var_id] += $locations;
@@ -577,7 +592,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     }
                 }
 
-                $has_returned = true;
+                $context->has_returned = true;
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Static_) {
                 $this->analyzeStatic($stmt, $context);
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Echo_) {
@@ -608,6 +623,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                             $context,
                             $echo_param,
                             false,
+                            null,
                             false,
                             true,
                             new CodeLocation($this->source, $stmt)
@@ -638,6 +654,22 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                         // continue
                     }
                 }
+
+                if (!$context->collect_initializations
+                    && !$context->collect_mutations
+                    && ($context->mutation_free
+                        || $context->external_mutation_free)
+                ) {
+                    if (IssueBuffer::accepts(
+                        new ImpureFunctionCall(
+                            'Cannot call echo from a mutation-free context',
+                            new CodeLocation($this, $stmt)
+                        ),
+                        $this->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                }
             } elseif ($stmt instanceof PhpParser\Node\Stmt\Function_) {
                 foreach ($stmt->stmts as $function_stmt) {
                     if ($function_stmt instanceof PhpParser\Node\Stmt\Global_) {
@@ -663,7 +695,6 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     $function_context = new Context($context->self);
                     $function_context->strict_types = $context->strict_types;
                     $config = Config::getInstance();
-                    $function_context->collect_references = $codebase->collect_references;
                     $function_context->collect_exceptions = $config->check_for_throws_docblock;
 
                     if (isset($this->function_analyzers[$function_id])) {
@@ -674,7 +705,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                         );
 
                         if ($config->reportIssueInFile('InvalidReturnType', $this->getFilePath())) {
-                            $method_id = $this->function_analyzers[$function_id]->getMethodId();
+                            $method_id = $this->function_analyzers[$function_id]->getId();
 
                             $function_storage = $codebase->functions->getStorage(
                                 $this,
@@ -689,7 +720,8 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                                 $this,
                                 $return_type,
                                 $this->getFQCLN(),
-                                $return_type_location
+                                $return_type_location,
+                                $function_context->has_returned
                             );
                         }
                     }
@@ -851,7 +883,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                     }
                 }
             } elseif ($stmt instanceof PhpParser\Node\Stmt\HaltCompiler) {
-                $has_returned = true;
+                $context->has_returned = true;
             } else {
                 if (IssueBuffer::accepts(
                     new UnrecognizedStatement(
@@ -868,7 +900,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 && $context->loop_scope->final_actions
                 && !in_array(ScopeAnalyzer::ACTION_NONE, $context->loop_scope->final_actions, true)
             ) {
-                //$has_returned = true;
+                //$context->has_returned = true;
             }
 
             if ($plugin_classes) {
@@ -902,10 +934,33 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
             if ($ignore_variable_method) {
                 $context->ignore_variable_method = false;
             }
+
+            foreach ($traced_variables as $traced_variable) {
+                if (isset($context->vars_in_scope[$traced_variable])) {
+                    if (IssueBuffer::accepts(
+                        new Trace(
+                            $traced_variable . ': ' . $context->vars_in_scope[$traced_variable]->getId(),
+                            new CodeLocation($this->source, $stmt)
+                        ),
+                        $this->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                } else {
+                    if (IssueBuffer::accepts(
+                        new UndefinedTrace(
+                            'Attempt to trace undefined variable ' . $traced_variable,
+                            new CodeLocation($this->source, $stmt)
+                        ),
+                        $this->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                }
+            }
         }
 
         if ($root_scope
-            && $context->collect_references
             && !$context->collect_initializations
             && $codebase->find_unused_variables
             && $context->check_variables
@@ -1511,7 +1566,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                                 $this,
                                 $var_comment_type,
                                 $type_location,
-                                $context->calling_function_id
+                                $context->calling_method_id
                             );
                         }
 
@@ -1571,7 +1626,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
 
                 $location = new CodeLocation($this, $var);
 
-                if ($context->collect_references) {
+                if ($codebase->find_unused_variables) {
                     $context->unreferenced_vars[$var_id] = [$location->getHash() => $location];
                 }
 
@@ -1630,9 +1685,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
                 ) {
                     $result = $left->getSingleStringLiteral()->value . $right->getSingleStringLiteral()->value;
 
-                    if (strlen($result) < 50) {
-                        return Type::getString($result);
-                    }
+                    return Type::getString($result);
                 }
 
                 return Type::getString();
@@ -1808,7 +1861,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
         }
 
         if ($stmt instanceof PhpParser\Node\Scalar\String_) {
-            return Type::getString(strlen($stmt->value) < 30 ? $stmt->value : null);
+            return Type::getString($stmt->value);
         }
 
         if ($stmt instanceof PhpParser\Node\Scalar\LNumber) {
@@ -2022,6 +2075,52 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
             return $type_to_invert;
         }
 
+        if ($stmt instanceof PhpParser\Node\Expr\ArrayDimFetch) {
+            if ($stmt->var instanceof PhpParser\Node\Expr\ClassConstFetch
+                && $stmt->dim
+            ) {
+                $array_type = self::getSimpleType(
+                    $codebase,
+                    $nodes,
+                    $stmt->var,
+                    $aliases,
+                    $file_source,
+                    $existing_class_constants,
+                    $fq_classlike_name
+                );
+
+                $dim_type = self::getSimpleType(
+                    $codebase,
+                    $nodes,
+                    $stmt->dim,
+                    $aliases,
+                    $file_source,
+                    $existing_class_constants,
+                    $fq_classlike_name
+                );
+
+                if ($array_type !== null && $dim_type !== null) {
+                    if ($dim_type->isSingleStringLiteral()) {
+                        $dim_value = $dim_type->getSingleStringLiteral()->value;
+                    } elseif ($dim_type->isSingleIntLiteral()) {
+                        $dim_value = $dim_type->getSingleIntLiteral()->value;
+                    } else {
+                        return null;
+                    }
+
+                    foreach ($array_type->getAtomicTypes() as $array_atomic_type) {
+                        if ($array_atomic_type instanceof Type\Atomic\ObjectLike) {
+                            if (isset($array_atomic_type->properties[$dim_value])) {
+                                return clone $array_atomic_type->properties[$dim_value];
+                            }
+
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+
         return null;
     }
 
@@ -2180,7 +2279,7 @@ class StatementsAnalyzer extends SourceAnalyzer implements StatementsSource
      */
     public function getUnusedVarLocations()
     {
-        return $this->unused_var_locations;
+        return \array_diff_key($this->unused_var_locations, $this->used_var_locations);
     }
 
     /**

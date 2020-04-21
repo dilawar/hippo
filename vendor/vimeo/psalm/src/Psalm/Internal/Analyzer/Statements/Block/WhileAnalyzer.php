@@ -54,7 +54,7 @@ class WhileAnalyzer
         if (LoopAnalyzer::analyze(
             $statements_analyzer,
             $stmt->stmts,
-            [$stmt->cond],
+            self::getAndExpressions($stmt->cond),
             [],
             $loop_scope,
             $inner_loop_context
@@ -146,7 +146,7 @@ class WhileAnalyzer
             $while_context->referenced_var_ids
         );
 
-        if ($context->collect_references) {
+        if ($codebase->find_unused_variables) {
             $suppressed_issues = $statements_analyzer->getSuppressedIssues();
 
             if (!in_array('RedundantCondition', $suppressed_issues, true)) {
@@ -177,5 +177,21 @@ class WhileAnalyzer
         }
 
         return null;
+    }
+
+    /**
+     * @return list<PhpParser\Node\Expr>
+     */
+    private static function getAndExpressions(
+        PhpParser\Node\Expr $expr
+    ) : array {
+        if ($expr instanceof PhpParser\Node\Expr\BinaryOp\BooleanAnd) {
+            return array_merge(
+                self::getAndExpressions($expr->left),
+                self::getAndExpressions($expr->right)
+            );
+        }
+
+        return [$expr];
     }
 }

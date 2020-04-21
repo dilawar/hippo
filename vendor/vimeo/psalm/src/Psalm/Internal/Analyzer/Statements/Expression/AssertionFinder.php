@@ -16,7 +16,6 @@ use Psalm\Issue\TypeDoesNotContainNull;
 use Psalm\Issue\TypeDoesNotContainType;
 use Psalm\Issue\UnevaluatedCode;
 use Psalm\IssueBuffer;
-use Psalm\StatementsSource;
 use Psalm\Type;
 use function substr;
 use function count;
@@ -82,9 +81,11 @@ class AssertionFinder
                                 continue;
                             }
 
-                            $instanceof_type = new Type\Union([
-                                new Type\Atomic\TNamedObject($instanceof_type)
-                            ]);
+                            $instanceof_type = Type::parseString(
+                                $instanceof_type,
+                                null,
+                                $source->getTemplateTypeMap() ?: []
+                            );
 
                             if (!TypeAnalyzer::canExpressionTypesBeIdentical(
                                 $codebase,
@@ -94,7 +95,8 @@ class AssertionFinder
                                 if ($var_type->from_docblock) {
                                     if (IssueBuffer::accepts(
                                         new RedundantConditionGivenDocblockType(
-                                            $var_type->getId() . ' does not contain ' . $instanceof_type,
+                                            $var_type->getId() . ' does not contain '
+                                                . $instanceof_type->getId(),
                                             new CodeLocation($source, $conditional)
                                         ),
                                         $source->getSuppressedIssues()
@@ -104,7 +106,8 @@ class AssertionFinder
                                 } else {
                                     if (IssueBuffer::accepts(
                                         new RedundantCondition(
-                                            $var_type->getId() . ' cannot be identical to ' . $instanceof_type,
+                                            $var_type->getId() . ' cannot be identical to '
+                                                . $instanceof_type->getId(),
                                             new CodeLocation($source, $conditional)
                                         ),
                                         $source->getSuppressedIssues()
@@ -328,7 +331,7 @@ class AssertionFinder
         }
 
         if ($conditional instanceof PhpParser\Node\Expr\FuncCall) {
-            $if_types = self::processFunctionCall($conditional, $this_class_name, $source, false);
+            $if_types = self::processFunctionCall($conditional, $this_class_name, $source, $codebase, false);
 
             return $if_types;
         }
@@ -521,6 +524,7 @@ class AssertionFinder
                     $base_conditional,
                     $this_class_name,
                     $source,
+                    $codebase,
                     false
                 );
             } else {
@@ -624,6 +628,7 @@ class AssertionFinder
                     $base_conditional,
                     $this_class_name,
                     $source,
+                    $codebase,
                     true
                 );
             } else {
@@ -895,8 +900,10 @@ class AssertionFinder
                         $source,
                         $var_type,
                         new CodeLocation($source, $whichclass_expr),
+                        null,
+                        null,
                         $source->getSuppressedIssues(),
-                        false
+                        true
                     ) === false
                     ) {
                         return $if_types;
@@ -1239,6 +1246,7 @@ class AssertionFinder
                     $base_conditional,
                     $this_class_name,
                     $source,
+                    $codebase,
                     true
                 );
             } else {
@@ -1510,6 +1518,8 @@ class AssertionFinder
                     $source,
                     $var_type,
                     new CodeLocation($source, $whichclass_expr),
+                    null,
+                    null,
                     $source->getSuppressedIssues(),
                     false
                 ) === false
@@ -1627,6 +1637,7 @@ class AssertionFinder
         PhpParser\Node\Expr\FuncCall $expr,
         $this_class_name,
         FileSource $source,
+        Codebase $codebase = null,
         $negate = false
     ) {
         $prefix = $negate ? '!' : '';
@@ -1640,6 +1651,11 @@ class AssertionFinder
             : null;
 
         $if_types = [];
+
+        $first_var_type = isset($expr->args[0]->value)
+            && $source instanceof StatementsAnalyzer
+            ? $source->node_data->getType($expr->args[0]->value)
+            : null;
 
         if (self::hasNullCheck($expr)) {
             if ($first_var_name) {
@@ -1698,7 +1714,11 @@ class AssertionFinder
                     ) {
                         $class_node = $second_arg->class;
 
-                        if ($class_node->parts === ['static'] || $class_node->parts === ['self']) {
+                        if ($class_node->parts === ['static']) {
+                            if ($this_class_name) {
+                                $if_types[$first_var_name] = [[$prefix . $is_a_prefix . $this_class_name . '&static']];
+                            }
+                        } elseif ($class_node->parts === ['self']) {
                             if ($this_class_name) {
                                 $if_types[$first_var_name] = [[$prefix . $is_a_prefix . $this_class_name]];
                             }
@@ -1733,38 +1753,146 @@ class AssertionFinder
         } elseif (self::hasArrayCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'array']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getArray(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasBoolCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'bool']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getBool(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasStringCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'string']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getString(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasObjectCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'object']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getObject(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasNumericCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'numeric']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getNumeric(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasIntCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'int']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getInt(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasFloatCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'float']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getFloat(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasResourceCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'resource']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getResource(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasScalarCheck($expr)) {
             if ($first_var_name) {
                 $if_types[$first_var_name] = [[$prefix . 'scalar']];
+            } elseif ($first_var_type
+                && $codebase
+                && $source instanceof StatementsAnalyzer
+            ) {
+                self::processIrreconcilableFunctionCall(
+                    $first_var_type,
+                    Type::getScalar(),
+                    $expr,
+                    $source,
+                    $codebase,
+                    $negate
+                );
             }
         } elseif (self::hasCallableCheck($expr)) {
             if ($first_var_name) {
@@ -1883,6 +2011,73 @@ class AssertionFinder
         }
 
         return $if_types;
+    }
+
+    private static function processIrreconcilableFunctionCall(
+        Type\Union $first_var_type,
+        Type\Union $expected_type,
+        PhpParser\Node\Expr $expr,
+        StatementsAnalyzer $source,
+        Codebase $codebase,
+        bool $negate
+    ) : void {
+        if ($first_var_type->hasMixed()) {
+            return;
+        }
+
+        if (!TypeAnalyzer::isContainedBy(
+            $codebase,
+            $first_var_type,
+            $expected_type
+        )) {
+            return;
+        }
+
+        if (!$negate) {
+            if ($first_var_type->from_docblock) {
+                if (IssueBuffer::accepts(
+                    new RedundantConditionGivenDocblockType(
+                        'Docblock type ' . $first_var_type . ' always contains ' . $expected_type,
+                        new CodeLocation($source, $expr)
+                    ),
+                    $source->getSuppressedIssues()
+                )) {
+                    // fall through
+                }
+            } else {
+                if (IssueBuffer::accepts(
+                    new RedundantCondition(
+                        $first_var_type . ' always contains ' . $expected_type,
+                        new CodeLocation($source, $expr)
+                    ),
+                    $source->getSuppressedIssues()
+                )) {
+                    // fall through
+                }
+            }
+        } else {
+            if ($first_var_type->from_docblock) {
+                if (IssueBuffer::accepts(
+                    new DocblockTypeContradiction(
+                        $first_var_type . ' does not contain ' . $expected_type,
+                        new CodeLocation($source, $expr)
+                    ),
+                    $source->getSuppressedIssues()
+                )) {
+                    // fall through
+                }
+            } else {
+                if (IssueBuffer::accepts(
+                    new TypeDoesNotContainType(
+                        $first_var_type . ' does not contain ' . $expected_type,
+                        new CodeLocation($source, $expr)
+                    ),
+                    $source->getSuppressedIssues()
+                )) {
+                    // fall through
+                }
+            }
+        }
     }
 
     /**
@@ -2048,7 +2243,7 @@ class AssertionFinder
                 && (in_array(strtolower($stmt->class->parts[0]), ['self', 'static'], true))
             ) {
                 if ($stmt->class->parts[0] === 'static') {
-                    return ['=' . $this_class_name];
+                    return ['=' . $this_class_name . '&static'];
                 }
 
                 return [$this_class_name];

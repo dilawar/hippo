@@ -122,7 +122,6 @@ function admin_update_speaker(array $data) : array
 /* ----------------------------------------------------------------------------*/
 function admin_venue_actions(array $data, string &$msg) : bool
 {
-    var_dump($data);
     $response = __get__($data, 'response', '');
     $editables = 'name,institute,building_name,floor,location,type,strength,'
         . 'latitude,longitude,'
@@ -141,7 +140,7 @@ function admin_venue_actions(array $data, string &$msg) : bool
             return false;
         }
     } elseif ($response == 'add new') {
-        if (strlen($data[ 'id' ]) < 2) {
+        if (strlen(__get__($data, 'id', '')) < 2) {
             $msg =  "The venue id is too short to be legal.";
             return false;
         } else {
@@ -150,7 +149,7 @@ function admin_venue_actions(array $data, string &$msg) : bool
                 $msg = "Venue " . $data[ 'id' ] . ' is successfully added.';
                 return true;
             } else {
-                $msg = 'Failed to added venue ' . $data[ 'id ' ];
+                $msg = 'Failed to add venue ' . $data[ 'id ' ];
                 return false;
             }
         }
@@ -160,7 +159,7 @@ function admin_venue_actions(array $data, string &$msg) : bool
             $msg = "Venue " . $data[ 'id' ] . ' is successfully deleted.';
             return true;
         } else {
-            $msg = 'Failed to added venue ' . $data[ 'id ' ];
+            $msg = 'Failed to add venue ' . $data[ 'id ' ];
             return false;
         }
     } elseif ($response == 'DO_NOTHING') {

@@ -74,7 +74,11 @@ use function getcwd;
 use function chdir;
 use function simplexml_import_dom;
 use const LIBXML_NONET;
+use function is_a;
 
+/**
+ * @psalm-suppress PropertyNotSetInConstructor
+ */
 class Config
 {
     const DEFAULT_FILE_NAME = 'psalm.xml';
@@ -116,7 +120,7 @@ class Config
     ];
 
     /**
-     * @var self|null
+     * @var static|null
      */
     private static $instance;
 
@@ -238,8 +242,13 @@ class Config
     /** @var bool */
     public $allow_includes = true;
 
-    /** @var bool */
-    public $totally_typed = false;
+    /** @var 1|2|3|4|5|6|7|8 */
+    public $level = 1;
+
+    /**
+     * @var ?bool
+     */
+    public $show_mixed_issues = null;
 
     /** @var bool */
     public $strict_binary_operands = false;
@@ -281,6 +290,11 @@ class Config
      * @var bool
      */
     public $use_phpdoc_property_without_magic_or_parent = false;
+
+    /**
+     * @var bool
+     */
+    public $skip_checks_on_unresolvable_includes = true;
 
     /**
      * @var bool
@@ -398,11 +412,27 @@ class Config
     public $after_method_checks = [];
 
     /**
-     * Static methods to be called after function checks have completed
+     * Static methods to be called after project function checks have completed
+     *
+     * Called after function calls to functions defined in the project.
+     *
+     * Allows influencing the return type and adding of modifications.
      *
      * @var class-string<Hook\AfterFunctionCallAnalysisInterface>[]
      */
     public $after_function_checks = [];
+
+    /**
+     * Static methods to be called after every function call
+     *
+     * Called after each function call, including php internal functions.
+     *
+     * Cannot change the call or influence its return type
+     *
+     * @var class-string<Hook\AfterEveryFunctionCallAnalysisInterface>[]
+     */
+    public $after_every_function_checks = [];
+
 
     /**
      * Static methods to be called after expression checks have completed
@@ -719,7 +749,6 @@ class Config
             'hideExternalErrors' => 'hide_external_errors',
             'resolveFromConfigFile' => 'resolve_from_config_file',
             'allowFileIncludes' => 'allow_includes',
-            'totallyTyped' => 'totally_typed',
             'strictBinaryOperands' => 'strict_binary_operands',
             'requireVoidReturnType' => 'add_void_docblocks',
             'useAssertForType' => 'use_assert_for_type',
@@ -727,7 +756,7 @@ class Config
             'allowPhpStormGenerics' => 'allow_phpstorm_generics',
             'allowStringToStandInForClass' => 'allow_string_standin_for_class',
             'usePhpDocMethodsWithoutMagicCall' => 'use_phpdoc_method_without_magic_or_parent',
-            'usePhpDocPropertiesWithoutMagicCall' => 'use_phpdoc_properties_without_magic_or_parent',
+            'usePhpDocPropertiesWithoutMagicCall' => 'use_phpdoc_property_without_magic_or_parent',
             'memoizeMethodCallResults' => 'memoize_method_calls',
             'hoistConstants' => 'hoist_constants',
             'addParamDefaultToDocblockType' => 'add_param_default_to_docblock_type',
@@ -740,6 +769,8 @@ class Config
             'loadXdebugStub' => 'load_xdebug_stub',
             'ensureArrayStringOffsetsExist' => 'ensure_array_string_offsets_exist',
             'ensureArrayIntOffsetsExist' => 'ensure_array_int_offsets_exist',
+            'reportMixedIssues' => 'show_mixed_issues',
+            'skipChecksOnUnresolvableIncludes' => 'skip_checks_on_unresolvable_includes'
         ];
 
         foreach ($booleanAttributes as $xmlName => $internalName) {
@@ -804,6 +835,32 @@ class Config
         if (isset($config_xml['findUnusedVariablesAndParams'])) {
             $attribute_text = (string) $config_xml['findUnusedVariablesAndParams'];
             $config->find_unused_variables = $attribute_text === 'true' || $attribute_text === '1';
+        }
+
+        if (isset($config_xml['errorLevel'])) {
+            $attribute_text = (int) $config_xml['errorLevel'];
+
+            if (!in_array($attribute_text, [1, 2, 3, 4, 5, 6, 7, 8], true)) {
+                throw new Exception\ConfigException(
+                    'Invalid error level ' . $config_xml['errorLevel']
+                );
+            }
+
+            $config->level = $attribute_text;
+        } elseif (isset($config_xml['totallyTyped'])) {
+            $totally_typed = (string) $config_xml['totallyTyped'];
+
+            if ($totally_typed === 'true' || $totally_typed === '1') {
+                $config->level = 1;
+            } else {
+                $config->level = 2;
+
+                if ($config->show_mixed_issues === null) {
+                    $config->show_mixed_issues = false;
+                }
+            }
+        } else {
+            $config->level = 2;
         }
 
         if (isset($config_xml['errorBaseline'])) {
@@ -885,7 +942,11 @@ class Config
         if (isset($config_xml->stubs) && isset($config_xml->stubs->file)) {
             /** @var \SimpleXMLElement $stub_file */
             foreach ($config_xml->stubs->file as $stub_file) {
-                $file_path = realpath($config->base_dir . DIRECTORY_SEPARATOR . $stub_file['name']);
+                $stub_file_name = (string)$stub_file['name'];
+                if (!Path::isAbsolute($stub_file_name)) {
+                    $stub_file_name = $config->base_dir . DIRECTORY_SEPARATOR . $stub_file_name;
+                }
+                $file_path = realpath($stub_file_name);
 
                 if (!$file_path) {
                     throw new Exception\ConfigException(
@@ -921,7 +982,7 @@ class Config
                         $plugin_config = $plugin->children();
                     }
 
-                    $config->addPluginClass($plugin_class_name, $plugin_config);
+                    $config->addPluginClass((string) $plugin_class_name, $plugin_config);
                 }
             }
         }
@@ -1213,7 +1274,9 @@ class Config
      */
     public function reportIssueInFile($issue_type, $file_path)
     {
-        if (!$this->totally_typed && in_array($issue_type, self::MIXED_ISSUES, true)) {
+        if (($this->show_mixed_issues === false || $this->level > 2)
+            && in_array($issue_type, self::MIXED_ISSUES, true)
+        ) {
             return false;
         }
 
@@ -1328,6 +1391,18 @@ class Config
             return 'PossiblyUndefinedArrayOffset';
         }
 
+        if ($issue_type === 'PossiblyNullReference') {
+            return 'NullReference';
+        }
+
+        if ($issue_type === 'PossiblyFalseReference') {
+            return null;
+        }
+
+        if ($issue_type === 'PossiblyUndefinedArrayOffset') {
+            return null;
+        }
+
         if (strpos($issue_type, 'Possibly') === 0) {
             $stripped_issue_type = preg_replace('/^Possibly(False|Null)?/', '', $issue_type);
 
@@ -1338,7 +1413,7 @@ class Config
             return $stripped_issue_type;
         }
 
-        if (preg_match('/^(False|Null)[A-Z]/', $issue_type)) {
+        if (preg_match('/^(False|Null)[A-Z]/', $issue_type) && !strpos($issue_type, 'Reference')) {
             return preg_replace('/^(False|Null)/', 'Invalid', $issue_type);
         }
 
@@ -1418,6 +1493,20 @@ class Config
     {
         if (isset($this->issue_handlers[$issue_type])) {
             return $this->issue_handlers[$issue_type]->getReportingLevelForFile($file_path);
+        }
+
+        // this string is replaced by scoper for Phars, so be careful
+        $issue_class = 'Psalm\\Issue\\' . $issue_type;
+
+        if (!class_exists($issue_class) || !is_a($issue_class, \Psalm\Issue\CodeIssue::class, true)) {
+            return self::REPORT_ERROR;
+        }
+
+        /** @var int */
+        $issue_level = $issue_class::ERROR_LEVEL;
+
+        if ($issue_level > 0 && $issue_level < $this->level) {
+            return self::REPORT_INFO;
         }
 
         return self::REPORT_ERROR;
@@ -1572,20 +1661,27 @@ class Config
         $codebase->register_stub_files = true;
 
         // note: don't realpath $generic_stubs_path, or phar version will fail
-        $generic_stubs_path = __DIR__ . '/Internal/Stubs/CoreGenericFunctions.php';
+        $generic_stubs_path = __DIR__ . '/Internal/Stubs/CoreGenericFunctions.phpstub';
 
         if (!file_exists($generic_stubs_path)) {
             throw new \UnexpectedValueException('Cannot locate core generic stubs');
         }
 
         // note: don't realpath $generic_classes_path, or phar version will fail
-        $generic_classes_path = __DIR__ . '/Internal/Stubs/CoreGenericClasses.php';
+        $generic_classes_path = __DIR__ . '/Internal/Stubs/CoreGenericClasses.phpstub';
 
         if (!file_exists($generic_classes_path)) {
             throw new \UnexpectedValueException('Cannot locate core generic classes');
         }
 
-        $core_generic_files = [$generic_stubs_path, $generic_classes_path];
+        // note: don't realpath $generic_classes_path, or phar version will fail
+        $immutable_classes_path = __DIR__ . '/Internal/Stubs/CoreImmutableClasses.phpstub';
+
+        if (!file_exists($immutable_classes_path)) {
+            throw new \UnexpectedValueException('Cannot locate core immutable classes');
+        }
+
+        $core_generic_files = [$generic_stubs_path, $generic_classes_path, $immutable_classes_path];
 
         if (\extension_loaded('ds')) {
             $ext_ds_path = __DIR__ . '/Internal/Stubs/ext-ds.php';
@@ -1879,6 +1975,14 @@ class Config
         $this->stub_files[] = $stub_file;
     }
 
+    /**
+     * @return array<int, string>
+     */
+    public function getStubFiles(): array
+    {
+        return $this->stub_files;
+    }
+
     public function getPhpVersion(): ?string
     {
         if (isset($this->configured_php_version)) {
@@ -1907,9 +2011,9 @@ class Config
             }
             $php_version = $composer_json['require']['php'] ?? null;
 
-            if ($php_version) {
+            if (\is_string($php_version)) {
                 foreach (['5.4', '5.5', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0'] as $candidate) {
-                    if (Semver::satisfies($candidate, (string)$php_version)) {
+                    if (Semver::satisfies($candidate, $php_version)) {
                         return $candidate;
                     }
                 }

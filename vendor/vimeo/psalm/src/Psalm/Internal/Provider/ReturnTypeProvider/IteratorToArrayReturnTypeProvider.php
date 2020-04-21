@@ -50,8 +50,6 @@ class IteratorToArrayReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionRe
                         new Type\Atomic\TIterable([Type::getMixed(), Type::getMixed()])
                     )
                 ) {
-                    assert($statements_source instanceof \Psalm\Internal\Analyzer\StatementsAnalyzer);
-
                     $has_valid_iterator = true;
                     ForeachAnalyzer::handleIterable(
                         $statements_source,
@@ -79,13 +77,19 @@ class IteratorToArrayReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionRe
                     ]);
                 }
 
+                $key_type = $key_type
+                    && (!isset($call_args[1])
+                        || ($second_arg_type && ((string) $second_arg_type === 'true')))
+                    ? $key_type
+                    : Type::getArrayKey();
+
+                if ($key_type->isMixed()) {
+                    $key_type = Type::getArrayKey();
+                }
+
                 return new Type\Union([
                     new Type\Atomic\TArray([
-                        $key_type
-                            && (!isset($call_args[1])
-                                || ($second_arg_type && ((string) $second_arg_type === 'true')))
-                            ? $key_type
-                            : Type::getArrayKey(),
+                        $key_type,
                         $value_type,
                     ]),
                 ]);

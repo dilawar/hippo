@@ -38,7 +38,7 @@ class TTemplateParamClass extends TClassString
     /**
      * @return string
      */
-    public function getKey()
+    public function getKey(bool $include_extra = true)
     {
         return 'class-string<' . $this->param_name . '>';
     }
@@ -57,6 +57,14 @@ class TTemplateParamClass extends TClassString
     public function getId(bool $nested = false)
     {
         return 'class-string<' . $this->param_name . ':' . $this->defining_class . ' as ' . $this->as . '>';
+    }
+
+    /**
+     * @return string
+     */
+    public function getAssertionString()
+    {
+        return 'class-string<' . $this->param_name . '>';
     }
 
     /**
@@ -98,5 +106,10 @@ class TTemplateParamClass extends TClassString
         bool $use_phpdoc_format
     ) {
         return $this->param_name . '::class';
+    }
+
+    public function getChildNodes() : array
+    {
+        return $this->as_type ? [$this->as_type] : [];
     }
 }

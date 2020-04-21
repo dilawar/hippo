@@ -27,7 +27,8 @@ class Google_Service_Dataproc_Resource_ProjectsRegionsClusters extends Google_Se
 {
   /**
    * Creates a cluster in a project. The returned Operation.metadata will be
-   * ClusterOperationMetadata. (clusters.create)
+   * ClusterOperationMetadata (https://cloud.google.com/dataproc/docs/reference/rp
+   * c/google.cloud.dataproc.v1#clusteroperationmetadata). (clusters.create)
    *
    * @param string $projectId Required. The ID of the Google Cloud Platform
    * project that the cluster belongs to.
@@ -54,7 +55,8 @@ class Google_Service_Dataproc_Resource_ProjectsRegionsClusters extends Google_Se
   }
   /**
    * Deletes a cluster in a project. The returned Operation.metadata will be
-   * ClusterOperationMetadata. (clusters.delete)
+   * ClusterOperationMetadata (https://cloud.google.com/dataproc/docs/reference/rp
+   * c/google.cloud.dataproc.v1#clusteroperationmetadata). (clusters.delete)
    *
    * @param string $projectId Required. The ID of the Google Cloud Platform
    * project that the cluster belongs to.
@@ -84,8 +86,11 @@ class Google_Service_Dataproc_Resource_ProjectsRegionsClusters extends Google_Se
   }
   /**
    * Gets cluster diagnostic information. The returned Operation.metadata will be
-   * ClusterOperationMetadata. After the operation completes, Operation.response
-   * contains DiagnoseClusterResults. (clusters.diagnose)
+   * ClusterOperationMetadata (https://cloud.google.com/dataproc/docs/reference/rp
+   * c/google.cloud.dataproc.v1#clusteroperationmetadata). After the operation
+   * completes, Operation.response contains DiagnoseClusterResults (https://cloud.
+   * google.com/dataproc/docs/reference/rpc/google.cloud.dataproc.v1#diagnoseclust
+   * erresults). (clusters.diagnose)
    *
    * @param string $projectId Required. The ID of the Google Cloud Platform
    * project that the cluster belongs to.
@@ -137,7 +142,7 @@ class Google_Service_Dataproc_Resource_ProjectsRegionsClusters extends Google_Se
     return $this->call('getIamPolicy', array($params), "Google_Service_Dataproc_Policy");
   }
   /**
-   * Lists all regions/{region}/clusters in a project.
+   * Lists all regions/{region}/clusters in a project alphabetically.
    * (clusters.listProjectsRegionsClusters)
    *
    * @param string $projectId Required. The ID of the Google Cloud Platform
@@ -146,7 +151,6 @@ class Google_Service_Dataproc_Resource_ProjectsRegionsClusters extends Google_Se
    * request.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string pageToken Optional. The standard List page token.
    * @opt_param int pageSize Optional. The standard List page size.
    * @opt_param string filter Optional. A filter constraining the clusters to
    * list. Filters are case-sensitive and have the following syntax:field = value
@@ -159,6 +163,7 @@ class Google_Service_Dataproc_Resource_ProjectsRegionsClusters extends Google_Se
    * Only the logical AND operator is supported; space-separated items are treated
    * as having an implicit AND operator.Example filter:status.state = ACTIVE AND
    * clusterName = mycluster AND labels.env = staging AND labels.starred = *
+   * @opt_param string pageToken Optional. The standard List page token.
    * @return Google_Service_Dataproc_ListClustersResponse
    */
   public function listProjectsRegionsClusters($projectId, $region, $optParams = array())
@@ -169,7 +174,8 @@ class Google_Service_Dataproc_Resource_ProjectsRegionsClusters extends Google_Se
   }
   /**
    * Updates a cluster in a project. The returned Operation.metadata will be
-   * ClusterOperationMetadata. (clusters.patch)
+   * ClusterOperationMetadata (https://cloud.google.com/dataproc/docs/reference/rp
+   * c/google.cloud.dataproc.v1#clusteroperationmetadata). (clusters.patch)
    *
    * @param string $projectId Required. The ID of the Google Cloud Platform
    * project the cluster belongs to.
