@@ -10,14 +10,18 @@ $symbAWSRemove = '<i class="fa fa-trash fa-2x"></i>';
 
 echo userHTML();
 
-$allSpeakers = array_map(function ($x) {
-    return $x['login'];
-}, getAWSSpeakers());
+$allSpeakers = array_map(
+    function ($x) {
+        return $x['login'];
+    }, getAWSSpeakers()
+);
 $upcomingAWSs = getUpcomingAWS();
 
-$alreadyHaveAWS = array_map(function ($x) {
-    return $x['speaker'];
-}, $upcomingAWSs);
+$alreadyHaveAWS = array_map(
+    function ($x) {
+        return $x['speaker'];
+    }, $upcomingAWSs
+);
 $speakers = array_values(array_diff($allSpeakers, $alreadyHaveAWS));
 
 ?>
@@ -80,7 +84,7 @@ echo awsAssignmentForm();
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Group AWS by date here. Once we have them grouped, later
+    * @Synopsis Group AWS by date here. Once we have them grouped, later
     * processing is much easier.
  */
 /* ----------------------------------------------------------------------------*/
@@ -93,7 +97,7 @@ foreach ($upcomingAWSs as $aws) {
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Show upcoming schedule. Show a table. If a week is missing,
+    * @Synopsis Show upcoming schedule. Show a table. If a week is missing,
     * make sure to insert a new row with date.
  */
 /* ----------------------------------------------------------------------------*/
@@ -184,7 +188,8 @@ foreach ($awsGroupedByDate as $groupDate => $awses) {
     $defaultVenue = trim(__get__($aws, 'venue', ''));
     if (! $defaultVenue) {
         $venue = getDefaultAWSVenue($groupDate);
-        $res = updateTable('upcoming_aws', 'date', 'venue', ['date'=>$groupDate, 'venue'=>$venue]);
+        $res = updateTable('upcoming_aws', 'date', 'venue'
+            , ['date'=>$groupDate, 'venue'=>$venue]);
         if (! $res) {
             printWarning("Failed to assign venue. ");
         } else {
@@ -206,7 +211,7 @@ echo goBackToPageLink("adminacad/home", "Go back");
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Temporary schedule.
+    * @Synopsis Temporary schedule.
  */
 /* ----------------------------------------------------------------------------*/
 echo "<h1 id='temporary_assginments'>Temporary assignments</h1>";
@@ -377,9 +382,9 @@ echo goBackToPageLink("adminacad/home", "Go back");
 
 ?>
 
-<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
-<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
-<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script src="<?php echo base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?php echo base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?php echo base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));
 </script>

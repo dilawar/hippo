@@ -27,7 +27,6 @@ if (count($awses) < 1) {
         echo alertUser("May be due to following");
         echo arrayToTableHTML($holiday, 'info');
     }
-
     echo printInfo("That's all I know!");
     echo "<br><br>";
 } else {

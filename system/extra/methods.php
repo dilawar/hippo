@@ -169,28 +169,30 @@ function authenticate($ldap, $pass)
 
 function venueToShortText($venue)
 {
-    if (is_string($venue)) {
+    if (is_string($venue)) 
         $venue = getVenueById($venue);
+
+    if($venue['id'] === "Remote VC") {
+        $aws_vc_url = getConfigValue('AWS_VC_URL');
+        $txt = 'Remote URL: <a href="'.$aws_vc_url .'">'. $aws_vc_url .'</a><br />';
     }
-    $txt = '';
-    $txt .= $venue['name'];
+    else
+        $txt = $venue['name'];
     return $txt;
 }
 
 function venueToText($venue, $show_strength = true)
 {
-    if (is_string($venue)) {
+    if (is_string($venue)) 
         $venue = getVenueById($venue);
-    }
 
-    $txt = '';
-    $txt .= $venue['id'] . ' ';
+    $txt = venueToShortText($venue);
 
     if ($show_strength) {
         $txt .= ' ' . $venue['strength'] . ' ';
     }
 
-    $txt .= '[' . $venue['type'] . ']' ;
+    $txt .= '[' . __get__($venue, 'type', '') . ']' ;
     return $txt;
 }
 
@@ -2069,14 +2071,15 @@ function getAWSVenue(string $date) : string
 /* ----------------------------------------------------------------------------*/
 function getAWSVenueForm(string $date, string $defaultVenue = '') : string
 {
-    $form = '<form action="'.site_url("adminacad/assign_aws_venue/$date").'" method="post" accept-charset="utf-8">';
+    $form = '<form action="' . site_url("adminacad/assign_aws_venue/$date") 
+        . '" method="post" accept-charset="utf-8">';
 
     $defaultVenue = trim($defaultVenue);
     if (strlen($defaultVenue)==0) {
         $defaultVenue = getDefaultAWSVenue($date);
     }
 
-    $venues = getVenuesByTypes('LECTURE HALL,AUDITORIUM');
+    $venues = getVenuesByTypes('LECTURE HALL,AUDITORIUM,REMOTE VC');
     $form .= venuesToHTMLSelect($venues, false, 'venue', [$defaultVenue]);
     $form .= "<button>Change</button>";
     $form .= '</form> ';
