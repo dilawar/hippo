@@ -26,8 +26,8 @@ $msg .= "<table id='table_output_big', border='1'>";
 $msg .= "<tr> <td>".printSem($prevSem);
 $msg .= "</td> <td> <b>".printCourse($course1);
 $msg .= "</b> </td> </tr>";
-$msg .= "<tr> <td>".printSem($pprevSem); 
-$msg .= "</td> <td> <b>".printCourse($course2); 
+$msg .= "<tr> <td>".printSem($pprevSem);
+$msg .= "</td> <td> <b>".printCourse($course2);
 $msg .= "</b> </td> </tr> </table>";
 
 $db = "ta".$this_sem;
@@ -46,4 +46,3 @@ echo "</form> </body>  </html>";
 
 sendEmail($msg, $ldap);
 session_destroy();
-?>

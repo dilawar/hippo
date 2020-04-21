@@ -3,8 +3,9 @@ require_once BASEPATH.'autoload.php';
 echo userHTML();
 
 $ref = 'adminbmv';
-if(isset($controller))
+if (isset($controller)) {
     $ref = $controller;
+}
 
 $end_date = dbDate('today');
 $start_date = dbDate('-3 month');
@@ -29,37 +30,37 @@ $form = '
 
 echo $form;
 
-if( isset($_POST))
-{
-    $end_date   = __get__( $_POST, 'end_date', dbDate('today') );
-    $start_date = __get__( $_POST, 'start_date', dbDate('-3 month'));
+if (isset($_POST)) {
+    $end_date   = __get__($_POST, 'end_date', dbDate('today'));
+    $start_date = __get__($_POST, 'start_date', dbDate('-3 month'));
 }
 
 
-echo "<h2>Events between " .humanReadableDate($start_date) ." and " 
+echo "<h2>Events between " .humanReadableDate($start_date) ." and "
     . humanReadableDate($end_date) . "</h2>";
 
 //$allevents = getTableEntries( 'events', 'date'
 //    , "date > '$start_date' AND date < '$end_date' AND external_id LIKE 'talks.%'
 //        AND status='VALID'"
-//    ); 
+//    );
 
 // $talkIds = getTalkIDs( $start_date, $end_date );
-$talks = getTalksWithEvent( $start_date, $end_date );
+$talks = getTalksWithEvent($start_date, $end_date);
 
-$hide = 'gid,eid,external_id,description,status,calendar_event_id,is_public_event' 
+$hide = 'gid,eid,external_id,description,status,calendar_event_id,is_public_event'
     . ',calendar_id,url,last_modified_on,id,speaker_id';
 
 $table = '<table class="exportable info sortable">';
-$table .= arrayToTHRow( $talks[0], '', $hide );
-foreach( $talks as $i => $talk)
-    $table .= arrayToRowHTML( $talk, '', $hide );
+$table .= arrayToTHRow($talks[0], '', $hide);
+foreach ($talks as $i => $talk) {
+    $table .= arrayToRowHTML($talk, '', $hide);
+}
 $table .= '</table>';
 
 echo $table;
 
 
-echo goBackToPageLink( "$ref/home" );
+echo goBackToPageLink("$ref/home");
 
 ?>
 <script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>

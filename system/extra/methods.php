@@ -46,11 +46,11 @@ function whoAmI()
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get a value from header.
-    *
-    * @Param $key This is the key to fetch.
-    *
-    * @Returns  The value of key if available; empty otherwise.
+ * @Synopsis Get a value from header.
+ *
+ * @Param $key This is the key to fetch.
+ *
+ * @Returns The value of key if available; empty otherwise.
  */
 /* ----------------------------------------------------------------------------*/
 function getHeader($key)
@@ -68,11 +68,11 @@ function getLogin()
 }
 
 /**
-    * @brief Find valid email in text.
-    *
-    * @param $text
-    *
-    * @return
+ * @brief Find valid email in text.
+ *
+ * @param $text
+ *
+ * @return
  */
 function extract_emails_from($text)
 {
@@ -93,13 +93,13 @@ function authenticateUser(string $ldap, string $pass)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find difference between two days in months.
-    *
-    * @Param $dateA
-    * @Param $dateB
-    *
-    * @Returns  Fractional value. Decimal part is computed by assuming 30 days
-    * month.
+ * @Synopsis Find difference between two days in months.
+ *
+ * @Param $dateA
+ * @Param $dateB
+ *
+ * @Returns Fractional value. Decimal part is computed by assuming 30 days
+ * month.
  */
 /* ----------------------------------------------------------------------------*/
 function dateDiffInMonths($dateA, $dateB) : float
@@ -114,11 +114,11 @@ function dateDiffInMonths($dateA, $dateB) : float
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Return login id if email is given. This is  a helper function.
-    *
-    * @Param $text
-    *
-    * @Returns
+ * @Synopsis Return login id if email is given. This is  a helper function.
+ *
+ * @Param $text
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getLoginID($text)
@@ -132,10 +132,12 @@ function getLoginID($text)
 // Form HERE: https://stackoverflow.com/a/25879953/180512://stackoverflow.com/a/25879953/1805129
 function hippo_shell_exec($cmd, &$stdout=null, &$stderr=null)
 {
-    $proc = proc_open($cmd, [
+    $proc = proc_open(
+        $cmd, [
         1 => ['pipe','w'],
         2 => ['pipe','w'],
-    ], $pipes);
+        ], $pipes
+    );
 
     $stdout = stream_get_contents($pipes[1]);
     fclose($pipes[1]);
@@ -241,9 +243,9 @@ function toColor($n)
 }
 
 /**
-    * @brief Data directory for temp storage.
-    *
-    * @return
+ * @brief Data directory for temp storage.
+ *
+ * @return
  */
 function getDataDir()
 {
@@ -252,10 +254,10 @@ function getDataDir()
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find the upload directory. Its hardcoded to the
-    * getDataDir()/images.
-    *
-    * @Returns   getDataDir() / images
+ * @Synopsis Find the upload directory. Its hardcoded to the
+ * getDataDir()/images.
+ *
+ * @Returns getDataDir() / images
  */
 /* ----------------------------------------------------------------------------*/
 function getUploadDir()
@@ -268,13 +270,13 @@ function getUploadDir()
 }
 
 /**
-    * @brief Generate a select list outof given values.
-    *
-    * @param $venues List of venues.
-    * @param $ismultiple Do we want to select multiple entries.
-    * @param $selected Pre-select these guys.
-    *
-    * @return
+ * @brief Generate a select list outof given values.
+ *
+ * @param $venues     List of venues.
+ * @param $ismultiple Do we want to select multiple entries.
+ * @param $selected   Pre-select these guys.
+ *
+ * @return
  */
 function venuesToHTMLSelect(
     $venues = null,
@@ -342,10 +344,10 @@ function appRootDir()
 }
 
 /**
-    * @brief From
-    * http://stackoverflow.com/questions/2820723/how-to-get-base-url-with-php
-    *
-    * @return
+ * @brief From
+ * http://stackoverflow.com/questions/2820723/how-to-get-base-url-with-php
+ *
+ * @return
  */
 function appURL()
 {
@@ -381,14 +383,14 @@ function __get__(array $arr, $what, $default = null)
 }
 
 /**
-    * @brief Convert a repeat pattern to dates.
-    *
-    * @param $pat This pattern is command separeted list of days,
-    * weeks,durations. eg. 0/2/4,2/3,5 means that event will be scheduled on day
-    * 0 (sun), day 2 (Tue), and day 4 (Thu), every 2nd and 3rd week for 5
-    * months.
-    *
-    * @return List of dates generated from this pattern.
+ * @brief Convert a repeat pattern to dates.
+ *
+ * @param $pat This pattern is command separeted list of days,
+ *             weeks,durations. eg. 0/2/4,2/3,5 means that event will be scheduled on day
+ *             0 (sun), day 2 (Tue), and day 4 (Thu), every 2nd and 3rd week for 5
+ *             months.
+ *
+ * @return List of dates generated from this pattern.
  */
 function repeatPatToDays(string $pat, string $start_day='today'): array
 {
@@ -428,8 +430,8 @@ function repeatPatToDays(string $pat, string $start_day='today'): array
                 $strDate = "$w $d of $month";
                 $date = dbDate(strtotime($strDate));
 
-                if ((strtotime($date) >= strtotime($start_day)) &&
-                    (dateDiffInMonths($date, $start_day) <= $durationInMonths)
+                if ((strtotime($date) >= strtotime($start_day)) 
+                    && (dateDiffInMonths($date, $start_day) <= $durationInMonths)
                 ) {
                     if (! in_array($date, $dates)) {
                         $dates[] = $date;
@@ -535,13 +537,13 @@ function getNumDaysInBetween($startDate, $endDate)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Convert given date and time to google time. We substract the
-    * timezone time to make sure google gets the right time.
-    *
-    * @Param $date
-    * @Param $time
-    *
-    * @Returns
+ * @Synopsis Convert given date and time to google time. We substract the
+ * timezone time to make sure google gets the right time.
+ *
+ * @Param $date
+ * @Param $time
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function dateTimeToGOOGLE($date, $time)
@@ -555,13 +557,13 @@ function dateTimeToGOOGLE($date, $time)
 
 
 /**
-    * @brief Construct a repeat pattern out of user queries.
-    *
-    * @param $daypat
-    * @param $weekpat
-    * @param $monthpat
-    *
-    * @return
+ * @brief Construct a repeat pattern out of user queries.
+ *
+ * @param $daypat
+ * @param $weekpat
+ * @param $monthpat
+ *
+ * @return
  */
 function constructRepeatPattern(string $daypat, string $weekpat, string $durationInMonths):string
 {
@@ -584,9 +586,11 @@ function constructRepeatPattern(string $daypat, string $weekpat, string $duratio
         }
     }
 
-    $days = array_map(function ($day) {
-        return date('D', strtotime($day));
-    }, $daysArr);
+    $days = array_map(
+        function ($day) {
+            return date('D', strtotime($day));
+        }, $daysArr
+    );
 
     $days = implode("/", $days);
 
@@ -602,12 +606,12 @@ function constructRepeatPattern(string $daypat, string $weekpat, string $duratio
 }
 
 /**
-    * @brief Base function to compute diff in two strings.
-    *
-    * @param $from
-    * @param $to
-    *
-    * @return
+ * @brief Base function to compute diff in two strings.
+ *
+ * @param $from
+ * @param $to
+ *
+ * @return
  */
 function computeDiff($from, $to)
 {
@@ -671,12 +675,12 @@ function computeDiff($from, $to)
 }
 
 /**
-    * @brief Compute diff of two lines.
-    *
-    * @param $line1
-    * @param $line2
-    *
-    * @return
+ * @brief Compute diff of two lines.
+ *
+ * @param $line1
+ * @param $line2
+ *
+ * @return
  */
 function diffline($line1, $line2)
 {
@@ -691,12 +695,16 @@ function diffline($line1, $line2)
         $mc = $diffmask[$i];
         if ($mc != $pmc) {
             switch ($pmc) {
-                case -1: $result .= '</del>'; break;
-                case 1: $result .= '</ins>'; break;
+            case -1: $result .= '</del>'; 
+                break;
+            case 1: $result .= '</ins>'; 
+                break;
             }
             switch ($mc) {
-                case -1: $result .= '<del>'; break;
-                case 1: $result .= '<ins>'; break;
+            case -1: $result .= '<del>'; 
+                break;
+            case 1: $result .= '<ins>'; 
+                break;
             }
         }
         $result .= $diffval[$i];
@@ -704,19 +712,21 @@ function diffline($line1, $line2)
         $pmc = $mc;
     }
     switch ($pmc) {
-        case -1: $result .= '</del>'; break;
-        case 1: $result .= '</ins>'; break;
+    case -1: $result .= '</del>'; 
+        break;
+    case 1: $result .= '</ins>'; 
+        break;
     }
 
     return $result;
 }
 
 /**
-    * @brief Check if given string a date.
-    *  http://php.net/manual/en/function.checkdate.php#113205
-    * @param $date
-    *
-    * @return True if string is a date.
+ * @brief Check if given string a date.
+ *  http://php.net/manual/en/function.checkdate.php#113205
+ * @param $date
+ *
+ * @return True if string is a date.
  */
 function isStringAValidDate($date)
 {
@@ -736,14 +746,14 @@ function isMobile()
 }
 
 /**
-    * @brief Store image a PNG. Reduce the resolution of image.
-    *
-    * @param $originalImage
-    * @param $ext
-    * @param $outputImage
-    * @param $quality
-    *
-    * @return
+ * @brief Store image a PNG. Reduce the resolution of image.
+ *
+ * @param $originalImage
+ * @param $ext
+ * @param $outputImage
+ * @param $quality
+ *
+ * @return
  */
 function saveImageAsPNG($originalImage, $ext, $outputImage, $quality = 9)
 {
@@ -803,11 +813,11 @@ function saveImageAsJPEG($originalImage, $ext, $outputImage, $quality = 90)
 }
 
 /**
-    * @brief Get a low resolution image of pdf files.
-    *
-    * @param $originalImage
-    *
-    * @return
+ * @brief Get a low resolution image of pdf files.
+ *
+ * @param $originalImage
+ *
+ * @return
  */
 function getThumbnail($originalImage)
 {
@@ -829,11 +839,11 @@ function getThumbnail($originalImage)
 }
 
 /**
-    * @brief Image of login. These are different than speaker.
-    *
-    * @param $user
-    *
-    * @return
+ * @brief Image of login. These are different than speaker.
+ *
+ * @param $user
+ *
+ * @return
  */
 function getLoginPicturePath($login, $default = 'hippo')
 {
@@ -852,12 +862,12 @@ function calendarUrl()
 }
 
 /**
-    * @brief Picture path of speakers (not user login).
-    *
-    * @param $user
-    * @param $default
-    *
-    * @return
+ * @brief Picture path of speakers (not user login).
+ *
+ * @param $user
+ * @param $default
+ *
+ * @return
  */
 function getUserPicture($user, $default = 'null', $width='200px')
 {
@@ -906,9 +916,9 @@ function getSpeakerPicturePathById($id)
 }
 
 /**
-    * @brief Reschedule AWS.
-    *
-    * @return
+ * @brief Reschedule AWS.
+ *
+ * @return
  */
 function rescheduleAWS($method = 'reschedule_default') : array
 {
@@ -998,13 +1008,13 @@ function getConf()
 }
 
 /**
-    * @brief Upload a given file. If filename is not absolute path then construct
-    * it.
-    *
-    * @param $pic Array from $_FILE['picture'], usually!
-    * @param $filename
-    *
-    * @return
+ * @brief Upload a given file. If filename is not absolute path then construct
+ * it.
+ *
+ * @param $pic      Array from $_FILE['picture'], usually!
+ * @param $filename
+ *
+ * @return
  */
 function uploadImage($pic, $filename)
 {
@@ -1036,37 +1046,44 @@ function uploadImage($pic, $filename)
 }
 
 /**
-* @brief Check if a booking request is valid.
-* NOTE: This function is incomplete.
-*
-* @param $request
-*
-* @return
+ * @brief Check if a booking request is valid.
+ *
+ * @param  $request
+ * @return Array with status and msg.
  */
-function isBookingRequestValid($request)
+function isBookingRequestValid($request) : array
 {
     $date = $request[ 'date' ];
     $startT = $request[ 'start_time' ];
     $endT = $request[ 'end_time' ];
 
-    if (strtotime($endT, strtotime($date)) -
-        strtotime($startT, strtotime($date))  < 15
-        ) {
-        echo printWarning("Could not create booking request");
-        echo printInfo("\tThe duration of this event is less than 15 minutes");
-        return false;
+    $res = ['status'=>true, 'msg'=>''];
+
+    // If venue is remote than we must have  a vc_url.
+    if($request['venue'] === 'Remote VC') {
+        if(! filter_var($request['vc_url'], FILTER_VALIDATE_URL)) {
+            $res['msg'] .= "Not a valid url for video conferencing.";
+            $res['status'] = false;
+            return $res;
+        }
     }
 
-    return true;
+    if (strtotime($endT, strtotime($date)) -strtotime($startT, strtotime($date))  < 15) {
+        $res['msg'] .= printWarning("Could not create booking request");
+        $res['msg'] .= printInfo("The duration of this event is less than 15 minutes");
+        $res['status'] = false;
+        return $res;
+    }
+    return $res;
 }
 
 /**
-    * @brief Save data file to datadir and return if saved file exists on not.
-    *
-    * @param $filename Filename.
-    * @param $text  Text to save.
-    *
-    * @return
+ * @brief Save data file to datadir and return if saved file exists on not.
+ *
+ * @param $filename Filename.
+ * @param $text     Text to save.
+ *
+ * @return
  */
 function saveDataFile($filepath, $text)
 {
@@ -1076,11 +1093,11 @@ function saveDataFile($filepath, $text)
 }
 
 /**
-    * @brief Return next monday from given date.
-    *
-    * @param $date
-    *
-    * @return
+ * @brief Return next monday from given date.
+ *
+ * @param $date
+ *
+ * @return
  */
 function nextMonday($date)
 {
@@ -1105,11 +1122,11 @@ function slotGroupId($id)
 }
 
 /**
-    * @brief Get semester name of given date.
-    *
-    * @param $date
-    *
-    * @return 'VASANT' or 'MONSOON' depending on date.
+ * @brief Get semester name of given date.
+ *
+ * @param $date
+ *
+ * @return 'VASANT' or 'MONSOON' depending on date.
  */
 function getSemester($date)
 {
@@ -1123,11 +1140,11 @@ function getSemester($date)
 
 
 /**
-    * @brief Get current year.
-    *
-    * @param $date
-    *
-    * @return
+ * @brief Get current year.
+ *
+ * @param $date
+ *
+ * @return
  */
 function getYear($date)
 {
@@ -1156,11 +1173,11 @@ function getCourseInstanceId($courseId, $sem = null, $year = null)
 }
 
 /**
-    * @brief Check if given event is a public event.
-    *
-    * @param $event
-    *
-    * @return
+ * @brief Check if given event is a public event.
+ *
+ * @param $event
+ *
+ * @return
  */
 function isPublicEvent($event)
 {
@@ -1187,13 +1204,13 @@ function splitName($name)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Tested locally.
-    *
-    * @Param $name
-    *
-    * @Returns
-    *
-    * TEST CASES.
+ * @Synopsis Tested locally.
+ *
+ * @Param $name
+ *
+ * @Returns
+ *
+ * TEST CASES.
  */
 /* ----------------------------------------------------------------------------*/
 function splitNameIntoParts(string $name) : array
@@ -1206,11 +1223,11 @@ function splitNameIntoParts(string $name) : array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Verify the booking request.
-    *
-    * @Param $request
-    *
-    * @Returns  "OK" if booking request if fine. A detailed message otherwise.
+ * @Synopsis Verify the booking request.
+ *
+ * @Param $request
+ *
+ * @Returns "OK" if booking request if fine. A detailed message otherwise.
  */
 /* ----------------------------------------------------------------------------*/
 function verifyRequest(array $request) : string
@@ -1222,6 +1239,13 @@ function verifyRequest(array $request) : string
     foreach (array( "start_time", "end_time", "date", "venue" ) as $k) {
         if (! isset($request[$k])) {
             return "Neccessary value $k not found";
+        }
+    }
+
+    // If venue is remote than we must have  a vc_url.
+    if($request['venue'] === 'Remote VC') {
+        if(! filter_var($request['vc_url'], FILTER_VALIDATE_URL)) {
+            return "Not a valid url for video conferencing.";
         }
     }
 
@@ -1270,12 +1294,12 @@ function verifyRequest(array $request) : string
 }
 
 /**
-    * @brief Detect host institute from Email id. It could be either NCBS or
-    * INSTEM.
-    *
-    * @param $email
-    *
-    * @return
+ * @brief Detect host institute from Email id. It could be either NCBS or
+ * INSTEM.
+ *
+ * @param $email
+ *
+ * @return
  */
 function emailInstitute($email, $email2='', $format='html')
 {
@@ -1312,11 +1336,11 @@ function emailInstitute($email, $email2='', $format='html')
 }
 
 /**
-    * @brief Removed duplicates and turn into UCWord.
-    *
-    * @param $name
-    *
-    * @return
+ * @brief Removed duplicates and turn into UCWord.
+ *
+ * @param $name
+ *
+ * @return
  */
 function fixName($name)
 {
@@ -1327,11 +1351,11 @@ function fixName($name)
 
 
 /**
-    * @brief Following functions generates event title based on talk.
-    *
-    * @param $talk
-    *
-    * @return
+ * @brief Following functions generates event title based on talk.
+ *
+ * @param $talk
+ *
+ * @return
  */
 function talkToEventTitle($talk)
 {
@@ -1347,11 +1371,11 @@ function talkToShortEventTitle($talk)
 }
 
 /**
-    * @brief Fix tags.
-    *
-    * @param $tags
-    *
-    * @return
+ * @brief Fix tags.
+ *
+ * @param $tags
+ *
+ * @return
  */
 function fixTags($tags)
 {
@@ -1360,14 +1384,14 @@ function fixTags($tags)
 }
 
 /**
-    * @brief Check if two time interval are overalloing.
-    *
-    * @param $s1 Start time 1.
-    * @param $e1 End time 1.
-    * @param $s2 Start time 2.
-    * @param $e2 End time 2.
-    *
-    * @return  Return true if there is overlap.
+ * @brief Check if two time interval are overalloing.
+ *
+ * @param $s1 Start time 1.
+ * @param $e1 End time 1.
+ * @param $s2 Start time 2.
+ * @param $e2 End time 2.
+ *
+ * @return Return true if there is overlap.
  */
 function isOverlappingTimeInterval($start1, $end1, $start2, $end2)
 {
@@ -1393,11 +1417,11 @@ function isOverlappingTimeInterval($start1, $end1, $start2, $end2)
 
 
 /**
-    * @brief Convert array to name.
-    *
-    * @param $name
-    *
-    * @return
+ * @brief Convert array to name.
+ *
+ * @param $name
+ *
+ * @return
  */
 function nameArrayToText($name)
 {
@@ -1408,11 +1432,11 @@ function nameArrayToText($name)
 }
 
 /**
-    * @brief Return a external_id of talk for booking.
-    *
-    * @param $talk
-    *
-    * @return "talks.$id"
+ * @brief Return a external_id of talk for booking.
+ *
+ * @param $talk
+ *
+ * @return "talks.$id"
  */
 function getTalkExternalId($talk)
 {
@@ -1433,11 +1457,11 @@ function contains($needle, $haystack)
 }
 
 /**
-    * @brief Check if a given request or event belong to a talk.
-    *
-    * @param $event Given request of talk.
-    *
-    * @return
+ * @brief Check if a given request or event belong to a talk.
+ *
+ * @param $event Given request of talk.
+ *
+ * @return
  */
 function isEventOfTalk($event)
 {
@@ -1514,13 +1538,13 @@ function getNextSemester($sem = null, $year = null)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  See if substring is found in given string.
-    *
-    * @Param $needle
-    * @Param $haystack
-    * @Param $case_insensitive
-    *
-    * @Returns
+ * @Synopsis See if substring is found in given string.
+ *
+ * @Param $needle
+ * @Param $haystack
+ * @Param $case_insensitive
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function __substr__(string $needle, string $haystack, bool $case_insensitive = false)
@@ -1541,11 +1565,11 @@ function __substr__(string $needle, string $haystack, bool $case_insensitive = f
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Is given URL an image.
-    *
-    * @Param $url
-    *
-    * @Returns
+ * @Synopsis Is given URL an image.
+ *
+ * @Param $url
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function isImage($url)
@@ -1581,11 +1605,11 @@ function isImage($url)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Select random JPEG from directory.
-    *
-    * @Param $dir
-    *
-    * @Returns
+ * @Synopsis Select random JPEG from directory.
+ *
+ * @Param $dir
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function random_jpeg($dir)
@@ -1601,11 +1625,11 @@ function random_jpeg($dir)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Is the given course active on given date.
-    *
-    * @Param $course
-    *
-    * @Returns
+ * @Synopsis Is the given course active on given date.
+ *
+ * @Param $course
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function isCourseActive($course, $day = 'today')
@@ -1624,13 +1648,13 @@ function isCourseActive($course, $day = 'today')
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Cancel a pending request or a confirmed booking. Notify the
-    * user.
-    *
-    * @Param $evOrReq Event or request.
-    * @Param $reason  Why?
-    *
-    * @Returns
+ * @Synopsis Cancel a pending request or a confirmed booking. Notify the
+ * user.
+ *
+ * @Param $evOrReq Event or request.
+ * @Param $reason  Why?
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $reason)
@@ -1668,26 +1692,28 @@ function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $rea
         $msg .= arrayToTableHTML($evOrReq, 'event');
         $msg .= p("Following reason is given:");
         $msg .= $reason ?? p("No reason is given. So rude!");
-        $msg .= p("<small>
+        $msg .= p(
+            "<small>
             NOTE: This action was triggered automatically due to a 
             policy violation which could not enforced during booking.
             Please get in touch with appropriate person if this was a mistake or
             oversight.</small>
-            ");
+            "
+        );
         sendHTMLEmail($msg, $subject, $to, $cc);
     }
 }
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Insert given key => value at given index.
-    *
-    * @Param $arr
-    * @Param $index
-    * @Param $key
-    * @Param $value
-    *
-    * @Returns
+ * @Synopsis Insert given key => value at given index.
+ *
+ * @Param $arr
+ * @Param $index
+ * @Param $key
+ * @Param $value
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function array_insert_at($arr, $index, $key, $value)
@@ -1705,9 +1731,9 @@ function array_insert_at($arr, $index, $key, $value)
 }
 
 /**
-* @name Get the course code from a html string. It is usually in the front
-* of the string.
-*/
+ * @name Get the course code from a html string. It is usually in the front
+ * of the string.
+ */
 function getCourseCode($cc, $delim = ':')
 {
     if (strlen(trim($cc)) < 1) {
@@ -1752,11 +1778,11 @@ function diffDates($date1, $date2, $unit = 'second')
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Check if given string is HTML.
-    *
-    * @Param $string
-    *
-    * @Returns
+ * @Synopsis Check if given string is HTML.
+ *
+ * @Param $string
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function isHTML($text)
@@ -1771,12 +1797,12 @@ function isHTML($text)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Split text on any white space (space, tab, comma, newline, * etc.)
-    *
-    * @Param $text
-    * @Param $ext : extra delimiters
-    *
-    * @Returns
+ * @Synopsis Split text on any white space (space, tab, comma, newline, * etc.)
+ *
+ * @Param $text
+ * @Param $ext : extra delimiters
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function splitAtCommonDelimeters($text, $ext = '')
@@ -1792,12 +1818,12 @@ function splitAt(string $text, string $delim) : array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Remove a speaker AWS.
-    *
-    * @Param $speaker
-    * @Param $reason
-    *
-    * @Returns   
+ * @Synopsis Remove a speaker AWS.
+ *
+ * @Param $speaker
+ * @Param $reason
+ *
+ * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
 function removeAWSSpeakerFromList(string $speaker, string $reason='') : array
@@ -1817,9 +1843,11 @@ function removeAWSSpeakerFromList(string $speaker, string $reason='') : array
         // Send email to speaker.
         $subject = "Your name has been removed from AWS list";
         $msg = "<p>Dear " . loginToText($speaker) . " </p>";
-        $msg .= p("Your name has been removed from the Annual Work Seminar (AWS) 
+        $msg .= p(
+            "Your name has been removed from the Annual Work Seminar (AWS) 
             roster. $reason. If this is a mistake, please inform Academic 
-            Office.");
+            Office."
+        );
 
         $to = getLoginEmail($speaker);
         $emailRes = sendHTMLEmail($msg, $subject, $to);
@@ -1842,9 +1870,11 @@ function addAWSSpeakerToList(string $speaker): array
         // Send email to speaker.
         $subject = "Your name has been added to AWS roster";
         $msg = "<p>Dear " . loginToText($speaker) . " </p>";
-        $msg .= p("Your name has been added to Annual Work Seminar (AWS) 
+        $msg .= p(
+            "Your name has been added to Annual Work Seminar (AWS) 
             roster. If this is a mistake, please inform Academic 
-            Office.");
+            Office."
+        );
 
         $to = getLoginEmail($speaker);
         $emailRes = sendHTMLEmail($msg, $subject, $to);
@@ -1858,11 +1888,11 @@ function addAWSSpeakerToList(string $speaker): array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find a personal by name.
-    *
-    * @Param name
-    *
-    * @Returns
+ * @Synopsis Find a personal by name.
+ *
+ * @Param name
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getLoginInfoByName(string $name) : array
@@ -2003,11 +2033,11 @@ function array_insert_after($key, array &$array, $new_key, $new_value)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get a default venue for a given date.
-    *
-    * @Param $date
-    *
-    * @Returns
+ * @Synopsis Get a default venue for a given date.
+ *
+ * @Param $date
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getDefaultAWSVenue(string $date) : string
@@ -2029,12 +2059,12 @@ function getAWSVenue(string $date) : string
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find a venue of upcoming AWS if it is not assigned.
-    *
-    * @Param $date
-    * @Param $defaultVenue
-    *
-    * @Returns
+ * @Synopsis Find a venue of upcoming AWS if it is not assigned.
+ *
+ * @Param $date
+ * @Param $defaultVenue
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getAWSVenueForm(string $date, string $defaultVenue = '') : string
@@ -2055,13 +2085,13 @@ function getAWSVenueForm(string $date, string $defaultVenue = '') : string
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Book a venue for this AWS.
-    *
-    * @Param $aws
-    * @Param $removeCollision. If yes, remove any conflicting booking already
-    * on the venue.
-    *
-    * @Returns
+ * @Synopsis Book a venue for this AWS.
+ *
+ * @Param $aws
+ * @Param $removeCollision. If yes, remove any conflicting booking already
+ * on the venue.
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
@@ -2086,8 +2116,10 @@ function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
         $booking['is_public_event'] = 'YES';
         $booking['status'] = 'VALID';
         $updatekeys = 'title,status,date,start_time,end_time,venue';
-        updateTable(__get__($booking, 'eid','')?'events':'bookmyvenue_requests'
-            , 'external_id', $updatekeys, $booking);
+        updateTable(
+            __get__($booking, 'eid', '')?'events':'bookmyvenue_requests',
+            'external_id', $updatekeys, $booking
+        );
 
         $result['success'] = true;
         $result['msg'] .= "Already booked. Updated";
@@ -2136,11 +2168,11 @@ function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Inactivate a given account.
-    *
-    * @Param $id
-    *
-    * @Returns
+ * @Synopsis Inactivate a given account.
+ *
+ * @Param $id
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function inactiveAccounts(array $ids) : bool
@@ -2169,11 +2201,11 @@ function inactiveAccounts(array $ids) : bool
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find email id from the given string.
-    *
-    * @Param $str
-    *
-    * @Returns
+ * @Synopsis Find email id from the given string.
+ *
+ * @Param $str
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function findEmailIdInParanthesis(string $str) : string
@@ -2184,12 +2216,12 @@ function findEmailIdInParanthesis(string $str) : string
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Return user keys.
-    *
-    * @Param $user Name of the users.
-    * @Param $level (default -1, return all) else return key of that level.
-    *
-    * @Returns
+ * @Synopsis Return user keys.
+ *
+ * @Param $user Name of the users.
+ * @Param $level (default -1, return all) else return key of that level.
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getUserKeys(string $login, int $level = -1) : array
@@ -2212,12 +2244,12 @@ function getUserKey(string $login, int $level = -1) : array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Generate a new key for given user.
-    *
-    * @Param $user
-    * @Param $level
-    *
-    * @Returns
+ * @Synopsis Generate a new key for given user.
+ *
+ * @Param $user
+ * @Param $level
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function genererateNewKey(string $user, int $level = 1)
@@ -2277,13 +2309,13 @@ function getUpcomingPublicEventsFormatted(string $startDate, int $limit = 20, in
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Genearte base64 image out of a path.
-    *
-    * @Param $filepath
-    * @Param $width
-    * @Param $height
-    *
-    * @Returns
+ * @Synopsis Genearte base64 image out of a path.
+ *
+ * @Param $filepath
+ * @Param $width
+ * @Param $height
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getBase64JPEG(string $filepath, int $width=0, int $height = 0) : string

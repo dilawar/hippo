@@ -1,9 +1,9 @@
-<?php 
-include_once( "header.php" );
-include_once( "sqlite.php" );
-include_once( "methods.php" );
+<?php
+include_once("header.php");
+include_once("sqlite.php");
+include_once("methods.php");
 
-$venues = getVenues( );
+$venues = getVenues();
 
 ?>
 

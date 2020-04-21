@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,4 +63,4 @@ p {
 </body>
 </html>
 
-<?php echo( "You requested: " . $_SERVER['REQUEST_URI'] ) ; ?>
+<?php echo("You requested: " . $_SERVER['REQUEST_URI']) ; ?>

@@ -15,29 +15,23 @@ echo '
 
 $whichDay = $date;
 
-if( count( $jcs ) < 1 )
-{
-    echo alertUser( "This is embarrassing. I could not find any JC scheduled. That's all I know!", false );
+if (count($jcs) < 1) {
+    echo alertUser("This is embarrassing. I could not find any JC scheduled. That's all I know!", false);
     echo "<br />";
-}
-else
-{
+} else {
     // Display details of JCs which are withing this week. Otherwise just show
     // the summary.
     echo heading("Upcoming presentations in Journal Clubs", 2);
 
-    foreach( $jcs as $jc )
-    {
-        if( strtotime( $jc['date'] ) < strtotime( $whichDay ) + 7*24*3600 )
-            echo jcToHTML( $jc );
-        else
-            echo jcToHTML( $jc, true );
+    foreach ($jcs as $jc) {
+        if (strtotime($jc['date']) < strtotime($whichDay) + 7*24*3600) {
+            echo jcToHTML($jc);
+        } else {
+            echo jcToHTML($jc, true);
+        }
 
         echo horizontalLine();
     }
 }
 
-echo closePage( );
-
-
-?>
+echo closePage();

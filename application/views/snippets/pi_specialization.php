@@ -1,16 +1,18 @@
 <?php
 
 // Collect all faculty
-$faculty = getFaculty( );
+$faculty = getFaculty();
 $facultyByEmail = array( );
-foreach( $faculty as $fac )
+foreach ($faculty as $fac) {
     $facultyByEmail[ $fac[ 'email' ] ] = $fac;
-$facEmails = array_keys( $facultyByEmail );
+}
+$facEmails = array_keys($facultyByEmail);
 
 $specialization = array( );
-foreach( getAllSpecialization( ) as $spec )
+foreach (getAllSpecialization() as $spec) {
     $specialization[$spec[ 'specialization' ] ] = 1;
-$specialization = array_keys( $specialization );
+}
+$specialization = array_keys($specialization);
 
 
 ?>
@@ -19,8 +21,8 @@ $specialization = array_keys( $specialization );
 // Autocomplete pi.
 $( function() {
     // These emails must not be key value array.
-    var emails = <?php echo json_encode( $facEmails ); ?>;
-    var specialization = <?php echo json_encode( $specialization ); ?>;
+    var emails = <?php echo json_encode($facEmails); ?>;
+    var specialization = <?php echo json_encode($specialization); ?>;
     $( "#logins_pi_or_host" ).autocomplete( { source : emails });
     $( "#logins_pi_or_host" ).attr( "placeholder", "type email of supervisor" );
     $( "#logins_specialization" ).autocomplete( { source : specialization });

@@ -4,10 +4,10 @@ include_once 'database.php';
 include_once 'methods.php';
 include_once 'tohtml.php';
 include_once 'check_access_permissions.php';
-mustHaveAnyOfTheseRoles('USER' );
-echo userHTML( );
+mustHaveAnyOfTheseRoles('USER');
+echo userHTML();
 
-$items = getTableEntries( 'inventory', 'common_name', "status='VALID'" );
+$items = getTableEntries('inventory', 'common_name', "status='VALID'");
 
 // Add JS based real time search.
 ?>
@@ -45,24 +45,22 @@ function filterTable( button ) {
 
 <?php
 
-if (count( $items ) < 1)
-{
-    echo printInfo( "No item found in inventory." );
-}
-else
-{
+if (count($items) < 1) {
+    echo printInfo("No item found in inventory.");
+} else {
     echo '<input type="text" id="search_query" onkeyup="filterTable()"
          placeholder="Type to search">';
-    echo printNote( "Click on column name to sort the table." );
+    echo printNote("Click on column name to sort the table.");
     $hide = 'id,status,last_modified_on,edited_by';
     echo ' <table id="searchable_by_js" class="info sortable">';
-    echo arrayHeaderRow( $items[0], 'info sorttable', $hide );
-    foreach( $items  as $item )
-        echo arrayToRowHTML( $item, 'info sorttable', $hide );
+    echo arrayHeaderRow($items[0], 'info sorttable', $hide);
+    foreach ($items  as $item) {
+        echo arrayToRowHTML($item, 'info sorttable', $hide);
+    }
     echo '</table>';
 }
 
 echo " <br /> ";
-echo goBackToPageLink( "user/home", "Go back" );
+echo goBackToPageLink("user/home", "Go back");
 
 ?>

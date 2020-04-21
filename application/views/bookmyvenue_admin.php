@@ -12,7 +12,7 @@ global $symbThumbsUp;
     * @Returns
     */
 /* ----------------------------------------------------------------------------*/
-function bookmyVenueAdminTaskTable( )
+function bookmyVenueAdminTaskTable()
 {
     $html = '<table class="admin">
         <tr>
@@ -66,12 +66,12 @@ function bookmyVenueAdminTaskTable( )
 }
 
 
-echo userHTML( );
-echo bookmyVenueAdminTaskTable( );
+echo userHTML();
+echo bookmyVenueAdminTaskTable();
 
 echo '<h1>Pending requests</h1>';
-$reqGrouped = getPendingRequestsGroupedByGID( );
-echo p("Total " . count($reqGrouped) . " requests are pending." );
+$reqGrouped = getPendingRequestsGroupedByGID();
+echo p("Total " . count($reqGrouped) . " requests are pending.");
 
 $html = '<div>';
 $html .= '<input type="text" id="filter_requests" placeholder="Type to filter">';
@@ -81,52 +81,50 @@ $tohide = 'last_modified_on,status,modified_by,timestamp,url,external_id,gid,rid
 // Using reference is missing the last event. Surprising! So we create a new
 // array and add.
 $requests = array();
-foreach( $reqGrouped as $r )
-{
+foreach ($reqGrouped as $r) {
     $r['metadata'] = '(' . $r['gid'].'.'.$r['rid'] .')'
-        . ' <br />' . $r['timestamp'] 
+        . ' <br />' . $r['timestamp']
         . ' <br />' . $r['status'];
     $requests[] = $r;
 }
 
-$html .= arrayToTHRow( $requests[0], 'request', $tohide );
-foreach( $requests as $r )
-{
+$html .= arrayToTHRow($requests[0], 'request', $tohide);
+foreach ($requests as $r) {
     // If request date has passed, ignore it.
-    if( strtotime( $r[ 'date' ] ) < strtotime( '-2 day' ) )
-    {
+    if (strtotime($r[ 'date' ]) < strtotime('-2 day')) {
         // TODO: Do not show requests which are more than 1 days old. Their status
         // remains PENDING all the time. Dont know what to do such
         // unapproved/expired requests.
         $res = changeRequestStatus($r['gid'], $r['rid'], 'EXPIRED');
-        if( $res )
-        {
+        if ($res) {
             $rid = $r['gid'] . '-' . $r['rid'];
-            $msg = p("Following request is expired because no one acted on it." );
-            $msg .= arrayToTableHTML( $r, 'info' );
+            $msg = p("Following request is expired because no one acted on it.");
+            $msg .= arrayToTableHTML($r, 'info');
             $subject = "Request id  $rid is expired.";
             $to = getLoginEmail($r['created_by']);
             $cclist = 'hippo@lists.ncbs.res.in';
-            sendHTMLEmail( $msg, $subject, $to, $cclist );
+            sendHTMLEmail($msg, $subject, $to, $cclist);
         }
         continue;
     }
 
     // If a request is coming from talk or in near future
     $color = '';
-    if( strtotime($r['date']) <= strtotime( 'tomorrow') + 3600*24*5 )
+    if (strtotime($r['date']) <= strtotime('tomorrow') + 3600*24*5) {
         $color = 'lightblue';
+    }
 
     // If it is talk use yellow.
-    if( __substr__('talks.', __get__($r, 'external_id',''))) 
+    if (__substr__('talks.', __get__($r, 'external_id', ''))) {
         $color = 'yellow';
+    }
 
     $html .= "<tr style=\"background-color:$color\">";
     $html .= '<form action="'.site_url('adminbmv/review'). '" method="post">';
     // Hide some buttons to send information to next page.
     $html .= '<input type="hidden" name="gid" value="' . $r['gid'] . '" />';
     $html .= '<input type="hidden" name="rid" value="' . $r['rid'] . '" />';
-    $html .= arrayToRowHTML( $r,'request', $tohide, false, false );
+    $html .= arrayToRowHTML($r, 'request', $tohide, false, false);
     $html .= '<td style="background:white"><button name="response" 
                 class="btn btn-primaty"
                 value="Review" title="Review request"> ' .  $symbReview . '</button>';
@@ -134,8 +132,7 @@ foreach( $requests as $r )
 
     // Another form to quickly approve. Visible only if there are not many
     // subrequests.
-    if( getNumberOfRequetsInGroup( $r['gid'] ) == 1 )
-    {
+    if (getNumberOfRequetsInGroup($r['gid']) == 1) {
         // $html .= '<td style="background:white">';
         $html .= '<form action="'.site_url('adminbmv/approve'). '" method="post">';
         $html .= '<input type="hidden" name="gid" value="' . $r['gid'] . '" />';
@@ -149,7 +146,7 @@ foreach( $requests as $r )
 $html .= '</table>';
 $html .= "</div>";
 echo $html;
-echo goBackToPageLink( "adminbmv/home", "Go home" );
+echo goBackToPageLink("adminbmv/home", "Go home");
 
 
 echo '<h1>Upcoming (approved) events in next 4 weeks </h1>';
@@ -157,26 +154,25 @@ echo '<h1>Upcoming (approved) events in next 4 weeks </h1>';
 // Let admin search.
 echo '<input id="filter_events" placeholder="Type to filter"></input>';
 
-if( __get__( $_POST, 'response', '' ) == 'search' )
-{
-    $query = trim( $_POST[ 'query' ] );
-    if( trim( $query ) )
-    {
-        $day = dbDate( 'yesterday' );
-        $events = getTableEntries( 'events', 'date'
-            , "status='VALID' AND date >= '$day' AND
+if (__get__($_POST, 'response', '') == 'search') {
+    $query = trim($_POST[ 'query' ]);
+    if (trim($query)) {
+        $day = dbDate('yesterday');
+        $events = getTableEntries(
+            'events',
+            'date',
+            "status='VALID' AND date >= '$day' AND
                 (created_by='$query' OR title LIKE '%$query%')"
         );
+    } else {
+        $events = getEventsBetween('today', '+2 week');
     }
-    else
-        $events = getEventsBetween( 'today', '+2 week' );
+} else {
+    $events = getEventsBetween('today', '+2 week');
 }
-else
-    $events = getEventsBetween( 'today', '+2 week' );
 
 
-if( count( $events ) > 0 )
-{
+if (count($events) > 0) {
     $html = '<div style="font-size:small;">';
     $event = $events[0];
 
@@ -185,18 +181,18 @@ if( count( $events ) > 0 )
         ',external_id,gid,last_modified_on,status,url';
 
     // Add extra field to create one last row.
-    $html .= arrayHeaderRow( $event, 'event', $tofilter );
+    $html .= arrayHeaderRow($event, 'event', $tofilter);
 
-    foreach( $events as $event )
-    {
+    foreach ($events as $event) {
         // Today's event if they are passed, don't display them.
-        if( $event[ 'date' ] == dbDate( 'today' ) && $event[ 'start_time'] < dbTime( 'now' ) )
+        if ($event[ 'date' ] == dbDate('today') && $event[ 'start_time'] < dbTime('now')) {
             continue;
+        }
 
         $gid = $event['gid'];
         $eid = $event['eid'];
         $html .= "<tr>";
-        $html .= arrayToRowHTML( $event, 'event', $tofilter, false, false );
+        $html .= arrayToRowHTML($event, 'event', $tofilter, false, false);
 
         $html .= "<td>";
         $html .= '<form method="post" action="'.site_url('adminbmv/edit').'">';
@@ -213,7 +209,7 @@ if( count( $events ) > 0 )
     echo $html;
 }
 
-echo goBackToPageLink( "adminbmv/home", "Go home" );
+echo goBackToPageLink("adminbmv/home", "Go home");
 ?>
 
 <!-- This should be copy pasted -->

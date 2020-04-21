@@ -6,21 +6,20 @@ require_once BASEPATH.'autoload.php';
 echo heading('Upcoming AWS', 1);
 
 $dateMap = array( );
-foreach( $upcomingAWS as $aws )
+foreach ($upcomingAWS as $aws) {
     $dateMap[ $aws['date'] ][] = $aws;
+}
 
 ksort($dateMap);
 
 $table = '<table class="table table-hover table-condensed">';
-foreach ($dateMap as $date => $awses)
-{
+foreach ($dateMap as $date => $awses) {
     $table .= '<tr>';
-    $table .= '<td>' . humanReadableDate( $date ) . '</td>';
+    $table .= '<td>' . humanReadableDate($date) . '</td>';
 
-    foreach( $awses as $aws )
-    {
-        $piOrHost = getPIOrHost( $aws[ 'speaker' ] );
-        $table .= '<td>' . loginToHTML( $aws['speaker']) 
+    foreach ($awses as $aws) {
+        $piOrHost = getPIOrHost($aws[ 'speaker' ]);
+        $table .= '<td>' . loginToHTML($aws['speaker'])
             . ' <br /><small><tt>' . $piOrHost . '</tt></small></td>';
     }
 
@@ -37,26 +36,27 @@ echo $table;
 
 echo heading('List of AWS Speakers', 1);
 
-echo alertUser( "If your name is not on this list, please write to "
-        . mailto( "acadoffice@ncbs.res.in", "Academic Office" ) . "."
-        , false
-    );
+echo alertUser(
+    "If your name is not on this list, please write to "
+        . mailto("acadoffice@ncbs.res.in", "Academic Office") . ".",
+    false
+);
 
 $table = ' <table class="table table-hover sortable"> ';
 $table .= '<tr> <th></th> <th>Name</th> <th>PI/HOST</th> <th>Specialization</th> </tr>';
 $index = 0;
-foreach( $speakers as $i => $speaker )
-{
+foreach ($speakers as $i => $speaker) {
     $login = $speaker['login'];
-    $speaker = getLoginInfo( $login );
+    $speaker = getLoginInfo($login);
 
-    if( ! trim($login) )
+    if (! trim($login)) {
         continue;
+    }
 
     $index += 1;
-    $name = arrayToName( $speaker );
-    $pi = getPIOrHost( $login );
-    $specialization = getSpecialization( $login, $pi );
+    $name = arrayToName($speaker);
+    $pi = getPIOrHost($login);
+    $specialization = getSpecialization($login, $pi);
 
     $row = '<tr>';
     $row = "<td>$index<td>$name ($login)</td> <td>$pi</td> <td>$specialization</td>";
@@ -66,6 +66,4 @@ foreach( $speakers as $i => $speaker )
 $table .= '</table>';
 echo $table;
 
-echo goBackToPageLink( "info/aws", "Go back" );
-
-?>
+echo goBackToPageLink("info/aws", "Go back");

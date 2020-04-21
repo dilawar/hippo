@@ -153,8 +153,8 @@ $(document).ready(function(){
 
 <div class="header">
 <div class="h1 title">
-<a href="<?= site_url( 'welcome' ) ?>" >
-  <?php echo img( 'data/HippoLogoCropped.png', false, array('height'=>'70px')); ?> <span style="font-size:60px">Hippo</span>
+<a href="<?= site_url('welcome') ?>" >
+  <?php echo img('data/HippoLogoCropped.png', false, array('height'=>'70px')); ?> <span style="font-size:60px">Hippo</span>
 </a>
 <div class="pull-right" style="font-size:small">
 <a style="color:white" target="hippo_popup" href="https://ncbs.res.in/hippo/app/www">
@@ -175,7 +175,7 @@ $(document).ready(function(){
     <td><a class="bright" href="<?= site_url('info/talks') ?>" target="hippo_popup">Talks</a></td>
     <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
     <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
-    <td><a class="bright" href="<?= getConfigValue( 'CALENDAR_URL' ) ?>" target="hippo_popup">Calendar</a> </td>
+    <td><a class="bright" href="<?= getConfigValue('CALENDAR_URL') ?>" target="hippo_popup">Calendar</a> </td>
     </tr>
 </table>
 </div>

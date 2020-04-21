@@ -4,7 +4,7 @@ require_once BASEPATH.'autoload.php';
 // Get the referece page. These tasks are shared by both ADMIN_ACAD and
 // ADMINBMV. Controller must set controller parameter.
 $ref = $controller;
-echo userHTML( );
+echo userHTML();
 
 global $symbEdit;
 global $symbDelete;
@@ -13,7 +13,7 @@ global $symbCancel;
 
 
 // Logic for POST requests.
-$speaker = array( 
+$speaker = array(
     'first_name' => '', 'middle_name' => '', 'last_name' => '', 'email' => ''
     , 'department' => '', 'institute' => '', 'title' => '', 'id' => ''
     , 'homepage' => ''
@@ -21,20 +21,21 @@ $speaker = array(
 
 // Get talks only in future.
 $whereExpr = "status!='INVALID' ORDER BY created_on DESC";
-$talks = getTableEntries( 'talks', '', $whereExpr );
+$talks = getTableEntries('talks', '', $whereExpr);
 
 $upcomingTalks = array( );
 
 /* Filter talk which have not been delivered yet. */
-foreach( $talks as $t )
-{
+foreach ($talks as $t) {
     // If talk has been delivered, then dont display.
-    $event = getEventsOfTalkId( $t['id'] );
-    if( $event )
-        if( strtotime($event[ 'date' ] ) <= strtotime( 'yesterday' ) )
+    $event = getEventsOfTalkId($t['id']);
+    if ($event) {
+        if (strtotime($event[ 'date' ]) <= strtotime('yesterday')) {
             // This talk has been delivered successfully.
             continue;
-    array_push( $upcomingTalks, $t );
+        }
+    }
+    array_push($upcomingTalks, $t);
 }
 
 // A form to select a date and see the talks.
@@ -53,19 +54,18 @@ $form .= '</form>';
 echo $form;
 
 // If we have a post request.
-if( __get__($_POST, 'date', ''))
-{
+if (__get__($_POST, 'date', '')) {
     $date = $_POST['date'];
     echo "<h3>Talks on $date</h3>";
     $talksWithEvent = getTalksOnThisDay($date);
-    foreach($talksWithEvent as $entry ) {
+    foreach ($talksWithEvent as $entry) {
         $t = $entry['talk'];
         $tid = $t['id'];
         echo '<td>';
         echo '<form method="post" action="'.site_url("$ref/updatetalk/$tid").'">';
-        echo arrayToVerticalTableHTML( $t, 'info', '', 'speaker_id');
+        echo arrayToVerticalTableHTML($t, 'info', '', 'speaker_id');
         echo '</form>';
-        // Put an edit button. 
+        // Put an edit button.
         echo '<form method="post" action="'.site_url("$ref/edittalk/$tid").'">';
         echo '<button class="btn btn-primary" style="float:right" title="Edit this talk"
                 name="response" value="edit">' . $symbEdit . '</button>';
@@ -80,15 +80,14 @@ echo heading("Upcoming talks (Newest first)");
 echo '<div style="font-size:x-small">';
 // Outer table
 echo '<table class="table table-hover table_in_table">';
-foreach( $upcomingTalks as $t )
-{
+foreach ($upcomingTalks as $t) {
     echo '<tr>';
     /***************************************************************************
      * FIRST COLUMN: Speaker picture.
      */
     echo '<td>';
     echo "Speaker ID: " . $t['speaker_id'] . '<br />';
-    echo inlineImageOfSpeakerId( $t['speaker_id'], $height = '100px', $width = '100px' );
+    echo inlineImageOfSpeakerId($t['speaker_id'], $height = '100px', $width = '100px');
     echo '</td>';
 
     /***************************************************************************
@@ -98,10 +97,10 @@ foreach( $upcomingTalks as $t )
 
     echo '<td>';
     echo '<form method="post" action="'.site_url("$ref/updatetalk/$tid").'">';
-    echo arrayToVerticalTableHTML( $t, 'info', '', 'speaker_id');
+    echo arrayToVerticalTableHTML($t, 'info', '', 'speaker_id');
     echo '</form>';
 
-    // Put an edit button. 
+    // Put an edit button.
     echo '<form method="post" action="'.site_url("$ref/edittalk/$tid").'">';
     echo '<button class="btn btn-primary" style="float:right" title="Edit this talk"
             name="response" value="edit">' . $symbEdit . '</button>';
@@ -120,20 +119,23 @@ foreach( $upcomingTalks as $t )
      */
 
     // Check if this talk has already been approved or in pending approval.
-    $externalId = getTalkExternalId( $t );
-    $event = getTableEntry( 'events', 'external_id,status'
-        , array( 'external_id' => $externalId, 'status' => 'VALID' )
-        );
+    $externalId = getTalkExternalId($t);
+    $event = getTableEntry(
+        'events',
+        'external_id,status',
+        array( 'external_id' => $externalId, 'status' => 'VALID' )
+    );
 
-    $request = getTableEntry( 'bookmyvenue_requests', 'external_id,status'
-        , array( 'external_id' => $externalId, 'status'  => 'PENDING' )
-        );
+    $request = getTableEntry(
+        'bookmyvenue_requests',
+        'external_id,status',
+        array( 'external_id' => $externalId, 'status'  => 'PENDING' )
+    );
 
-    // If either a request of event is found, don't let user schedule the talk. 
+    // If either a request of event is found, don't let user schedule the talk.
     // Here we disable the schedule button.
 
-    if( ! ($request || $event ) )
-    {
+    if (! ($request || $event)) {
         echo '<td>';
         echo '<form method="post" action="'.site_url("$ref/scheduletalk/$tid").'">';
         echo '<input type="hidden" name="id" value="' . $t[ 'id' ] . '" />';
@@ -141,43 +143,39 @@ foreach( $upcomingTalks as $t )
             name="response" value="schedule">' . $symbCalendar . '</button>';
         echo '</form>';
         echo '</td>';
-    }
-    else
-    {
+    } else {
         echo '<td>';
-        if( $event )
-        {
+        if ($event) {
             // If event is already approved, show it here.
-            echo alertUser( "<strong>This talk is confirmed.</strong>", false );
+            echo alertUser("<strong>This talk is confirmed.</strong>", false);
 
-            $html = arrayToVerticalTableHTML( $event, 'events'
-                , 'lightyellow'
-                , 'eid,class,url,modified_by,timestamp,calendar_id,status,calendar_event_id,last_modified_on' );
+            $html = arrayToVerticalTableHTML($event, 'events', 'lightyellow', 'eid,class,url,modified_by,timestamp,calendar_id,status,calendar_event_id,last_modified_on');
 
 
             /* PREPARE email template */
-            $talkid = explode( '.', $event[ 'external_id' ])[1];
-            $talk = getTableEntry( 'talks', 'id', array( 'id' => $talkid ) );
-            if( ! $talk )
+            $talkid = explode('.', $event[ 'external_id' ])[1];
+            $talk = getTableEntry('talks', 'id', array( 'id' => $talkid ));
+            if (! $talk) {
                 continue;
+            }
 
-            $talkHTML = talkToHTML( $talk, false );
+            $talkHTML = talkToHTML($talk, false);
 
             $attachments = eventToICALFile($event);
 
-            $subject = __ucwords__( $talk[ 'class' ] ) . " by " . $talk['speaker'] . ' on ' .
-                humanReadableDate( $event[ 'date' ] );
+            $subject = __ucwords__($talk[ 'class' ]) . " by " . $talk['speaker'] . ' on ' .
+                humanReadableDate($event[ 'date' ]);
 
             $hostInstitite = emailInstitute($talk['host'], $talk['host_extra']);
             $templ = emailFromTemplate(
-                "this_event" 
-                , array( 'EMAIL_BODY' => $talkHTML
-                        , 'HOST_INSTITUTE' => strtoupper( $hostInstitite )
-                    ) 
-                );
+                "this_event",
+                array( 'EMAIL_BODY' => $talkHTML
+                        , 'HOST_INSTITUTE' => strtoupper($hostInstitite)
+                    )
+            );
 
 
-            $templ = htmlspecialchars( json_encode( $templ ) );
+            $templ = htmlspecialchars(json_encode($templ));
 
             $html .= '<form method="post" action="'.site_url("$ref/send_email") .'">';
             $html .= '<input type="hidden" name="subject" value="'. $subject . '" >';
@@ -190,8 +188,7 @@ foreach( $upcomingTalks as $t )
 
             $html .= '</form>';
             $html .= '<form method="post" action="'.site_url("$ref/delete_booking").'">';
-            $html .= "<button class='btn btn-danger' 
-                onclick=\"AreYouSure(this)\" 
+            $html .= "<button class='btn btn-danger' onclick=\"AreYouSure(this)\" 
                 name=\"response\" title=\"Remove this booking.\"> 
                 $symbCancel </button>";
 
@@ -203,18 +200,14 @@ foreach( $upcomingTalks as $t )
             echo $html;
         }
         // Else there might be a pending request.
-        else if( $request )
-        {
-            echo alertUser( 
-                "Shown below is the booking request pending review for above talk."
-                , false
-            );
+        elseif ($request) {
+            echo alertUser("Booking request pending review for above talk.", false);
 
             $gid = $request[ 'gid' ];
 
-            echo arrayToVerticalTableHTML( $request, 'requests', ''
-                , 'eid,class,external_id,url,modified_by,timestamp,calendar_id' . 
-                ',status,calendar_event_id,last_modified_on' );
+            echo arrayToTableHTML($request, 'info table table-sm', 
+                '', 'eid,class,external_id,url,vc_url,modified_by,timestamp,calendar_id' .
+                ',status,calendar_event_id,last_modified_on');
 
             echo '<form method="post" action="'.site_url("$ref/update_requests").'">';
             echo "<button class='btn btn-danger' onclick=\"AreYouSure(this)\" 
@@ -233,6 +226,4 @@ echo '</table>';
 echo '</div>';
 
     
-echo goBackToPageLink( "$ref/home", "Go back" );
-
-?>
+echo goBackToPageLink("$ref/home", "Go back");

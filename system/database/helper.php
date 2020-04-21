@@ -16,8 +16,8 @@ $hippoDB->initialize();
  * parameter. Useful for debugging. Assumes anonymous parameters from
  * $params are are in the same order as specified in $query
  *
- * @param string $query The sql query with parameter placeholders
- * @param array $params The array of substitution parameters
+ * @param  string $query  The sql query with parameter placeholders
+ * @param  array  $params The array of substitution parameters
  * @return string The interpolated query
  *
  * This is from https://stackoverflow.com/a/8403150/1805129
@@ -26,7 +26,7 @@ function interpolateQuery($query, $params)
 {
     $keys = array();
 
-    # build a regular expression for each parameter
+    // build a regular expression for each parameter
     foreach ($params as $key => $value) {
         if (is_string($key)) {
             $keys[] = '/:'.$key.'/';
@@ -37,7 +37,7 @@ function interpolateQuery($query, $params)
 
     $query = preg_replace($keys, $params, $query, 1, $count);
 
-    #trigger_error('replaced '.$count.' keys');
+    // trigger_error('replaced '.$count.' keys');
 
     return $query;
 }
@@ -55,14 +55,14 @@ function initDB()
 }
 
 /**
-    * @brief Return a sorted array out of choices.
-    *
-    * @param $choices
-    * @param $key
-    * @param $default
-    * @param $sorted
-    *
-    * @return
+ * @brief Return a sorted array out of choices.
+ *
+ * @param $choices
+ * @param $key
+ * @param $default
+ * @param $sorted
+ *
+ * @return
  */
 function getChoicesFromGlobalArray($choices, $key, $default = 'UNKNOWN', $sorted = true)
 {
@@ -113,11 +113,11 @@ function getTalkIDs($start_date, $end_date)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find talks on a given date.
-    *
-    * @Param $date
-    *
-    * @Returns
+ * @Synopsis Find talks on a given date.
+ *
+ * @Param $date
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getTalksOnThisDay($date)
@@ -215,11 +215,11 @@ function getVenuesNames($type='')
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Execute given query.
-    *
-    * @Param $query
-    *
-    * @Returns
+ * @Synopsis Execute given query.
+ *
+ * @Param $query
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function executeQuery(string $query, $onlyOne = false)
@@ -331,8 +331,10 @@ function getRequestsGroupedByGID($status='PENDING')
 {
     $hippoDB = initDB();
     ;
-    $stmt = $hippoDB->prepare('SELECT * FROM bookmyvenue_requests
-        WHERE status=:status AND date>=CURDATE() GROUP BY gid ORDER BY date,start_time');
+    $stmt = $hippoDB->prepare(
+        'SELECT * FROM bookmyvenue_requests
+        WHERE status=:status AND date>=CURDATE() GROUP BY gid ORDER BY date,start_time'
+    );
     $stmt->bindValue(':status', $status);
     $stmt->execute();
     return fetchEntries($stmt);
@@ -377,13 +379,13 @@ function getEventsById($gid, $eid)
 }
 
 /**
-    * @brief Get list of requests made by this users. These requests must be
-    * newer than the current date minus 2 days and time else they won't show up.
-    *
-    * @param $userid
-    * @param $status
-    *
-    * @return
+ * @brief Get list of requests made by this users. These requests must be
+ * newer than the current date minus 2 days and time else they won't show up.
+ *
+ * @param $userid
+ * @param $status
+ *
+ * @return
  */
 function getRequestOfUser($userid, $status = 'PENDING')
 {
@@ -402,12 +404,12 @@ function getRequestOfUser($userid, $status = 'PENDING')
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Return request grouped by gid and count as well.
-    *
-    * @Param $userid
-    * @Param $status
-    *
-    * @Returns
+ * @Synopsis Return request grouped by gid and count as well.
+ *
+ * @Param $userid
+ * @Param $status
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getRequestOfUserGroupedAndWithCount($userid, $status = 'PENDING')
@@ -426,27 +428,47 @@ function getRequestOfUserGroupedAndWithCount($userid, $status = 'PENDING')
 }
 
 
+function getEventsOfUserGrouped($userid, $from = 'today', $status = 'VALID')
+{
+    $hippoDB = initDB();
+    ;
+    $from = dbDate($from);
+    $stmt = $hippoDB->prepare(
+        "SELECT * FROM events WHERE 
+        (created_by='$userid' OR created_by LIKE '$userid@%')
+        AND date >= '$from'
+        AND status='$status'
+        GROUP BY gid
+        ORDER BY date,start_time"
+    );
+    $stmt->execute();
+    return fetchEntries($stmt);
+}
+
+
 function getEventsOfUser($userid, $from = 'today', $status = 'VALID')
 {
     $hippoDB = initDB();
     ;
     $from = dbDate($from);
-    $stmt = $hippoDB->prepare("SELECT * FROM events WHERE 
+    $stmt = $hippoDB->prepare(
+        "SELECT * FROM events WHERE 
         (created_by='$userid' OR created_by LIKE '$userid@%')
         AND date >= '$from'
         AND status='$status'
-        ORDER BY date,start_time");
+        ORDER BY date,start_time"
+    );
     $stmt->execute();
     return fetchEntries($stmt);
 }
 
 /**
-    * @brief Get all approved events starting from given date and duration.
-    *
-    * @param $from
-    * @param $duration
-    *
-    * @return
+ * @brief Get all approved events starting from given date and duration.
+ *
+ * @param $from
+ * @param $duration
+ *
+ * @return
  */
 function getEventsBetween($from, $duration)
 {
@@ -513,12 +535,12 @@ function getRequestByGroupIdAndStatus($gid, $status)
 }
 
 /**
-    * @brief Change the status of request.
-    *
-    * @param $requestId
-    * @param $status
-    *
-    * @return true on success, false otherwise.
+ * @brief Change the status of request.
+ *
+ * @param $requestId
+ * @param $status
+ *
+ * @return true on success, false otherwise.
  */
 function changeRequestStatus($gid, $rid, $status)
 {
@@ -535,12 +557,12 @@ function changeRequestStatus($gid, $rid, $status)
 }
 
 /**
-    * @brief Change status of all request identified by group id.
-    *
-    * @param $gid
-    * @param $status
-    *
-    * @return
+ * @brief Change status of all request identified by group id.
+ *
+ * @param $gid
+ * @param $status
+ *
+ * @return
  */
 function changeStatusOfRequests($gid, $status)
 {
@@ -556,8 +578,10 @@ function changeStatusOfEventGroup($gid, $user, $status)
 {
     $hippoDB = initDB();
     ;
-    $stmt = $hippoDB->prepare("UPDATE events SET status=:status WHERE
-        gid=:gid AND created_by=:created_by");
+    $stmt = $hippoDB->prepare(
+        "UPDATE events SET status=:status WHERE
+        gid=:gid AND created_by=:created_by"
+    );
     $stmt->bindValue(':status', $status);
     $stmt->bindValue(':gid', $gid);
     $stmt->bindValue(':created_by', $user);
@@ -576,7 +600,7 @@ function changeStatusOfEvent($gid, $eid, $user, $status)
 }
 
 /**
-    * @brief Get the list of upcoming events.
+ * @brief Get the list of upcoming events.
  */
 function getEvents($from = 'today', $status = 'VALID', int $limit=-1, int $offset=-1)
 {
@@ -594,14 +618,14 @@ function getEvents($from = 'today', $status = 'VALID', int $limit=-1, int $offse
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find events by GID.
-    *
-    * @Param $from
-    * @Param $status
-    * @Param $limit
-    * @Param $offset
-    *
-    * @Returns
+ * @Synopsis Find events by GID.
+ *
+ * @Param $from
+ * @Param $status
+ * @Param $limit
+ * @Param $offset
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getEventsGID(string $from='today', string $status='VALID', int $limit=-1, int $offset=-1)
@@ -623,7 +647,7 @@ function getEventsGID(string $from='today', string $status='VALID', int $limit=-
 }
 
 /**
-  * @brief Get the list of upcoming events grouped by gid.
+ * @brief Get the list of upcoming events grouped by gid.
  */
 function getEventsGrouped($sortby = '', $from = 'today', $status = 'VALID')
 {
@@ -648,7 +672,7 @@ function getEventsGrouped($sortby = '', $from = 'today', $status = 'VALID')
 }
 
 /**
-    * @brief Get the list of upcoming events.
+ * @brief Get the list of upcoming events.
  */
 function getPublicEvents($from = 'today', $status = 'VALID', $ndays = 1)
 {
@@ -656,9 +680,11 @@ function getPublicEvents($from = 'today', $status = 'VALID', $ndays = 1)
     ;
     $from = dbDate($from);
     $end = dbDate(strtotime($from . " +$ndays day"));
-    $stmt = $hippoDB->prepare("SELECT * FROM events WHERE date >= :date AND
+    $stmt = $hippoDB->prepare(
+        "SELECT * FROM events WHERE date >= :date AND
         date <= :end_date AND
-        status=:status AND is_public_event='YES' ORDER BY date,start_time");
+        status=:status AND is_public_event='YES' ORDER BY date,start_time"
+    );
     $stmt->bindValue(':date', $from);
     $stmt->bindValue(':end_date', $end);
     $stmt->bindValue(':status', $status);
@@ -681,12 +707,12 @@ function getPublicEventsNum(string $from, int $limit=10, int $offset=0)
 }
 
 /**
-    * @brief Get list of public event on given day.
-    *
-    * @param $date
-    * @param $status
-    *
-    * @return
+ * @brief Get list of public event on given day.
+ *
+ * @param $date
+ * @param $status
+ *
+ * @return
  */
 function getPublicEventsOnThisDay($date = 'today', $status = 'VALID')
 {
@@ -707,8 +733,10 @@ function getEventsOn($day, $status = 'VALID')
 {
     $hippoDB = initDB();
     ;
-    $stmt = $hippoDB->prepare("SELECT * FROM events
-        WHERE status=:status AND date = :date ORDER BY date,start_time");
+    $stmt = $hippoDB->prepare(
+        "SELECT * FROM events
+        WHERE status=:status AND date = :date ORDER BY date,start_time"
+    );
     $stmt->bindValue(':date', $day);
     $stmt->bindValue(':status', $status);
     $stmt->execute();
@@ -719,9 +747,11 @@ function getEventsOnThisVenueOnThisday($venue, $date, $status = 'VALID')
 {
     $hippoDB = initDB();
     ;
-    $stmt = $hippoDB->prepare("SELECT * FROM events
+    $stmt = $hippoDB->prepare(
+        "SELECT * FROM events
         WHERE venue=:venue AND status=:status AND date=:date ORDER
-            BY date,start_time");
+            BY date,start_time"
+    );
     $stmt->bindValue(':date', $date);
     $stmt->bindValue(':status', $status);
     $stmt->bindValue(':venue', $venue);
@@ -730,15 +760,15 @@ function getEventsOnThisVenueOnThisday($venue, $date, $status = 'VALID')
 }
 
 /**
-    * @brief get overlapping requests or events.
-    *
-    * @param $venue
-    * @param
-    * @param $start_time
-    * @param
-    * @param $status
-    *
-    * @return
+ * @brief get overlapping requests or events.
+ *
+ * @param $venue
+ * @param
+ * @param $start_time
+ * @param
+ * @param $status
+ *
+ * @return
  */
 function getEventsOnThisVenueBetweenTime($venue, $date, $start_time, $end_time, $status = 'VALID'): array
 {
@@ -766,8 +796,10 @@ function getRequestsOnThisVenueOnThisday($venue, $date, $status = 'PENDING')
 {
     $hippoDB = initDB();
     ;
-    $stmt = $hippoDB->prepare("SELECT * FROM bookmyvenue_requests
-        WHERE venue=:venue AND status=:status AND date=:date");
+    $stmt = $hippoDB->prepare(
+        "SELECT * FROM bookmyvenue_requests
+        WHERE venue=:venue AND status=:status AND date=:date"
+    );
     $stmt->bindValue(':date', $date);
     $stmt->bindValue(':status', $status);
     $stmt->bindValue(':venue', $venue);
@@ -799,15 +831,15 @@ function getRequestsOnThisVenueBetweenTime($venue, $date, $start_time, $end_time
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get requests + confirmed events between two dates. Optionally
-    * filter by created_by and venue.
-    *
-    * @Param $from Starting date.
-    * @Param $to End date.
-    * @Param $createdBy (optional) who created it.
-    * @Param $venue  (optional) venue.
-    *
-    * @Returns  List of requests and events.
+ * @Synopsis Get requests + confirmed events between two dates. Optionally
+ * filter by created_by and venue.
+ *
+ * @Param $from Starting date.
+ * @Param $to End date.
+ * @Param $createdBy (optional) who created it.
+ * @Param $venue  (optional) venue.
+ *
+ * @Returns List of requests and events.
  */
 /* ----------------------------------------------------------------------------*/
 function getAllBookingsBetweenTheseDays(string $from, string $to, $createdBy='', $venue='')
@@ -844,8 +876,7 @@ function getNumBookings(int $num, int $limit)
     $now = dbTime(strtotime('now'));
     $events = getTableEntries(
         'events',
-        'date,end_time' // we gonna usort is later
-        ,
+        'date,end_time', // we gonna usort is later
         "status='VALID' AND TIMESTAMP(date, end_time) >= NOW()",
         "class,title,status,description,date,venue,created_by,start_time,end_time,url",
         $num,
@@ -853,8 +884,7 @@ function getNumBookings(int $num, int $limit)
     );
     $requests = getTableEntries(
         'bookmyvenue_requests',
-        'date,end_time' // we gonna usort it later.
-        ,
+        'date,end_time', // we gonna usort it later.
         "status='PENDING' AND TIMESTAMP(date, end_time) >= NOW()",
         "class,title,status,description,date,venue,created_by,start_time,end_time,url",
         $num,
@@ -867,14 +897,14 @@ function getNumBookings(int $num, int $limit)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Returns all requests and requests on this venue on the given
-    * day/time.
-    *
-    * @Param $venue
-    * @Param $date
-    * @Param $time
-    *
-    * @Returns
+ * @Synopsis Returns all requests and requests on this venue on the given
+ * day/time.
+ *
+ * @Param $venue
+ * @Param $date
+ * @Param $time
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getVenueBookingsOnDateTime($venue, $date, $time, $endTime)
@@ -885,12 +915,12 @@ function getVenueBookingsOnDateTime($venue, $date, $time, $endTime)
 }
 
 /**
-    * @brief Get number of entries of a given column.
-    *
-    * @param $tablename
-    * @param $column
-    *
-    * @return
+ * @brief Get number of entries of a given column.
+ *
+ * @param $tablename
+ * @param $column
+ *
+ * @return
  */
 function getNumberOfEntries($tablename, $column = 'id')
 {
@@ -911,11 +941,11 @@ function getUniqueFieldValue($tablename, $column='id'): int
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get unique ID for a table.
-    *
-    * @Param $tablename
-    *
-    * @Returns
+ * @Synopsis Get unique ID for a table.
+ *
+ * @Param $tablename
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getUniqueID($tablename)
@@ -929,17 +959,17 @@ function getUniqueID($tablename)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis Submit a booking request. Optionally remove any collision.
-    *
-    * @Param $request. Array representing request.
-    * @Param $removeCollision. 
-    *   If true, remove all collisions and notify the booking party.
-    * @Param $reason.
-    *    Reason when removing collision. This message will be sent to the 
-    *    booking party.
-    *
-    * @Returns
-    *    array: with `success`, `msg`, and `collision` keys.
+ * @Synopsis Submit a booking request. Optionally remove any collision.
+ *
+ * @Param $request. Array representing request.
+ * @Param $removeCollision. 
+ *   If true, remove all collisions and notify the booking party.
+ * @Param $reason.
+ *    Reason when removing collision. This message will be sent to the 
+ *    booking party.
+ *
+ * @Returns
+ *    array: with `success`, `msg`, and `collision` keys.
  */
 /* ----------------------------------------------------------------------------*/
 function submitRequestImproved(array $request, bool $removeCollision=false, string $reason='') : array
@@ -1026,11 +1056,11 @@ function submitRequestImproved(array $request, bool $removeCollision=false, stri
 
 
 /**
-    * @brief Sunmit a request for review.
-    *
-    * @param $request
-    *
-    * @return  Group id of request.
+ * @brief Sunmit a request for review.
+ *
+ * @param $request
+ *
+ * @return Group id of request.
  */
 function submitRequest(array $request)
 {
@@ -1068,6 +1098,7 @@ function submitRequest(array $request)
         $request[ 'gid' ] = $gid;
         $request[ 'rid' ] = $rid;
         $request[ 'date' ] = $day;
+        $request[ 'last_modified_on' ] = dbDateTime('now');
 
         $collideWith = checkCollision($request);
         $hide = 'rid,external_id,description,is_public_event,url,modified_by';
@@ -1084,8 +1115,9 @@ function submitRequest(array $request)
         $request[ 'timestamp' ] = dbDateTime('now');
         $res = insertIntoTable(
             'bookmyvenue_requests',
-            'gid,rid,external_id,created_by,venue,title,description' .
-                ',date,start_time,end_time,timestamp,is_public_event,class',
+            'gid,rid,external_id,created_by,venue,title,description'
+            .  ',date,start_time,end_time,timestamp,is_public_event,class'
+            .  ',vc_url,url,last_modified_on',
             $request
         );
 
@@ -1110,11 +1142,11 @@ function increaseEventHostedByVenueByOne($venueId)
 }
 
 /**
-    * @brief check for collision.
-    *
-    * @param $resques
-    *
-    * @return
+ * @brief check for collision.
+ *
+ * @param $resques
+ *
+ * @return
  */
 function checkCollision($request): array
 {
@@ -1140,7 +1172,8 @@ function checkCollision($request): array
     foreach ($reqs as $r) {
         // Not the our request.
         if (intval($r['gid']) == intval($request['gid'])
-            && intval($r['rid']) == intval($request['rid'])) {
+            && intval($r['rid']) == intval($request['rid'])
+        ) {
             continue;
         }
         $all[] = $r;
@@ -1149,15 +1182,15 @@ function checkCollision($request): array
 }
 
 /**
-    * @brief Create a new event in dateabase. The group id and event id of event
-    * is same as group id (gid) and rid of request which created it. If there is
-    * alreay a event or request pending which collides with this request, REJECT
-    * it.
-    *
-    * @param $gid
-    * @param $rid
-    *
-    * @return
+ * @brief Create a new event in dateabase. The group id and event id of event
+ * is same as group id (gid) and rid of request which created it. If there is
+ * alreay a event or request pending which collides with this request, REJECT
+ * it.
+ *
+ * @param $gid
+ * @param $rid
+ *
+ * @return
  */
 function approveRequest(string $gid, string $rid): array
 {
@@ -1176,13 +1209,15 @@ function approveRequest(string $gid, string $rid): array
         return ['msg'=>$msg, 'success'=>false, 'data'=>$collideWith];
     }
 
-    $stmt = $hippoDB->prepare('INSERT INTO events (
+    $stmt = $hippoDB->prepare(
+        'INSERT INTO events (
         gid, eid, class, external_id, title, description, date, venue, start_time, end_time
         , created_by, last_modified_on
     ) VALUES (
         :gid, :eid, :class, :external_id, :title, :description, :date, :venue, :start_time, :end_time
         , :created_by, NOW()
-    )');
+    )'
+    );
     $stmt->bindValue(':gid', $gid);
     $stmt->bindValue(':eid', $rid);
     $stmt->bindValue(':class', $request[ 'class' ]);
@@ -1213,14 +1248,14 @@ function rejectRequest($gid, $rid)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Act on a  given request.
-    *
-    * @Param $gid       GID
-    * @Param $rid       RID
-    * @Param $whatToDo  APPPROVE/REJECT.
-    * @Param $notify    SEND EMAIL.
-    *
-    * @Returns
+ * @Synopsis Act on a  given request.
+ *
+ * @Param $gid       GID
+ * @Param $rid       RID
+ * @Param $whatToDo  APPPROVE/REJECT.
+ * @Param $notify    SEND EMAIL.
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function actOnRequest(
@@ -1277,8 +1312,10 @@ function changeIfEventIsPublic($gid, $eid, $status)
 {
     $hippoDB = initDB();
     ;
-    $stmt = $hippoDB->prepare("UPDATE events SET is_public_event=:status
-        WHERE gid=:gid AND eid=:eid");
+    $stmt = $hippoDB->prepare(
+        "UPDATE events SET is_public_event=:status
+        WHERE gid=:gid AND eid=:eid"
+    );
     $stmt->bindValue(':gid', $gid);
     $stmt->bindValue(':status', $status);
     $stmt->bindValue(':eid', $eid);
@@ -1300,9 +1337,11 @@ function eventsAtThisVenue($venue, $date, $time)
 
     // NOTE: When people say 5pm to 7pm they usually don't want to keep 7pm slot
     // booked.
-    $stmt = $hippoDB->prepare('SELECT * FROM events WHERE
+    $stmt = $hippoDB->prepare(
+        'SELECT * FROM events WHERE
         status=:status AND date=:date AND
-        venue=:venue AND start_time <= :time AND end_time > :time');
+        venue=:venue AND start_time <= :time AND end_time > :time'
+    );
     $stmt->bindValue(':date', $hDate);
     $stmt->bindValue(':time', $clockT);
     $stmt->bindValue(':venue', $venue);
@@ -1342,12 +1381,12 @@ function requestsForThisVenue($venue, $date, $time)
 }
 
 /**
-    * @brief Get all public events at this time.
-    *
-    * @param $date
-    * @param $time
-    *
-    * @return
+ * @brief Get all public events at this time.
+ *
+ * @param $date
+ * @param $time
+ *
+ * @return
  */
 function publicEvents($date, $time)
 {
@@ -1362,8 +1401,10 @@ function publicEvents($date, $time)
 
     // NOTE: When people say 5pm to 7pm they usually don't want to keep 7pm slot
     // booked.
-    $stmt = $hippoDB->prepare('SELECT * FROM events WHERE
-        date=:date AND start_time <= :time AND end_time > :time');
+    $stmt = $hippoDB->prepare(
+        'SELECT * FROM events WHERE
+        date=:date AND start_time <= :time AND end_time > :time'
+    );
     $stmt->bindValue(':date', $hDate);
     $stmt->bindValue(':time', $clockT);
     $stmt->execute();
@@ -1371,14 +1412,14 @@ function publicEvents($date, $time)
 }
 
 /**
-    * @brief Update a group of requests. It can only modify fields which are set
-    * editable in function.
-    *
-    * @param $gid
-    * @param $options Any array as long as it contains fields with name in
-    * editables.
-    *
-    * @return  On success True, else False.
+ * @brief Update a group of requests. It can only modify fields which are set
+ * editable in function.
+ *
+ * @param $gid
+ * @param $options Any array as long as it contains fields with name in
+ *                 editables.
+ *
+ * @return On success True, else False.
  */
 function updateRequestGroup($gid, $options)
 {
@@ -1496,9 +1537,9 @@ function createUserOrUpdateLogin($userid, $ldapInfo = array(), $db=null)
 }
 
 /**
-    * @brief Get all logins.
-    *
-    * @return
+ * @brief Get all logins.
+ *
+ * @return
  */
 function getLogins($status = '')
 {
@@ -1530,11 +1571,11 @@ function getLoginIds()
 }
 
 /**
-    * @brief Get user info from database.
-    *
-    * @param $user Login id of user.
-    *
-    * @return Array.
+ * @brief Get user info from database.
+ *
+ * @param $user Login id of user.
+ *
+ * @return Array.
  */
 function getUserInfo(string $user, bool $query_ldap = false, bool $search_everywhere = false) : array
 {
@@ -1607,8 +1648,10 @@ function getLoginByEmailOrLogin(string $emailOrLogin): string
 {
     $email = $emailOrLogin;
     $login = explode('@', $emailOrLogin)[0];
-    $res = executeQuery("SELECT login FROM logins WHERE 
-        (email='$email' OR login='$login') AND login >''");
+    $res = executeQuery(
+        "SELECT login FROM logins WHERE 
+        (email='$email' OR login='$login') AND login >''"
+    );
     if (count($res) > 0) {
         return $res[0]['login'];
     }
@@ -1620,8 +1663,9 @@ function getLoginEmail(string $login)
 {
     $login = explode('@', $login)[0];
     $res = executeQuery("SELECT email FROM logins WHERE login='$login'");
-    if(! $res)
+    if(! $res) {
         $res = ['email'=>''];
+    }
 
     if (strlen(trim($res['email'] ?? '') < 1)) {
         $info = @getUserInfoFromLdap($login);
@@ -1690,11 +1734,11 @@ function getAwsById($awsID)
 }
 
 /**
-    * @brief Return only recent most AWS given by this speaker.
-    *
-    * @param $speaker
-    *
-    * @return
+ * @brief Return only recent most AWS given by this speaker.
+ *
+ * @param $speaker
+ *
+ * @return
  */
 function getLastAwsOfSpeaker($speaker)
 {
@@ -1705,16 +1749,16 @@ function getLastAwsOfSpeaker($speaker)
     $stmt = $hippoDB->prepare($query);
     $stmt->bindValue(':speaker', $speaker);
     $stmt->execute();
-    # Only return the last one.
+    // Only return the last one.
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 /**
-    * @brief Return all AWS given by this speaker.
-    *
-    * @param $speaker
-    *
-    * @return
+ * @brief Return all AWS given by this speaker.
+ *
+ * @param $speaker
+ *
+ * @return
  */
 function getAwsOfSpeaker(string $speaker): array
 {
@@ -1730,11 +1774,11 @@ function getAwsOfSpeaker(string $speaker): array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get last AWS of speaker.
-    *
-    * @Param $speaker
-    *
-    * @Returns
+ * @Synopsis Get last AWS of speaker.
+ *
+ * @Param $speaker
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getLatestAWSOfSpeaker(string $speaker): array
@@ -1768,11 +1812,11 @@ function getSupervisors()
 
 
 /**
-    * @brief Find entry in database with given entry.
-    *
-    * @param $email
-    *
-    * @return
+ * @brief Find entry in database with given entry.
+ *
+ * @param $email
+ *
+ * @return
  */
 function findAnyoneWithEmail($email)
 {
@@ -1800,12 +1844,12 @@ function findAnyoneWithEmailOrLogin($emailOrLogin)
 
 
 /**
-    * @brief Generate a where expression.
-    *
-    * @param $keys
-    * @param $data
-    *
-    * @return
+ * @brief Generate a where expression.
+ *
+ * @param $keys
+ * @param $data
+ *
+ * @return
  */
 function whereExpr($keys, $data)
 {
@@ -1820,14 +1864,14 @@ function whereExpr($keys, $data)
 }
 
 /**
-    * @brief
-    *
-    * @param $tablename
-    * @param $orderby
-    * @param $where
-    * @param $what
-    *
-    * @return
+ * @brief
+ *
+ * @param $tablename
+ * @param $orderby
+ * @param $where
+ * @param $what
+ *
+ * @return
  */
 function getTableEntries($tablename, $orderby='', $where='', $what='*', int $limit=0, int $offset=0) : array
 {
@@ -1859,13 +1903,13 @@ function getTableEntries($tablename, $orderby='', $where='', $what='*', int $lim
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get a single entry from table.
-    *
-    * @Param $tablename
-    * @Param $whereKeys
-    * @Param $data
-    *
-    * @Returns
+ * @Synopsis Get a single entry from table.
+ *
+ * @Param $tablename
+ * @Param $whereKeys
+ * @Param $data
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getTableEntry(string $tablename, $whereKeys, array $data) : array
@@ -1877,8 +1921,9 @@ function getTableEntry(string $tablename, $whereKeys, array $data) : array
     }
 
     $where = array( );
-    foreach ($whereKeys as $key)
+    foreach ($whereKeys as $key) {
         $where[] = "$key=:$key";
+    }
 
     $where = implode(" AND ", $where);
 
@@ -1905,13 +1950,13 @@ function getTableEntry(string $tablename, $whereKeys, array $data) : array
 
 
 /**
-    * @brief Insert a new entry in table.
-    *
-    * @param $tablename
-    * @param $keys, Keys to update/insert in table.
-    * @param $data
-    *
-    * @return  The id of newly inserted entry on success. Null otherwise.
+ * @brief Insert a new entry in table.
+ *
+ * @param $tablename
+ * @param $keys,     Keys to update/insert in table.
+ * @param $data
+ *
+ * @return The id of newly inserted entry on success. Null otherwise.
  */
 function insertIntoTable($tablename, $keys, $data)
 {
@@ -1970,14 +2015,14 @@ function insertIntoTable($tablename, $keys, $data)
 }
 
 /**
-    * @brief Insert an entry into table. On collision, update the table.
-    *
-    * @param $tablename
-    * @param $keys
-    * @param $updatekeys
-    * @param $data
-    *
-    * @return The value of last updated row.
+ * @brief Insert an entry into table. On collision, update the table.
+ *
+ * @param $tablename
+ * @param $keys
+ * @param $updatekeys
+ * @param $data
+ *
+ * @return The value of last updated row.
  */
 function insertOrUpdateTable($tablename, $keys, $updatekeys, $data)
 {
@@ -2065,13 +2110,13 @@ function getTableUniqueIndices($tableName)
 }
 
 /**
-    * @brief Delete an entry from table.
-    *
-    * @param $tableName
-    * @param $keys
-    * @param $data
-    *
-    * @return Status of execute statement.
+ * @brief Delete an entry from table.
+ *
+ * @param $tableName
+ * @param $keys
+ * @param $data
+ *
+ * @return Status of execute statement.
  */
 function deleteFromTable($tablename, $keys, $data)
 {
@@ -2116,14 +2161,14 @@ function deleteFromTable($tablename, $keys, $data)
 
 
 /**
-    * @brief A generic function to update a table.
-    *
-    * @param $tablename Name of table.
-    * @param $wherekeys WHERE $wherekey=wherekeyval,... etc.
-    * @param $keys Keys to be updated.
-    * @param $data An array having all data.
-    *
-    * @return
+ * @brief A generic function to update a table.
+ *
+ * @param $tablename Name of table.
+ * @param $wherekeys WHERE $wherekey=wherekeyval,... etc.
+ * @param $keys      Keys to be updated.
+ * @param $data      An array having all data.
+ *
+ * @return
  */
 function updateTable($tablename, $wherekeys, $keys, array $data)
 {
@@ -2190,11 +2235,11 @@ function updateTable($tablename, $wherekeys, $keys, array $data)
 
 
 /**
-    * @brief Get the AWS scheduled in future for this speaker.
-    *
-    * @param $speaker The speaker.
-    *
-    * @return  Array.
+ * @brief Get the AWS scheduled in future for this speaker.
+ *
+ * @param $speaker The speaker.
+ *
+ * @return Array.
  */
 function scheduledAWSInFuture($speaker)
 {
@@ -2211,11 +2256,11 @@ function scheduledAWSInFuture($speaker)
 }
 
 /**
-    * @brief Check if there is a temporary AWS schedule.
-    *
-    * @param $speaker
-    *
-    * @return
+ * @brief Check if there is a temporary AWS schedule.
+ *
+ * @param $speaker
+ *
+ * @return
  */
 function temporaryAwsSchedule($speaker)
 {
@@ -2232,11 +2277,11 @@ function temporaryAwsSchedule($speaker)
 }
 
 /**
-    * @brief Fetch faculty from database. Order by last-name
-    *
-    * @param $status
-    *
-    * @return
+ * @brief Fetch faculty from database. Order by last-name
+ *
+ * @param $status
+ *
+ * @return
  */
 function getFaculty($status = '', $order_by = 'first_name')
 {
@@ -2265,12 +2310,12 @@ function getFaculty($status = '', $order_by = 'first_name')
 }
 
 /**
-    * @brief Get all pending requests for this user.
-    *
-    * @param $user Name of the user.
-    * @param $status status of the request.
-    *
-    * @return
+ * @brief Get all pending requests for this user.
+ *
+ * @param $user   Name of the user.
+ * @param $status status of the request.
+ *
+ * @return
  */
 function getAwsRequestsByUser($user, $status = 'PENDING')
 {
@@ -2314,19 +2359,21 @@ function getAllAWS()
 }
 
 /**
-    * @brief Return AWS from last n years.
-    *
-    * @param $years
-    *
-    * @return  Array of events.
+ * @brief Return AWS from last n years.
+ *
+ * @param $years
+ *
+ * @return Array of events.
  */
 function getAWSFromPast($from)
 {
     $hippoDB = initDB();
     ;
-    $stmt = $hippoDB->query("SELECT * FROM annual_work_seminars
+    $stmt = $hippoDB->query(
+        "SELECT * FROM annual_work_seminars
         WHERE date >= '$from' ORDER BY date DESC, speaker
-    ");
+    "
+    );
     $stmt->execute();
     return fetchEntries($stmt);
 }
@@ -2347,9 +2394,9 @@ function isEligibleForAWS($speaker)
 
 
 /**
-    * @brief Get AWS users.
-    *
-    * @return Array containing AWS speakers.
+ * @brief Get AWS users.
+ *
+ * @return Array containing AWS speakers.
  */
 function getAWSSpeakers($sortby = '', $where_extra = '')
 {
@@ -2373,11 +2420,11 @@ function getAWSSpeakers($sortby = '', $where_extra = '')
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Final the total number of AWS given by user.
-    *
-    * @Param int Number of AWS.
-    *
-    * @Returns
+ * @Synopsis Final the total number of AWS given by user.
+ *
+ * @Param int Number of AWS.
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function numberOfAWSGivenBySpeaker($speaker): int
@@ -2390,9 +2437,9 @@ function numberOfAWSGivenBySpeaker($speaker): int
 }
 
 /**
-    * @brief Return AWS entries schedules by my minion..
-    *
-    * @return
+ * @brief Return AWS entries schedules by my minion..
+ *
+ * @return
  */
 function getTentativeAWSSchedule($awsday = null)
 {
@@ -2409,9 +2456,9 @@ function getTentativeAWSSchedule($awsday = null)
 }
 
 /**
-    * @brief Get all upcoming AWSes. Closest to today first (Ascending date).
-    *
-    * @return Array of upcming AWS.
+ * @brief Get all upcoming AWSes. Closest to today first (Ascending date).
+ *
+ * @return Array of upcming AWS.
  */
 function getUpcomingAWS($awsday = null)
 {
@@ -2438,8 +2485,10 @@ function getUpcomingAWSOnThisMonday($awsdata)
 function getTotalUpcomingAWSOnThisMonday(string $awsdata): int
 {
     $date = dbDate($awsdata);
-    $res = executeQuery("SELECT COUNT(*) as total FROM upcoming_aws 
-        WHERE date='$date'", true);
+    $res = executeQuery(
+        "SELECT COUNT(*) as total FROM upcoming_aws 
+        WHERE date='$date'", true
+    );
     return intval($res[0]['total']);
 }
 
@@ -2467,14 +2516,14 @@ function getUpcomingAWSOfSpeaker(string $speaker)
 }
 
 /**
-    * @brief Accept a auto generated schedule. We put the entry into table
-    * upcoming_aws and delete this entry from aws_temp_schedule tables. In case
-    * of any failure, leave everything untouched.
-    *
-    * @param $speaker
-    * @param $date
-    *
-    * @return
+ * @brief Accept a auto generated schedule. We put the entry into table
+ * upcoming_aws and delete this entry from aws_temp_schedule tables. In case
+ * of any failure, leave everything untouched.
+ *
+ * @param $speaker
+ * @param $date
+ *
+ * @return
  */
 function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : int
 {
@@ -2525,9 +2574,11 @@ function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : 
     try {
         $res = $stmt->execute();
         // delete this row from temp table.
-        $stmt = $hippoDB->prepare('DELETE FROM aws_temp_schedule WHERE
+        $stmt = $hippoDB->prepare(
+            'DELETE FROM aws_temp_schedule WHERE
             speaker=:speaker AND date=:date
-            ');
+            '
+        );
         $stmt->bindValue(':speaker', $speaker);
         $stmt->bindValue(':date', $date);
         $res = $stmt->execute();
@@ -2560,13 +2611,13 @@ function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : 
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Insert a query which user can execute by clicking on URL.
-    *
-    * @Param $who_can_execute
-    * @Param $external_id
-    * @Param $query
-    *
-    * @Returns
+ * @Synopsis Insert a query which user can execute by clicking on URL.
+ *
+ * @Param $who_can_execute
+ * @Param $external_id
+ * @Param $query
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function insertClickableQuery($who_can_execute, $external_id, $query)
@@ -2600,11 +2651,11 @@ function insertClickableQuery($who_can_execute, $external_id, $query)
 
 
 /**
-    * @brief Query AWS database of given query.
-    *
-    * @param $query
-    *
-    * @return  List of AWS with matching query.
+ * @brief Query AWS database of given query.
+ *
+ * @param $query
+ *
+ * @return List of AWS with matching query.
  */
 function queryAWS($query)
 {
@@ -2628,43 +2679,49 @@ function queryAWS($query)
 }
 
 /**
-    * @brief Clear a given AWS from upcoming AWS list.
-    *
-    * @param $speaker
-    * @param $date
-    *
-    * @return
+ * @brief Clear a given AWS from upcoming AWS list.
+ *
+ * @param $speaker
+ * @param $date
+ *
+ * @return
  */
 function clearUpcomingAWS($speaker, $date) : array
 {
     $result = [ 'msg'=>'', 'success'=>true];
 
-    $aws = getTableEntry('upcoming_aws', 'speaker,date'
-        , ['speaker'=>$speaker, 'date'=>$date]);
+    $aws = getTableEntry(
+        'upcoming_aws', 'speaker,date',
+        ['speaker'=>$speaker, 'date'=>$date]
+    );
 
-    $res = executeQueryReadonly("DELETE FROM upcoming_aws 
-        WHERE speaker='$speaker' AND date='$date'");
+    $res = executeQueryReadonly(
+        "DELETE FROM upcoming_aws 
+        WHERE speaker='$speaker' AND date='$date'"
+    );
 
     // Remove this AWS related booking from the events..
-    if($res) 
-    {
+    if($res) {
         $result['msg'] .= "Successfully deleted upcoming AWS. ";
         $externalID = 'upcoming_aws.' . $aws['id'];
-        $res2 = updateTable('events', 'external_id', 'status'
-            , ['status'=>'INVALID', 'external_id'=>$externalID]);
-        if($res2)
+        $res2 = updateTable(
+            'events', 'external_id', 'status',
+            ['status'=>'INVALID', 'external_id'=>$externalID]
+        );
+        if($res2) {
             $result['msg'] .= "Successfully removed event $externalID.";
+        }
     }
     return $result;
 }
 
 /**
-    * @brief Delete an entry from annual_work_seminars table.
-    *
-    * @param $speaker
-    * @param $date
-    *
-    * @return True, on success. False otherwise.
+ * @brief Delete an entry from annual_work_seminars table.
+ *
+ * @param $speaker
+ * @param $date
+ *
+ * @return True, on success. False otherwise.
  */
 function deleteAWSEntry($speaker, $date)
 {
@@ -2689,9 +2746,9 @@ function getHolidays($from = null)
 }
 
 /**
-    * @brief Fetch all existing email templates.
-    *
-    * @return
+ * @brief Fetch all existing email templates.
+ *
+ * @return
  */
 function getEmailTemplates()
 {
@@ -2713,9 +2770,11 @@ function getEmailsByStatus($status = 'PENDING')
 {
     $hippoDB = initDB();
     ;
-    $stmt = $hippoDB->query("SELECT * FROM emails where status = '$status'
+    $stmt = $hippoDB->query(
+        "SELECT * FROM emails where status = '$status'
         ORDER BY when_to_send DESC
-        ");
+        "
+    );
     return fetchEntries($stmt);
 }
 
@@ -2778,11 +2837,11 @@ function getSpeakers()
 
 
 /**
-    * @brief Add or update the speaker and returns the id.
-    *
-    * @param $data
-    *
-    * @return
+ * @brief Add or update the speaker and returns the id.
+ *
+ * @param $data
+ *
+ * @return
  */
 function addOrUpdateSpeaker($data)
 {
@@ -2796,7 +2855,7 @@ function addOrUpdateSpeaker($data)
                     . ',designation,department,institute,homepage',
                 $data
             );
-            return getTableEntry('speakers', 'id', $speaker) ;
+            return getTableEntry('speakers', 'id', $speaker);
         }
     }
 
@@ -2816,7 +2875,7 @@ function addOrUpdateSpeaker($data)
 
 /* --------------------------------------------------------------------------*/
 /**
- * @Synopsis  Create events for given course.
+ * @Synopsis Create events for given course.
  * The course id COURSE-SEM-YEAR is used a user for booking. When
  * deleting for course, we delete all events created by COURSE-SEM-YEAR
  *
@@ -2882,9 +2941,11 @@ function addCourseBookings($runningCourseId)
             $events = getEventsOnThisVenueBetweenTime($venue, $date, $startTime, $endTime);
             $reqs = getRequestsOnThisVenueBetweenTime($venue, $date, $startTime, $endTime);
 
-            $reason = p("Your booking request/approved booking was on a 
+            $reason = p(
+                "Your booking request/approved booking was on a 
                 LECTURE HALL.  Course '$cname' is assigned this lecture hall just now.
-                Courses are always given the higest priority on LECTURE HALLS.");
+                Courses are always given the higest priority on LECTURE HALLS."
+            );
 
             foreach ($events as $ev) {
                 echo arrayToTableHTML($ev, 'event');
@@ -2914,11 +2975,11 @@ function addCourseBookings($runningCourseId)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Update the booking for this course.
-    *
-    * @Param $course
-    *
-    * @Returns
+ * @Synopsis Update the booking for this course.
+ *
+ * @Param $course
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function updateBookings($course)
@@ -2956,11 +3017,11 @@ function getMyCourses($sem, $year, $user) : array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Return all courses of a user.
-    *
-    * @Param $user
-    *
-    * @Returns
+ * @Synopsis Return all courses of a user.
+ *
+ * @Param $user
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getMyAllCourses(string $user) : array
@@ -2974,11 +3035,11 @@ function getMyAllCourses(string $user) : array
 }
 
 /**
-    * @brief Get all active recurrent events from today.
-    *
-    * @param $day
-    *
-    * @return
+ * @brief Get all active recurrent events from today.
+ *
+ * @param $day
+ *
+ * @return
  */
 function getActiveRecurrentEvents($day)
 {
@@ -3012,11 +3073,11 @@ function getActiveRecurrentEvents($day)
 }
 
 /**
-    * @brief Get login from logins table when name is given.
-    *
-    * @param $name
-    *
-    * @return
+ * @brief Get login from logins table when name is given.
+ *
+ * @param $name
+ *
+ * @return
  */
 function getLoginByName($name)
 {
@@ -3024,8 +3085,10 @@ function getLoginByName($name)
     $name = explode(' ', $name);
     $fname = $name[ 0 ];
     $lname = end($name);
-    $res = $hippoDB->query("SELECT * FROM logins WHERE
-        first_name='$fname' AND last_name='$lname'");
+    $res = $hippoDB->query(
+        "SELECT * FROM logins WHERE
+        first_name='$fname' AND last_name='$lname'"
+    );
     return $res->fetch(PDO::FETCH_ASSOC);
 }
 
@@ -3094,14 +3157,14 @@ function getLabmeetAndJC()
 }
 
 /**
-    * @brief Is there a labmeet or JC on given slot/venue.
-    *
-    * @param $date
-    * @param $starttime
-    * @param $endtime
-    * @param $entries
-    *
-    * @return
+ * @brief Is there a labmeet or JC on given slot/venue.
+ *
+ * @param $date
+ * @param $starttime
+ * @param $endtime
+ * @param $entries
+ *
+ * @return
  */
 function isThereAClashOnThisVenueSlot($day, $starttime, $endtime, $venue, $entries)
 {
@@ -3219,14 +3282,14 @@ function getRunningCoursesOnTheseSlotTiles($date, $tile)
 }
 
 /**
-    * @brief This function returns running courses on this day, venue, and slot.
-    *
-    * @param $venue
-    * @param $date
-    * @param $startTime
-    * @param $endTime
-    *
-    * @return
+ * @brief This function returns running courses on this day, venue, and slot.
+ *
+ * @param $venue
+ * @param $date
+ * @param $startTime
+ * @param $endTime
+ *
+ * @return
  */
 function runningCoursesOnThisVenueSlot($venue, $date, $startTime, $endTime)
 {
@@ -3295,9 +3358,9 @@ function getCourseById($cid)
 
 
 /**
-    * @brief Check if registration for courses is open.
-    *
-    * @return
+ * @brief Check if registration for courses is open.
+ *
+ * @return
  */
 function isRegistrationOpen()
 {
@@ -3322,12 +3385,12 @@ function getSlotTiles($id)
 }
 
 /**
-    * @brief Is a course running on given tile e.g. 7A, 7B etc.
-    *
-    * @param $course
-    * @param $tile
-    *
-    * @return
+ * @brief Is a course running on given tile e.g. 7A, 7B etc.
+ *
+ * @param $course
+ * @param $tile
+ *
+ * @return
  */
 function isCourseRunningOnThisTile($course, $tile)
 {
@@ -3354,9 +3417,9 @@ function getCourseSlotTiles($course)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  So far how many CLASS events have happened.
-    *
-    * @Returns
+ * @Synopsis So far how many CLASS events have happened.
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function totalClassEvents()
@@ -3379,11 +3442,11 @@ function totalClassEvents()
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  get table field info.
-    *
-    * @Param $tableName
-    *
-    * @Returns
+ * @Synopsis get table field info.
+ *
+ * @Param $tableName
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getTableFieldInfo($tableName)
@@ -3417,12 +3480,12 @@ function getTableFieldInfo($tableName)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get the Type of column from mysql tables.
-    *
-    * @Param $tablename
-    * @Param $columnname
-    *
-    * @Returns
+ * @Synopsis Get the Type of column from mysql tables.
+ *
+ * @Param $tablename
+ * @Param $columnname
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getTableColumnTypes($tableName, $columnName)
@@ -3480,15 +3543,15 @@ function getPIOrHost(string $loginOrEmail) : string
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find all courses running on given venue/slot and between given
-    * dates.
-    *
-    * @Param $venue
-    * @Param $slot
-    * @Param $start
-    * @Param $end
-    *
-    * @Returns
+ * @Synopsis Find all courses running on given venue/slot and between given
+ * dates.
+ *
+ * @Param $venue
+ * @Param $slot
+ * @Param $start
+ * @Param $end
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getCoursesAtThisVenueSlotBetweenDates($venue, $slot, $start, $end)
@@ -3502,9 +3565,9 @@ function getCoursesAtThisVenueSlotBetweenDates($venue, $slot, $start, $end)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get the specialization available for student.
-    *
-    * @Returns
+ * @Synopsis Get the specialization available for student.
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getAllSpecialization() : array
@@ -3517,11 +3580,11 @@ function getAllSpecialization() : array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get specialization of given login.
-    *
-    * @Param $speaker (usually student, could be faculty as well).
-    *
-    * @Returns
+ * @Synopsis Get specialization of given login.
+ *
+ * @Param $speaker (usually student, could be faculty as well).
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getLoginSpecialization($login)
@@ -3547,13 +3610,13 @@ function getFacultySpecialization(string $email)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get login specialization, if not found, fetch the PIEmail
-    * specialization from faculty database.
-    *
-    * @Param $login
-    * @Param $PIEmail
-    *
-    * @Returns
+ * @Synopsis Get login specialization, if not found, fetch the PIEmail
+ * specialization from faculty database.
+ *
+ * @Param $login
+ * @Param $PIEmail
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getSpecialization($login, $PIEmail = '')
@@ -3574,9 +3637,9 @@ function getSpecialization($login, $PIEmail = '')
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Generate slot map.
-    *
-    * @Returns
+ * @Synopsis Generate slot map.
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getSlotMap($slots = array( ))
@@ -3655,11 +3718,11 @@ function getJCInfo($jc)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Return the list of JC user is subscribed to.
-    *
-    * @Param $login
-    *
-    * @Returns
+ * @Synopsis Return the list of JC user is subscribed to.
+ *
+ * @Param $login
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getUserJCs($login)
@@ -3678,12 +3741,12 @@ function getMyJCs()
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get JC presentations for given Journal Club for given day.
-    *
-    * @Param $jcID
-    * @Param $date
-    *
-    * @Returns
+ * @Synopsis Get JC presentations for given Journal Club for given day.
+ *
+ * @Param $jcID
+ * @Param $date
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getUpcomingJCPresentations($jcID = '', $date = 'today')
@@ -3723,13 +3786,13 @@ function getUpcomingPresentationsOfUser($presenter, $date = 'today')
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get JC presentations.
-    *
-    * @Param $jc
-    * @Param $user
-    * @Param $date
-    *
-    * @Returns
+ * @Synopsis Get JC presentations.
+ *
+ * @Param $jc
+ * @Param $user
+ * @Param $date
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getJCPresentation($jc, $presenter = '', $date = 'today')
@@ -3844,9 +3907,9 @@ function getVotes($voteId)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get the config parameters from database.
-    *
-    * @Returns
+ * @Synopsis Get the config parameters from database.
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getConfigFromDB() : array
@@ -3869,11 +3932,11 @@ function getConfigValue($key, $config = null)
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get a clickbale url for a query.
-    *
-    * @Param $idOrExternalId
-    *
-    * @Returns
+ * @Synopsis Get a clickbale url for a query.
+ *
+ * @Param $idOrExternalId
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getQueryWithIdOrExtId($idOrExternalId)
@@ -3956,12 +4019,12 @@ function getNumberOfRowsInTable($tableName, $where) : int
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Check if students has given feedback.
-    *
-    * @Param $student
-    * @Param $cid
-    *
-    * @Returns
+ * @Synopsis Check if students has given feedback.
+ *
+ * @Param $student
+ * @Param $cid
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
@@ -3987,11 +4050,11 @@ function numQuestionsNotAnswered($student, $year, $sem, $cid) : int
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get all questions for given category.
-    *
-    * @Param $category
-    *
-    * @Returns
+ * @Synopsis Get all questions for given category.
+ *
+ * @Param $category
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getQuestionsWithCategory($category) : array
@@ -4018,13 +4081,13 @@ function getCourseFeedbackQuestions() : array
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Get old course feedback.
-    *
-    * @Param $year
-    * @Param $semester
-    * @Param $cid
-    *
-    * @Returns
+ * @Synopsis Get old course feedback.
+ *
+ * @Param $year
+ * @Param $semester
+ * @Param $cid
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function getCourseSpecificFeedback(string $year, string $semester, string $cid, string $login='') : array
@@ -4072,11 +4135,11 @@ function getInstructorSpecificFeedback(string $year, string $semester, string $c
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Find anyone with given login or email.
-    *
-    * @Param $loginOrEmail
-    *
-    * @Returns
+ * @Synopsis Find anyone with given login or email.
+ *
+ * @Param $loginOrEmail
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function findAnyoneWithLoginOrEmail($loginOrEmail)
@@ -4149,12 +4212,12 @@ function updateCourseWaitlist(string $cid, string $year, string $semester): bool
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis
-    *
-    * @Param $course
-    * @Param array
-    *
-    * @Returns
+ * @Synopsis
+ *
+ * @Param $course
+ * @Param array
+ *
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function registerForCourse(array $course, array $data, bool $sendEmail=true): array
@@ -4194,11 +4257,13 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
         $numEnrollments = count(getCourseRegistrations($cid, $course['year'], $course['semester']));
         if (intval($numEnrollments) >= intval($course['max_registration'])) {
             $data['status'] = 'WAITLIST';
-            $res['msg'] .= p("<i class=\"fa fa-flag fa-2x\"></i>
+            $res['msg'] .= p(
+                "<i class=\"fa fa-flag fa-2x\"></i>
                 Number of registrations have reached the limit. I've added you to 
                 <tt>WAITLIST</tt>. Please contact academic office or your instructor about 
                 the policy on <tt>WAITLIST</tt>. By default, <tt>WAITLIST</tt> means 
-                <tt>NO REGISTRATION</tt>.");
+                <tt>NO REGISTRATION</tt>."
+            );
         }
     }
 

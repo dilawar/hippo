@@ -1,6 +1,6 @@
-<?php 
+<?php
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+echo userHTML();
 $symbDelete = '<i class="fa fa-trash"></i>';
 
 // This page is accessible to both bmvadmin and admin.
@@ -9,12 +9,13 @@ $symbDelete = '<i class="fa fa-trash"></i>';
 
 $default = array( );
 
-$venues = getVenues( $sortby = 'id' );
+$venues = getVenues($sortby = 'id');
 $venuesId = array( );
-foreach( $venues as $venue )
+foreach ($venues as $venue) {
     $venuesId[ ] = $venue[ 'id' ];
+}
 
-$venueIdSelect = arrayToSelectList( 'venue_id', $venuesId );
+$venueIdSelect = arrayToSelectList('venue_id', $venuesId);
 
 echo '<form method="post" action="">';
 echo $venueIdSelect;
@@ -22,23 +23,22 @@ echo ' <input type="submit" name="response" value="Select" /> ';
 echo '</form>';
 $task = 'add new';
 
-if( __get__( $_POST, 'response', '' ) == 'Select'  )
-{
+if (__get__($_POST, 'response', '') == 'Select') {
     echo printInfo('Edit the following form to update selected venue.');
     $id = $_POST[ 'venue_id' ];
-    $venue = getVenueById( $id );
-    $default = array_merge( $default, $venue );
+    $venue = getVenueById($id);
+    $default = array_merge($default, $venue);
     $task ='update';
 }
 
 $editables = 'name,institute,building_name,floor,location,type,quota,strength';
 $editables .= ',allow_booking_on_hippo,note_to_user';
 $hide = 'location,';
-if($controller === 'admin') {
+if ($controller === 'admin') {
     $editables .= 'latitude,longitude';
-}
-else 
+} else {
     $hide .= 'latitude,longitude';
+}
 
 $editables .= ',distance_from_ncbs';
 $editables .= ',suitable_for_conference,has_projector,has_skype';
@@ -51,27 +51,26 @@ echo p("<strong><tt>QUOTA</tt></strong>: Add quota on a venue. If a user exceed 
 
 echo '<form method="post" action="'.site_url('adminbmv/venues_action').'">';
 // Append id to the editable since we are creating new entry.
-if( $task == 'add new' )
+if ($task == 'add new') {
     $editables .= ',id';
+}
 
-echo dbTableToHTMLTable( 'venues', $default, $editables, $task, $hide);
+echo dbTableToHTMLTable('venues', $default, $editables, $task, $hide);
 
-if( strtolower($task) != 'add new' )
-{
+if (strtolower($task) != 'add new') {
     echo '<button class="btn btn-primary" 
         name="response" value="delete" onClick="AreYouSure(this)" 
         title="Delete this entry">' . $symbDelete . '</button>';
 }
 
 echo '</form>';
-echo goBackToPageLink( "$controller/home", 'Go back' );
+echo goBackToPageLink("$controller/home", 'Go back');
 
 echo heading('List of venues');
 
 echo '<table class="info sortable exportable" id="venues">';
-echo arrayHeaderRow( $venues[0], 'venue', $hide );
-foreach( $venues as $venue )
-{
+echo arrayHeaderRow($venues[0], 'venue', $hide);
+foreach ($venues as $venue) {
     echo arrayToRowHTML($venue, 'venue', $hide);
     //echo '<form action="'.site_url('adminbmv/venues_action') .'" method="post">';
     //echo ' <td></td> ';
@@ -80,7 +79,7 @@ foreach( $venues as $venue )
 }
 echo '</table>';
 
-echo goBackToPageLink( "$controller/home", 'Go back' );
+echo goBackToPageLink("$controller/home", 'Go back');
 
 
 ?>

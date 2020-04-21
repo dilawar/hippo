@@ -1,6 +1,6 @@
 <?php
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+echo userHTML();
 
 global $symbDelete;
 global $symbEdit;
@@ -10,23 +10,27 @@ global $symbEdit;
 
 $jcs = $cJCs;  // Coming from controller.
 
-$jcIds = array_map(function( $x ) { return $x['jc_id']; }, $jcs);
-$jcSelect = arrayToSelectList( 'jc_id', $jcIds, array(), false, $jcIds[0] );
-$allPresentations = getAllPresentationsBefore( 'today' );
+$jcIds = array_map(function ($x) {
+    return $x['jc_id'];
+}, $jcs);
+$jcSelect = arrayToSelectList('jc_id', $jcIds, array(), false, $jcIds[0]);
+$allPresentations = getAllPresentationsBefore('today');
 
 // Use presenter as key.
 $presentationMap = array( );
-foreach( $allPresentations as $p )
+foreach ($allPresentations as $p) {
     $presentationMap[ $p['presenter'] ][] = $p;
+}
 
 // Get all upcoming presentation for all JCs for which I am an admin.
 $upcomingJCs = array( );
-foreach( $jcIds as $jc_id )
-{
-    $today = dbDate( 'today' );
-    $upcoming = getTableEntries( 'jc_presentations'
-        , 'date', "date >= '$today' AND status='VALID' AND jc_id='$jc_id'"
-        );
+foreach ($jcIds as $jc_id) {
+    $today = dbDate('today');
+    $upcoming = getTableEntries(
+        'jc_presentations',
+        'date',
+        "date >= '$today' AND status='VALID' AND jc_id='$jc_id'"
+    );
     $upcomingJCs[ $jc_id ] = $upcoming;
 }
 
@@ -34,8 +38,8 @@ foreach( $jcIds as $jc_id )
 echo '<h1>Schedule JC presentations</h1>';
 
 // Manage presentation.
-echo p( '<a href="'.site_url( 'user/jc_admin_add_outside_speaker') . '">
-    Click here</a> to add outside speaker. You must have his/her email id.' );
+echo p('<a href="'.site_url('user/jc_admin_add_outside_speaker') . '">
+    Click here</a> to add outside speaker. You must have his/her email id.');
 
 $table = '<table>';
 $table .= '<tr>';
@@ -56,11 +60,9 @@ echo '</form>';
 echo '<table>';
 echo '<tr>';
 echo "<h2>Upcoming presentations in your JC(s)</h2>";
-foreach( $upcomingJCs as $jcID => $upcomings )
-{
-    if( count( $upcomings ) <  1 )
-    {
-        echo alertUser( "Nothing found for $jcID", false );
+foreach ($upcomingJCs as $jcID => $upcomings) {
+    if (count($upcomings) <  1) {
+        echo alertUser("Nothing found for $jcID", false);
         continue;
     }
 
@@ -68,7 +70,7 @@ foreach( $upcomingJCs as $jcID => $upcomings )
     echo "<h3>Next week entry for $jcID </h3>";
     echo ' <form action="'.site_url("user/jc_admin_edit_upcoming_presentation") .'"
         method="post" accept-charset="utf-8">';
-    echo dbTableToHTMLTable( 'jc_presentations', $upcomings[0], '', 'Edit' );
+    echo dbTableToHTMLTable('jc_presentations', $upcomings[0], '', 'Edit');
     echo '</form>';
     echo '</td>';
 }
@@ -81,21 +83,18 @@ $tofilter = 'title,description,status,url,presentation_url';
 
 echo '<h2>Upcoming schedule </h2>';
 echo '<table class="show_info">';
-foreach( $upcomingJCs as $jcID => $upcomings )
-{
-    if( count( $upcomings ) <  1 )
-    {
-        echo alertUser( "None found for $jcID.", false);
+foreach ($upcomingJCs as $jcID => $upcomings) {
+    if (count($upcomings) <  1) {
+        echo alertUser("None found for $jcID.", false);
         continue;
     }
 
-    echo arrayToTHRow( $upcomings[0], 'show_info', $tofilter );
-    foreach( $upcomings as $i => $upcoming )
-    {
+    echo arrayToTHRow($upcomings[0], 'show_info', $tofilter);
+    foreach ($upcomings as $i => $upcoming) {
         $jid = $upcoming['id'];
         echo '<tr>';
         echo '<form method="post" action="'.site_url('user/jc_admin_submit') .'">';
-        echo arrayToRowHTML( $upcoming, 'show_info', $tofilter,  false, false );
+        echo arrayToRowHTML($upcoming, 'show_info', $tofilter, false, false);
         echo '<td><button class="btn btn-danger" 
             name="response" value="Remove Presentation"
             title="Remove this schedule" >' . $symbDelete . '</button></td>';
@@ -113,19 +112,16 @@ foreach( $upcomingJCs as $jcID => $upcomings )
 }
 echo '</table>';
 
-$today = dbDate( 'today' );
-$badJCs = getTableEntries( 'jc_presentations', 'id'
-    , "LENGTH(title)<5 AND jc_id='$jcID' AND date<'$today'" );
-if( count( $badJCs ) > 0 )
-{
+$today = dbDate('today');
+$badJCs = getTableEntries('jc_presentations', 'id', "LENGTH(title)<5 AND jc_id='$jcID' AND date<'$today'");
+if (count($badJCs) > 0) {
     echo '<h2>Incomplete entries </h2>';
     echo '<table class="show_info">';
-    echo arrayToTHRow( $badJCs[0], 'show_info', $tofilter );
-    foreach( $badJCs as $i => $jc )
-    {
+    echo arrayToTHRow($badJCs[0], 'show_info', $tofilter);
+    foreach ($badJCs as $i => $jc) {
         echo '<tr>';
         echo '<form method="post" action="'.site_url("user/jc_admin_submit"). '">';
-        echo arrayToRowHTML( $jc, 'show_info', $tofilter,  false, false );
+        echo arrayToRowHTML($jc, 'show_info', $tofilter, false, false);
         echo '<td> <button class="btn btn-primary" 
                             name="response" value="Remove Incomplete Presentation"
             title="Remove this schedule" >' . $symbDelete . '</button></td>';
@@ -137,24 +133,24 @@ if( count( $badJCs ) > 0 )
 }
 
 
-echo goBackToPageLink( 'user/home', 'Go Back' );
+echo goBackToPageLink('user/home', 'Go Back');
 echo '<br />';
 
 echo '<h1>List of presentation requests</h1>';
-echo printInfo( 'You can reschedule or cancel the request. Please let the
+echo printInfo(
+    'You can reschedule or cancel the request. Please let the
     requester know before doing anything evil.'
 );
 
-$requests = getTableEntries( 'jc_requests', 'date', "date>='$today' AND status='VALID'");
+$requests = getTableEntries('jc_requests', 'date', "date>='$today' AND status='VALID'");
 
 echo '<table class="info">';
 echo '<th>Request</th><th>Votes</th>';
 
-foreach( $requests as $i => $req )
-{
+foreach ($requests as $i => $req) {
     echo '<tr>';
     echo '<td>';
-    echo arrayToVerticalTableHTML( $req, 'info', '', 'id,status' );
+    echo arrayToVerticalTableHTML($req, 'info', '', 'id,status');
 
     // Another form to delete this request.
     echo ' <form action="'.site_url("user/jc_request_action"). '" method="post">';
@@ -165,7 +161,7 @@ foreach( $requests as $i => $req )
     echo '</form>';
     echo "</td>";
 
-    $votes = count( getVotes( "jc_requests." .  $req['id'] ) );
+    $votes = count(getVotes("jc_requests." .  $req['id']));
     echo "<td> $votes </td>";
 
     echo '</tr>';
@@ -174,7 +170,7 @@ echo '</table>';
 
 
 echo ' <br />';
-echo goBackToPageLink( 'user/home', 'Go Back' );
+echo goBackToPageLink('user/home', 'Go Back');
 echo "<h1>Manage subscriptions</h1>";
 
 // Show table and task here.
@@ -185,50 +181,53 @@ $form .= ' <button name="response" value="Add">Add Subscription</button>';
 $form .= '</form>';
 echo $form;
 
-foreach( $jcIds as $currentJC )
-{
-    $subs = getJCSubscriptions( $currentJC );
+foreach ($jcIds as $currentJC) {
+    $subs = getJCSubscriptions($currentJC);
     $allEmails = array( );
 
     // Create a subscription table.
     $allSubs = array( );
-    foreach( $subs as $i => $sub )
-    {
+    foreach ($subs as $i => $sub) {
         $login = $sub['login'];
-        if( ! trim($login) )
+        if (! trim($login)) {
             continue;
+        }
 
-        $info = getLoginInfo( $login, true );
-        if( ! $info )
-        {
-            echo printWarning( "No info found for $login. Invalidating subscription...");
+        $info = getLoginInfo($login, true);
+        if (! $info) {
+            echo printWarning("No info found for $login. Invalidating subscription...");
             // Rmeove him from the list.
-            updateTable('jc_subscriptions', 'login', 'status'
-                , ['login'=>$login, 'status'=>'INVALID']
+            updateTable(
+                'jc_subscriptions',
+                'login',
+                'status',
+                ['login'=>$login, 'status'=>'INVALID']
             );
             continue;
         }
 
-        $emailID = __get__( $info, 'email', '' );
-        if( ! $emailID )
+        $emailID = __get__($info, 'email', '');
+        if (! $emailID) {
             continue;
+        }
 
-        $email = mailto( $emailID );
+        $email = mailto($emailID);
         $allEmails[] = $info['email'];
 
-        $presentations =  __get__( $presentationMap, $login, array() );
-        $numPresentations = count( $presentations );
+        $presentations =  __get__($presentationMap, $login, array());
+        $numPresentations = count($presentations);
 
         $lastPresentedOn = '0';
-        if( count( $presentations ) > 0 )
-            $lastPresentedOn = humanReadableDate( $presentations[0]['date'] );
+        if (count($presentations) > 0) {
+            $lastPresentedOn = humanReadableDate($presentations[0]['date']);
+        }
 
         $row = array(
             'login' => $login
-            , 'Name' => arrayToName( $info ) . "<br> $email"
-            , 'PI/HOST' => getPIOrHost( $login )
+            , 'Name' => arrayToName($info) . "<br> $email"
+            , 'PI/HOST' => getPIOrHost($login)
             , '#Presentations' => $numPresentations
-            , 'Last Presented On' => humanReadableDate( $lastPresentedOn )
+            , 'Last Presented On' => humanReadableDate($lastPresentedOn)
             //, 'Months On Campus' => diffDates( 'today', $info['joined_on'], 'month' )
         );
         $allSubs[] = $row;
@@ -236,15 +235,14 @@ foreach( $jcIds as $currentJC )
 
 
     // Sort by last presented on.
-    sortByKey( $allSubs, 'Last Presented On' );
+    sortByKey($allSubs, 'Last Presented On');
 
     $subTable = '<table class="sortable info exportable" id="js_subscription">';
-    $subTable .= arrayToTHRow( $allSubs[0], 'sorttable', '' );
-    foreach( $allSubs as $i => $sub )
-    {
+    $subTable .= arrayToTHRow($allSubs[0], 'sorttable', '');
+    foreach ($allSubs as $i => $sub) {
         $subTable .= '<form method="post" action="'.site_url("user/jc_admin_submit"). '">';
         $subTable .= '<tr>';
-        $subTable .= arrayToRowHTML( $sub, 'sorttable', '', false, false );
+        $subTable .= arrayToRowHTML($sub, 'sorttable', '', false, false);
         $subTable .= '<input type="hidden" name="login" value="' . $sub[ 'login' ] . '" />';
         $subTable .= '<input type="hidden" name="jc_id" value="' . $currentJC . '" />';
         $subTable .= '<td>';
@@ -258,13 +256,12 @@ foreach( $jcIds as $currentJC )
     $subTable .= '</table>';
 
     echo '<h2>Subscription list of ' . $currentJC . '</h2>';
-    echo printInfo( 'Total subscriptions: ' . count( $allSubs ) . '.' );
+    echo printInfo('Total subscriptions: ' . count($allSubs) . '.');
 
     // Link to write to all members.
-    if( count( $allEmails ) > 0 )
-    {
-        $mailtext = implode( ",", $allEmails );
-        echo '<div>' .  mailto( $mailtext, 'Send email to all subscribers' ) . "</div>";
+    if (count($allEmails) > 0) {
+        $mailtext = implode(",", $allEmails);
+        echo '<div>' .  mailto($mailtext, 'Send email to all subscribers') . "</div>";
     }
     echo $subTable;
 }
@@ -292,7 +289,7 @@ echo '
 
 echo '<br />';
 echo '<br />';
-echo goBackToPageLink( "user/home", "Go back" );
+echo goBackToPageLink("user/home", "Go back");
 
 ?>
 

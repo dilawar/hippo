@@ -1,7 +1,7 @@
 <?php
 require_once BASEPATH.'autoload.php';
 
-function showAlertTable( ) 
+function showAlertTable()
 {
     $html = '
     <table>
@@ -37,44 +37,42 @@ $year = $cYear ?? getCurrentYear();
 $runningCourses = $cRunningCourses ?? getSemesterCourses($year, $sem);
 
 // Collect both metadata and other information in slotCourse array.
-foreach( $runningCourses as $c )
-{
+foreach ($runningCourses as $c) {
     $cid = $c[ 'course_id' ];
-    $course = getTableEntry( 'courses_metadata', 'id' , array('id' => $cid) );
-    if( $course )
-    {
+    $course = getTableEntry('courses_metadata', 'id', array('id' => $cid));
+    if ($course) {
         $slotId = $c[ 'slot' ];
-        $tiles = getTableEntries( 'slots', 'groupid', "groupid='$slotId'" );
-        $slotCourses[ $slotId ][ ] = array_merge( $c, $course );
-        foreach( $tiles as $tile )
-            if( strpos( $c['ignore_tiles'], $tile[ 'id' ]) !== 0 )
-                $tileCourses[ $tile['id']][ ] = array_merge( $c, $course );
-    }
-    else
-    {
-        flashMessage( "No metadata is found for $cid " );
+        $tiles = getTableEntries('slots', 'groupid', "groupid='$slotId'");
+        $slotCourses[ $slotId ][ ] = array_merge($c, $course);
+        foreach ($tiles as $tile) {
+            if (strpos($c['ignore_tiles'], $tile[ 'id' ]) !== 0) {
+                $tileCourses[ $tile['id']][ ] = array_merge($c, $course);
+            }
+        }
+    } else {
+        flashMessage("No metadata is found for $cid ");
     }
 }
 
 $slotUpcomingCourses = array( );
-$nextSem = getNextSemester( );
-$upcomingCourses = getSemesterCourses( $nextSem[ 'year' ], $nextSem['semester'] );
-foreach( $upcomingCourses as $c )
-{
+$nextSem = getNextSemester();
+$upcomingCourses = getSemesterCourses($nextSem[ 'year' ], $nextSem['semester']);
+foreach ($upcomingCourses as $c) {
     $cid = $c[ 'course_id' ];
-    $course = getTableEntry( 'courses_metadata', 'id' , array('id' => $cid) );
-    if( $course )
-    {
+    $course = getTableEntry('courses_metadata', 'id', array('id' => $cid));
+    if ($course) {
         $slotId = $c[ 'slot' ];
-        $tiles = getTableEntries( 'slots', 'groupid', "groupid='$slotId'" );
-        $slotUpcomingCourses[ $slotId ][ ] = array_merge( $c, $course );
-        foreach( $tiles as $tile )
-            if( strpos( $c['ignore_tiles'], $tile[ 'id' ]) !== 0 )
-                $tileCourses[ $tile['id']][ ] = array_merge( $c, $course );
+        $tiles = getTableEntries('slots', 'groupid', "groupid='$slotId'");
+        $slotUpcomingCourses[ $slotId ][ ] = array_merge($c, $course);
+        foreach ($tiles as $tile) {
+            if (strpos($c['ignore_tiles'], $tile[ 'id' ]) !== 0) {
+                $tileCourses[ $tile['id']][ ] = array_merge($c, $course);
+            }
+        }
     }
 }
 
-$tileCoursesJSON = json_encode( $tileCourses );
+$tileCoursesJSON = json_encode($tileCourses);
 $table = slotTable();
 ?>
 
@@ -88,14 +86,15 @@ $table = slotTable();
 /* Select year and semester */
 $autumnSelected = '';
 $springSelected = '';
-if( $sem == 'AUTUMN' )
+if ($sem == 'AUTUMN') {
     $autumnSelected = 'selected';
-else
+} else {
     $springSelected = 'selected';
+}
 
 /* Enrollment table. */
 // Show select semester/year.
-$form = selectYearSemesterForm( $year, $sem );
+$form = selectYearSemesterForm($year, $sem);
 
 $showEnrollText = 'Show Enrollement';
 // Go over courses and populate the entrollment array.
@@ -104,29 +103,26 @@ $enrollments = array( );
 $html = '';
 
 // This semester courses.
-foreach( $slotCourses as $slot => $courses )
-{
+foreach ($slotCourses as $slot => $courses) {
     $div = '';
-    foreach( $courses as $c )
-    {
+    foreach ($courses as $c) {
         $cid = $c[ 'course_id' ];
         // Add header only to the first entry.
         $courseTable = '<table class="table show_course">';
         // This function fills in $enrollments.
-        $courseTable .= courseToHTMLRow( $c, $slot, $sem, $year, $enrollments );
+        $courseTable .= courseToHTMLRow($c, $slot, $sem, $year, $enrollments);
         $courseTable .= '</table>';
 
-        $data = getEnrollmentTableAndEmails( $cid, $enrollments, 'info exportable' );
+        $data = getEnrollmentTableAndEmails($cid, $enrollments, 'info exportable');
         $enTable = $data[ 'html_table'];
         $allEmails = $data[ 'enrolled_emails' ];
 
         $tid = "show_hide_$cid";
 
-        if( count( $allEmails ) > 0 )
-        {
+        if (count($allEmails) > 0) {
             // Apend user email at the end of registration table.
-            $mailtext = implode( ",", $allEmails );
-            $enTable .= '<div>' .  mailto( $mailtext, 'Send email to all students' ) . "</div>";
+            $mailtext = implode(",", $allEmails);
+            $enTable .= '<div>' .  mailto($mailtext, 'Send email to all students') . "</div>";
 
             $regTable = '<table style="width:100%;">';
             $regTable .= '<tr>';
@@ -136,9 +132,9 @@ foreach( $slotCourses as $slot => $courses )
             $regTable .= '</tr>';
             $regTable .= "<tr><td width='100%' id=\"$tid\" style=\"display:none\"> $enTable </td></tr>";
             $regTable .= '</table>';
-        }
-        else
+        } else {
             $regTable = '<table><tr><td></td></tr></table>';
+        }
 
         $div .= $courseTable;
         $div .= $regTable;
@@ -172,26 +168,24 @@ $header = '<tr><th>Course <br> Instructors</th><th>Schedule</th>
     <th>Slot Tiles</th><th>Venue</th>
     <th>Enrollments</th><th>URL</th></tr>';
 
-foreach( $slotUpcomingCourses as $slot => $ucs )
-{
-    foreach( $ucs as $i => $uc )
-    {
-        if($i == 0)
+foreach ($slotUpcomingCourses as $slot => $ucs) {
+    foreach ($ucs as $i => $uc) {
+        if ($i == 0) {
             $newTab .= $header;
+        }
 
         $newTab .= '<tr>';
         $slot = $uc[ 'slot' ];
-        $sem = getSemester( $uc[ 'end_date' ] );
-        $year = getYear( $uc[ 'end_date' ] );
-        $newTab .= courseToHTMLRow( $uc, $slot, $sem, $year, $upcomingEnrollments);
+        $sem = getSemester($uc[ 'end_date' ]);
+        $year = getYear($uc[ 'end_date' ]);
+        $newTab .= courseToHTMLRow($uc, $slot, $sem, $year, $upcomingEnrollments);
         $newTab .= '</tr>';
     }
 }
 $newTab .= '</table>';
 
 // Show table.
-if( count( $slotUpcomingCourses ) > 0 )
-{
+if (count($slotUpcomingCourses) > 0) {
     echo '<h1>Upcoming courses</h1>';
     echo '<div style="font-size:small">';
     echo $newTab;
@@ -199,7 +193,7 @@ if( count( $slotUpcomingCourses ) > 0 )
 }
 
 echo '<br>';
-echo closePage( );
+echo closePage();
 ?>
 
 <script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>

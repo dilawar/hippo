@@ -1,11 +1,9 @@
 <?php
 
-include_once( "header.php" );
-include_once( "methods.php" );
+include_once("header.php");
+include_once("methods.php");
 
-$_SESSION[ 'AUTHENTICATED' ] = FALSE;
+$_SESSION[ 'AUTHENTICATED' ] = false;
 
-echo printInfo( "Successfully logged out" );
-goToPage( "index.php", 0 );
-
-?>
+echo printInfo("Successfully logged out");
+goToPage("index.php", 0);

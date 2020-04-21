@@ -1,6 +1,6 @@
 <?php
 include_once FCPATH . 'system/autoload.php';
-echo userHTML( );
+echo userHTML();
 ?>
 
 <div class="card m-1 p=1">
@@ -57,7 +57,7 @@ echo userHTML( );
 $hide = 'id,description,days_csv,modified_by,modified_on,status,popularity';
 ?>
 
-<?php foreach( $cItemGroupedByDay as $day => $canteen): ?>
+<?php foreach ($cItemGroupedByDay as $day => $canteen): ?>
     <?php $display = ($day==$today)?'block':'none'; ?>
 
     <div class="card my-2 bg-light">
@@ -66,13 +66,13 @@ $hide = 'id,description,days_csv,modified_by,modified_on,status,popularity';
         <button class="btn large btn-link" onClick='toggleCardByID(this, "menuFor<?=$day?>")'>SHOW</button>
     </div>
     <div class="card-body" id="menuFor<?=$day?>" style="display:<?=$display?>">
-    <?php foreach( $canteen as $cname => $items): ?>
+    <?php foreach ($canteen as $cname => $items): ?>
         <div class="card">
             <div class="card-body">
             <table class="info exportable sortable" id="menu_<?=$day.'_'.$cname?>">
             <div class="h5"><?=$cname ?></div>
             <?= arrayToTHRow($items[0], 'info', $hide)?>
-            <?php foreach( $items as $item): ?>
+            <?php foreach ($items as $item): ?>
             <tr>
                 <?php $id = $item['id']; ?>
                 <?=arrayToRowHTML($item, 'info', $hide, '', false)?>
@@ -95,7 +95,7 @@ $hide = 'id,description,days_csv,modified_by,modified_on,status,popularity';
     </div>
 <?php endforeach; ?>
 
-<?=goBackToPageLink( "$controller/home", "Go back" )?>
+<?=goBackToPageLink("$controller/home", "Go back")?>
 
 <script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
 <script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>

@@ -5,26 +5,24 @@ $ref = $controller;
 
 $speakerPiMap = array( );
 // Collect all faculty
-$faculty = getFaculty( );
+$faculty = getFaculty();
 $facultyByEmail = array( );
-foreach( $faculty as $fac )
-{
+foreach ($faculty as $fac) {
     $facultyByEmail[ $fac[ 'email' ] ] = $fac;
     $speakerPiMap[ $fac['email' ] ] = array( );
 }
 
 
-$facEmails = array_keys( $facultyByEmail );
+$facEmails = array_keys($facultyByEmail);
 $logins = array( );
-foreach( getAWSSpeakers( ) as $login )
-{
-    $piOrHost = getPIOrHost( $login[ 'login' ] );
+foreach (getAWSSpeakers() as $login) {
+    $piOrHost = getPIOrHost($login[ 'login' ]);
     $logins[] = $login[ 'login' ];
     $speakerPiMap[ $piOrHost ][] = $login;
 }
-ksort( $speakerPiMap );
+ksort($speakerPiMap);
 
-echo userHTML( );
+echo userHTML();
 
 ?>
 
@@ -32,8 +30,8 @@ echo userHTML( );
 // Autocomplete pi.
 $( function() {
     // These emails must not be key value array.
-    var emails = <?php echo json_encode( $facEmails ); ?>;
-    var logins = <?php echo json_encode( $logins ); ?>;
+    var emails = <?php echo json_encode($facEmails); ?>;
+    var logins = <?php echo json_encode($logins); ?>;
     $( "#pi_or_host" ).autocomplete( { source : emails });
     $( "#pi_or_host" ).attr( "placeholder", "type email of supervisor" );
     $( "#login" ).autocomplete( { source : logins });
@@ -46,26 +44,25 @@ $( function() {
 
 // Auto update PI_OR_HOST.
 // If pi_or_host is not found, use ldap info.
-foreach( $speakerPiMap as $pi => $logins )
-{
-    if( (! $pi) or $pi == 'UNSPECIFIED' or strpos( $pi, '@' ) === false )
-    {
-        foreach( $logins as $login )
-        {
-            if( ! $login['login'] )
+foreach ($speakerPiMap as $pi => $logins) {
+    if ((! $pi) or $pi == 'UNSPECIFIED' or strpos($pi, '@') === false) {
+        foreach ($logins as $login) {
+            if (! $login['login']) {
                 continue;
+            }
 
-            $ldap = getUserInfoFromLdap( $login[ 'login' ] );
-            $email = getEmailByName( $ldap[ 'laboffice' ] );
-            if( $email )
-            {
+            $ldap = getUserInfoFromLdap($login[ 'login' ]);
+            $email = getEmailByName($ldap[ 'laboffice' ]);
+            if ($email) {
                 // Update the table with laboffice from intranet.
-                $res = updateTable( 'logins', 'login', 'pi_or_host'
-                    , array( 'login' => $login[ 'login' ], 'pi_or_host' => $email )
+                $res = updateTable(
+                    'logins',
+                    'login',
+                    'pi_or_host',
+                    array( 'login' => $login[ 'login' ], 'pi_or_host' => $email )
                 );
 
-                if( $res )
-                {
+                if ($res) {
                     echo printInfo(
                         "Successfully updated PI_OR_HOST for " . $login[ 'login' ] .  " to $email"
                     );
@@ -81,10 +78,9 @@ foreach( $speakerPiMap as $pi => $logins )
     * @{ */
 /**  @} */
 
-if( $ref == "adminacad" )
-{
+if ($ref == "adminacad") {
     echo '
-        <form action="'.site_url( "$ref/aws_speakers_action" ) . '" method="post">
+        <form action="'.site_url("$ref/aws_speakers_action") . '" method="post">
         <table border="0">
         <tr>
             <td><input type="text" name="login" id="login" placeholder="Speaker id"/></td>
@@ -99,35 +95,36 @@ if( $ref == "adminacad" )
 echo ' <h2>Table of active speakers</h2> ';
 
 $index = 0;
-foreach( $speakerPiMap as $pi => $speakers )
-{
-    if( count( $speakers ) < 1 )
+foreach ($speakerPiMap as $pi => $speakers) {
+    if (count($speakers) < 1) {
         continue;
+    }
 
     echo "<h3>AWS Speaker list for " . $pi . "</h3>";
     $table = "<table class=\"info\">";
     $table .="<tr>";
 
     $i = 0;
-    foreach( $speakers as $login )
-    {
-        if( ! $login )
+    foreach ($speakers as $login) {
+        if (! $login) {
             continue;
+        }
 
-        $speaker = getLoginInfo( $login['login'] );
+        $speaker = getLoginInfo($login['login']);
 
         $i ++;
         $index ++;
-        $table .= "<td> $index: " . arrayToName( $speaker ) . "<br />
+        $table .= "<td> $index: " . arrayToName($speaker) . "<br />
             <tt>(" .  $speaker[ 'email' ] . ")</tt></td>";
-        if( $i % 4 == 0 )
+        if ($i % 4 == 0) {
             $table .= "<tr></tr>";
+        }
     }
     $table .= "</tr>";
     $table .= "</table>";
     echo $table;
 }
 
-echo goBackToPageLink( "$ref", "Go back" );
+echo goBackToPageLink("$ref", "Go back");
 
 ?>

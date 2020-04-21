@@ -1,6 +1,6 @@
 <?php
 require_once BASEPATH.'autoload.php';
-echo userHTML( );
+echo userHTML();
 
 // In config/constansts.php
 global $symbDelete;
@@ -8,19 +8,21 @@ global $symbDelete;
 // global to keep the value.
 $buttonVal = 'Add';
 
-function showEditCourse( $buttonVal, $course )
+function showEditCourse($buttonVal, $course)
 {
     global $symbDelete;
     $editHTML = "<h3 id='editcourse'>$buttonVal course</h3>";
     $editHTML .= printNote("<tt>ID</tt> of course can not be more than 8 chars.");
     $editHTML .= '<form method="post" action="'.site_url('adminacad/all_courses_action').'">';
-    $editHTML .= dbTableToHTMLTable( 'courses_metadata', $course
-            , 'id,credits:required,name:required,description,'
+    $editHTML .= dbTableToHTMLTable(
+        'courses_metadata',
+        $course,
+        'id,credits:required,name:required,description,'
                 . 'instructor_1:required,instructor_2,instructor_3'
                 . ',instructor_4,instructor_5,instructor_6,instructor_extras'
-                . ',comment'
-            , $buttonVal
-            );
+                . ',comment',
+        $buttonVal
+    );
 
     $editHTML .= '<button class="btn btn-danger" 
         title="Delete this entry" type="submit" onclick="AreYouSure(this)"
@@ -33,24 +35,28 @@ function showEditCourse( $buttonVal, $course )
 
 
 // Javascript.
-$courses = getTableEntries( 'courses_metadata' );
+$courses = getTableEntries('courses_metadata');
 
 $instructors = array();
-foreach( getFaculty( ) as $fac )
+foreach (getFaculty() as $fac) {
     $instructors[ ] = $fac[ 'email' ];
+}
 
 $coursesMap = array( );
-$coursesId = array_map( function( $x ) { return $x['id']; }, $courses );
+$coursesId = array_map(function ($x) {
+    return $x['id'];
+}, $courses);
 
-foreach( $courses as $course )
+foreach ($courses as $course) {
     $coursesMap[ $course[ 'id' ] ] = $course;
+}
 
-echo p( "To update schedule of currently running courses," 
-    . goBackToPageLinkInline( "adminacad/courses", "click here." ));
+echo p("To update schedule of currently running courses,"
+    . goBackToPageLinkInline("adminacad/courses", "click here."));
 ?>
 
 <script type="text/javascript" charset="utf-8">
-var instructors = <?php echo json_encode( $instructors ); ?>;
+var instructors = <?php echo json_encode($instructors); ?>;
 
 $(function() {
   $("#addMoreInstructors").click(function(e) {
@@ -70,8 +76,8 @@ $(function() {
 
 // Autocomplete speaker.
 $( function() {
-    var coursesDict = <?php echo json_encode( $coursesMap ) ?>;
-    var courses = <?php echo json_encode( $coursesId ); ?>;
+    var coursesDict = <?php echo json_encode($coursesMap) ?>;
+    var courses = <?php echo json_encode($coursesId); ?>;
     $( "#course" ).autocomplete( { source : courses });
     $( "#course" ).attr( "placeholder", "Type to select a course ID." );
     $( "input[id^=courses_metadata_instructor]" ).autocomplete( { source : instructors });
@@ -85,7 +91,7 @@ $( function() {
 // Logic for POST requests.
 $course = array('id' => '', 'day' => '', 'start_time' => '', 'end_time' => '' );
 echo "<h1>All courses</h1>";
-echo p( "The form to ADD a new course or EDIT a selected course is at the bottom." );
+echo p("The form to ADD a new course or EDIT a selected course is at the bottom.");
 echo '<input id="filter_all_courses" placeholder="Type to filter courses" />';
 
 echo coursesTable($editable=true, $with_form=true, $class="small_font table");
@@ -98,24 +104,23 @@ echo '<button class="btn btn-primary"
 echo '</form>';
 
 // We can edit course using both _GET or _POST.
-if( __get__( $_POST, 'response', 'Edit' ) && __get__( $_POST, 'id', false ) )
-{
-    $course = __get__( $coursesMap, $_POST['id'], null );
-    if( $course )
+if (__get__($_POST, 'response', 'Edit') && __get__($_POST, 'id', false)) {
+    $course = __get__($coursesMap, $_POST['id'], null);
+    if ($course) {
         $buttonVal = 'Update';
-}
-elseif( __get__( $_GET, 'id', false ) )
-{
-    $course = __get__( $coursesMap, $_GET['id'], null );
-    if( $course )
+    }
+} elseif (__get__($_GET, 'id', false)) {
+    $course = __get__($coursesMap, $_GET['id'], null);
+    if ($course) {
         $buttonVal = 'Update';
+    }
 }
 
 
 echo showEditCourse($buttonVal, $course);
 
 echo "<br/><br/>";
-echo goBackToPageLink( 'adminacad/home', 'Go back' );
+echo goBackToPageLink('adminacad/home', 'Go back');
 echo '<br>';
 ?>
 

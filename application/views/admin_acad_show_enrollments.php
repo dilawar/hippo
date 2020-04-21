@@ -1,8 +1,8 @@
 <?php
 include_once FCPATH.'system/autoload.php';
-echo userHTML( );
+echo userHTML();
 
-// We remain on this page to show 
+// We remain on this page to show
 $form = '<form method="post" action="#">
     <table class="">
         <tr>
@@ -13,35 +13,28 @@ $form = '<form method="post" action="#">
     </form>';
 echo $form;
 
-if( __get__( $_POST, 'user', '' ) != '' )
-{
+if (__get__($_POST, 'user', '') != '') {
     $user = $_POST['user'];
     echo "<h2> Showing enrollments of user '$user'</h2>";
-    $enrolls = getTableEntries( 'course_registration', 'year', "status='VALID' AND student_id='$user'"); 
-    foreach( $enrolls as &$enroll )
-    {
-        $enroll['course_name'] = getCourseName( $enroll['course_id'] );
+    $enrolls = getTableEntries('course_registration', 'year', "status='VALID' AND student_id='$user'");
+    foreach ($enrolls as &$enroll) {
+        $enroll['course_name'] = getCourseName($enroll['course_id']);
     }
 
-    if( count($enrolls) == 0 )
-    {
-        echo printInfo( "No course found fro user $user in my database." );
+    if (count($enrolls) == 0) {
+        echo printInfo("No course found fro user $user in my database.");
+    } else {
+        echo p("Found " . count($enrolls) . " record(s).");
+        echo arraysToCombinedTableHTML($enrolls, 'info exportable', $hide='', $id=$user);
     }
-    else
-    {
-        echo p("Found " . count( $enrolls ) . " record(s).");
-        echo arraysToCombinedTableHTML( $enrolls, 'info exportable', $hide='', $id=$user);
-    }
-}
-else
-{
+} else {
     echo printInfo("Please select a user id to continue.");
 }
 
 
 
 echo ' <br />';
-echo goBackToPageLink( "$controller/home", "Go Back" );
+echo goBackToPageLink("$controller/home", "Go Back");
 
 ?>
 

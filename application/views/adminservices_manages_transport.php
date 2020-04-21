@@ -1,7 +1,7 @@
 <?php
 include_once FCPATH . 'system/autoload.php';
-mustHaveAllOfTheseRoles( Array( 'ADMIN' ) );
-echo userHTML( );
+mustHaveAllOfTheseRoles(array( 'ADMIN' ));
+echo userHTML();
 
 echo '<h1>Quick Add/Update</h1>';
 
@@ -9,8 +9,7 @@ $default = ['vehicle'=>'', 'pickup_point'=>'', 'drop_point'=>''
     , 'trip_start_time'=>'', 'url' => ''];
 
 $action='quickadd';
-if( isset($_POST) )
-{
+if (isset($_POST)) {
     $action = 'quickupdate';
     $default = array_merge($default, $_POST);
 }
@@ -29,7 +28,7 @@ $table .= '
     </tr><tr>
     <td>Start Times</td> 
     <td> <input type="text" name="trip_start_times" 
-            value="' . $default['trip_start_time'] 
+            value="' . $default['trip_start_time']
             . '" placeholder="HH:MM e.g. 09:00,10:00,13:30" /> </td>
     </tr><tr>
     <td>Duration (mins)</td> 
@@ -53,26 +52,30 @@ echo ' <br /> <br />';
 
 // DISPLAY TRANSPORT.
 $groupBy = [];
-$table = getTableEntries('transport', 'pickup_point,trip_start_time,day', "status='VALID'"
+$table = getTableEntries(
+    'transport',
+    'pickup_point,trip_start_time,day',
+    "status='VALID'"
 );
-foreach( $table as $r )
-{
+foreach ($table as $r) {
     $key = implode('||', [$r['vehicle'], $r['pickup_point'], $r['drop_point'],$r['trip_start_time']]);
     $groupBy[$key][]=$r;
 }
 
 // Construct a new table for easy display.
 $schedule = [];
-foreach( $groupBy as $key => $tables )
-{
-    $arr = explode( '||', $key);
+foreach ($groupBy as $key => $tables) {
+    $arr = explode('||', $key);
 
     // This is new key. We don't use trip_start time to group anymore.
-    $newKey = implode( '||', array_slice($arr, 0, 3));
+    $newKey = implode('||', array_slice($arr, 0, 3));
 
-    $entry = ['days' => implode(','
-        , array_map(function($x){ return $x['day'];}, $tables)
-        )];
+    $entry = ['days' => implode(
+        ',',
+        array_map(function ($x) {
+            return $x['day'];
+        }, $tables)
+    )];
     $entry['vehicle'] = $arr[0];
     $entry['pickup_point'] = $arr[1];
     $entry['drop_point'] = $arr[2];
@@ -84,23 +87,21 @@ ksort($schedule);
 
 echo '<h1> Transport details </h1>';
 
-$hide = 'vehicle_no,score,edited_by,vehicle,pickup_point,' 
+$hide = 'vehicle_no,score,edited_by,vehicle,pickup_point,'
         . 'drop_point,status,last_modified_on';
 $class = 'info sortable exportable';
 
-foreach( $schedule as $key => $table )
-{
+foreach ($schedule as $key => $table) {
     $arr = explode('||', $key);
     $vehicle = $arr[0];
     $pickup_point = $arr[1];
     $drop_point = $arr[2];
 
-    echo "<h3>" . vsprintf( "%s from %s to %s", $arr) . '</h3>';
+    echo "<h3>" . vsprintf("%s from %s to %s", $arr) . '</h3>';
 
     // We need a form to delete them as well.
     echo "<table class='info'>";
-    foreach( $table as $row )
-    {
+    foreach ($table as $row) {
         $trip_start_time = $row['trip_start_time'];
         $url = $row['url'];
 
@@ -126,7 +127,7 @@ foreach( $schedule as $key => $table )
 }
 
 
-echo goBackToPageLink( "$controller/home", "Go back" );
+echo goBackToPageLink("$controller/home", "Go back");
 
 ?>
 
