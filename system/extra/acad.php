@@ -72,11 +72,7 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
     if(__get__($data, 'id', ''))
         $aws = getTableEntry( 'upcoming_aws', 'id', $data);
     else 
-    {
-        $aws = getTableEntry('upcoming_aws', 'speaker,date'
-            , ['speaker'=>$speaker, 'date'=>dbDate($date)]
-        );
-    }
+        $aws = getTableEntry('upcoming_aws', 'speaker,date', $data);
 
     $speaker = $data['speaker'];
     $date = $data['date'];
