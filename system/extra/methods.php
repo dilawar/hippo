@@ -2110,7 +2110,6 @@ function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
 
     if ($booking) {
         /* Update */
-
         $booking['date'] = $aws['date'];
         $booking['venue'] = $aws['venue'];
         $booking['title'] = $title;

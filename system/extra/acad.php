@@ -31,7 +31,7 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
 
             $aws = getTableEntry('upcoming_aws', 'id', ['id'=>$awsID]);
             $aws['time'] = dbTime(strtotime($aws['time'])+($nAWS-1)*30*60);
-            $res2 = bookAVenueForThisAWS($aws, true);
+            $res2 = @bookAVenueForThisAWS($aws, true);
             $res['msg'] .= p($res2['msg']);
 
             // Don't rescheduleAWS. It will change the rest of the entries for the week.
