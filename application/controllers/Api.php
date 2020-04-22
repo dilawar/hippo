@@ -1484,7 +1484,7 @@ class Api extends CI_Controller
                 $where .= ',eid';
             $res = updateTable('events'
                 , $where
-                , 'title,description,is_public_event,class'
+                , 'title,description,is_public_event,class,vc_url,url'
                 , $_POST);
             $this->send_data(['success'=>$res, 'msg'=>'Success'], "ok");
             return;
