@@ -856,6 +856,7 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'book')
         {
+            // Book a venue.
             $this->bookVenue(base64_decode($args[1])
                 , intval(__get__($args,2,0))
                 , intval(__get__($args,3,0))
@@ -1483,7 +1484,7 @@ class Api extends CI_Controller
                 $where .= ',eid';
             $res = updateTable('events'
                 , $where
-                , 'title,description,is_public_event,class'
+                , 'title,description,is_public_event,class,vc_url,url'
                 , $_POST);
             $this->send_data(['success'=>$res, 'msg'=>'Success'], "ok");
             return;

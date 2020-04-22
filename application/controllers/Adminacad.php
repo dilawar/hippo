@@ -298,18 +298,18 @@ class Adminacad extends CI_Controller
     public function execute_aws_action($response, $ref = 'upcoming_aws')
     {
         $response = strtolower($response);
-        if ($response == 'format_abstract') {
-            $this->load_adminacad_view('admin_acad_manages_upcoming_aws_reformat.php');
-        } elseif ($response == 'removespeaker') {
+        if ($response === 'format_abstract') {
+            $this->load_adminacad_view('admin_acad_manages_upcoming_aws_reformat');
+        } elseif ($response === 'removespeaker') {
             $speaker = $_POST['speaker'];
             $res = removeAWSSpeakerFromList($speaker);
             if ($res['success']) {
                 rescheduleAWS();
             }
             flashMessage($res['msg']);
-            redirect("adminacad/$ref");
+            //redirect("adminacad/$ref");
             return;
-        } elseif ($response == 'delete') {
+        } elseif ($response === 'delete') {
             $reason = __get__($_POST, 'reason', '');
             if (strlen(trim($reason)) < 8) {
                 printErrorSevere("I did not remove this AWS because reason you gave 
@@ -321,7 +321,7 @@ class Adminacad extends CI_Controller
             flashMessage($res['msg']);
             redirect("adminacad/$ref");
             return;
-        } elseif ($response == "do_nothing") {
+        } elseif ($response === "do_nothing") {
             flashMessage("User cancelled the previous operation.");
             redirect("adminacad/$ref");
             return;

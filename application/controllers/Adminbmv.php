@@ -227,19 +227,19 @@ class Adminbmv extends CI_Controller
     public function update_requests($arg = '')
     {
         $response = strtolower($_POST['response']);
-        if( $response == 'edit' )
+        if( $response === 'edit' )
         {
-            flashMessage( "Sorry. But you can not modfiy this request. You must 
+            flashMessage( "You can not modify this request. You must 
                 ask its owner to update the booking request.
                 ");
             $this->loadview('admin_manages_talks');
         }
-        else if( $response == 'delete' )
+        else if( $response === 'delete' )
         {
             flashMessage("Deleting request is not implemented yet." );
             $this->loadview('admin_manages_talks');
         }
-        else if($response == 'do_nothing')
+        else if($response === 'do_nothing')
         {
             flashMessage("User cancelled the last operation.");
             $this->loadview('admin_manages_talks');

@@ -84,7 +84,7 @@ if (count($labmeetOrJCs) > 0) {
     }
 }
 
-echo ' <h2>Fill-in details</h2> ';
+echo heading('Booking details', 2);
 
 $default = array( 'created_by' => whoAmI() );
 $default[ 'end_time' ] = $defaultEndTime;
@@ -93,21 +93,22 @@ $default = array_merge($default, $_POST);
 // If external_id is given then this needs to go into request table. This is
 // used to fetch event data from external table. The format of this field if
 // TABLENAME.ID. 'SELF.-1' means the there is not external dependency.
-if (! isset($external_id)) {
+if (! isset($external_id)) 
     $external_id = 'SELF.-1';
-}
 
-if (__substr__('talks.', $external_id, true)) {
+if(__substr__('talks.', $external_id, true))
     $default['is_public_event'] = 'YES';
-}
+
+$default['last_modified_on'] = dbDateTime('now');
 
 echo '<form method="post" action="' . site_url("user/bookingrequest_submit/$goback") . '">';
 echo dbTableToHTMLTable(
     'bookmyvenue_requests',
     $default,
-    'class:required,title:required,description,url,is_public_event,end_time:required',
+    'class:required,title:required,description,vc_url,url,is_public_event,end_time:required',
     '',
-    $hide = 'gid,rid,modified_by,timestamp,status'
+    $hide = 'gid,rid,modified_by,timestamp,status',
+    "table table-sm"
 );
 
 echo '<input type="hidden" name="external_id" value="' . $external_id . '" >';

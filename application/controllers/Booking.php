@@ -294,12 +294,13 @@ trait Booking
         else if($action == 'submit' ) {
             $res = updateTable(
                 'talks', 'id',
-                'class,host,coordinator,title,description',
+                'class,host,coordinator,title,description,url',
                 $_POST 
             );
 
             if($res ) {
                 echo printInfo('Successfully updated entry');
+
                 // Now update the related event as wel.
                 $event = getEventsOfTalkId($_POST[ 'id' ]);
                 $tableName = 'events';
@@ -308,21 +309,22 @@ trait Booking
                     $tableName = 'bookmyvenue_requests';
                 }
 
-                if($event ) {
+                if($event) {
                     $res = updateTable(
                         $tableName, 'external_id',
-                        'title,description',
-                        array( 'external_id' => "talks." . $_POST[ 'id' ] 
-                                        , 'title' => talkToEventTitle($_POST)
-                                        , 'description' => $_POST[ 'description' ]
-                                    )
+                        'title,description,vc_url,url',
+                        ['external_id' => "talks." . $_POST[ 'id' ] 
+                        , 'title' => talkToEventTitle($_POST)
+                        , 'description' => $_POST['description']
+                        , 'url' => __get__($_POST, 'url', '')
+                        , 'vc_url' => __get__($_POST, 'vc_url', '')
+                        ]
                     );
 
                     if($res ) {
                         echo printInfo("Successfully updated associtated event");
                     }
                 }
-
                 redirect('user/show_public');
                 return;
             }
@@ -468,8 +470,10 @@ trait Booking
         $goback = "$controller/$action";
         $_POST['last_modified_on'] = dbDateTime('now');
         $_POST['modified_by'] = whoAmI();
-        $res = updateTable("bookmyvenue_requests", "gid,rid"
-            , "title,description,url,vc_url,modified_by,last_modified_on", $_POST);
+        $res = updateTable(
+            "bookmyvenue_requests", "gid,rid",
+            "title,description,url,vc_url,modified_by,last_modified_on", $_POST
+        );
         if($res ) {
             flashMessage("Successfully updated booking request.");
         }
