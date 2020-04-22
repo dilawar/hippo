@@ -34,9 +34,9 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
             $res2 = bookAVenueForThisAWS($aws, true);
             $res['msg'] .= p($res2['msg']);
 
-            // Don't rescheduleAWS. It will change the rest of the 
-            // entries for the week.
+            // Don't rescheduleAWS. It will change the rest of the entries for the week.
             // rescheduleAWS( );
+
             // Send email to user.
             $st = @notifyUserAboutUpcomingAWS( $speaker, $date, $awsID );
             if(! $st['success'] )
@@ -50,6 +50,7 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
             return $res;
         }
     }
+    $res['success'] = false;
     $res['msg'] = "Invalid speaker '$speaker' or date '$date' is in past."
         . " Could not assign AWS.";
     return $res;
