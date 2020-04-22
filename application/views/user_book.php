@@ -254,7 +254,6 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
         if ($skip) {
             $listData['reason'] = colored($skipMsg, 'grey');
             $listData['hide'] = $skip;
-
             continue;
         }
 
@@ -387,6 +386,10 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
             value="' . __get__($defaults, 'description', '')  . '">';
         $form .= '<input type="hidden" name="external_id"
             value="' . $external_id . '">';
+
+        $form .= '<input type="hidden" name="class"
+            value="' . __get__($defaults, 'class', 'UNKNOWN') . '">';
+
 
         $form .= '<input type="hidden" name="date" value="' . $defaults[ 'date' ] . '" >';
 

@@ -1212,10 +1212,10 @@ function approveRequest(string $gid, string $rid): array
     $stmt = $hippoDB->prepare(
         'INSERT INTO events (
         gid, eid, class, external_id, title, description, date, venue, start_time, end_time
-        , created_by, last_modified_on
+        , url, vc_url, created_by, last_modified_on
     ) VALUES (
-        :gid, :eid, :class, :external_id, :title, :description, :date, :venue, :start_time, :end_time
-        , :created_by, NOW()
+        :gid, :eid, :class, :external_id, :title, :description, :date, :venue, :start_time, :end_time,
+        :url, :vc_url, :created_by, NOW()
     )'
     );
     $stmt->bindValue(':gid', $gid);
@@ -1228,6 +1228,8 @@ function approveRequest(string $gid, string $rid): array
     $stmt->bindValue(':venue', $request['venue']);
     $stmt->bindValue(':start_time', $request['start_time']);
     $stmt->bindValue(':end_time', $request['end_time']);
+    $stmt->bindValue(':url', __get__($request, 'url', ''));
+    $stmt->bindValue(':vc_url', __get__($request, 'vc_url', ''));
     $stmt->bindValue(':created_by', $request['created_by']);
     $res = $stmt->execute();
 

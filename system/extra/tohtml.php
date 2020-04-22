@@ -1000,12 +1000,14 @@ function venueSummary($venue, $withName=true)
         $venue = getVenueById( $venue );
 
     $res = '';
+
     if($withName)
         $res = $venue['name'];
 
     if(__get__($venue, 'type', ''))
         $res .= " [" . $venue['type'] . "]";
-    if( __get__($venue, 'institute', ''))
+
+    if( __get__($venue, 'institute', 'Virtual') !== 'Virtual')
         $res .= ", " . $venue['institute'];
     return $res;
 }
@@ -1919,14 +1921,16 @@ function talkToHTMLLarge( $talk, $with_picture=true, string $header='') : string
 
     // Calendar link.
     $googleCalLink = addToGoogleCalLink( $event );
-    //$icalLink = eventToICALLink( $event );
 
     $right = '<table class="table table-sm table-borderless">';
     $right .= '<tr><td colspan="2"><big>' . $speakerHMTL . '</big></td></tr>
             <tr>' . $host . '</tr>
             <tr><td>When</td><td>' . $when . '</td></tr>
-            <tr><td>Where</td><td> ' . $where . '</td></tr>
-            <tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
+            <tr><td>Where</td><td> ' . $where . '</td></tr>';
+    if(__get__($event, 'vc_url', ''))
+        $right .= '<tr><td>VC Link</td><td> ' . anchor_popup($event['vc_url']) . '</td></tr>';
+
+    $right .= '<tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) .'</td></tr>';
     $right .=  "<tr><td>$googleCalLink </td>";
     $right .= '<td><a target="_blank" href="'.site_url('info/talks') . '?date='. $event[ 'date' ]
                 . '">Permanent link</a></td></tr>';
@@ -1988,6 +1992,7 @@ function talkToHTML( $talk, $with_picture = false )
     $event = getEventsOfTalkId( $talk[ 'id' ] );
 
     $where = venueSummary( $event[ 'venue' ] );
+
     $when = humanReadableDate( $event[ 'date' ] ) . ', ' .
             humanReadableTime( $event[ 'start_time'] );
 
@@ -3263,6 +3268,10 @@ function eventToICALString(array $event) :  string
     $vEvent->setDtStart($startDateTime);
     $vEvent->setDtEnd($endDateTime);
     $vEvent->setSummary($event['title']);
+
+    if(__get__($event, 'vc_url', ''))
+        $vEvent->setUrl($event['vc_url']);
+
     $vCalendar->addComponent($vEvent);
     return $vCalendar->render();
 }

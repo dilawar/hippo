@@ -208,6 +208,7 @@ class BMVPDO extends PDO
                 , external_id VARCHAR(50)
                 , description TEXT
                 , venue VARCHAR(80) NOT NULL
+                , vc_url VARCHAR(200) -- url of jitsi zoom etc.
                 , date DATE NOT NULL
                 , start_time TIME NOT NULL
                 , end_time TIME NOT NULL
@@ -277,6 +278,7 @@ class BMVPDO extends PDO
                 , description TEXT
                 , date DATE NOT NULL
                 , venue VARCHAR(80) NOT NULL
+                , vc_url VARCHAR(200) -- zoom/jitsi etc. url.
                 , created_by VARCHAR( 50 ) NOT NULL
                 , start_time TIME NOT NULL
                 , end_time TIME NOT NULL

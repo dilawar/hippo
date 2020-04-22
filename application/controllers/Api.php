@@ -856,6 +856,7 @@ class Api extends CI_Controller
         }
         else if($args[0] === 'book')
         {
+            // Book a venue.
             $this->bookVenue(base64_decode($args[1])
                 , intval(__get__($args,2,0))
                 , intval(__get__($args,3,0))
