@@ -878,7 +878,7 @@ function getNumBookings(int $num, int $limit)
         'events',
         'date,end_time', // we gonna usort is later
         "status='VALID' AND TIMESTAMP(date, end_time) >= NOW()",
-        "class,title,status,description,date,venue,created_by,start_time,end_time,url",
+        "class,title,status,description,date,venue,created_by,start_time,end_time,url,vc_url",
         $num,
         $limit
     );
@@ -886,7 +886,7 @@ function getNumBookings(int $num, int $limit)
         'bookmyvenue_requests',
         'date,end_time', // we gonna usort it later.
         "status='PENDING' AND TIMESTAMP(date, end_time) >= NOW()",
-        "class,title,status,description,date,venue,created_by,start_time,end_time,url",
+        "class,title,status,description,date,venue,created_by,start_time,end_time,url,vc_url",
         $num,
         $limit
     );
