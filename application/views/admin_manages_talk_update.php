@@ -4,8 +4,8 @@ echo userHTML();
 
 $ref = $controller;
 
-echo printInfo("Here you can only change the host, class, title and description
-    of the talk.", false);
+echo printInfo("Here you can change the <tt>HOST</tt>, <tt>CLASS</tt>, 
+    <tt>TITLE</tt> and the <tt>DESCRIPTION</tt> of the talk.", false);
 
 if (intval($talkid) < 0) {
     printErrors("Invalid talk or no talk selected.");
