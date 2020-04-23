@@ -62,8 +62,10 @@ function getSemesterCourses($year, $sem)
         ");
 
     $courses = fetchEntries($res);
-    foreach($courses as &$course)
+    foreach($courses as &$course) {
         $course['name'] = getCourseName($course['course_id']);
+        $course['instructors'] = getCourseInstructorsList($course['course_id']);
+    }
     return $courses;
 }
 

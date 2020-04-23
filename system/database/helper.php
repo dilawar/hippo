@@ -3032,6 +3032,7 @@ function getMyAllCourses(string $user) : array
     $courses = getTableEntries('course_registration', 'year DESC, semester', $whereExpr);
     foreach ($courses as &$course) {
         $course['name'] = getCourseName($course['course_id']);
+        $course['instructors'] = getCourseInstructorsList($course['course_id']);
     }
     return $courses;
 }
@@ -4073,11 +4074,10 @@ function getQuestionsWithCategory($category) : array
 
 function getCourseFeedbackQuestions() : array
 {
-    $qsMap = array();
+    $qsMap = [];
     $entries = getTableEntries('course_feedback_questions', 'id', "status='VALID'");
-    foreach ($entries as $e) {
+    foreach ($entries as $e) 
         $qsMap[$e['category']][] = $e;
-    }
     return $qsMap;
 }
 
@@ -4110,6 +4110,34 @@ function getCourseSpecificFeedback(string $year, string $semester, string $cid, 
     }
 
     return $responses;
+}
+function getCourseFeedback(string $year, string $semester, string $cid, string $login) : array
+{
+    $where = "course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID' ";
+    $where .= " AND login='$login' ";
+
+    $entries = [];
+    foreach(getTableEntries('course_feedback_responses', 'question_id', $where) as $entry) {
+        $entries[$entry['question_id']][$entry['instructor_email']] = [
+            'response' => $entry['response']
+            , 'last_modified_on' => $entry['last_modified_on']
+            , 'timestamp' => $entry['timestamp']
+        ];
+    }
+    return $entries;
+}
+
+function getCourseThisFeedback(string $year, string $semester, string $cid, string $login, string $instructor_email) : array
+{
+    $responses = array();
+    if (! $login) {
+        $login = whoAmI();
+    }
+
+    $where = "course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID' ";
+    $where .= " AND login='$login' ";
+    $where .= " AND instructor_email='$instructor_email' ";
+    return getTableEntry('course_feedback_responses', 'question_id', $where);
 }
 
 function getInstructorSpecificFeedback(string $year, string $semester, string $cid, string $email, $login='')
