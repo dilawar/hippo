@@ -31,7 +31,7 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
 
             $aws = getTableEntry('upcoming_aws', 'id', ['id'=>$awsID]);
             $aws['time'] = dbTime(strtotime($aws['time'])+($nAWS-1)*30*60);
-            $res2 = bookAVenueForThisAWS($aws, true);
+            $res2 = @bookAVenueForThisAWS($aws, true);
             $res['msg'] .= p($res2['msg']);
 
             // Don't rescheduleAWS. It will change the rest of the entries for the week.
@@ -274,8 +274,11 @@ function handleCourseRegistration(array $course, array $data
     }
 
     // Update waiting lists.
-    if(strtoupper($data['status']) === 'DROPPED')
+    if(strtoupper($data['status']) === 'DROPPED') {
         updateCourseWaitlist($data['course_id'], $data['year'], $data['semester']);
+        // Drop all feedback as well.
+        withdrawCourseFeedback($data['student_id'], $data['course_id'], $data['semester'], $data['year']);
+    }
 
     $ret['success'] = true;
     $ret['msg'] .= "Successfully $what course ".$data['course_id'];

@@ -3032,6 +3032,7 @@ function getMyAllCourses(string $user) : array
     $courses = getTableEntries('course_registration', 'year DESC, semester', $whereExpr);
     foreach ($courses as &$course) {
         $course['name'] = getCourseName($course['course_id']);
+        $course['instructors'] = getCourseInstructorsList($course['course_id']);
     }
     return $courses;
 }
@@ -4073,9 +4074,9 @@ function getQuestionsWithCategory($category) : array
 
 function getCourseFeedbackQuestions() : array
 {
-    $qsMap = array();
+    $qsMap = [];
     $entries = getTableEntries('course_feedback_questions', 'id', "status='VALID'");
-    foreach ($entries as $e) {
+    foreach ($entries as $e) { 
         $qsMap[$e['category']][] = $e;
     }
     return $qsMap;
@@ -4110,6 +4111,83 @@ function getCourseSpecificFeedback(string $year, string $semester, string $cid, 
     }
 
     return $responses;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis API function.
+ *
+ * @Param $year
+ * @Param $semester
+ * @Param $cid
+ * @Param $login
+ *
+ * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function getCourseFeedback(string $year, string $semester, string $cid, string $login) : array
+{
+    $where = "course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID' ";
+    $where .= " AND login='$login' ";
+
+    $questions = [];
+
+    $entries = [];
+    foreach(getTableEntries('course_feedback_responses', 'question_id', $where) as $entry) {
+        $entries[$entry['question_id']][$entry['instructor_email']] = [
+            'response' => $entry['response']
+            , 'last_modified_on' => $entry['last_modified_on']
+            , 'timestamp' => $entry['timestamp']
+        ];
+    }
+
+    $instructors = getCourseInstructorsList($cid, $year, $semester);
+
+    // Question which are not answered.
+    $numUnanswered = 0;
+    $questions = getTableEntries('course_feedback_questions', 'id', "status='VALID'", "id,type");
+    foreach($questions as $q) {
+        if(__get__($entries, $q['id']))
+            continue;
+
+        $numUnanswered += 1;
+        if($q['type'] === 'INSTRUCTOR SPECIFIC') {
+            foreach($instructors as &$inst) {
+                $entries[$q['id']][$inst[0]] = [ 
+                    'response' => "", 'last_modified_on' => "", 'timestamp' => ""
+                ];
+            }
+        }
+        else {
+            $entries[$q['id']][""] = ['response' => "", 'last_modified_on' => "", 'timestamp' => ""];
+        }
+    }
+
+    $course = getRunningCourseByID($cid, $year, $semester);
+
+    // Don't allow feedback once it is fully submitted or 6 months have passed.
+    $editable = [true, ''];
+    if(strtotime('now') > strtotime($course['end_date']) + 6*30*86400)
+        $editable = [false, "6 months have passed since course completion"];
+    else if(strtotime('now') < strtotime($course['end_date']))
+        $editable = [false, "Course is yet to complete."];
+    else if($numUnanswered == 0)
+        $editable = [false, "You have completed the form."];
+
+    return ["responses" => $entries, "unanswered"=>$numUnanswered, 'editable'=>$editable];
+}
+
+function getCourseThisFeedback(string $year, string $semester, string $cid, string $login, string $instructor_email) : array
+{
+    $responses = array();
+    if (! $login) {
+        $login = whoAmI();
+    }
+
+    $where = "course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID' ";
+    $where .= " AND login='$login' ";
+    $where .= " AND instructor_email='$instructor_email' ";
+    return getTableEntry('course_feedback_responses', 'question_id', $where);
 }
 
 function getInstructorSpecificFeedback(string $year, string $semester, string $cid, string $email, $login='')

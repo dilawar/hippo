@@ -16,7 +16,7 @@ class BMVPDO extends PDO
         ];
 
         try {
-            $conf = parse_ini_file( '/etc/hipporc', $process_section = TRUE );
+            $conf = parse_ini_file('/etc/hipporc', $process_section = true);
         } catch (Exception $e) {
             // could  not read for some reason.
             throw("Could not read /etc/hipporc file. Without it, I can not continute...");
@@ -26,26 +26,29 @@ class BMVPDO extends PDO
         $host = $conf['mysql']['host'];
         $port = $conf['mysql']['port'];
 
-        if( $port == -1 )
+        if($port == -1 ) {
             $port = 3306;
+        }
 
         $user = $conf['mysql']['user'];
         $password = $conf['mysql']['password'];
         $dbname = $conf['mysql']['database'];
 
-        if( $port == -1 )
+        if($port == -1 ) {
             $port = 3306;
+        }
 
         try 
         {
-            parent::__construct( 'mysql:host=' . $host . ";dbname=$dbname"
-                , $user, $password, $options
+            parent::__construct(
+                'mysql:host=' . $host . ";dbname=$dbname",
+                $user, $password, $options
             );
         } catch( PDOException $e) {
             echo minionEmbarrassed(
                 "failed to connect to database: ".  $e->getMessage()
             );
-            $this->error = $e->getMessage( );
+            $this->error = $e->getMessage();
             throw $e;
         }
 
@@ -60,17 +63,19 @@ class BMVPDO extends PDO
                 , description VARCHAR(100) NOT NULL
                 , schedule_talk_or_aws ENUM( "YES", "NO" ) DEFAULT "YES"
             )
-            ' );
+            ' 
+        );
 
         // Configuration
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS config (
                 id VARCHAR(100) PRIMARY KEY
                 , value VARCHAR(1000) NOT NULL
                 , comment TEXT
             )
             "
-            );
+        );
 
         // Since deleting is allowed from speaker, id should not AUTO_INCREMENT
         $res = $this->query(
@@ -86,10 +91,12 @@ class BMVPDO extends PDO
                 , institute VARCHAR(1000) NOT NULL CHECK( institute <> "" )
                 , homepage VARCHAR(500)
                 , UNIQUE KEY (email,first_name,last_name)
-            )' );
+            )' 
+        );
 
         // Other tables.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS logins (
                 id VARCHAR( 200 )
                 , login VARCHAR(100)
@@ -121,7 +128,7 @@ class BMVPDO extends PDO
                 ) DEFAULT 'UNSPECIFIED'
                 , institute VARCHAR(300)
                 , PRIMARY KEY (login))"
-            );
+        );
 
         $res = $this->query(
             'CREATE TABLE IF NOT EXISTS talks
@@ -142,7 +149,8 @@ class BMVPDO extends PDO
                 , created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
                 , status ENUM( "CANCELLED", "INVALID", "VALID", "DELIVERED" ) DEFAULT "VALID"
                 , PRIMARY KEY (id)
-            )' );
+            )' 
+        );
 
         // This table holds the email template.
         $res = $this->query(
@@ -152,7 +160,7 @@ class BMVPDO extends PDO
             , recipients VARCHAR(200) NOT NULL
             , cc VARCHAR(500)
             , description TEXT, PRIMARY KEY (id) )'
-            );
+        );
 
         // Save the emails here. A bot should send these emails.
         $res = $this->query(
@@ -167,7 +175,7 @@ class BMVPDO extends PDO
                 , created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , last_tried_on DATETIME
                 , PRIMARY KEY (id) )'
-            );
+        );
 
         // Save the list of publications here.
         $res = $this->query(
@@ -185,7 +193,7 @@ class BMVPDO extends PDO
                 , metadata_json TEXT
                 , modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )'
-            );
+        );
 
         $res = $this->query(
             'CREATE TABLE IF NOT EXISTS publication_authors
@@ -196,9 +204,10 @@ class BMVPDO extends PDO
                 , publication_title VARCHAR(1000)
                 , modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 , UNIQUE KEY (author, publication_title_sha) )'
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS bookmyvenue_requests (
                 gid INT NOT NULL
                 , rid INT NOT NULL
@@ -221,11 +230,13 @@ class BMVPDO extends PDO
                 , PRIMARY KEY (gid, rid)
                 , UNIQUE KEY (gid,rid,external_id)
                 )
-               " );
+               " 
+        );
 
         // Create a table to store user given recurrent pattern. We must keep
         // all entries.
-        $res = $this->query( "
+        $res = $this->query(
+            "
                     CREATE TABLE IF NOT EXISTS recurrent_pattern (
                         id INT NOT NULL PRIMARY KEY
                         , request_gid INT UNSIGNED CHECK (request_gid > 0)
@@ -233,9 +244,11 @@ class BMVPDO extends PDO
                         , timestamp DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                         , UNIQUE KEY(request_gid, pattern)
                     )
-                    ");
+                    "
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             -- venues must created before events because events refer to venues key as
             -- foreign key.
             CREATE TABLE IF NOT EXISTS venues (
@@ -258,10 +271,11 @@ class BMVPDO extends PDO
                 -- How many events this venue have hosted so far. Meaure of popularity.
                 , total_events INT NOT NULL DEFAULT 0
                 , PRIMARY KEY (id) )"
-            );
+        );
 
         // All events are put on this table.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS events (
                 -- Sub event will be parent.children format.
                 gid INT NOT NULL -- This is group id of events.
@@ -291,9 +305,10 @@ class BMVPDO extends PDO
                 , PRIMARY KEY ( gid, eid )
                 , UNIQUE KEY (gid,eid,external_id)
                 )"
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS supervisors (
                 email VARCHAR(80) PRIMARY KEY NOT NULL
                 , first_name VARCHAR( 200 ) NOT NULL
@@ -301,9 +316,10 @@ class BMVPDO extends PDO
                 , last_name VARCHAR( 200 )
                 , affiliation VARCHAR( 1000 ) NOT NULL
                 , url VARCHAR(300) ) "
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS faculty (
                 email VARCHAR(80) PRIMARY KEY NOT NULL
                 , first_name VARCHAR( 200 ) NOT NULL
@@ -317,11 +333,12 @@ class BMVPDO extends PDO
                 , created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
                 , modified_on DATETIME NOT NULL
                 )"
-            );
+        );
 
         // This table keeps the archive. We only move complete AWS entry in to this
         // table. Ideally this should not be touched manually.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS annual_work_seminars (
                 id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
                 , speaker VARCHAR(80) NOT NULL -- user
@@ -342,9 +359,10 @@ class BMVPDO extends PDO
                 , last_modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 , UNIQUE KEY (speaker, date, venue)
                 )"
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS upcoming_aws (
                 id INT AUTO_INCREMENT PRIMARY KEY
                 , speaker VARCHAR(80) NOT NULL -- user
@@ -365,9 +383,10 @@ class BMVPDO extends PDO
                 , venue VARCHAR(100) NOT NULL
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
                 , UNIQUE (speaker, date, venue) )"
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS aws_requests (
                 id INT AUTO_INCREMENT PRIMARY KEY
                 , speaker VARCHAR(200) NOT NULL -- user
@@ -386,11 +405,12 @@ class BMVPDO extends PDO
                 , status ENUM( 'PENDING', 'APPROVED', 'REJECTED', 'INVALID', 'CANCELLED' ) DEFAULT 'PENDING'
                 , modidfied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )"
-            );
+        );
 
         // This table keeps request for scheduling AWS. Do not allow deleting a
         // request. It can be rejected or marked expired.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS aws_scheduling_request (
                 id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
                 , created_on DATETIME
@@ -400,10 +420,11 @@ class BMVPDO extends PDO
                 , reason TEXT NOT NULL
                 , status ENUM( 'APPROVED', 'REJECTED', 'PENDING', 'CANCELLED' ) DEFAULT 'PENDING'
                 )"
-            );
+        );
 
         // Generic table for making some task appear in some time interval.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS conditional_tasks (
                 id VARCHAR(50) PRIMARY KEY NOT NULL
                 , start_date DATE NOT NULL
@@ -411,15 +432,18 @@ class BMVPDO extends PDO
                 , status ENUM( 'VALID', 'INVALID' ) DEFAULT 'VALID'
                 , comment TEXT
             )"
-            );
+        );
         // This entry keeps track if course registraction should be open/closed for
         // current semester.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             INSERT IGNORE INTO conditional_tasks (id) VALUES ('COURSE_REGISTRATION')
-            ");
+            "
+        );
 
         // Questionnaire
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS question_bank (
                 id INT PRIMARY KEY
                 , category VARCHAR(40) NOT NULL
@@ -429,10 +453,11 @@ class BMVPDO extends PDO
                 , status ENUM('VALID', 'INVALID' ) default 'VALID'
                 , last_modified_on DATETIME
                 )"
-            );
+        );
 
         // Table for question bank related to courses.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS course_feedback_questions (
                 id INT PRIMARY KEY
                 , category VARCHAR(40)
@@ -442,10 +467,11 @@ class BMVPDO extends PDO
                 , status ENUM('VALID', 'INVALID' ) default 'VALID'
                 , last_modified_on DATETIME
                 )"
-            );
+        );
 
         // table to record course feedback.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS course_feedback_responses (
                 login VARCHAR(40) NOT NULL
                 , question_id INT NOT NULL
@@ -460,11 +486,12 @@ class BMVPDO extends PDO
                 , last_modified_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 , UNIQUE KEY(login,question_id,course_id,instructor_email)
                 )"
-            );
+        );
 
 
         // table to record poll.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS poll_response (
                 login VARCHAR(40) NOT NULL
                 , question_id INT NOT NULL
@@ -475,10 +502,11 @@ class BMVPDO extends PDO
                 , last_modified_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 , UNIQUE KEY(login,question_id,external_id)
                 )"
-            );
+        );
 
         // table to record noticeboard.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS notice_board (
                 id INT NOT NULL
                 , login VARCHAR(40) NOT NULL
@@ -488,10 +516,11 @@ class BMVPDO extends PDO
                 , timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , last_modified_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )"
-            );
+        );
 
         // Slots
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS slots (
                 id VARCHAR(4) NOT NULL
                 , groupid INT NOT NULL
@@ -501,10 +530,11 @@ class BMVPDO extends PDO
                 , UNIQUE KEY (day,start_time,end_time)
                 , PRIMARY KEY (id,groupid)
                 )"
-            );
+        );
 
         // list of courses.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS courses_metadata  (
                 id VARCHAR(8) NOT NULL PRIMARY KEY
                 , credits INT NOT NULL DEFAULT 3
@@ -520,10 +550,12 @@ class BMVPDO extends PDO
                 , status ENUM('VALID', 'INVALID', 'DEACTIVATED') default 'VALID'
                 , comment VARCHAR(100)
                 )
-            ");
+            "
+        );
 
         // Instance of currently running courses.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS courses (
                  -- Combination of course code, semester and year
                 id VARCHAR(30) PRIMARY KEY
@@ -540,12 +572,14 @@ class BMVPDO extends PDO
                 , ignore_tiles VARCHAR(20) -- CSV, ignore these tiles.
                 , note VARCHAR(200) DEFAULT ''  -- Add extra comment.
                 , UNIQUE KEY(semester,year,course_id)
-                )" );
+                )" 
+        );
 
 
 
         // Timetable
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS course_timetable  (
                 course VARCHAR(20) NOT NULL
                 , start_date DATE NOT NULL
@@ -553,10 +587,11 @@ class BMVPDO extends PDO
                 , slot VARCHAR(5) NOT NULL
                 , PRIMARY KEY (course,start_date)
                 ) "
-            );
+        );
 
         // course registration.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             create TABLE IF NOT EXISTS course_registration  (
                  student_id VARCHAR(50) NOT NULL
                 , semester ENUM ( 'AUTUMN', 'SPRING' ) NOT NULL
@@ -571,10 +606,11 @@ class BMVPDO extends PDO
                 , grade_is_given_on DATETIME  -- Do not show till feedback is given.
                 , PRIMARY KEY (student_id,semester,year,course_id)
                 ) "
-            );
+        );
 
         // This is available on Hippo App only.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS accomodation (
                 id INT PRIMARY KEY
                 , type ENUM( 'SHARED ROOM', 'SINGLE ROOM', '1BHK', '2BHK', '3BHK', '3+BHK' )
@@ -593,9 +629,10 @@ class BMVPDO extends PDO
                 , created_on DATETIME NOT NULL -- timestamp
                 , last_modified_on DATETIME ON UPDATE CURRENT_TIMESTAMP
                 )"
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS comment (
                     id INT PRIMARY KEY
                     , commenter VARCHAR(20)
@@ -606,9 +643,10 @@ class BMVPDO extends PDO
                     , status ENUM('VALID', 'INVALID', 'DELETED', 'ABUSIVE') DEFAULT 'VALID'
                     , UNIQUE KEY(external_id,commenter)
                 )"
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS alerts (
                 login VARCHAR(50) NOT NULL
                 , on_table VARCHAR(50) NOT NULL
@@ -616,11 +654,12 @@ class BMVPDO extends PDO
                 , value VARCHAR(50) NOT NULL
                 , UNIQUE KEY (login,on_table,on_field,value)
             )"
-            );
+        );
 
 
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS upcoming_course_schedule (
                 id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
                 , course_id VARCHAR(100) NOT NULL
@@ -633,10 +672,11 @@ class BMVPDO extends PDO
                 , status ENUM( 'VALID', 'INVALID', 'DELETED' ) DEFAULT 'VALID'
                 , UNIQUE KEY(course_id,slot,venue)
                 )"
-            );
+        );
 
         // This table keep journal club subscription
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS journal_clubs (
                 id VARCHAR(100) NOT NULL PRIMARY KEY
                 , title VARCHAR(200) NOT NULL
@@ -650,9 +690,10 @@ class BMVPDO extends PDO
                 , send_email_on_days VARCHAR(30) -- csv list otherwise 3 days before the day
                 , UNIQUE KEY(id,day,time,venue)
                 )"
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS jc_subscriptions (
                 login VARCHAR(100) NOT NULL
                 , jc_id VARCHAR(100) NOT NULL
@@ -661,10 +702,11 @@ class BMVPDO extends PDO
                 , last_modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , UNIQUE KEY(login,jc_id)
                 )"
-            );
+        );
 
         // JC presentations.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS jc_presentations (
                 id INT NOT NULL PRIMARY KEY
                 , jc_id VARCHAR(100) NOT NULL
@@ -681,10 +723,11 @@ class BMVPDO extends PDO
                 , acknowledged  ENUM('YES','NO') default 'NO' -- acknowledged
                 , UNIQUE KEY(presenter,jc_id,date)
                 )"
-            );
+        );
 
         // JC requests.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS jc_requests (
                 id INT NOT NULL PRIMARY KEY
                 , jc_id VARCHAR(100) NOT NULL
@@ -696,9 +739,10 @@ class BMVPDO extends PDO
                 , status SET( 'VALID', 'INVALID', 'CANCELLED' ) DEFAULT 'VALID'
                 , acknowledged ENUM('YES', 'NO') DEFAULT 'YES'
                 )"
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS votes (
                 id VARCHAR(50) NOT NULL  -- table.id
                 , voter VARCHAR(20) NOT NULL
@@ -706,10 +750,11 @@ class BMVPDO extends PDO
                 , voted_on DATE
                 , UNIQUE KEY(voter,id)
                 )"
-            );
+        );
 
         // inventroy
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS inventory (
                 id INT PRIMARY KEY
                 , name VARCHAR(50) NOT NULL
@@ -729,10 +774,11 @@ class BMVPDO extends PDO
                 , requires_booking ENUM('YES', 'NO') default 'NO'
                 , UNIQUE KEY (faculty_in_charge, name)
                 )"
-            );
+        );
 
         // Equipements booking.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS inventory_bookings (
                 id INT PRIMARY KEY
                 , inventory_id INT NOT NULL
@@ -745,9 +791,10 @@ class BMVPDO extends PDO
                 , created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )"
-            );
+        );
 
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS borrowing (
                 id INT PRIMARY KEY
                 , inventory_id INT NOT NULL
@@ -759,10 +806,11 @@ class BMVPDO extends PDO
                 , created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )"
-            );
+        );
 
         // Transport
-        $res = $this->query( "CREATE TABLE IF NOT EXISTS transport (
+        $res = $this->query(
+            "CREATE TABLE IF NOT EXISTS transport (
                 id INT PRIMARY KEY
                 , vehicle VARCHAR(50) NOT NULL
                 , pickup_point VARCHAR(50) NOT NULL
@@ -779,10 +827,11 @@ class BMVPDO extends PDO
                 , comment VARCHAR(200)
                 , UNIQUE KEY(vehicle,day,pickup_point,drop_point,trip_start_time,status)
                 )"
-            );
+        );
 
         // Canteen
-        $res = $this->query( "CREATE TABLE IF NOT EXISTS canteen_menu (
+        $res = $this->query(
+            "CREATE TABLE IF NOT EXISTS canteen_menu (
                 id INT PRIMARY KEY
                 , name VARCHAR(30) NOT NULL
                 , description TEXT 
@@ -799,10 +848,11 @@ class BMVPDO extends PDO
                 , popularity INT DEFAULT '0'
                 , UNIQUE KEY (name,canteen_name,which_meal,day)
                 )"
-            );
+        );
 
         // Location.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS geolocation (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 latitude DECIMAL(10,8) NOT NULL,
@@ -816,10 +866,11 @@ class BMVPDO extends PDO
                 crypt_id VARCHAR(50), -- one way string hashing for each IP.
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )"
-            );
+        );
 
         // Clickable queries
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS queries (
                 id INT PRIMARY KEY
                 , external_id VARCHAR(50) DEFAULT 'NONE.-1' -- associated table.id in some other table
@@ -829,10 +880,11 @@ class BMVPDO extends PDO
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
                 )"
-            );
+        );
 
         // Images.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS images (
                 id INT PRIMARY KEY
                 , external_id VARCHAR(50) DEFAULT 'NONE.-1' -- associated table.id in some other table
@@ -841,10 +893,11 @@ class BMVPDO extends PDO
                 , last_modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP  
                 , status ENUM('VALID', 'INVALID', 'DELETED') default 'VALID'
                 )"
-            );
+        );
 
         // Notifications table.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS notifications (
                 id INT AUTO_INCREMENT PRIMARY KEY
                 , login VARCHAR(50) NOT NULL
@@ -855,11 +908,12 @@ class BMVPDO extends PDO
                 , status ENUM('VALID', 'INVALID', 'EXPIRED', 'DELETED') DEFAULT 'VALID'
                 , created_on TIMESTAMP default CURRENT_TIMESTAMP
                 )"
-            );
+        );
 
         // Forum table. This table keeps information posted on forums. TAGS
         // keeps forum name.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS forum (
                 id INT PRIMARY KEY
                 , title VARCHAR(200) NOT NULL
@@ -870,11 +924,12 @@ class BMVPDO extends PDO
                 , created_on TIMESTAMP default CURRENT_TIMESTAMP
                 , last_modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 )"
-            );
+        );
 
         // Which board user has subscribed to. Note that forum and board are
         // often used interchangeablly. Unfortunately its a historial baggage.
-        $res = $this->query( "
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS board_subscriptions (
                 board VARCHAR(30) NOT NULL -- this is one of the forum.tags
                 , login VARCHAR(30) NOT NULL
@@ -883,10 +938,11 @@ class BMVPDO extends PDO
                 , last_modified_on TIMESTAMP default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 , UNIQUE KEY(board, login)
                 )"
-            );
+        );
 
         // API keys.
-        $res = $this->query("
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS apikeys (
                 id INT PRIMARY KEY AUTO_INCREMENT
                 , login VARCHAR(50) NOT NULL
@@ -896,10 +952,11 @@ class BMVPDO extends PDO
                 , timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP()
                 , UNIQUE KEY (login,apikey,level)
                 ) DEFAULT CHARSET=utf8"
-            );
+        );
 
         // Logs related to API.
-        $res = $this->query("
+        $res = $this->query(
+            "
             CREATE TABLE IF NOT EXISTS apilogs (
                 id INT(11) PRIMARY KEY AUTO_INCREMENT
                 , query VARCHAR(300) NOT NULL
@@ -907,7 +964,7 @@ class BMVPDO extends PDO
                 , ip VARCHAR(100) 
                 , status VARCHAR(20) default 'UNKNOWN' -- success,  warning, error etc.
                 ) DEFAULT CHARSET=utf8;"
-            );
+        );
 
         return $res;
     }
@@ -915,7 +972,7 @@ class BMVPDO extends PDO
 
 // Construct the PDO
 // And initiaze the database.
-$hippoDB = new BMVPDO( "localhost" );
+$hippoDB = new BMVPDO("localhost");
 
 // DO not initialize in production code.
 //$hippoDB->initialize();

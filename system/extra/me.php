@@ -204,5 +204,30 @@ function getProfileEditables( ): array
     return $res;
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+    * @Synopsis  Submit feedback for a single question.
+    *
+    * @Param $data
+    *
+    * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+function submitThisFeedback(array $data) : array 
+{
+    $res['success'] = true;
+    $res['msg'] = '';
+    try {
+        $res['success'] = insertOrUpdateTable('course_feedback_responses'
+            , 'login,question_id,year,semester,course_id,instructor_email,response'
+            , 'year,semester,response', $data
+        );
+    } catch (Exception $e) {
+        $res['msg'] .= $e->getMessage();
+        $res['success'] = false;
+    }
+    return $res;
+}
+
 
 ?>
