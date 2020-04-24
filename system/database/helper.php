@@ -1034,7 +1034,7 @@ function submitRequestImproved(array $request, bool $removeCollision=false, stri
 
         $res = insertIntoTable('bookmyvenue_requests', $keys, $request);
         if (is_null($res)) {
-            $errorMsg .= p("Could not submit request id $gid.");
+            $errorMsg .= __FUNCTION__ . ": Could not submit request id $gid.";
             $result['msg'] .= $errorMsg;
             return $result;
         }
@@ -1122,7 +1122,7 @@ function submitRequest(array $request)
         );
 
         if (! $res) {
-            $errorMsg .= "Could not submit request id $gid";
+            $errorMsg .= __FUNCTION__ . ": Could not submit request id $gid.";
             return 0;
         }
     }
