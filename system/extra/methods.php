@@ -1673,14 +1673,13 @@ function cancelBookingOrRequestAndNotifyBookingParty(array $evOrReq, string $rea
         $what = 'pending booking request';
     }
 
-    var_dump($evOrReq, $isConfirmed, $what);
     $login = $evOrReq['created_by'];
     $gid = $evOrReq['gid'];
 
     if ($isConfirmed) {
-        $res = changeStatusOfEvent($gid, $evOrReq['eid'], $login, 'CANCELLED');
+        $res = changeStatusOfEvent($gid, $evOrReq['eid'], 'CANCELLED');
     } else {
-        $res = changeRequestStatus($gid, $evOrReq['rid'], $login, 'CANCELLED');
+        $res = changeRequestStatus($gid, $evOrReq['rid'], 'CANCELLED');
     }
 
     if ($res) {
@@ -2145,11 +2144,11 @@ function bookAVenueForThisAWS(array $aws, bool $removeCollision=false) : array
 
         if ($res['success']) {
             // At least one of the request is approved. Call it success.
-            if (count($res['rid'])>0) {
+            if (count($res['ridlist'])>0) {
                 $result['success'] = true;
             }
 
-            foreach ($res['rid'] as $rid) {
+            foreach ($res['ridlist'] as $rid) {
                 $gid = $res['gid'];
                 $res2 = approveRequest($gid, $rid, 'APPROVED');
                 if ($res2['success']) {

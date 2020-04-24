@@ -542,7 +542,7 @@ function getRequestByGroupIdAndStatus($gid, $status)
  *
  * @return true on success, false otherwise.
  */
-function changeRequestStatus($gid, $rid, $status)
+function changeRequestStatus($gid, $rid, string $status)
 {
     $hippoDB = initDB();
     ;
@@ -588,13 +588,13 @@ function changeStatusOfEventGroup($gid, $user, $status)
     return $stmt->execute();
 }
 
-function changeStatusOfEvent($gid, $eid, $user, $status)
+function changeStatusOfEvent($gid, $eid, $status)
 {
     $res = updateTable(
         'events',
-        'gid,eid,created_by',
+        'gid,eid',
         'status',
-        array( 'gid' => $gid, 'eid' => $eid, 'status' => $status, 'created_by' => $user )
+        array( 'gid' => $gid, 'eid' => $eid, 'status' => $status )
     );
     return $res;
 }
@@ -974,7 +974,7 @@ function getUniqueID($tablename)
 /* ----------------------------------------------------------------------------*/
 function submitRequestImproved(array $request, bool $removeCollision=false, string $reason='') : array
 {
-    $result = ['msg'=>'', 'success'=>false, 'collision'=>[], 'gid'=>null, 'rid'=>[]];
+    $result = ['msg'=>'', 'success'=>false, 'collision'=>[], 'gid'=>null, 'ridlist'=>[]];
 
     $request['created_by'] = $request['created_by'] ?? whoAmI();
     $repeatPat = __get__($request, 'repeat_pat', '');
@@ -991,12 +991,13 @@ function submitRequestImproved(array $request, bool $removeCollision=false, stri
 
     $gid = getUniqueFieldValue('bookmyvenue_requests', 'gid');
     $result['gid'] = $gid;
+    $result['rid'] = '0';
     $errorMsg = '';
-    $rid = -1;
+    $rid = 0;
     foreach ($days as $day) {
         $rid += 1;
         $request['gid'] = strval($gid);
-        $request['rid'] = strval($rid);
+        $request['rid'] = strval($rid) ?? '0';
         $request['date'] = $day;
 
         $collideWith = checkCollision($request);
@@ -1040,11 +1041,11 @@ function submitRequestImproved(array $request, bool $removeCollision=false, stri
         }
 
         $result['gid'] = $gid;
-        $result['rid'][] = $rid;
+        $result['ridlist'][] = $rid;
     }
 
     // Some or all requests were successfully submitted.
-    if (count($result['rid']) > 0) {
+    if (count($result['ridlist']) > 0) {
         $result['msg'] .= "Successfully submitted requests $gid.$rid.";
         $result['success'] = true;
         return $result;
@@ -1360,7 +1361,7 @@ function requestsForThisVenue($venue, $date, $time)
     $time = trim($time);
 
     $hippoDB = initDB();
-    ;
+
     // Database reads in ISO format.
     $hDate = dbDate($date);
     $clockT = date('H:i', $time);
@@ -1963,14 +1964,13 @@ function getTableEntry(string $tablename, $whereKeys, array $data) : array
 function insertIntoTable($tablename, $keys, $data)
 {
     $hippoDB = initDB();
-    ;
 
     if (is_string($keys)) {
         $keys = explode(',', $keys);
     }
 
-    $values = array( );
-    $cols = array( );
+    $values = array();
+    $cols = array();
     foreach ($keys as $k) {
         if (! is_string($k)) {
             continue;
@@ -1994,19 +1994,10 @@ function insertIntoTable($tablename, $keys, $data)
         if (is_array($value)) {
             $value = implode(',', $value);
         }
-
         $stmt->bindValue(":$k", $value);
     }
 
-    try {
-        $res = $stmt->execute();
-    } catch (Exception $e) {
-        echo minionEmbarrassed(
-            "I failed to update my database. Error was " . $e->getMessage()
-        );
-        return null;
-    }
-
+    $res = $stmt->execute();
     if ($res) {
         // When created return the id of table else return null;
         $stmt = $hippoDB->query("SELECT LAST_INSERT_ID() FROM $tablename");
@@ -2527,8 +2518,9 @@ function getUpcomingAWSOfSpeaker(string $speaker)
  *
  * @return
  */
-function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : int
+function acceptScheduleOfAWS(string $speaker, string $date, string $venue=''): array
 {
+    $ret = ['awsid'=>0, 'msg'=>''];
     $hippoDB = initDB();
     if (! $venue) {
         $venue = getDefaultAWSVenue($date);
@@ -2540,21 +2532,21 @@ function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : 
     }
 
     // If there is already a schedule for this person.
-    $res = getTableEntry(
+    $r = getTableEntry(
         'upcoming_aws',
         'speaker,date',
         ['speaker' => $speaker, 'date' => dbDate($date), 'venue'=>$venue]
     );
 
-    if ($res) {
-        echo printInfo("Already assigned for $speaker on $date on venue $venue.");
-        return intval($res['id']);
+    if ($r) {
+        $ret['msg'] .= "Already assigned for $speaker on $date on venue $venue.";
+        $ret['awsid'] = intval($r['id']);
     }
 
     // Make sure that person is eligible for AWS. Usually she is some sometimes
     // she is not.
     $login = explode('@', $speaker)[0];
-    updateTable(
+    $r = updateTable(
         'logins',
         'login',
         'eligible_for_aws',
@@ -2574,7 +2566,7 @@ function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : 
 
     $awsID = -1;
     try {
-        $res = $stmt->execute();
+        $r = $stmt->execute();
         // delete this row from temp table.
         $stmt = $hippoDB->prepare(
             'DELETE FROM aws_temp_schedule WHERE
@@ -2583,12 +2575,14 @@ function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : 
         );
         $stmt->bindValue(':speaker', $speaker);
         $stmt->bindValue(':date', $date);
-        $res = $stmt->execute();
+        $r = $stmt->execute();
 
         // If this happens, I must not commit the previous results into table.
-        if (! $res) {
+        if (! $r) {
             $hippoDB->rollBack();
-            return 0;
+            $ret['awsid'] = 0;
+            $ret['msg'] .= "Failed to remove temp schedule.";
+            return $ret;
         }
 
         // If successful add a query in queries to create a clickable query.
@@ -2602,13 +2596,15 @@ function acceptScheduleOfAWS(string $speaker, string $date, string $venue='') : 
         insertClickableQuery($speaker, "upcoming_aws.$awsID", $clickableQ);
     } catch (Exception $e) {
         $hippoDB->rollBack();
-        echo minionEmbarrassed(
+        $ret['awsid'] = 0;
+        $ret['msg'] .= minionEmbarrassed(
             "Failed to insert $speaker, $date into database: " . $e->getMessage()
         );
-        return 0;
+        return $ret;
     }
     $hippoDB->commit();
-    return intval($awsID);
+    $ret['awsid'] = intval($awsID);
+    return $ret;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -2634,7 +2630,7 @@ function insertClickableQuery($who_can_execute, $external_id, $query)
 
     $res = getTableEntry('queries', 'who_can_execute,query,external_id,status', $data);
     if ($res) {
-        echo printInfo("Clickable URL still unused.");
+        // printInfo("Clickable URL still unused.");
         return $res['id'];
     }
 
@@ -2666,7 +2662,7 @@ function queryAWS($query)
     }
 
     if (strlen($query) < 3) {
-        echo printWarning("Query is too small");
+        // printWarning("Query is too small");
         return array( );
     }
 
