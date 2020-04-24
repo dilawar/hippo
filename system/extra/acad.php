@@ -274,8 +274,11 @@ function handleCourseRegistration(array $course, array $data
     }
 
     // Update waiting lists.
-    if(strtoupper($data['status']) === 'DROPPED')
+    if(strtoupper($data['status']) === 'DROPPED') {
         updateCourseWaitlist($data['course_id'], $data['year'], $data['semester']);
+        // Drop all feedback as well.
+        withdrawCourseFeedback($data['student_id'], $data['course_id'], $data['semester'], $data['year']);
+    }
 
     $ret['success'] = true;
     $ret['msg'] .= "Successfully $what course ".$data['course_id'];

@@ -1245,13 +1245,19 @@ class Api extends CI_Controller
                 return;
             }
             else if($args[1] === 'add') {
-
+                $res = ["Unsupported endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
             }
             else if($args[1] === 'remove') {
-
+                $res = ["Unsupported endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
             }
             else if($args[1] === 'update') {
-
+                $res = ["Unsupported endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
             }
             else
             {
@@ -1262,7 +1268,9 @@ class Api extends CI_Controller
         }
         else if($endpoint === 'schedule') {
             if($args[1] === 'list') {
-
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
             }
             else if($args[1] === 'add') {
                 $res = [];
@@ -1316,12 +1324,20 @@ class Api extends CI_Controller
 
             }
             else if($args[1] === 'add') {
-
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
             }
             else if($args[1] === 'remove') {
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
 
             }
             else if($args[1] === 'update') {
+                $res = ["unknown endpoint $endpoint/".$args[1]];
+                $this->send_data($res, 'ok');
+                return;
 
             }
             else
