@@ -68,8 +68,6 @@ function minionEmbarrassed( string $msg, string $info = '' ) : string
     $r .= " $msg <br> $info ";
     $r .= "I have logged this error!. ";
     $r .= "</p>";
-    error_log( "FAILED : " . $r );
-    log_message( 'error', $r);
     return $r;
 }
 

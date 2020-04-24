@@ -28,7 +28,7 @@ function aws_schedule_fac_student_cron( )
             $speaker = $aws[ 'speaker' ];
             $date = $aws[ 'date' ];
             $res = acceptScheduleOfAWS( $speaker, $date );
-            if( $res )
+            if( $res['awsid'] > 0 )
             {
                 echo printInfo( "Successfully assigned $speaker for $date" );
                 notifyUserAboutUpcomingAWS( $speaker, $date );
