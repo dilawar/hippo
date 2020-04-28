@@ -162,7 +162,7 @@ function getTalksWithEvent($start_date, $end_date)
  */
 function doAWSHouseKeeping()
 {
-    $oldAws = getTableEntries('upcoming_aws', 'date', "status='VALID' AND date < CURDATE( )");
+    $oldAws = getTableEntries('upcoming_aws', 'date', "status='VALID' AND date < CURDATE()");
     $badEntries = array( );
     foreach ($oldAws as $aws) {
         if (strlen($aws[ 'title' ]) < 1 || strlen($aws[ 'abstract' ]) < 1) {
