@@ -705,6 +705,9 @@ class Api extends CI_Controller
      *     - /aws/latest/6
      *     - /aws/date/2019-03-01               // Find AWS in this week.
      *     - /aws/date/2019-03-01/2019-04-01    // Find AWS between these  dates.
+     *     - /aws/vc_url/get                     // AWS remote url
+     *     - /aws/vc_url/set                     // AWS remote url, set
+     *     - /aws/venue/change                  // Change AWS venue. 
      * @Returns   
      */
     /* ----------------------------------------------------------------------------*/
@@ -746,6 +749,34 @@ class Api extends CI_Controller
                 'upcoming_aws', 'date',
                 "date >= '$from'", '*', $numEvents
             );
+        }
+        else if($args[0] === "venue") {
+            if($args[1] === "change") {
+                $res = updateTable("upcoming_aws", "date", "venue,vc_url", $_POST);
+                $res = insertOrUpdateTable(
+                    'config', 'AWC_VC_URL', 'AWC_VC_URL', ['AWC_VC_URL'=>$_POST['vc_url']]
+                );
+                $this->send_data(["status"=>$res], "ok");
+                // Also change in global config.
+                return;
+            }
+            else {
+                $this->send_data(["Unsupported endpoint: " . json_encode($args)], "ok");
+                return;
+            }
+        }
+        else if($args[0] === "vc_url") {
+            if($args[1] === "get") {
+                // get url.
+                $res = ['AWS_VC_URL' => getConfigValue('AWS_VC_URL')];
+                return $this->send_data($res, "ok");
+            }
+            else if($args[1] === "set") {
+                // set URL.
+                $res = ['success' => insertOrUpdateTable('config', 'AWC_VC_URL', 'AWC_VC_URL', $_POST)
+                    , 'status' => 'ok'];
+                $this->send_data($res, $status);
+            }
         }
         else {
             $status = 'warning';
@@ -790,7 +821,10 @@ class Api extends CI_Controller
             $types = __get__($args, 1, 'all');
             // For courses.
             if($types === 'course') {
-                $types = 'LECTURE HALL,AUDITORIUM';
+                $types = 'LECTURE HALL,AUDITORIUM, REMOTE VC';
+            }
+            else if($types === 'aws') {
+                $types = 'LECTURE HALL,AUDITORIUM,REMOTE VC';
             }
             $data = [];
             foreach(explode(',', $types) as $type) {
