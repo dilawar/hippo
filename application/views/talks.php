@@ -27,8 +27,7 @@ $whichDay = $default[ 'date' ];
 $eventTalks = getTableEntries(
     'events',
     'date,start_time',
-    "date>='$whichDay'
-        AND status='VALID' AND external_id LIKE 'talks%'"
+    "date>='$whichDay' AND status='VALID' AND external_id LIKE 'talks%'"
 );
 
 // Only if a event has an external_id then push it into 'talks'
