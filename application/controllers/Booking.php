@@ -157,9 +157,14 @@ trait Booking
     public function bookingrequest_submit( $controller = 'user', $method = 'home' )
     {
         $goback = "$controller/$method";
-
         $msg = verifyRequest($_POST);
-        if($msg == "OK" ) {
+
+        // Don't use '' here. The function insertIntoTable will ignore '' and
+        // you will get a warning. This was an oversight and I am too afraid to
+        // change the insertIntoTable function.
+        $repeatPat = ' ';
+
+        if($msg === "OK" ) {
             // Generate repeat pattern from days, week and month repeat patter. If we 
             // are coming here from quickbook.php, it may not be here.
             if(__get__($_POST, 'day_pattern', array())) {
