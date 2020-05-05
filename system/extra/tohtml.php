@@ -1004,7 +1004,7 @@ function venueSummary($venue, $withName=true)
     if($withName)
         $res = $venue['name'];
 
-    if(__get__($venue, 'type', ''))
+    if(strtoupper(__get__($venue, 'type', 'REMOTE VC')) !== 'REMOTE VC')
         $res .= " [" . $venue['type'] . "]";
 
     if( __get__($venue, 'institute', 'Virtual') !== 'Virtual')
@@ -1894,6 +1894,11 @@ function talkToHTMLLarge( $talk, $with_picture=true, string $header='') : string
     // Get its events for venue and date.
     $event = getEventsOfTalkId( $talk[ 'id' ] );
     $where = venueSummary( $event[ 'venue' ] );
+
+    if(__get__($event, 'vc_url', '')) {
+        $where .= anchor($event['vc_url'], "Remote URL");
+    }
+
     $when = humanReadableDate( $event[ 'date' ] ) . ', ' .
             humanReadableTime( $event[ 'start_time'] );
 
@@ -1921,6 +1926,7 @@ function talkToHTMLLarge( $talk, $with_picture=true, string $header='') : string
 
     // Calendar link.
     $googleCalLink = addToGoogleCalLink( $event );
+    //$icalLink = eventToICALLink( $event );
 
     $right = '<table class="table table-sm table-borderless">';
     $right .= '<tr><td colspan="2"><big>' . $speakerHMTL . '</big></td></tr>
@@ -1992,6 +1998,10 @@ function talkToHTML( $talk, $with_picture = false )
     $event = getEventsOfTalkId( $talk[ 'id' ] );
 
     $where = venueSummary( $event[ 'venue' ] );
+    if(__get__($event, 'vc_url', '')) {
+        $where .= "<br />" . anchor($event['vc_url'], $event['vc_url']);
+    }
+
 
     $when = humanReadableDate( $event[ 'date' ] ) . ', ' .
             humanReadableTime( $event[ 'start_time'] );
