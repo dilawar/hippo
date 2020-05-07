@@ -2,7 +2,7 @@
 
 function getCharts(): array
 {
-    $color = 'rgba(255,255,255,0.9)';
+    $color = 'rgba(255,255,255,0.95)';
 
     $charts = [];
 
