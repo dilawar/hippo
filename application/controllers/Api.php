@@ -753,11 +753,11 @@ class Api extends CI_Controller
         else if($args[0] === "venue") {
             if($args[1] === "change") {
                 $res = updateTable("upcoming_aws", "date", "venue,vc_url", $_POST);
+                // Also change in global config (deprecated)
                 $res = insertOrUpdateTable(
-                    'config', 'AWC_VC_URL', 'AWC_VC_URL', ['AWC_VC_URL'=>$_POST['vc_url']]
+                    'config', 'id,value', 'id,value', ['id'=>'AWS_VC_URL', 'value'=>$_POST['vc_url']]
                 );
                 $this->send_data(["status"=>$res], "ok");
-                // Also change in global config.
                 return;
             }
             else {
@@ -766,14 +766,17 @@ class Api extends CI_Controller
             }
         }
         else if($args[0] === "vc_url") {
+            // Deprecated. Each AWS gets its own VC_URL. This field still works
+            // as a default value. Remove it in the future.
             if($args[1] === "get") {
-                // get url.
+                // get current AWS VC url from global config.
                 $res = ['AWS_VC_URL' => getConfigValue('AWS_VC_URL')];
                 return $this->send_data($res, "ok");
             }
             else if($args[1] === "set") {
-                // set URL.
-                $res = ['success' => insertOrUpdateTable('config', 'AWC_VC_URL', 'AWC_VC_URL', $_POST)
+                // set AWS VC url globally.
+                $res = ['success' => insertOrUpdateTable('config', 'id,value', 'id,value'
+                    , ["id"=>"AWS_VC_URL", "value"=>$_POST['AWS_VC_URL']])
                     , 'status' => 'ok'];
                 $this->send_data($res, $status);
             }
