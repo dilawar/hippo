@@ -14,6 +14,7 @@ require_once BASEPATH . '/extra/talk.php';
 require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/services.php';
 require_once BASEPATH . '/extra/me.php';
+require_once BASEPATH . '/extra/charts.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -123,6 +124,25 @@ class Api extends CI_Controller
         }
 
         $this->send_data($events, $status);
+    }
+
+    // Get charts.
+    public function charts() 
+    {
+        $args = func_get_args();
+
+        // // Only need api key
+        // if(! authenticateAPI(getKey())) {
+        //     $this->send_data([], "Not authenticated");
+        //     return;
+        // }
+
+        if($args[0] === 'all') {
+            $charts = getCharts();
+            $this->send_data($charts, 'ok');
+            return;
+        }
+
     }
 
     /* --------------------------------------------------------------------------*/
@@ -3256,7 +3276,6 @@ class Api extends CI_Controller
             $this->send_data([], "Not authenticated");
             return;
         }
-
         $args = func_get_args();
         return $this->__commontasks('email', ...$args);
     }
