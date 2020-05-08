@@ -1660,7 +1660,7 @@ function horizontalLine( $width = "100%" )
     return "<div width=$width><hr width=$width align=left> </div>";
 }
 
-function awsToHTMLLarge( $aws, $with_picture = true, array $links=[])
+function awsToHTMLLarge($aws, $with_picture = true, array $links=[])
 {
     $speaker = __ucwords__( loginToText( $aws[ 'speaker' ] , false ));
     $supervisors = array( 
