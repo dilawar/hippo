@@ -10,7 +10,7 @@
     "bootstrap-datetimepicker": "0.0.7",
     "font-awesome": "^4.7.0",
     "fontawesome": "^5.6.3",
-    "grunt": "^1.0.4",
+    "grunt": "^1.1.0",
     "grunt-contrib-cssmin": "^3.0.0",
     "grunt-contrib-less": "^2.0.0",
     "grunt-contrib-uglify": "^4.0.1",
@@ -23,7 +23,7 @@
     "sorttable": "^1.0.2",
     "sweetalert2": "^8.18.5",
     "tableexport": "^5.2.0",
-    "tinymce": "^5.1.0",
+    "tinymce": "^5.2.2",
     "vue2": "^1.0.0",
     "xlsx": "^0.14.5"
   },
