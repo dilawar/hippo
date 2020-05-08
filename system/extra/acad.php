@@ -8,6 +8,10 @@ require_once BASEPATH . '/extra/courses.php';
  */
 function assignAWS(string $speaker, string $date, string $venue=""): array
 {
+    // Remove whitespaces. It happens sometimes that input field contains
+    // whitespace.
+    $speaker = trim($speaker);
+
     $res = [ 'success'=>false, 'msg'=>''];
 
     if(! $venue) {
