@@ -14,6 +14,7 @@ require_once BASEPATH . '/extra/talk.php';
 require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/services.php';
 require_once BASEPATH . '/extra/me.php';
+require_once BASEPATH . '/extra/charts.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -123,6 +124,25 @@ class Api extends CI_Controller
         }
 
         $this->send_data($events, $status);
+    }
+
+    // Get charts.
+    public function charts() 
+    {
+        $args = func_get_args();
+
+        // // Only need api key
+        // if(! authenticateAPI(getKey())) {
+        //     $this->send_data([], "Not authenticated");
+        //     return;
+        // }
+
+        if($args[0] === 'all') {
+            $charts = getCharts();
+            $this->send_data($charts, 'ok');
+            return;
+        }
+
     }
 
     /* --------------------------------------------------------------------------*/
@@ -753,11 +773,11 @@ class Api extends CI_Controller
         else if($args[0] === "venue") {
             if($args[1] === "change") {
                 $res = updateTable("upcoming_aws", "date", "venue,vc_url", $_POST);
+                // Also change in global config (deprecated)
                 $res = insertOrUpdateTable(
-                    'config', 'AWC_VC_URL', 'AWC_VC_URL', ['AWC_VC_URL'=>$_POST['vc_url']]
+                    'config', 'id,value', 'id,value', ['id'=>'AWS_VC_URL', 'value'=>$_POST['vc_url']]
                 );
                 $this->send_data(["status"=>$res], "ok");
-                // Also change in global config.
                 return;
             }
             else {
@@ -766,14 +786,17 @@ class Api extends CI_Controller
             }
         }
         else if($args[0] === "vc_url") {
+            // Deprecated. Each AWS gets its own VC_URL. This field still works
+            // as a default value. Remove it in the future.
             if($args[1] === "get") {
-                // get url.
+                // get current AWS VC url from global config.
                 $res = ['AWS_VC_URL' => getConfigValue('AWS_VC_URL')];
                 return $this->send_data($res, "ok");
             }
             else if($args[1] === "set") {
-                // set URL.
-                $res = ['success' => insertOrUpdateTable('config', 'AWC_VC_URL', 'AWC_VC_URL', $_POST)
+                // set AWS VC url globally.
+                $res = ['success' => insertOrUpdateTable('config', 'id,value', 'id,value'
+                    , ["id"=>"AWS_VC_URL", "value"=>$_POST['AWS_VC_URL']])
                     , 'status' => 'ok'];
                 $this->send_data($res, $status);
             }
@@ -2586,13 +2609,19 @@ class Api extends CI_Controller
 
     /* --------------------------------------------------------------------------*/
     /**
-     * @Synopsis Called should check the permissions.
+     * @Synopsis caller should check the access permissions, this api is
+     * exposed publically. But the user needs to login no matter what.
      *
      * @Returns   
      */
     /* ----------------------------------------------------------------------------*/
     public function __commontasks() 
     {
+        if(! authenticateAPI(getKey())) {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
         $args = func_get_args();
         if($args[0] === 'events') {
             $data = [];
@@ -2854,7 +2883,7 @@ class Api extends CI_Controller
                 // Don't fetch any talk created 6 months ago.
                 $talks = getTableEntries(
                     'talks', 'created_on DESC',
-                    "status!='INVALID' AND created_on > DATE_SUB(now(), INTERVAL 6 MONTH)",
+                    "status != 'INVALID' AND created_on > DATE_SUB(now(), INTERVAL 6 MONTH)",
                     '*', $limit
                 ); 
 
@@ -2924,8 +2953,31 @@ class Api extends CI_Controller
             return $this->__commontasks(...$args);
         } else if($args[0] === 'table') {
             return $this->__commontasks(...$args);
+        } else if($args[0] === 'holidays') {
+            if($args[1] === 'list') {
+                $holidays = getHolidays();
+                $this->send_data($holidays, 'ok');
+                return;
+            }
+            else if($args[1] === 'submit') {
+                $res = insertOrUpdateTable('holidays'
+                    , 'date,description,is_public_holiday,schedule_talk_or_aws,comment'
+                    , 'description,is_public_holiday,schedule_talk_or_aws,comment'
+                    , $_POST);
+                $this->send_data(['status'=>$res, 'msg'=>'success'], "ok");
+                return;
+            }
+            else if($args[1] === 'delete') {
+                $res = deleteFromTable('holidays', 'date', $_POST);
+                $this->send_data(['status'=>$res, 'msg'=>'success'], "ok");
+                return;
+            }
+            else {
+                $this->send_data(['status'=>false, 'msg'=>"unknown endpoint"]
+                    , 'method not allowed');
+                return;
+            }
         }
-
         // NOTE: Usually admin can not approve requests; he can do so for some
         // requests associated with talks. 
         else if($args[0] === 'request') {
@@ -3253,7 +3305,6 @@ class Api extends CI_Controller
             $this->send_data([], "Not authenticated");
             return;
         }
-
         $args = func_get_args();
         return $this->__commontasks('email', ...$args);
     }
