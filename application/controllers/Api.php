@@ -2609,13 +2609,19 @@ class Api extends CI_Controller
 
     /* --------------------------------------------------------------------------*/
     /**
-     * @Synopsis Called should check the permissions.
+     * @Synopsis caller should check the access permissions, this api is
+     * exposed publically. But the user needs to login no matter what.
      *
      * @Returns   
      */
     /* ----------------------------------------------------------------------------*/
     public function __commontasks() 
     {
+        if(! authenticateAPI(getKey())) {
+            $this->send_data([], "Not authenticated");
+            return;
+        }
+
         $args = func_get_args();
         if($args[0] === 'events') {
             $data = [];
@@ -2877,7 +2883,7 @@ class Api extends CI_Controller
                 // Don't fetch any talk created 6 months ago.
                 $talks = getTableEntries(
                     'talks', 'created_on DESC',
-                    "status!='INVALID' AND created_on > DATE_SUB(now(), INTERVAL 6 MONTH)",
+                    "status != 'INVALID' AND created_on > DATE_SUB(now(), INTERVAL 6 MONTH)",
                     '*', $limit
                 ); 
 
@@ -2947,8 +2953,31 @@ class Api extends CI_Controller
             return $this->__commontasks(...$args);
         } else if($args[0] === 'table') {
             return $this->__commontasks(...$args);
+        } else if($args[0] === 'holidays') {
+            if($args[1] === 'list') {
+                $holidays = getHolidays();
+                $this->send_data($holidays, 'ok');
+                return;
+            }
+            else if($args[1] === 'submit') {
+                $res = insertOrUpdateTable('holidays'
+                    , 'date,description,is_public_holiday,schedule_talk_or_aws,comment'
+                    , 'description,is_public_holiday,schedule_talk_or_aws,comment'
+                    , $_POST);
+                $this->send_data(['status'=>$res, 'msg'=>'success'], "ok");
+                return;
+            }
+            else if($args[1] === 'delete') {
+                $res = deleteFromTable('holidays', 'date', $_POST);
+                $this->send_data(['status'=>$res, 'msg'=>'success'], "ok");
+                return;
+            }
+            else {
+                $this->send_data(['status'=>false, 'msg'=>"unknown endpoint"]
+                    , 'method not allowed');
+                return;
+            }
         }
-
         // NOTE: Usually admin can not approve requests; he can do so for some
         // requests associated with talks. 
         else if($args[0] === 'request') {

@@ -2,12 +2,10 @@
 
 function getCharts(): array
 {
-    $color = 'rgba(255,255,255,0.95)';
-
+    // default styles.
     $charts = [];
 
      /*  This section count the publications from NCBS and PUBMED. */
-
     $pubMed = getTableEntries('publications', 'date', "source='PUBMED' AND date < NOW()");
     $pubYearWisePUBMED = [];
     foreach ($pubMed as $e) {
@@ -21,10 +19,13 @@ function getCharts(): array
     foreach($pubYearWisePUBMED as $key => $val )
         $data[] = [$key, $val];
 
+
     $charts['Number of publications (PUBMED)'] = [
-        'chart' => [ 'zoomType'=>'x', 'type'=>'line', 'backgroundColor'=>$color],
-        'title' => ['text' => '# Publications (PUBMED)'],
-        'series' => [['data'=> $data, 'title'=> '#Publications']],
+        'type' => 'line',
+        'xlabel' => 'year',
+        'ylabel' => 'Count',
+        'title' => 'No of publications (source: PUBMED)',
+        'series' => [['data'=> $data, 'name'=> 'Publications (source: PUBMED)']],
     ];
 
     $upto = dbDate('tomorrow');
@@ -98,27 +99,27 @@ function getCharts(): array
         + totalClassEvents();
 
     $bookingTableChart = [ 
-        'chart' => [
-            'type' => 'bar'
-            // , 'scrollablePlotArea' => [ 'minWidth' => 700, 'scrollPositionX' => 1 ]
-        ],
-        'title' => ['text' => 'Booking requests'],
+        'type' => 'pie',
+        'title' => 'Booking requests',
+        'xlabel' => '',
+        'ylabel' => '',
+        'series' => [],
     ];
 
     // $charts['Booking rates'] = $bookingTableChart;
 
     // Pie chart.
     $eventsByClassPie = array_map( function($value, $key) { 
-        return [ 'name' => $key, 'y' => $value, 'drilldown' => $key ];
+        return [ $key, $value ];
     }, $eventsByClass, array_keys($eventsByClass));
 
     $charts['Events by class'] = [ 
-        'chart' => ['type' => 'pie', 'backgroundColor' => $color],
-        'title' => ['text' => 'Events by class'],
-        'series' => [['data'=> $eventsByClassPie]],
+        'type' => 'pie',
+        'title' => 'Events by class',
+        'xlabel' => 'class',
+        'ylabel' => 'Count',
+        'data'=> $eventsByClassPie,
     ];
-
-    $talksBySpecializationPie = [];
 
     return $charts;
 }

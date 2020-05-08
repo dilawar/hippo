@@ -61,7 +61,9 @@ class BMVPDO extends PDO
             'CREATE TABLE IF NOT EXISTS holidays (
                 date DATE NOT NULL PRIMARY KEY
                 , description VARCHAR(100) NOT NULL
+                , is_public_holiday ENUM("YES", "NO") DEFAULT "YES"
                 , schedule_talk_or_aws ENUM( "YES", "NO" ) DEFAULT "YES"
+                , comment VARCHAR(400) 
             )
             ' 
         );
