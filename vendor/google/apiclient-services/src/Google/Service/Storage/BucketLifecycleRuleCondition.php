@@ -20,6 +20,8 @@ class Google_Service_Storage_BucketLifecycleRuleCondition extends Google_Collect
   protected $collection_key = 'matchesStorageClass';
   public $age;
   public $createdBefore;
+  public $customTimeBefore;
+  public $daysSinceCustomTime;
   public $isLive;
   public $matchesPattern;
   public $matchesStorageClass;
@@ -40,6 +42,22 @@ class Google_Service_Storage_BucketLifecycleRuleCondition extends Google_Collect
   public function getCreatedBefore()
   {
     return $this->createdBefore;
+  }
+  public function setCustomTimeBefore($customTimeBefore)
+  {
+    $this->customTimeBefore = $customTimeBefore;
+  }
+  public function getCustomTimeBefore()
+  {
+    return $this->customTimeBefore;
+  }
+  public function setDaysSinceCustomTime($daysSinceCustomTime)
+  {
+    $this->daysSinceCustomTime = $daysSinceCustomTime;
+  }
+  public function getDaysSinceCustomTime()
+  {
+    return $this->daysSinceCustomTime;
   }
   public function setIsLive($isLive)
   {

@@ -13,19 +13,29 @@ namespace Amp
      * Use this function to create a coroutine-aware callable for a promise-aware callback caller.
      *
      * @template TReturn
+     * @template TPromise
      * @template TGeneratorReturn
+     * @template TGeneratorPromise
      *
-     * @param callable(...mixed):mixed $callback
+     * @template TGenerator as TGeneratorReturn|Promise<TGeneratorPromise>
+     * @template T as TReturn|Promise<TPromise>|\Generator<mixed, mixed, mixed, TGenerator>
+     *
+     * @formatter:off
+     *
+     * @param callable(...mixed): T $callback
      *
      * @return callable
-     * @psalm-return callable(...mixed):Promise
+     * @psalm-return (T is Promise ? (callable(mixed...): Promise<TPromise>) : (T is \Generator ? (TGenerator is Promise ? (callable(mixed...): Promise<TGeneratorPromise>) : (callable(mixed...): Promise<TGeneratorReturn>)) : (callable(mixed...): Promise<TReturn>)))
      *
-     * @todo Fix return type once https://github.com/vimeo/psalm/issues/3071 has been fixed
+     * @formatter:on
      *
      * @see asyncCoroutine()
+     *
+     * @psalm-suppress InvalidReturnType
      */
     function coroutine(callable $callback): callable
     {
+        /** @psalm-suppress InvalidReturnStatement */
         return static function (...$args) use ($callback): Promise {
             return call($callback, ...$args);
         };
@@ -38,13 +48,10 @@ namespace Amp
      *
      * Use this function to create a coroutine-aware callable for a non-promise-aware callback caller.
      *
-     * @template TReturn
-     * @template TGeneratorReturn
-     *
-     * @param callable(...mixed):mixed $callback
+     * @param callable(...mixed): mixed $callback
      *
      * @return callable
-     * @psalm-return callable(...mixed):void
+     * @psalm-return callable(mixed...): void
      *
      * @see coroutine()
      */
@@ -60,17 +67,20 @@ namespace Amp
      * coroutine. If the function throws, a failed promise will be returned.
      *
      * @template TReturn
-     * @template TReturnPromise
-     * @template TGenerator
+     * @template TPromise
+     * @template TGeneratorReturn
      * @template TGeneratorPromise
+     *
+     * @template TGenerator as TGeneratorReturn|Promise<TGeneratorPromise>
+     * @template T as TReturn|Promise<TPromise>|\Generator<mixed, mixed, mixed, TGenerator>
      *
      * @formatter:off
      *
-     * @param callable(...mixed):(TReturn|Promise<TReturnPromise>|\Generator<mixed, mixed, mixed, TGenerator|Promise<TGeneratorPromise>>) $callback
+     * @param callable(...mixed): T $callback
      * @param mixed ...$args Arguments to pass to the function.
      *
      * @return Promise
-     * @psalm-return (TReturn is Promise ? Promise<TReturnPromise> : (TReturn is \Generator ? (TGenerator is Promise ? Promise<TGeneratorPromise> : Promise<TGenerator>) : Promise<TReturn>))
+     * @psalm-return (T is Promise ? Promise<TPromise> : (T is \Generator ? (TGenerator is Promise ? Promise<TGeneratorPromise> : Promise<TGeneratorReturn>) : Promise<TReturn>))
      *
      * @formatter:on
      */
@@ -101,21 +111,10 @@ namespace Amp
      * Calls the given function. If the function returns a Generator, it will be run as a coroutine. If the function
      * throws or returns a failing promise, the failure is forwarded to the loop error handler.
      *
-     * @template TReturn
-     * @template TReturnPromise
-     * @template TGenerator
-     * @template TGeneratorPromise
-     *
-     * @formatter:off
-     *
-     * @param callable(...mixed):(TReturn|Promise<TReturnPromise>|\Generator<mixed, mixed, mixed, TGenerator|Promise<TGeneratorPromise>>) $callback
+     * @param callable(...mixed): mixed $callback
      * @param mixed ...$args Arguments to pass to the function.
      *
      * @return void
-     *
-     * @formatter:on
-     *
-     * @throws \TypeError
      */
     function asyncCall(callable $callback, ...$args)
     {
@@ -193,9 +192,15 @@ namespace Amp\Promise
      * Use this function only in synchronous contexts to wait for an asynchronous operation. Use coroutines and yield to
      * await promise resolution in a fully asynchronous application instead.
      *
+     * @template TPromise
+     * @template T as Promise<TPromise>|ReactPromise
+     *
      * @param Promise|ReactPromise $promise Promise to wait for.
      *
      * @return mixed Promise success value.
+     *
+     * @psalm-param T $promise
+     * @psalm-return (T is Promise ? TPromise : mixed)
      *
      * @throws \TypeError If $promise is not an instance of \Amp\Promise or \React\Promise\PromiseInterface.
      * @throws \Error If the event loop stopped without the $promise being resolved.
