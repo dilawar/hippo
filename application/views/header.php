@@ -157,8 +157,8 @@ $(document).ready(function(){
   <?php echo img('data/HippoLogoCropped.png', false, array('height'=>'70px')); ?> <span style="font-size:60px">Hippo</span>
 </a>
 <div class="pull-right" style="font-size:small">
-<a style="color:white" target="hippo_popup" href="https://ncbs.res.in/hippo/app/www">
-<u>Hippo Beta</u></a>
+<a style="color:white" target="hippo_popup" href="https://ncbs.res.in/hippo">
+<u>Hippo V2</u></a>
 <a style="color:white" target="_blank" href="https://play.google.com/store/apps/details?id=com.dilawar.hippo">
 <u>Android App</u></a>
 <a style="color:white" target="_blank" href="https://ncbs-hippo.readthedocs.io/en/latest/">
