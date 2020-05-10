@@ -43,7 +43,7 @@ function authenticateAPI($apikey, $user='')
 
 function getKey()
 {
-    return __get__($_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
+    return __get__($_POST, 'HIPPO-API-KEY', getHeader('hippo-api-key'));
 }
 
 
