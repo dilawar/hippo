@@ -12,7 +12,7 @@
 /* ----------------------------------------------------------------------------*/
 function sendBookingEmail(string $gid, array $request, string $login): array
 {
-    $repeatPat = trim(__get__($request, 'repeat_pat', ''));
+    $repeatPat = trim(__get__($request, 'repeat_pat', ' '));
     $userInfo = getLoginInfo($login);
     $userEmail = $userInfo['email'];
 
