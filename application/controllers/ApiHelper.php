@@ -12,7 +12,12 @@
 /* ----------------------------------------------------------------------------*/
 function sendBookingEmail(string $gid, array $request, string $login): array
 {
-    $repeatPat = trim(__get__($request, 'repeat_pat', ' '));
+    $repeatPat = $request['repeat_pat'] ?? '';
+
+    // '' is often ignored by insertIntoTable function.
+    if($repeatPat === '')
+        $repeatPat = ' ';
+
     $userInfo = getLoginInfo($login);
     $userEmail = $userInfo['email'];
 
@@ -21,8 +26,8 @@ function sendBookingEmail(string $gid, array $request, string $login): array
     $data['BOOKING_REQUEST'] = arrayToVerticalTableHTML($rgroup[0], 'request');
 
     // add the recurrent pattern to table recurrent_pattern.
-    $patData = ['id' => getUniqueID('recurrent_pattern'), 'request_gid' => $gid, 'pattern' => $repeatPat,
-    ];
+    $patData = ['id' => getUniqueID('recurrent_pattern'), 'request_gid' => $gid, 'pattern' => $repeatPat,];
+
     $res = insertIntoTable('recurrent_pattern', 'id,request_gid,pattern', $patData);
 
     if (count($rgroup) > 0) {
@@ -81,7 +86,7 @@ function submitBookingRequest(array $request, string $login): array
     // Check if $request contains 'dates'. If not then check 'repeat_pat'
     $days = __get__($request, 'dates', []);
     if ((!$days) || 0 == count($days)) {
-        $repeatPat = trim(__get__($request, 'repeat_pat', ''));
+        $repeatPat = trim(__get__($request, 'repeat_pat', ' '));
         if (isRepeatPatternValid($repeatPat) > 0) {
             $days = repeatPatToDays($repeatPat, $request['date']);
         } else {
@@ -124,7 +129,6 @@ function submitBookingRequest(array $request, string $login): array
                 $errorMsg .= arrayToTableHTML($ev, 'events', $hide);
             }
             $collision = true;
-
             continue;
         }
 
