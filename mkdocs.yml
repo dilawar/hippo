@@ -19,7 +19,7 @@ nav:
     - Acadmic Admin Manual: acadmic_admin_manual.md
     - System Admin Manual: system_admin_manual.md
     - Developer Document: developer.md
-    - Bug tracker: https://gitlab.com/dilawar/hippo/issues
+    - Bug tracker: https://github.com.com/dilawar/hippo/issues
 
 extra_css: [extra.css]
 
@@ -43,7 +43,6 @@ markdown_extensions:
 
 plugins:
     - search
-    - git-revision-date
     - macros
 
 extra:
