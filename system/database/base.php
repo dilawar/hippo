@@ -356,6 +356,7 @@ class BMVPDO extends PDO
                 , abstract MEDIUMTEXT
                 , is_presynopsis_seminar ENUM( 'YES', 'NO' ) default 'NO'
                 , venue VARCHAR(50) NOT NULL
+                , chair VARCHAR(100) 
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
                 , status ENUM( 'VALID', 'INVALID', 'CANCELLED', 'DELETED', 'NOT_PRESENTED') DEFAULT 'VALID'
                 , last_modified_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -383,6 +384,7 @@ class BMVPDO extends PDO
                 , acknowledged ENUM( 'YES', 'NO' ) DEFAULT 'NO'
                 , is_presynopsis_seminar ENUM( 'YES', 'NO' ) default 'NO'
                 , venue VARCHAR(100) NOT NULL
+                , chair VARCHAR(100)
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
                 , UNIQUE (speaker, date, venue) )"
         );
