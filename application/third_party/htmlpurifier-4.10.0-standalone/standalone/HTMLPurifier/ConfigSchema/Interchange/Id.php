@@ -5,9 +5,8 @@
  */
 class HTMLPurifier_ConfigSchema_Interchange_Id
 {
-
     /**
-     * @type string
+     * @var string
      */
     public $key;
 
@@ -34,7 +33,7 @@ class HTMLPurifier_ConfigSchema_Interchange_Id
      */
     public function getRootNamespace()
     {
-        return substr($this->key, 0, strpos($this->key, "."));
+        return substr($this->key, 0, strpos($this->key, '.'));
     }
 
     /**
@@ -42,11 +41,12 @@ class HTMLPurifier_ConfigSchema_Interchange_Id
      */
     public function getDirective()
     {
-        return substr($this->key, strpos($this->key, ".") + 1);
+        return substr($this->key, strpos($this->key, '.') + 1);
     }
 
     /**
      * @param string $id
+     *
      * @return HTMLPurifier_ConfigSchema_Interchange_Id
      */
     public static function make($id)

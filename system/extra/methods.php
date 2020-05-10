@@ -46,16 +46,17 @@ function whoAmI()
 
 /* --------------------------------------------------------------------------*/
 /**
- * @Synopsis Get a value from header.
+ * @Synopsis Get a value from header. 
  *
- * @Param $key This is the key to fetch.
+ * @Param $key This is the key to fetch (case insenstive).
  *
  * @Returns The value of key if available; empty otherwise.
  */
 /* ----------------------------------------------------------------------------*/
 function getHeader($key)
 {
-    return __get__(getallheaders(), $key, '');
+    $headers = getallheaders();
+    return __get__($headers, strtolower($key), __get__($headers, strtoupper($key), ''));
 }
 
 

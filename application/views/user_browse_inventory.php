@@ -46,11 +46,11 @@ function filterTable( button ) {
 <?php
 
 if (count($items) < 1) {
-    echo printInfo("No item found in inventory.");
+    echo printInfo('No item found in inventory.');
 } else {
     echo '<input type="text" id="search_query" onkeyup="filterTable()"
          placeholder="Type to search">';
-    echo printNote("Click on column name to sort the table.");
+    echo printNote('Click on column name to sort the table.');
     $hide = 'id,status,last_modified_on,edited_by';
     echo ' <table id="searchable_by_js" class="info sortable">';
     echo arrayHeaderRow($items[0], 'info sorttable', $hide);
@@ -60,7 +60,7 @@ if (count($items) < 1) {
     echo '</table>';
 }
 
-echo " <br /> ";
-echo goBackToPageLink("user/home", "Go back");
+echo ' <br /> ';
+echo goBackToPageLink('user/home', 'Go back');
 
 ?>

@@ -1,10 +1,11 @@
 <?php
-include_once("header.php");
-include_once("methods.php");
-include_once("sqlite.php");
 
-if (strcmp($_POST['response'], 'Go back') == 0) {
-    goToPage("index.php", 0);
+include_once 'header.php';
+include_once 'methods.php';
+include_once 'sqlite.php';
+
+if (0 == strcmp($_POST['response'], 'Go back')) {
+    goToPage('index.php', 0);
     exit(0);
 }
 
@@ -15,8 +16,8 @@ $stmt = $conn->prepare('REPLACE INTO venues (name,location,strength,
     hasConference,hasProjector) values ( :name, :location, :strength
         , :hasConference, :hasProjector )');
 
-$stmt->bindValue(":name", $_POST['name']);
-$stmt->bindValue(":location", $_POST['location']);
+$stmt->bindValue(':name', $_POST['name']);
+$stmt->bindValue(':location', $_POST['location']);
 $stmt->bindValue(':strength', $_POST['strength']);
 $stmt->bindValue(':hasConference', $_POST['hasConference']);
 $stmt->bindValue(':hasProjector', $_POST['hasProjector']);
@@ -26,9 +27,9 @@ $conn->close();
 
 $status = true;
 if ($status) {
-    echo printInfo("Successfully updated the table");
-    goToPage("manage.php", 1);
+    echo printInfo('Successfully updated the table');
+    goToPage('manage.php', 1);
 } else {
-    echo printInfo("Could not updated the table");
-    goToPage("manage.php", 2);
+    echo printInfo('Could not updated the table');
+    goToPage('manage.php', 2);
 }

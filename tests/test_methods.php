@@ -1,16 +1,16 @@
 <?php
 
-include_once BASEPATH.'autoload.php';
+include_once BASEPATH . 'autoload.php';
 
-function test_methods( )
+function test_methods()
 {
-    $pat = constructRepeatPattern( "Mon", "All", 2 );
-    print_r( $pat );
-    print_r( repeatPatToDays( $pat, dbDate('today') ) );
+    $pat = constructRepeatPattern('Mon', 'All', 2);
+    print_r($pat);
+    print_r(repeatPatToDays($pat, dbDate('today')));
 
-    $pat = constructRepeatPattern( "Wed", "second", 5 );
-    print_r( $pat );
-    print_r( repeatPatToDays( $pat, dbDate('last month') ) );
+    $pat = constructRepeatPattern('Wed', 'second', 5);
+    print_r($pat);
+    print_r(repeatPatToDays($pat, dbDate('last month')));
 
     echo ' <br />';
 
@@ -25,5 +25,3 @@ function test_methods( )
     //echo json_encode(splitNameIntoParts( 'Dr. Dilawar Singh') );
     //echo '<br />';
 }
-
-?>

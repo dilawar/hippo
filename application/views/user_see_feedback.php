@@ -1,7 +1,8 @@
 <?php
-require_once BASEPATH.'autoload.php';
 
-if (! isset($controller)) {
+require_once BASEPATH . 'autoload.php';
+
+if (!isset($controller)) {
     $controller = 'user';
 }
 
@@ -20,10 +21,10 @@ echo"<h1>Feedback for '$cname ($cid)' for $semester/$year </h1>";
 
 $questions = getCourseFeedbackQuestions();
 
-if (! $questions) {
-    echo flashMessage("No questions found in question back. Ask Academic Admin to 
-        prepare a questionairre.");
-    echo goBackToPageLink("$controller/home", "Go Home");
+if (!$questions) {
+    echo flashMessage('No questions found in question back. Ask Academic Admin to 
+        prepare a questionairre.');
+    echo goBackToPageLink("$controller/home", 'Go Home');
 }
 
 $feedbackCourse = getCourseSpecificFeedback($year, $semester, $cid);
@@ -40,14 +41,14 @@ foreach ($questions as $cat => $qs) {
         $qid = $q['id'];
         $qtype = $q['type'];
 
-        if ($q['type'] == 'INSTRUCTOR SPECIFIC') {
+        if ('INSTRUCTOR SPECIFIC' == $q['type']) {
             $response = '';
             foreach ($instructors as $email => $html) {
                 $res = $instructorFeedbackMap[$email][$qid]['response'];
-                $response .=  " $html <tt> $res </tt> <br /> ";
+                $response .= " $html <tt> $res </tt> <br /> ";
             }
         } else {
-            $response = "<tt>" . $feedbackCourse[$qid]['response'] . "</tt>";
+            $response = '<tt>' . $feedbackCourse[$qid]['response'] . '</tt>';
         }
 
         $table .= "<tr> <td> $qname </td> <td style='min-width:45%'> $response </td> </tr> ";
@@ -56,7 +57,6 @@ foreach ($questions as $cat => $qs) {
 $table .= '</table>';
 
 echo $table;
-
 
 echo '<br />';
 echo goBackToPageLink("$controller/courses", 'Go back');

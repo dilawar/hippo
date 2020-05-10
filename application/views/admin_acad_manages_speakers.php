@@ -1,15 +1,15 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 
 echo userHTML();
 
 global $symbDelete;
 
 $ref = $controller;
-if ($ref == 'user') {
+if ('user' == $ref) {
     // make sure that he is either admin of JC.
-    if (! isJCAdmin(whoAmI())) {
-        echo flashMessage("Only JC Admin can access this page.");
+    if (!isJCAdmin(whoAmI())) {
+        echo flashMessage('Only JC Admin can access this page.');
         redirect("$ref/home");
         exit;
     }
@@ -25,30 +25,31 @@ function speakerKey($x)
 {
     $key = nameArrayToText($x);
     if (strlen($x['email']) > 0) {
-        $key .= ' (' . $x[ 'email' ] . ' )';
+        $key .= ' (' . $x['email'] . ' )';
     }
+
     return $key;
 }
 
 // Use speaker ID.
-$speakersMap = array( );
+$speakersMap = [];
 foreach ($speakers as $x) {
-    if (intval($x[ 'id']) > 0) {
-        $speakersMap[ speakerKey($x) ] = $x;
-        $speakersMap[ intval($x['id']) ] = $x;
+    if (intval($x['id']) > 0) {
+        $speakersMap[speakerKey($x)] = $x;
+        $speakersMap[intval($x['id'])] = $x;
     }
 }
 
 // This must not be a key => value array else autocomplete won't work. Or have
 // any null value,
-$speakerAutoCompleteKeys = array( );
+$speakerAutoCompleteKeys = [];
 foreach ($speakers as $x) {
     // If id is zero, these speakers are very old and not supported anymore. You
     // CANNOT edit them.
-    if (intval($x[ 'id' ]) == 0) {
+    if (0 == intval($x['id'])) {
         continue;
     }
-    $speakerAutoCompleteKeys[ ] = speakerKey($x);
+    $speakerAutoCompleteKeys[] = speakerKey($x);
 }
 
 $faculty = array_map(function ($x) {
@@ -59,18 +60,15 @@ $logins = array_map(function ($x) {
 }, $logins);
 
 // Logic for POST requests.
-$speaker = array(
-    'first_name' => '', 'middle_name' => '', 'last_name' => '', 'email' => ''
-    , 'department' => '', 'institute' => '', 'title' => '', 'id' => ''
-    , 'designation' => '' , 'homepage' => ''
-    );
+$speaker = [
+    'first_name' => '', 'middle_name' => '', 'last_name' => '', 'email' => '', 'department' => '', 'institute' => '', 'title' => '', 'id' => '', 'designation' => '', 'homepage' => '',
+    ];
 
-$talk = [ 'created_by' => whoAmI(), 'created_on' => dbDateTime('now') ];
-
+$talk = ['created_by' => whoAmI(), 'created_on' => dbDateTime('now')];
 
 // Form to upload a picture
 
-echo "<h1>Speaker details</h1>";
+echo '<h1>Speaker details</h1>';
 
 echo alertUser("If you know the speaker id, use the id (its an interger value), 
     else I'll try to find the speaker.", false);
@@ -97,21 +95,21 @@ if (__get__($_POST, 'id', '')) {
         $html .= '</tr></table>';
         echo $html;
     } else {
-        echo alertUser("No speaker is found for entry : " . __get__($_POST, 'id', 'NA'));
+        echo alertUser('No speaker is found for entry : ' . __get__($_POST, 'id', 'NA'));
     }
 }
 
 echo '<h1>Edit speaker details</h1>';
 
 echo printInfo(
-    "Email id of speaker is very desirable but not neccessary. <br>
+    'Email id of speaker is very desirable but not neccessary. <br>
     It helps keeping database clean and makes autocompletion possible.
-    "
+    '
 );
 
 echo printInfo(
-    "<strong>First name</strong> and <strong>institute</strong> are required
-    fields.  "
+    '<strong>First name</strong> and <strong>institute</strong> are required
+    fields.  '
 );
 
 echo '<form method="post" enctype="multipart/form-data" action="' . site_url("$ref/manages_speakers_action") . '">';
@@ -134,8 +132,7 @@ echo '<button title="Delete this entry" type="submit" onclick="AreYouSure(this)"
 
 echo '</form>';
 
-
-echo "<br/><br/>";
+echo '<br/><br/>';
 echo goBackToPageLink("$ref/home", 'Go back');
 
 ?>
@@ -143,7 +140,7 @@ echo goBackToPageLink("$ref/home", 'Go back');
 <script type="text/javascript" charset="utf-8">
 // Autocomplete speaker.
 $( function() {
-    var speakersDict = <?php echo json_encode($speakersMap) ?>;
+    var speakersDict = <?php echo json_encode($speakersMap); ?>;
 
     var host = <?php echo json_encode($faculty); ?>;
     var logins = <?php echo json_encode($logins); ?>;

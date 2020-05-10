@@ -1,43 +1,43 @@
 <!-- bootstrap -->
-<script type="text/javascript" href="<?= base_url() ?>/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<link rel="stylesheet" href="<?= base_url() ?>/node_modules/bootstrap/dist/css/bootstrap.min.css"></link>
+<script type="text/javascript" href="<?= base_url(); ?>/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="<?= base_url(); ?>/node_modules/bootstrap/dist/css/bootstrap.min.css"></link>
 
 
 <!--
 <script type="text/javascript" 
-    href="<?= base_url() ?> ./node_modules/bootstrap-material-design/dist/js/bootstrap-material-design.min.js"></script>
-<link rel="stylesheet" href="<?= base_url() ?>/node_modules/bootstrap-material-design/dist/css/bootstrap-material-design.min.css"></link>
+    href="<?= base_url(); ?> ./node_modules/bootstrap-material-design/dist/js/bootstrap-material-design.min.js"></script>
+<link rel="stylesheet" href="<?= base_url(); ?>/node_modules/bootstrap-material-design/dist/css/bootstrap-material-design.min.css"></link>
 -->
 
 
 <!--  REQUIRED -->
-<script src="<?= base_url() ?>/node_modules/jquery/dist/jquery.js"></script>
-<script src="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
+<script src="<?= base_url(); ?>/node_modules/jquery/dist/jquery.js"></script>
+<script src="<?= base_url(); ?>/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
 
-<script src="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
+<script src="<?= base_url(); ?>/node_modules/jquery-timepicker/jquery.timepicker.js"></script>
 
 <!-- hippo css -->
-<link href="<?= base_url() ?>/assests/css/hippo.css" rel="stylesheet" type="text/css" />
+<link href="<?= base_url(); ?>/assests/css/hippo.css" rel="stylesheet" type="text/css" />
 
-<link  href="<?= base_url() ?>/node_modules/jquery-timepicker/jquery.timepicker.css" 
+<link  href="<?= base_url(); ?>/node_modules/jquery-timepicker/jquery.timepicker.css" 
     rel="stylesheet" type="text/css" />
-<link  href="<?= base_url() ?>/node_modules/jquery-ui-dist/jquery-ui.min.css" 
+<link  href="<?= base_url(); ?>/node_modules/jquery-ui-dist/jquery-ui.min.css" 
     rel="stylesheet" type="text/css" />
-<link  href="<?= base_url() ?>/node_modules/jquery-ui-bootstrap/jquery.ui.theme.css" 
+<link  href="<?= base_url(); ?>/node_modules/jquery-ui-bootstrap/jquery.ui.theme.css" 
     rel="stylesheet" type="text/css" />
 
 <!-- Multi-dates pickers -->
-<link  href="<?= base_url() ?>/node_modules/jquery-ui-multidatespicker/jquery-ui.multidatespicker.css" rel="stylesheet" type="text/css" />
-<script src="<?= base_url() ?>/node_modules/jquery-ui-multidatespicker/jquery-ui.multidatespicker.js"></script>
+<link  href="<?= base_url(); ?>/node_modules/jquery-ui-multidatespicker/jquery-ui.multidatespicker.css" rel="stylesheet" type="text/css" />
+<script src="<?= base_url(); ?>/node_modules/jquery-ui-multidatespicker/jquery-ui.multidatespicker.js"></script>
  
 <!-- Font awesome -->
-<link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome/css/font-awesome.css"/>
+<link rel="stylesheet" href="<?= base_url(); ?>/node_modules/font-awesome/css/font-awesome.css"/>
 <!-- font awesome animation -->
-<link rel="stylesheet" href="<?= base_url() ?>/node_modules/font-awesome-animation/dist/font-awesome-animation.min.css"/>
+<link rel="stylesheet" href="<?= base_url(); ?>/node_modules/font-awesome-animation/dist/font-awesome-animation.min.css"/>
 
 
 <!-- sort table. -->
-<script src="<?= base_url() ?>/node_modules/sorttable/sorttable.js"></script>
+<script src="<?= base_url(); ?>/node_modules/sorttable/sorttable.js"></script>
 <script type="text/javascript" charset="utf-8">
     $(".sortable").sortable( );
 </script>
@@ -85,7 +85,7 @@ $( function() {
 </script>
 
 
-<script src="<?= base_url() ?>/node_modules/tinymce/tinymce.min.js"></script>
+<script src="<?= base_url(); ?>/node_modules/tinymce/tinymce.min.js"></script>
 
 <!-- confirm on delete -->
 <script type="text/javascript" charset="utf-8">
@@ -153,8 +153,8 @@ $(document).ready(function(){
 
 <div class="header">
 <div class="h1 title">
-<a href="<?= site_url('welcome') ?>" >
-  <?php echo img('data/HippoLogoCropped.png', false, array('height'=>'70px')); ?> <span style="font-size:60px">Hippo</span>
+<a href="<?= site_url('welcome'); ?>" >
+  <?php echo img('data/HippoLogoCropped.png', false, ['height' => '70px']); ?> <span style="font-size:60px">Hippo</span>
 </a>
 <div class="pull-right" style="font-size:small">
 <a style="color:white" target="hippo_popup" href="https://ncbs.res.in/hippo">
@@ -169,13 +169,13 @@ $(document).ready(function(){
 
 <table class="public_links">
     <tr>
-    <td><a class="bright" href="<?= site_url('info/booking') ?>" target="hippo_popup">Bookings</a> </td>
-    <td><a class="bright" href="<?= site_url('info/aws') ?>" target="hippo_popup">AWS</a></td>
-    <td><a class="bright" href="<?= site_url('info/jc') ?>" target="hippo_popup">JC</a></td>
-    <td><a class="bright" href="<?= site_url('info/talks') ?>" target="hippo_popup">Talks</a></td>
-    <td><a class="bright" href="<?= site_url('info/statistics') ?>" target="hippo_popup" >Statistics </a> </td>
-    <td><a class="bright" href="<?= site_url('info/courses') ?>" target="hippo_popup" >Courses</a></td>
-    <td><a class="bright" href="<?= getConfigValue('CALENDAR_URL') ?>" target="hippo_popup">Calendar</a> </td>
+    <td><a class="bright" href="<?= site_url('info/booking'); ?>" target="hippo_popup">Bookings</a> </td>
+    <td><a class="bright" href="<?= site_url('info/aws'); ?>" target="hippo_popup">AWS</a></td>
+    <td><a class="bright" href="<?= site_url('info/jc'); ?>" target="hippo_popup">JC</a></td>
+    <td><a class="bright" href="<?= site_url('info/talks'); ?>" target="hippo_popup">Talks</a></td>
+    <td><a class="bright" href="<?= site_url('info/statistics'); ?>" target="hippo_popup" >Statistics </a> </td>
+    <td><a class="bright" href="<?= site_url('info/courses'); ?>" target="hippo_popup" >Courses</a></td>
+    <td><a class="bright" href="<?= getConfigValue('CALENDAR_URL'); ?>" target="hippo_popup">Calendar</a> </td>
     </tr>
 </table>
 </div>

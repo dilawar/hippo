@@ -1,6 +1,6 @@
 <?php
 /**
- * CodeIgniter
+ * CodeIgniter.
  *
  * An open source application development framework for PHP
  *
@@ -26,18 +26,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @package	CodeIgniter
  * @author	EllisLab Dev Team
  * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
  * @copyright	Copyright (c) 2014 - 2018, British Columbia Institute of Technology (http://bcit.ca/)
  * @license	http://opensource.org/licenses/MIT	MIT License
- * @link	https://codeigniter.com
+ *
+ * @see	https://codeigniter.com
  * @since	Version 1.0.0
  * @filesource
  */
 defined('BASEPATH') or exit('No direct script access allowed');
 
-/**
+/*
  * CodeIgniter Download Helpers
  *
  * @package		CodeIgniter
@@ -49,23 +49,24 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 // ------------------------------------------------------------------------
 
-if (! function_exists('force_download')) {
+if (!function_exists('force_download')) {
     /**
-     * Force Download
+     * Force Download.
      *
      * Generates headers that force a download to happen
      *
      * @param	string	filename
      * @param	mixed	the data to be downloaded
      * @param	bool	whether to try and send the actual file MIME type
-     * @return	void
+     *
+     * @return void
      */
     function force_download($filename = '', $data = '', $set_mime = false)
     {
-        if ($filename === '' or $data === '') {
+        if ('' === $filename or '' === $data) {
             return;
-        } elseif ($data === null) {
-            if (! @is_file($filename) or ($filesize = @filesize($filename)) === false) {
+        } elseif (null === $data) {
+            if (!@is_file($filename) or false === ($filesize = @filesize($filename))) {
                 return;
             }
 
@@ -82,8 +83,8 @@ if (! function_exists('force_download')) {
         $x = explode('.', $filename);
         $extension = end($x);
 
-        if ($set_mime === true) {
-            if (count($x) === 1 or $extension === '') {
+        if (true === $set_mime) {
+            if (1 === count($x) or '' === $extension) {
                 /* If we're going to detect the MIME type,
                  * we'll need a file extension.
                  */
@@ -91,7 +92,7 @@ if (! function_exists('force_download')) {
             }
 
             // Load the mime types
-            $mimes =& get_mimes();
+            $mimes = &get_mimes();
 
             // Only change the default MIME if we can find one
             if (isset($mimes[$extension])) {
@@ -105,35 +106,35 @@ if (! function_exists('force_download')) {
          *
          * Reference: http://digiblog.de/2011/04/19/android-and-the-download-file-headers/
          */
-        if (count($x) !== 1 && isset($_SERVER['HTTP_USER_AGENT']) && preg_match('/Android\s(1|2\.[01])/', $_SERVER['HTTP_USER_AGENT'])) {
+        if (1 !== count($x) && isset($_SERVER['HTTP_USER_AGENT']) && preg_match('/Android\s(1|2\.[01])/', $_SERVER['HTTP_USER_AGENT'])) {
             $x[count($x) - 1] = strtoupper($extension);
             $filename = implode('.', $x);
         }
 
-        if ($data === null && ($fp = @fopen($filepath, 'rb')) === false) {
+        if (null === $data && false === ($fp = @fopen($filepath, 'rb'))) {
             return;
         }
 
         // Clean output buffer
-        if (ob_get_level() !== 0 && @ob_end_clean() === false) {
+        if (0 !== ob_get_level() && false === @ob_end_clean()) {
             @ob_clean();
         }
 
         // Generate the server headers
-        header('Content-Type: '.$mime);
-        header('Content-Disposition: attachment; filename="'.$filename.'"');
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Expires: 0');
         header('Content-Transfer-Encoding: binary');
-        header('Content-Length: '.$filesize);
+        header('Content-Length: ' . $filesize);
         header('Cache-Control: private, no-transform, no-store, must-revalidate');
 
         // If we have raw data - just dump it
-        if ($data !== null) {
+        if (null !== $data) {
             exit($data);
         }
 
         // Flush 1MB chunks of data
-        while (! feof($fp) && ($data = fread($fp, 1048576)) !== false) {
+        while (!feof($fp) && false !== ($data = fread($fp, 1048576))) {
             echo $data;
         }
 

@@ -1,5 +1,5 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 $user = $cUser;
@@ -16,7 +16,7 @@ if ($scheduledAWS && $eligible) {
         humanReadableDate($scheduledAWS['date']));
 
     $disabled = '';
-    if ($scheduledAWS['acknowledged'] === 'YES') {
+    if ('YES' === $scheduledAWS['acknowledged']) {
         echo "<div class='bg-info'>You've acknowledged your AWS schedule. </div>";
         $disabled = 'disabled';
     } else {
@@ -26,9 +26,9 @@ if ($scheduledAWS && $eligible) {
 
         echo '<form method="post" action="' . site_url('user/aws_acknowledge') . "\">
             <button class='btn-secondary' $disabled name=\"acknowledged\" value=\"YES\">Acknowledge schedule</button>
-            <input type=\"hidden\" name=\"id\" value=\"" . $scheduledAWS[ 'id' ] . "\" >
+            <input type=\"hidden\" name=\"id\" value=\"" . $scheduledAWS['id'] . '" >
             </form>
-            ";
+            ';
         echo '</div>';
     }
 } elseif ($eligible) {
@@ -94,32 +94,32 @@ if ($scheduledAWS && $eligible) {
 }
 ?>
 
-<?php if (! $eligible): ?>
+<?php if (!$eligible): ?>
 <div class="alert alert-warning">
     Your name is no longer on the AWS roster.
     Usually a name is removed after one's <tt>PRESYNOPSIS SEMINARY</tt> 
     or <tt>THESIS SEMINAR</tt>. If this is mistake, please write to Academic Office.
 </div>
-<?php endif;?>
+<?php endif; ?>
 
 <?php if ($scheduledAWS): ?>
-    <?php $editableTill = strtotime('-1 day', strtotime($scheduledAWS[ 'date' ]));?>
+    <?php $editableTill = strtotime('-1 day', strtotime($scheduledAWS['date'])); ?>
     <div class="card">
         <div class="card-header">
         Please fill-in details of your upcoming  AWS below.
          We will use this to generate the notification email
          and document. You can change it as many times as you like upto
-         23:59 Hrs, <?=humanReadableDate($editableTill)?> 
+         23:59 Hrs, <?=humanReadableDate($editableTill); ?> 
          <small> (Note: We will not store the old version).</small>
             </div>
     </div>
-    <?php $id = $scheduledAWS[ 'id' ]; ?>
+    <?php $id = $scheduledAWS['id']; ?>
     <div class="card-body p-2 m-3">
-    <form method="post" action="<?=site_url('user/aws/update_upcoming_aws')?>">
-    <?=arrayToVerticalTableHTML($scheduledAWS, 'aws', null, 'speaker,id')?>
+    <form method="post" action="<?=site_url('user/aws/update_upcoming_aws'); ?>">
+    <?=arrayToVerticalTableHTML($scheduledAWS, 'aws', null, 'speaker,id'); ?>
     <button class="btn btn-secondary" name="response"
         title="Update this entry" value="update">Edit</button>
-        <input type="hidden" name="id" value="<?=$id?>" />
+        <input type="hidden" name="id" value="<?=$id; ?>" />
     </form>
     </div>
 <?php endif; ?>
@@ -129,10 +129,10 @@ if ($scheduledAWS && $eligible) {
 <?php endif; ?>
 <?php foreach ($awsRequests as $awsr): ?>
     <?php $id = $awsr['id']; ?>
-    <?= arrayToVerticalTableHTML($awsr, 'aa table table-sm table-secondary');?>
-    <form method="post" action="<?=site_url('user/aws/edit_request_cancel')?>">
+    <?= arrayToVerticalTableHTML($awsr, 'aa table table-sm table-secondary'); ?>
+    <form method="post" action="<?=site_url('user/aws/edit_request_cancel'); ?>">
         <button class='btn btn-warning' name="response" value="cancel">Cancel</button>
-        <input type="hidden" name="id" value="<?=$id ?>" />
+        <input type="hidden" name="id" value="<?=$id; ?>" />
         You can only <tt>Cancel</tt> this request. No editing allowed.
     </form>
 <?php endforeach; ?>
@@ -155,16 +155,16 @@ if ($scheduledAWS && $eligible) {
                     type="submit" name="response" value="clean_up">Cleap up</button>
         </form>
 
-        <?php if (__get__($_POST, 'response', '') === 'write_my_aws'): ?>
+        <?php if ('write_my_aws' === __get__($_POST, 'response', '')): ?>
         <?php $cmd = FCPATH . '/scripts/write_aws.sh'; ?>
-        <?=hippo_shell_exec($cmd, $awsText, $stderr)?>
-        <?=$awsText?>
+        <?=hippo_shell_exec($cmd, $awsText, $stderr); ?>
+        <?=$awsText; ?>
         <br>
         <p> I will only get better! </p>
         <?php endif; ?>
     </div>
 </div>
-<?=goBackToPageLink("user/home", "Go back")?>
+<?=goBackToPageLink('user/home', 'Go back'); ?>
 
 <h1>Past Annual Work Seminar</h1>
 
@@ -173,19 +173,19 @@ if ($scheduledAWS && $eligible) {
     <a href="mailto:officeacad@ncbs.res.in" target="_black">Academic Office</a>.
     <br />
     Your <tt>PRE SYNOPSIS SEMINARY</tt> may be 
-    <a href=" <?= site_url("info/talks") ?> ">in list of the talks</a>.
+    <a href=" <?= site_url('info/talks'); ?> ">in list of the talks</a>.
 </div>
 
 <?php foreach ($awses as $aws): ?>
     <?php $id = $aws['id']; ?>
     <div class='py-3'>
-        <form method="post" action="<?=site_url("user/aws/edit_request")?>">
-            <?= awsToHTML($aws) ?>
+        <form method="post" action="<?=site_url('user/aws/edit_request'); ?>">
+            <?= awsToHTML($aws); ?>
             <button class="btn btn-primary"
                     title="Edit this entry" name="response" value="edit">Edit</button>
-            <input type="hidden" name="id" value="<?=$id ?>" />
+            <input type="hidden" name="id" value="<?=$id; ?>" />
         </form>
     </div>
 <?php endforeach; ?>
 
-<?=goBackToPageLink("user/home", "Go back")?>
+<?=goBackToPageLink('user/home', 'Go back'); ?>

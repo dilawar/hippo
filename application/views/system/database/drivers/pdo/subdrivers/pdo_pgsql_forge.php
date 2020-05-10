@@ -1,6 +1,6 @@
 <?php
 /**
- * CodeIgniter
+ * CodeIgniter.
  *
  * An open source application development framework for PHP
  *
@@ -26,65 +26,67 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @package	CodeIgniter
  * @author	EllisLab Dev Team
  * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
  * @copyright	Copyright (c) 2014 - 2018, British Columbia Institute of Technology (http://bcit.ca/)
  * @license	http://opensource.org/licenses/MIT	MIT License
- * @link	https://codeigniter.com
+ *
+ * @see	https://codeigniter.com
  * @since	Version 3.0.0
  * @filesource
  */
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
- * PDO PostgreSQL Forge Class
+ * PDO PostgreSQL Forge Class.
  *
  * @category	Database
+ *
  * @author		EllisLab Dev Team
- * @link		https://codeigniter.com/user_guide/database/
+ *
+ * @see		https://codeigniter.com/user_guide/database/
  */
 class CI_DB_pdo_pgsql_forge extends CI_DB_pdo_forge
 {
-
     /**
-     * DROP TABLE IF statement
+     * DROP TABLE IF statement.
      *
-     * @var	string
+     * @var string
      */
-    protected $_drop_table_if	= 'DROP TABLE IF EXISTS';
+    protected $_drop_table_if = 'DROP TABLE IF EXISTS';
 
     /**
-     * UNSIGNED support
+     * UNSIGNED support.
      *
-     * @var	array
+     * @var array
      */
-    protected $_unsigned		= array(
-        'INT2'		=> 'INTEGER',
-        'SMALLINT'	=> 'INTEGER',
-        'INT'		=> 'BIGINT',
-        'INT4'		=> 'BIGINT',
-        'INTEGER'	=> 'BIGINT',
-        'INT8'		=> 'NUMERIC',
-        'BIGINT'	=> 'NUMERIC',
-        'REAL'		=> 'DOUBLE PRECISION',
-        'FLOAT'		=> 'DOUBLE PRECISION'
-    );
+    protected $_unsigned = [
+        'INT2' => 'INTEGER',
+        'SMALLINT' => 'INTEGER',
+        'INT' => 'BIGINT',
+        'INT4' => 'BIGINT',
+        'INTEGER' => 'BIGINT',
+        'INT8' => 'NUMERIC',
+        'BIGINT' => 'NUMERIC',
+        'REAL' => 'DOUBLE PRECISION',
+        'FLOAT' => 'DOUBLE PRECISION',
+    ];
 
     /**
-     * NULL value representation in CREATE/ALTER TABLE statements
+     * NULL value representation in CREATE/ALTER TABLE statements.
      *
-     * @var	string
+     * @var string
      */
     protected $_null = 'NULL';
 
     // --------------------------------------------------------------------
 
     /**
-     * Class constructor
+     * Class constructor.
      *
-     * @param	object	&$db	Database object
-     * @return	void
+     * @param object &$db Database object
+     *
+     * @return void
      */
     public function __construct(&$db)
     {
@@ -98,50 +100,51 @@ class CI_DB_pdo_pgsql_forge extends CI_DB_pdo_forge
     // --------------------------------------------------------------------
 
     /**
-     * ALTER TABLE
+     * ALTER TABLE.
      *
-     * @param	string	$alter_type	ALTER type
-     * @param	string	$table		Table name
-     * @param	mixed	$field		Column definition
-     * @return	string|string[]
+     * @param string $alter_type ALTER type
+     * @param string $table      Table name
+     * @param mixed  $field      Column definition
+     *
+     * @return string|string[]
      */
     protected function _alter_table($alter_type, $table, $field)
     {
-        if (in_array($alter_type, array('DROP', 'ADD'), true)) {
+        if (in_array($alter_type, ['DROP', 'ADD'], true)) {
             return parent::_alter_table($alter_type, $table, $field);
         }
 
-        $sql = 'ALTER TABLE '.$this->db->escape_identifiers($table);
-        $sqls = array();
-        for ($i = 0, $c = count($field); $i < $c; $i++) {
-            if ($field[$i]['_literal'] !== false) {
+        $sql = 'ALTER TABLE ' . $this->db->escape_identifiers($table);
+        $sqls = [];
+        for ($i = 0, $c = count($field); $i < $c; ++$i) {
+            if (false !== $field[$i]['_literal']) {
                 return false;
             }
 
             if (version_compare($this->db->version(), '8', '>=') && isset($field[$i]['type'])) {
-                $sqls[] = $sql.' ALTER COLUMN '.$this->db->escape_identifiers($field[$i]['name'])
-                    .' TYPE '.$field[$i]['type'].$field[$i]['length'];
+                $sqls[] = $sql . ' ALTER COLUMN ' . $this->db->escape_identifiers($field[$i]['name'])
+                    . ' TYPE ' . $field[$i]['type'] . $field[$i]['length'];
             }
 
-            if (! empty($field[$i]['default'])) {
-                $sqls[] = $sql.' ALTER COLUMN '.$this->db->escape_identifiers($field[$i]['name'])
-                    .' SET DEFAULT '.$field[$i]['default'];
+            if (!empty($field[$i]['default'])) {
+                $sqls[] = $sql . ' ALTER COLUMN ' . $this->db->escape_identifiers($field[$i]['name'])
+                    . ' SET DEFAULT ' . $field[$i]['default'];
             }
 
             if (isset($field[$i]['null'])) {
-                $sqls[] = $sql.' ALTER COLUMN '.$this->db->escape_identifiers($field[$i]['name'])
-                    .($field[$i]['null'] === true ? ' DROP NOT NULL' : ' SET NOT NULL');
+                $sqls[] = $sql . ' ALTER COLUMN ' . $this->db->escape_identifiers($field[$i]['name'])
+                    . (true === $field[$i]['null'] ? ' DROP NOT NULL' : ' SET NOT NULL');
             }
 
-            if (! empty($field[$i]['new_name'])) {
-                $sqls[] = $sql.' RENAME COLUMN '.$this->db->escape_identifiers($field[$i]['name'])
-                    .' TO '.$this->db->escape_identifiers($field[$i]['new_name']);
+            if (!empty($field[$i]['new_name'])) {
+                $sqls[] = $sql . ' RENAME COLUMN ' . $this->db->escape_identifiers($field[$i]['name'])
+                    . ' TO ' . $this->db->escape_identifiers($field[$i]['new_name']);
             }
 
-            if (! empty($field[$i]['comment'])) {
+            if (!empty($field[$i]['comment'])) {
                 $sqls[] = 'COMMENT ON COLUMN '
-                    .$this->db->escape_identifiers($table).'.'.$this->db->escape_identifiers($field[$i]['name'])
-                    .' IS '.$field[$i]['comment'];
+                    . $this->db->escape_identifiers($table) . '.' . $this->db->escape_identifiers($field[$i]['name'])
+                    . ' IS ' . $field[$i]['comment'];
             }
         }
 
@@ -151,17 +154,18 @@ class CI_DB_pdo_pgsql_forge extends CI_DB_pdo_forge
     // --------------------------------------------------------------------
 
     /**
-     * Field attribute TYPE
+     * Field attribute TYPE.
      *
      * Performs a data type mapping between different databases.
      *
-     * @param	array	&$attributes
-     * @return	void
+     * @param array &$attributes
+     *
+     * @return void
      */
     protected function _attr_type(&$attributes)
     {
         // Reset field lengths for data types that don't support it
-        if (isset($attributes['CONSTRAINT']) && stripos($attributes['TYPE'], 'int') !== false) {
+        if (isset($attributes['CONSTRAINT']) && false !== stripos($attributes['TYPE'], 'int')) {
             $attributes['CONSTRAINT'] = null;
         }
 
@@ -169,10 +173,12 @@ class CI_DB_pdo_pgsql_forge extends CI_DB_pdo_forge
             case 'TINYINT':
                 $attributes['TYPE'] = 'SMALLINT';
                 $attributes['UNSIGNED'] = false;
+
                 return;
             case 'MEDIUMINT':
                 $attributes['TYPE'] = 'INTEGER';
                 $attributes['UNSIGNED'] = false;
+
                 return;
             default: return;
         }
@@ -181,16 +187,17 @@ class CI_DB_pdo_pgsql_forge extends CI_DB_pdo_forge
     // --------------------------------------------------------------------
 
     /**
-     * Field attribute AUTO_INCREMENT
+     * Field attribute AUTO_INCREMENT.
      *
-     * @param	array	&$attributes
-     * @param	array	&$field
-     * @return	void
+     * @param array &$attributes
+     * @param array &$field
+     *
+     * @return void
      */
     protected function _attr_auto_increment(&$attributes, &$field)
     {
-        if (! empty($attributes['AUTO_INCREMENT']) && $attributes['AUTO_INCREMENT'] === true) {
-            $field['type'] = ($field['type'] === 'NUMERIC')
+        if (!empty($attributes['AUTO_INCREMENT']) && true === $attributes['AUTO_INCREMENT']) {
+            $field['type'] = ('NUMERIC' === $field['type'])
                 ? 'BIGSERIAL'
                 : 'SERIAL';
         }

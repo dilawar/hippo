@@ -1,8 +1,8 @@
 <?php
 
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 
-echo "<h1>Manging pending requests</h1>";
+echo '<h1>Manging pending requests</h1>';
 
 // Second review pending requests for AWS modification.
 $pendingRequests = getPendingAWSRequests();
@@ -11,8 +11,8 @@ foreach ($pendingRequests as $req) {
     $date = $req['date'];
     $aws = getMyAwsOn($speaker, $date);
 
-    echo '<form method="post" action="'.site_url("adminacad/aws_edit_request_action") . '">';
-    echo arrayToVerticalTableHTML($req, 'aws', '', array( 'id', 'status', 'modified_on'));
+    echo '<form method="post" action="' . site_url('adminacad/aws_edit_request_action') . '">';
+    echo arrayToVerticalTableHTML($req, 'aws', '', ['id', 'status', 'modified_on']);
 
     echo '<table class="show_aws" border="0">
             <tr style="background:white">
@@ -33,4 +33,4 @@ foreach ($pendingRequests as $req) {
     echo '</form>';
 }
 
-echo goBackToPageLink("adminacad/home", "Go back");
+echo goBackToPageLink('adminacad/home', 'Go back');

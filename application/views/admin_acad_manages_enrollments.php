@@ -1,5 +1,6 @@
 <?php
-require_once BASEPATH.'autoload.php';
+
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 $ref = 'adminacad';
@@ -16,18 +17,18 @@ $semesterGet = __get__($_GET, 'semester', '');
 // follow it.
 if (isset($_GET['year'])) {
     $year = $_GET['year'];
-} elseif (! isset($year)) {
+} elseif (!isset($year)) {
     $year = getCurrentYear();
 }
 
 if (isset($_GET['semester'])) {
     $semester = $_GET['semester'];
-} elseif (! isset($semester)) {
+} elseif (!isset($semester)) {
     $semester = getCurrentSemester();
 }
 
 $springChecked = ''; $autumnChecked = '';
-if ($semester == 'SPRING') {
+if ('SPRING' == $semester) {
     $springChecked = 'checked';
     $autumnChecked = '';
 } else {
@@ -40,31 +41,30 @@ echo "<strong>Selected semester $semester/$year.</strong>";
 echo selectYearSemesterForm($year, $semester, "$ref/enrollments");
 echo '</div>';
 
-
 // Select semester and year here.
 
 // Get the pervious value, else set them to empty.
 $courseSelected = __get__($_POST, 'course_id', '');
 $taskSelected = __get__($_POST, 'task', '');
 
-$runningCourses = array();
+$runningCourses = [];
 
 foreach (getSemesterCourses($year, $semester) as $c) {
-    $runningCourses[ $c[ 'course_id' ] ] = $c;
+    $runningCourses[$c['course_id']] = $c;
 }
 
 $runningCoursesSelect = arrayToSelectList(
     'course_id',
     array_keys($runningCourses),
-    array( ),
+    [],
     false,
     $courseSelected
 );
 
 $taskSelect = arrayToSelectList(
     'task',
-    array( 'Add enrollment', 'Change enrollment' ),
-    array( ),
+    ['Add enrollment', 'Change enrollment'],
+    [],
     false,
     $taskSelected
 );
@@ -87,8 +87,8 @@ $taskSelect = arrayToSelectList(
 
 // Handle request here.
 $taskSelected = __get__($_POST, 'task', '');
-$_POST[ 'semester' ] = $semester;
-$_POST[ 'year' ] = $year;
+$_POST['semester'] = $semester;
+$_POST['year'] = $year;
 
 $whereExpr = '';
 if (__get__($_POST, 'course_id', '')) {
@@ -97,13 +97,12 @@ if (__get__($_POST, 'course_id', '')) {
 
 $enrollments = getTableEntries('course_registration', 'student_id', $whereExpr);
 
-
 $enrolls = getTableEntries(
     'course_registration',
     'course_id, student_id',
     "status='VALID' AND year='$year' AND semester='$semester'"
 );
-$courseMap = array( );
+$courseMap = [];
 
 foreach ($enrolls as $e) {
     $courseMap[$e['course_id']][] = $e;
@@ -112,7 +111,7 @@ foreach ($enrolls as $e) {
 // Show the quick action and enrollment information here.
 echo "<h1>Enrollments for $semester/$year</h1>";
 foreach ($courseMap as $cid => $enrolls) {
-    if (! $cid) {
+    if (!$cid) {
         continue;
     }
 
@@ -152,11 +151,11 @@ foreach ($courseMap as $cid => $enrolls) {
     echo " <strong>Current enrollements: $numEnrollments</strong> ";
     foreach ($enrolls as $i => $e) {
         $index = $i + 1;
-        $student = $e[ 'student_id'];
-        $dropForm = '<form action="'.site_url("adminacad/change_enrollement").'" method="post" >';
+        $student = $e['student_id'];
+        $dropForm = '<form action="' . site_url('adminacad/change_enrollement') . '" method="post" >';
 
         // Change type of enrollment.
-        $otherEnrollmentTypes = array( 'CREDIT', 'AUDIT', 'DROP' );
+        $otherEnrollmentTypes = ['CREDIT', 'AUDIT', 'DROP'];
         foreach ($otherEnrollmentTypes as $other) {
             $style = '';
             if ($e['type'] == $other) {
@@ -174,8 +173,8 @@ foreach ($courseMap as $cid => $enrolls) {
             </form>';
 
         $sname = arrayToName(getLoginInfo($student), true);
-        $grade = $e[ 'grade' ];
-        $type = $e[ 'type'];
+        $grade = $e['grade'];
+        $type = $e['type'];
 
         // If grade is assigned, you can't drop the course.
         if ($grade) {
@@ -183,7 +182,7 @@ foreach ($courseMap as $cid => $enrolls) {
         }
 
         echo "<td> <tt>$index.</tt> $student<br />$sname <br />$grade <br />$dropForm</td>";
-        if (($i+1) % 5 == 0) {
+        if (0 == ($i + 1) % 5) {
             echo '</tr><tr>';
         }
     }
@@ -192,21 +191,21 @@ foreach ($courseMap as $cid => $enrolls) {
     echo '</div>';
     echo '<br />';
 
-    $waitList =  getTableEntries(
+    $waitList = getTableEntries(
         'course_registration',
         'course_id,student_id',
         "status='WAITLIST' AND course_id='$cid' AND year='$year' AND semester='$semester'"
     );
     if (count($waitList)) {
-        echo p("Wait list found. Total " . count($waitList));
+        echo p('Wait list found. Total ' . count($waitList));
         $table = ' <table class="enrollments"> ';
         $table .= '<tr>';
         foreach ($waitList as $i => $wl) {
             $student = $wl['student_id'];
             $sname = arrayToName(getLoginInfo($student));
             $table .= "<td> $student <br /> $sname </td>";
-            if (($i+1) % 5 == 0) {
-                $table .= "</tr><tr>";
+            if (0 == ($i + 1) % 5) {
+                $table .= '</tr><tr>';
             }
         }
         $table .= '</tr></table>';

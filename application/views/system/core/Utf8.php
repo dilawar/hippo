@@ -1,6 +1,6 @@
 <?php
 /**
- * CodeIgniter
+ * CodeIgniter.
  *
  * An open source application development framework for PHP
  *
@@ -26,44 +26,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @package	CodeIgniter
  * @author	EllisLab Dev Team
  * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
  * @copyright	Copyright (c) 2014 - 2018, British Columbia Institute of Technology (http://bcit.ca/)
  * @license	http://opensource.org/licenses/MIT	MIT License
- * @link	https://codeigniter.com
+ *
+ * @see	https://codeigniter.com
  * @since	Version 2.0.0
  * @filesource
  */
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
- * Utf8 Class
+ * Utf8 Class.
  *
  * Provides support for UTF-8 environments
  *
- * @package		CodeIgniter
- * @subpackage	Libraries
  * @category	UTF-8
+ *
  * @author		EllisLab Dev Team
- * @link		https://codeigniter.com/user_guide/libraries/utf8.html
+ *
+ * @see		https://codeigniter.com/user_guide/libraries/utf8.html
  */
 class CI_Utf8
 {
-
     /**
-     * Class constructor
+     * Class constructor.
      *
      * Determines if UTF-8 support is to be enabled.
      *
-     * @return	void
+     * @return void
      */
     public function __construct()
     {
         if (
             defined('PREG_BAD_UTF8_ERROR')				// PCRE must support UTF-8
             && (ICONV_ENABLED === true or MB_ENABLED === true)	// iconv or mbstring must be installed
-            && strtoupper(config_item('charset')) === 'UTF-8'	// Application charset must be UTF-8
+            && 'UTF-8' === strtoupper(config_item('charset'))	// Application charset must be UTF-8
             ) {
             define('UTF8_ENABLED', true);
             log_message('debug', 'UTF-8 Support Enabled');
@@ -78,16 +77,17 @@ class CI_Utf8
     // --------------------------------------------------------------------
 
     /**
-     * Clean UTF-8 strings
+     * Clean UTF-8 strings.
      *
      * Ensures strings contain only valid UTF-8 characters.
      *
-     * @param	string	$str	String to clean
-     * @return	string
+     * @param string $str String to clean
+     *
+     * @return string
      */
     public function clean_string($str)
     {
-        if ($this->is_ascii($str) === false) {
+        if (false === $this->is_ascii($str)) {
             if (MB_ENABLED) {
                 $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
             } elseif (ICONV_ENABLED) {
@@ -101,14 +101,15 @@ class CI_Utf8
     // --------------------------------------------------------------------
 
     /**
-     * Remove ASCII control characters
+     * Remove ASCII control characters.
      *
      * Removes all ASCII control characters except horizontal tabs,
      * line feeds, and carriage returns, as all others can cause
      * problems in XML.
      *
-     * @param	string	$str	String to clean
-     * @return	string
+     * @param string $str String to clean
+     *
+     * @return string
      */
     public function safe_ascii_for_xml($str)
     {
@@ -118,13 +119,14 @@ class CI_Utf8
     // --------------------------------------------------------------------
 
     /**
-     * Convert to UTF-8
+     * Convert to UTF-8.
      *
      * Attempts to convert a string to UTF-8.
      *
-     * @param	string	$str		Input string
-     * @param	string	$encoding	Input encoding
-     * @return	string	$str encoded in UTF-8 or FALSE on failure
+     * @param string $str      Input string
+     * @param string $encoding Input encoding
+     *
+     * @return string $str encoded in UTF-8 or FALSE on failure
      */
     public function convert_to_utf8($str, $encoding)
     {
@@ -144,11 +146,12 @@ class CI_Utf8
      *
      * Tests if a string is standard 7-bit ASCII or not.
      *
-     * @param	string	$str	String to check
-     * @return	bool
+     * @param string $str String to check
+     *
+     * @return bool
      */
     public function is_ascii($str)
     {
-        return (preg_match('/[^\x00-\x7F]/S', $str) === 0);
+        return 0 === preg_match('/[^\x00-\x7F]/S', $str);
     }
 }

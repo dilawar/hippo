@@ -1,9 +1,9 @@
 <?php
 
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
-echo "<h1>Journal Clubs Admins</h1>";
+echo '<h1>Journal Clubs Admins</h1>';
 
 $admins = getTableEntries('jc_subscriptions', 'jc_id', "subscription_type='ADMIN'");
 $jcs = getTableEntries('journal_clubs', 'id', "status!='INVALID'");
@@ -14,7 +14,7 @@ $jcIDs = array_map(function ($x) {
 $table = '<table class="info">';
 $table .= '<tr>';
 foreach ($admins as $i => $admin) {
-    $table .= "<td>" . $admin['login'] . ' (' . colored($admin['jc_id'], 'darkred') . ') ';
+    $table .= '<td>' . $admin['login'] . ' (' . colored($admin['jc_id'], 'darkred') . ') ';
 
     // Form to detele.
     $table .= '<form action="jc_admins_action" method="post" >';
@@ -25,7 +25,7 @@ foreach ($admins as $i => $admin) {
     $table .= '<input type="hidden" name="login" value="' . $admin['login'] . '" />';
     $table .= '</form>';
 
-    if (($i + 1) % 4 == 0) {
+    if (0 == ($i + 1) % 4) {
         $table .= '</tr><tr>';
     }
 }
@@ -37,14 +37,12 @@ echo '<h1> Add new admin </h1>';
 
 $action = 'Add New Admin';
 $editable = 'jc_id,login';
-$default = array(
-    'subscription_type' => 'ADMIN'
-    , 'jc_id' => arrayToSelectList('jc_id', $jcIDs)
-    , 'last_modified_on' => dbDateTime('now')
-);
+$default = [
+    'subscription_type' => 'ADMIN', 'jc_id' => arrayToSelectList('jc_id', $jcIDs), 'last_modified_on' => dbDateTime('now'),
+];
 
 echo '<form action="jc_admins_action" method="post">';
 echo dbTableToHTMLTable('jc_subscriptions', $default, $editable, $action);
 echo '</form>';
 
-echo goBackToPageLink("adminacad/home", "Go back");
+echo goBackToPageLink('adminacad/home', 'Go back');

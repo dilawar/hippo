@@ -1,5 +1,5 @@
 <?php
-require_once BASEPATH. 'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 $thisSem = getCurrentSemester() . ' ' . getCurrentYear();
 $nAWS = count(getMyAws($cUserInfo['login']));
@@ -9,21 +9,21 @@ $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
 <div class="row">
     <div class="col rounded menu-item text-left m-3 p-2">
         <a class="fa fa-book fa-2x " 
-            href="<?=site_url('/user/courses')?>"> My Courses
+            href="<?=site_url('/user/courses'); ?>"> My Courses
         </a>
         <br />
-        Register/deregister courses for <?=$thisSem?> semster.
+        Register/deregister courses for <?=$thisSem; ?> semster.
     </div>
 
 <?php if ($nAWS > 0 || $eligibleForAWS): ?>
     <div class="col rounded menu-item m-3 p-2 text-left">
         <a class="fa fa-2x fa-graduation-cap" 
-            href="<?=site_url("/user/aws")?>">My AWS</a> 
+            href="<?=site_url('/user/aws'); ?>">My AWS</a> 
         <br />
         See your previous AWSs. Check details of upcoming AWS. Provide preferred dates.
         <br />
         <a class="btn btn-secondary"
-             href="<?=site_url("/user/update_supervisors") ?>">
+             href="<?=site_url('/user/update_supervisors'); ?>">
             Update TCM Members/Supervisors
         </a>
     </div>
@@ -36,7 +36,7 @@ $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
 <div class="row">
     <div class="col rounded menu-item text-left m-3 p-2">
         <a class=" fa fa-2x" 
-            href="<?=site_url("/user/jc")?>">My Journal Clubs
+            href="<?=site_url('/user/jc'); ?>">My Journal Clubs
         </a>
         <br />
         Subscribe/Unsubscribe from journal club. See upcoming presentation.
@@ -44,7 +44,7 @@ $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
     </div>
     <div class="col rounded menu-item text-left m-3 p-2">
         <a class="fa fa-2x " 
-            href="<?=site_url("/user/jc_presentation_requests")?>">
+            href="<?=site_url('/user/jc_presentation_requests'); ?>">
             My JC Presentation Requests
         </a>
         <br />
@@ -58,7 +58,7 @@ $eligibleForAWS = __get__($cUserInfo, 'eligible_for_aws', 'NO');
     <div class="row">
         <div class="col rounded menu-item text-left m-3 p-2">
             <i class="fa fa-lock fa-2x"></i>
-            <a class="" href="<?=site_url("/user/jcadmin")?>">JC Admin</a> <br />
+            <a class="" href="<?=site_url('/user/jcadmin'); ?>">JC Admin</a> <br />
             Journal club admin</td>
         </div>
         <div class="col rounded">
@@ -78,27 +78,27 @@ $reqs = getTableEntries(
 );
 $flag = '';
 if (count($reqs) > 0) {
-    $flag = count($reqs) . " requests.";
+    $flag = count($reqs) . ' requests.';
 }
 ?>
 
 <div class="row">
 <div class="col rounded menu-item text-left m-3 p-2">
      <a class=" fa fa-hand-pointer-o fa-2x" 
-         href="<?=site_url("/user/book/venue")?>">
+         href="<?=site_url('/user/book/venue'); ?>">
          Book for small event
      </a>
      <br />
      E.g. Labmeets,meeting,interview etc.. No email will be sent to Academic community.
     <br />
     <a class="btn btn-secondary fa fa-pencil-square-o" 
-        href="<?=site_url("/user/show_private")?>">
-        Manage My Private Events (total=<?=$flag?>)
+        href="<?=site_url('/user/show_private'); ?>">
+        Manage My Private Events (total=<?=$flag; ?>)
     </a> 
 </div>
 <div class="col rounded menu-item text-left m-3 p-2">
     <a class="fa fa-comments fa-2x " 
-        href="<?=site_url("/user/register_talk")?>">
+        href="<?=site_url('/user/register_talk'); ?>">
         Book for talks/seminar etc. (Academic Events)
     </a>
     <br />
@@ -106,7 +106,7 @@ if (count($reqs) > 0) {
     for which academic community needs to be notified by email.
     <br />
     <a class="btn btn-secondary fa fa-pencil-square-o fa-1x" 
-        href="<?=site_url("/user/show_public")?>">Manage my public events.
+        href="<?=site_url('/user/show_public'); ?>">Manage my public events.
     </a>
 </div>
 </div>
@@ -122,32 +122,32 @@ common equipment booking system.</div>
 <div class="row">
 <div class="col rounded menu-item text-left m-3 p-2">
      <a class="fa fa-hand-archive fa-2x" 
-     href="<?=site_url("/user/inventory_browse")?>">
+     href="<?=site_url('/user/inventory_browse'); ?>">
         Browse Lab Inventory or Book Equipments</a>
 </div>
 <div class="col rounded menu-item text-left m-3 p-2">
      <a class="fa fa-flask fa-2x" 
-         href="<?=site_url("/user/inventory_manage")?>"
+         href="<?=site_url('/user/inventory_manage'); ?>"
         >Manage Lab Inventory</a>
 </div>
 </div>
 </div>
 
 <?php
-$roles =  getRoles(whoAmI());
+$roles = getRoles(whoAmI());
 ?>
 
-<?php if (anyOfTheseRoles("SERVICES_ADMIN")): ?>
+<?php if (anyOfTheseRoles('SERVICES_ADMIN')): ?>
     <div class=" p-2 my-2">
     <h1> Services Admin </h1>
     <div class="row">
         <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-bus fa-2x" 
-                href="<?=site_url('adminservices/transport')?>"> Manage Transport</a>
+                href="<?=site_url('adminservices/transport'); ?>"> Manage Transport</a>
         </div>
         <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-cutlery fa-2x"
-            href="<?=site_url("adminservices/canteen")?>"> Manage Canteen Menu</a>
+            href="<?=site_url('adminservices/canteen'); ?>"> Manage Canteen Menu</a>
         </div>
     </div>
     </div>
@@ -157,26 +157,26 @@ $roles =  getRoles(whoAmI());
     <h1> <i class="fa fa-cogs"></i> Admin</h1>
 
     <div class="row">
-    <?php if (in_array("ADMIN", $roles)): ?>
+    <?php if (in_array('ADMIN', $roles)): ?>
        <div class="col rounded menu-item text-left m-3 p-2"> 
             <a class="fa fa-lock fa-2x" 
-                href="<?=site_url("/admin")?>"> Admin</a>
+                href="<?=site_url('/admin'); ?>"> Admin</a>
         </div>
     <?php endif; ?>
 
-    <?php if (in_array("BOOKMYVENUE_ADMIN", $roles)): ?>
+    <?php if (in_array('BOOKMYVENUE_ADMIN', $roles)): ?>
        <div class="col rounded menu-item text-left m-3 p-2">
            <a class="fa fa-calendar-plus-o fa-2x" 
-                href="<?=site_url("/adminbmv")?>"> Book My Venue Admin</a>
+                href="<?=site_url('/adminbmv'); ?>"> Book My Venue Admin</a>
        </div>
     <?php else: ?>
        <div class="col rounded menu-item text-left m-3 p-2"></div>
     <?php endif; ?>
 
-    <?php if (in_array("ACAD_ADMIN", $roles)): ?>
+    <?php if (in_array('ACAD_ADMIN', $roles)): ?>
        <div class="col rounded menu-item text-left m-3 p-2">
             <a class="fa fa-graduation-cap fa-2x" 
-                href="<?=site_url("/adminacad")?>"> Academic Admin</a>
+                href="<?=site_url('/adminacad'); ?>"> Academic Admin</a>
        </div>
     <?php else: ?>
        <td></td>

@@ -4,7 +4,7 @@
 // by USER or ADMIN alike. If the current user is not the owner of request, then
 // she must belong of admin group which has the rights to modify any request.
 
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 $user = whoAmI();
 $editables = 'class,is_public_event,title,description';
@@ -23,10 +23,10 @@ if (mustHaveAllOfTheseRoles('BOOKMYVENUE_ADMIN')) {
 echo ' <h2>Current entry is following.</h2>';
 echo arrayToVerticalTableHTML($req, 'info');
 
-echo goBackToPageLink("user/show_private", "Go Back");
+echo goBackToPageLink('user/show_private', 'Go Back');
 
-echo "<br><br>";
-echo printNote("Edit to your heart desire.");
+echo '<br><br>';
+echo printNote('Edit to your heart desire.');
 echo '<form method="post" action="">';
 echo dbTableToHTMLTable(
     'bookmyvenue_requests',
@@ -34,5 +34,5 @@ echo dbTableToHTMLTable(
     $editables = $editables,
     'Update'
 );
-echo '<input type="hidden" name="editables" id="" value="'.$editables.'" />';
-echo "</form>";
+echo '<input type="hidden" name="editables" id="" value="' . $editables . '" />';
+echo '</form>';

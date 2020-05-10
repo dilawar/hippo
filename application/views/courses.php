@@ -1,5 +1,5 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 
 function showAlertTable()
 {
@@ -18,35 +18,36 @@ function showAlertTable()
         </div>
     </div>
     </table>';
+
     return $html;
 }
 
 ?>
 
 <!-- Sweet alert -->
-<script src="<?=base_url()?>/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<script src="<?=base_url(); ?>/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
 <link rel="stylesheet" type="text/css" 
-    href="<?=site_url()?>/node_modules/sweetalert2/dist/sweetalert.css">
+    href="<?=site_url(); ?>/node_modules/sweetalert2/dist/sweetalert.css">
 
 <?php
 
-$slotCourses = array( );
-$tileCourses = array( );
+$slotCourses = [];
+$tileCourses = [];
 $sem = $cSemester ?? getCurrentSemester();
 $year = $cYear ?? getCurrentYear();
 $runningCourses = $cRunningCourses ?? getSemesterCourses($year, $sem);
 
 // Collect both metadata and other information in slotCourse array.
 foreach ($runningCourses as $c) {
-    $cid = $c[ 'course_id' ];
-    $course = getTableEntry('courses_metadata', 'id', array('id' => $cid));
+    $cid = $c['course_id'];
+    $course = getTableEntry('courses_metadata', 'id', ['id' => $cid]);
     if ($course) {
-        $slotId = $c[ 'slot' ];
+        $slotId = $c['slot'];
         $tiles = getTableEntries('slots', 'groupid', "groupid='$slotId'");
-        $slotCourses[ $slotId ][ ] = array_merge($c, $course);
+        $slotCourses[$slotId][] = array_merge($c, $course);
         foreach ($tiles as $tile) {
-            if (strpos($c['ignore_tiles'], $tile[ 'id' ]) !== 0) {
-                $tileCourses[ $tile['id']][ ] = array_merge($c, $course);
+            if (0 !== strpos($c['ignore_tiles'], $tile['id'])) {
+                $tileCourses[$tile['id']][] = array_merge($c, $course);
             }
         }
     } else {
@@ -54,19 +55,19 @@ foreach ($runningCourses as $c) {
     }
 }
 
-$slotUpcomingCourses = array( );
+$slotUpcomingCourses = [];
 $nextSem = getNextSemester();
-$upcomingCourses = getSemesterCourses($nextSem[ 'year' ], $nextSem['semester']);
+$upcomingCourses = getSemesterCourses($nextSem['year'], $nextSem['semester']);
 foreach ($upcomingCourses as $c) {
-    $cid = $c[ 'course_id' ];
-    $course = getTableEntry('courses_metadata', 'id', array('id' => $cid));
+    $cid = $c['course_id'];
+    $course = getTableEntry('courses_metadata', 'id', ['id' => $cid]);
     if ($course) {
-        $slotId = $c[ 'slot' ];
+        $slotId = $c['slot'];
         $tiles = getTableEntries('slots', 'groupid', "groupid='$slotId'");
-        $slotUpcomingCourses[ $slotId ][ ] = array_merge($c, $course);
+        $slotUpcomingCourses[$slotId][] = array_merge($c, $course);
         foreach ($tiles as $tile) {
-            if (strpos($c['ignore_tiles'], $tile[ 'id' ]) !== 0) {
-                $tileCourses[ $tile['id']][ ] = array_merge($c, $course);
+            if (0 !== strpos($c['ignore_tiles'], $tile['id'])) {
+                $tileCourses[$tile['id']][] = array_merge($c, $course);
             }
         }
     }
@@ -80,13 +81,13 @@ $table = slotTable();
 <div class="info float-right">
     Click on tiles to see the courses running on this slot.
 </div>
-<div class=""> <?=$table ?> </div> 
+<div class=""> <?=$table; ?> </div> 
 
 <?php
 /* Select year and semester */
 $autumnSelected = '';
 $springSelected = '';
-if ($sem == 'AUTUMN') {
+if ('AUTUMN' == $sem) {
     $autumnSelected = 'selected';
 } else {
     $springSelected = 'selected';
@@ -99,14 +100,14 @@ $form = selectYearSemesterForm($year, $sem);
 $showEnrollText = 'Show Enrollement';
 // Go over courses and populate the entrollment array.
 $header = '<tr><th>Course/Instructors</th><th>Schedule</th><th>Slot/Venue</th><th>URL</th></tr>';
-$enrollments = array( );
+$enrollments = [];
 $html = '';
 
 // This semester courses.
 foreach ($slotCourses as $slot => $courses) {
     $div = '';
     foreach ($courses as $c) {
-        $cid = $c[ 'course_id' ];
+        $cid = $c['course_id'];
         // Add header only to the first entry.
         $courseTable = '<table class="table show_course">';
         // This function fills in $enrollments.
@@ -114,15 +115,15 @@ foreach ($slotCourses as $slot => $courses) {
         $courseTable .= '</table>';
 
         $data = getEnrollmentTableAndEmails($cid, $enrollments, 'info exportable');
-        $enTable = $data[ 'html_table'];
-        $allEmails = $data[ 'enrolled_emails' ];
+        $enTable = $data['html_table'];
+        $allEmails = $data['enrolled_emails'];
 
         $tid = "show_hide_$cid";
 
         if (count($allEmails) > 0) {
             // Apend user email at the end of registration table.
-            $mailtext = implode(",", $allEmails);
-            $enTable .= '<div>' .  mailto($mailtext, 'Send email to all students') . "</div>";
+            $mailtext = implode(',', $allEmails);
+            $enTable .= '<div>' . mailto($mailtext, 'Send email to all students') . '</div>';
 
             $regTable = '<table style="width:100%;">';
             $regTable .= '<tr>';
@@ -146,11 +147,11 @@ foreach ($slotCourses as $slot => $courses) {
 
 <div class="card m-2 p-2">
     <div class="card-title"> 
-        <div class="float-right"> <?=$form?> </div>
+        <div class="float-right"> <?=$form; ?> </div>
     </div>
     <div class="card-body>
-        <?= showAlertTable() ?>
-        <?=$html?>
+        <?= showAlertTable(); ?>
+        <?=$html; ?>
     </div>
 </div>
 
@@ -162,7 +163,6 @@ foreach ($slotCourses as $slot => $courses) {
  *******************************************************************************/
 // Collect both metadata and other information in slotCourse array.
 
-
 $newTab = '<table id="upcoming_courses" class="info">';
 $header = '<tr><th>Course <br> Instructors</th><th>Schedule</th>
     <th>Slot Tiles</th><th>Venue</th>
@@ -170,14 +170,14 @@ $header = '<tr><th>Course <br> Instructors</th><th>Schedule</th>
 
 foreach ($slotUpcomingCourses as $slot => $ucs) {
     foreach ($ucs as $i => $uc) {
-        if ($i == 0) {
+        if (0 == $i) {
             $newTab .= $header;
         }
 
         $newTab .= '<tr>';
-        $slot = $uc[ 'slot' ];
-        $sem = getSemester($uc[ 'end_date' ]);
-        $year = getYear($uc[ 'end_date' ]);
+        $slot = $uc['slot'];
+        $sem = getSemester($uc['end_date']);
+        $year = getYear($uc['end_date']);
         $newTab .= courseToHTMLRow($uc, $slot, $sem, $year, $upcomingEnrollments);
         $newTab .= '</tr>';
     }
@@ -196,9 +196,9 @@ echo '<br>';
 echo closePage();
 ?>
 
-<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
-<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
-<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));
 </script>

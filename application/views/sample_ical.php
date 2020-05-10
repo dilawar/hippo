@@ -1,4 +1,5 @@
 <?php
+
 /* vim: set expandtab tabstop=4 shiftwidth=4: */
 //+----------------------------------------------------------------------+
 //| WAMP (XP-SP1/1.3.24/4.0.12/4.3.0)                                    |
@@ -15,32 +16,32 @@
 // $Id$
 
 //error_reporting(E_ALL);
-include_once('class.iCal.inc.php');
-$days = (array) array(2,3);
-$organizer = (array) array('Kurt', 'kurt2@flaimo.com');
-$categories = array('Freetime','Party');
-$attendees = (array) array(
+include_once 'class.iCal.inc.php';
+$days = (array) [2, 3];
+$organizer = (array) ['Kurt', 'kurt2@flaimo.com'];
+$categories = ['Freetime', 'Party'];
+$attendees = (array) [
                           'Michi' => 'flaimo2@gmx.net,1',
                           'Felix' => ' ,2',
-                          'Walter' => 'flaimo2@gmx.net,3'
-                          );  // Name => e-mail,role (see iCalEvent class)
+                          'Walter' => 'flaimo2@gmx.net,3',
+                          ];  // Name => e-mail,role (see iCalEvent class)
 
-$fb_times = (array) array(
-                          time()+23456 => time()+24456 . ',0', // timestamp start => 'timestamp end,status' (for status see class)
-                          time()+93956 => time()+95956 . ',1'
-                          );
+$fb_times = (array) [
+                          time() + 23456 => time() + 24456 . ',0', // timestamp start => 'timestamp end,status' (for status see class)
+                          time() + 93956 => time() + 95956 . ',1',
+                          ];
 
-$alarm = (array) array(
+$alarm = (array) [
                       0, // Action: 0 = DISPLAY, 1 = EMAIL, (not supported: 2 = AUDIO, 3 = PROCEDURE)
                       150,  // Trigger: alarm before the event in minutes
                       'Wake Up!', // Title
                       '...and go shopping', // Description
                       $attendees, // Array (key = attendee name, value = e-mail, second value = role of the attendee [0 = CHAIR | 1 = REQ | 2 = OPT | 3 =NON])
                       5, // Duration between the alarms in minutes
-                      3  // How often should the alarm be repeated
-                      );
+                      3,  // How often should the alarm be repeated
+                      ];
 
-$ex_dates = (array) array(12345667,78643453);
+$ex_dates = (array) [12345667, 78643453];
 
 $iCal = (object) new iCal('', 0, ''); // (ProgrammID, Method (1 = Publish | 0 = Request), Download Directory)
 
@@ -75,7 +76,7 @@ $iCal->addToDo(
     'Air and Style Snowboard Contest', // Title
                'See handout for more details...', // Description
                'Vienna', // Location
-               time()+3600, // Start time
+               time() + 3600, // Start time
                300, // Duration in minutes
                '', // End time
                45, // Percentage complete
@@ -98,10 +99,9 @@ $iCal->addToDo(
                '' // Optional UID for this ToDo
 );
 
-
 $iCal->addFreeBusy(
-    time()+3600, // Start Time
-                   time()+7200, // End Time
+    time() + 3600, // Start Time
+                   time() + 7200, // End Time
                    300, // Duration in minutes
                    $organizer, // Organizer
                    $attendees, // Array (key = attendee name, value = e-mail, second value = role of the attendee [0 = CHAIR | 1 = REQ | 2 = OPT | 3 =NON])
@@ -110,11 +110,10 @@ $iCal->addFreeBusy(
                    '' // Optional UID for this FreeBusy
 );
 
-
 $iCal->addJournal(
     'Air and Style Snowboard Contest', // Title
                   'See homepage for more details...', // Description
-                  time()+3600, // Start time
+                  time() + 3600, // Start time
                   time(), // Created
                   time(), // Last modification
                   1, // Status of the event (0 = TENTATIVE, 1 = CONFIRMED, 2 = CANCELLED)

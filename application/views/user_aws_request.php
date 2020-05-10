@@ -1,18 +1,19 @@
 <?php
-include_once "header.php";
-include_once "methods.php";
+
+include_once 'header.php';
+include_once 'methods.php';
 include_once 'tohtml.php';
-include_once "check_access_permissions.php";
+include_once 'check_access_permissions.php';
 
 echo userHTML();
 
-$default = array( );
+$default = [];
 
-if ($_POST['response'] == 'edit') {
+if ('edit' == $_POST['response']) {
     $rid = $_POST['id'];
     $default = getAwsRequestById($rid);
 
-    echo "<h3>Edit your AWS entry</h3>";
+    echo '<h3>Edit your AWS entry</h3>';
 
     echo "<p>
         NOTICE: If you can't find your supervior(s) and/or thesis committee member(s) 
@@ -22,16 +23,16 @@ if ($_POST['response'] == 'edit') {
 
     // Now create an entry
     $supervisors = getSupervisors();
-    $supervisorIds = array( );
-    $supervisorText = array( );
+    $supervisorIds = [];
+    $supervisorText = [];
     foreach ($supervisors as $supervisor) {
         array_push($supervisorIds, $supervisor['email']);
-        $supervisorText[ $supervisor['email'] ] = $supervisor['first_name']
-            .  ' ' . $supervisor[ 'last_name' ] ;
+        $supervisorText[$supervisor['email']] = $supervisor['first_name']
+            . ' ' . $supervisor['last_name'];
     }
 
-    echo "<form method=\"post\" action=\"user_aws_request_edit_submit.php\">";
-    echo "<table class=\"input\">";
+    echo '<form method="post" action="user_aws_request_edit_submit.php">';
+    echo '<table class="input">';
 
     $abstract = sanitiesForTinyMCE(__get__($default, 'abstract', ''));
     echo '
@@ -56,31 +57,31 @@ if ($_POST['response'] == 'edit') {
             </td>
         </tr>';
 
-    for ($i = 1; $i <= 2; $i++) {
+    for ($i = 1; $i <= 2; ++$i) {
         $name = "supervisor_$i";
-        $selected = __get__($default, $name, "");
+        $selected = __get__($default, $name, '');
         echo '
         <tr>
             <td>Supervisor ' . $i . '<br></td>
             <td>' . arrayToSelectList($name, $supervisorIds, $supervisorText, false, $selected)
-            .  '</td>
+            . '</td>
         </tr>';
     }
-    for ($i = 1; $i <= 4; $i++) {
+    for ($i = 1; $i <= 4; ++$i) {
         $name = "tcm_member_$i";
-        $selected = __get__($default, $name, "");
+        $selected = __get__($default, $name, '');
         echo '
         <tr>
             <td>Thesis Committee Member ' . $i . '<br></td>
             <td>' . arrayToSelectList($name, $supervisorIds, $supervisorText, false, $selected)
-            .  '</td>
+            . '</td>
         </tr>';
     }
 
     echo '
         <tr>
             <td>Is Presynopsis Seminar?</td>
-            <td>' .  arrayToSelectList('is_presynopsis_seminar', array( 'YES', 'NO'))
+            <td>' . arrayToSelectList('is_presynopsis_seminar', ['YES', 'NO'])
             . '</td>
         </tr>';
 
@@ -102,21 +103,20 @@ if ($_POST['response'] == 'edit') {
             </td>
         </tr>
         ';
-    echo "</table>";
-    echo "</form>";
-} elseif ($_POST['response'] == 'cancel') {
+    echo '</table>';
+    echo '</form>';
+} elseif ('cancel' == $_POST['response']) {
     $id = $_POST['id'];
     // Delete this request.
-    $res = deleteFromTable('aws_requests', 'id', array( 'id' => $id ));
+    $res = deleteFromTable('aws_requests', 'id', ['id' => $id]);
     if ($res) {
         echo printInfo('Your request has been deleted successfully.');
         goBack();
         exit;
-    } else {
-        echo minionEmbarrassed('I could not cancel your request.');
     }
+    echo minionEmbarrassed('I could not cancel your request.');
 } else {
-    echo "Unknown request " . $_POST[ 'response' ];
+    echo 'Unknown request ' . $_POST['response'];
 }
 
-echo goBackToPageLink("user/home", "Go back");
+echo goBackToPageLink('user/home', 'Go back');

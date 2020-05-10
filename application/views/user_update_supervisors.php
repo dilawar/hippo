@@ -1,17 +1,17 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 $rows = array_merge(getSupervisors(), getFaculty());
-$tcms = array( );
-$tcmEmails = array( );
+$tcms = [];
+$tcmEmails = [];
 foreach ($rows as $row) {
     if (in_array($row['email'], $tcmEmails)) {
         continue;
     }
 
-    array_push($tcmEmails, $row[ 'email' ]);
-    $tcms[ $row[ 'email' ] ] = $row;
+    array_push($tcmEmails, $row['email']);
+    $tcms[$row['email']] = $row;
 }
 
 ?>
@@ -19,7 +19,7 @@ foreach ($rows as $row) {
 <script type="text/javascript" charset="utf-8">
 // Autocomplete speaker.
 $( function() {
-    var tcms = <?php echo json_encode($tcms) ?>;
+    var tcms = <?php echo json_encode($tcms); ?>;
     var emails = <?php echo json_encode($tcmEmails); ?>;
     $( "#supervisors_email" ).autocomplete( { source : emails }); 
     $( "#supervisors_email" ).attr( "placeholder", "autocomplete" );
@@ -43,38 +43,37 @@ $( function() {
 
 <?php
 
-echo "<h3>Adding a supervisor</h3>";
+echo '<h3>Adding a supervisor</h3>';
 
-echo printInfo("A supervisor is idenfitied by his/her email address. 
+echo printInfo('A supervisor is idenfitied by his/her email address. 
     It must be correct. I send them notification before your AWS.
-    ");
+    ');
 
-echo "<form id=\"add_supervisor\" method=\"post\" 
-    action=\"".site_url("user/update_supervisor_submit") ."\">";
-echo "<br>";
+echo '<form id="add_supervisor" method="post" 
+    action="' . site_url('user/update_supervisor_submit') . '">';
+echo '<br>';
 
-echo "<p> Except <tt>URL</tt>, and <tt>MIDDLE NAME</tt>, all fields are mandatory</p>";
+echo '<p> Except <tt>URL</tt>, and <tt>MIDDLE NAME</tt>, all fields are mandatory</p>';
 echo dbTableToHTMLTable(
-    "supervisors",
-    $defaults = array( ),
-    $editables = "email,first_name,middle_name,last_name,affiliation,url"
+    'supervisors',
+    $defaults = [],
+    $editables = 'email,first_name,middle_name,last_name,affiliation,url'
 );
-echo "</form>";
+echo '</form>';
 
-echo "<h3>List of supervisors/TCM members in my database</h3>";
+echo '<h3>List of supervisors/TCM members in my database</h3>';
 
 $count = 0;
 echo '<table class="info"><tr>';
 foreach ($rows as $row) {
-    if ($count % 4 == 0) {
+    if (0 == $count % 4) {
         echo '</tr><tr>';
     }
     echo '<td>' . loginToText($row) . '</td>';
-    $count += 1;
+    ++$count;
 }
 echo '</tr></table>';
 
-
-echo goBackToPageLink("user/aws", "Go back to AWS");
+echo goBackToPageLink('user/aws', 'Go back to AWS');
 
 ?>

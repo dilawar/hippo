@@ -1,10 +1,10 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-require_once __DIR__.'/ApiHelper.php';
-require_once __DIR__.'/Adminservices.php';
-require_once __DIR__.'/User.php';
+require_once __DIR__ . '/ApiHelper.php';
+require_once __DIR__ . '/Adminservices.php';
+require_once __DIR__ . '/User.php';
 
 require_once BASEPATH . '/extra/bmv.php';
 require_once BASEPATH . '/extra/people.php';
@@ -23,41 +23,40 @@ require_once BASEPATH . '/extra/charts.php';
  * @Param $apikey
  * @Param $user
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function authenticateAPI($apikey, $user='')
+function authenticateAPI($apikey, $user = '')
 {
     $where = 'apikey';
-    if($user) {
-        $where .= ",login";
+    if ($user) {
+        $where .= ',login';
     }
 
-    $res = getTableEntry('apikeys', $where, ['apikey'=>$apikey, 'login'=>$user]);
-    if($res) {
+    $res = getTableEntry('apikeys', $where, ['apikey' => $apikey, 'login' => $user]);
+    if ($res) {
         return true;
     }
-    return false;
 
+    return false;
 }
 
 function getKey()
 {
-    return __get__($_POST, 'HIPPO-API-KEY', getHeader('hippo-api-key'));
+    // NOTE: headers are case insensitive. So getHeader function must search
+    // for both cases.
+    return __get__($_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
 }
-
-
 
 class Api extends CI_Controller
 {
-
-    // To enable CORS just for this API. DO NOT CHANGE THEM IN apache2.conf or 
+    // To enable CORS just for this API. DO NOT CHANGE THEM IN apache2.conf or
     // httpd.conf file.
     public function __construct($config = 'rest')
     {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: cache-control,login,hippo-api-key,x-requested-with,Content-Type');
-        header("Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE");
+        header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
         parent::__construct();
     }
 
@@ -65,8 +64,8 @@ class Api extends CI_Controller
     {
         $json = json_encode(
             $data,
-            JSON_ERROR_SYNTAX | JSON_NUMERIC_CHECK 
-            | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES 
+            JSON_ERROR_SYNTAX | JSON_NUMERIC_CHECK
+            | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );
         $this->output->set_content_type('application/json', 'utf-8');
         $this->output->set_output($json);
@@ -77,21 +76,21 @@ class Api extends CI_Controller
         $this->send_data($what);
     }
 
-    private function send_data(array $data, string $status='ok')
+    private function send_data(array $data, string $status = 'ok')
     {
-        $this->send_data_helper(['status'=>$status, 'data'=>$data]);
+        $this->send_data_helper(['status' => $status, 'data' => $data]);
     }
 
     /* --------------------------------------------------------------------------*/
     /**
-     * @Synopsis Status of Hippo API. 
+     * @Synopsis Status of Hippo API.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function status()
     {
-        $this->send_data(["status"=>"alive"], "ok");
+        $this->send_data(['status' => 'alive'], 'ok');
     }
 
     // Helper function for process() function.
@@ -100,34 +99,30 @@ class Api extends CI_Controller
         // all dates are unix timestamp.
         $events = [];
         $status = 'ok';
-        if($args[0] === 'date') {
+        if ('date' === $args[0]) {
             $from = intval(__get__($args, 1, strtotime('today')));
-            $to = intval(__get__($args, 2, strtotime("+1 day", $from)));
+            $to = intval(__get__($args, 2, strtotime('+1 day', $from)));
             $from = dbDate($from);
             $to = dbDate($to);
             $events = getAllBookingsBetweenTheseDays($from, $to);
-        }
-        else if($args[0] === 'latest') {
+        } elseif ('latest' === $args[0]) {
             // We'll get twice as many events. Because we fetch requests as
             // well.
-            $numEvents = intval(__get__($args, 1, 100))/2;
+            $numEvents = intval(__get__($args, 1, 100)) / 2;
             $startFrom = intval(__get__($args, 2, 0));
             $events = getNumBookings($numEvents, $startFrom);
-        }
-        else if($args[0] === 'class') {
-            $this->send_data("ok", $dbChoices["events.class"]);
-        }
-        else
-        {
+        } elseif ('class' === $args[0]) {
+            $this->send_data('ok', $dbChoices['events.class']);
+        } else {
             $status = 'error';
-            $events['msg'] = "Unknow request: " . $args[0];
+            $events['msg'] = 'Unknow request: ' . $args[0];
         }
 
         $this->send_data($events, $status);
     }
 
     // Get charts.
-    public function charts() 
+    public function charts()
     {
         $args = func_get_args();
 
@@ -137,12 +132,12 @@ class Api extends CI_Controller
         //     return;
         // }
 
-        if($args[0] === 'all') {
+        if ('all' === $args[0]) {
             $charts = getCharts();
             $this->send_data($charts, 'ok');
+
             return;
         }
-
     }
 
     /* --------------------------------------------------------------------------*/
@@ -152,157 +147,160 @@ class Api extends CI_Controller
      *    - /info/news
      *    - /info/venues/available/[all|venueid]
      *    - /info/bmv/bookingclasses
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function info()
     {
         $args = func_get_args();
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
-        }
-        else if($args[0] === 'flashcards') {
+        } elseif ('flashcards' === $args[0]) {
             $data = getPublicEventsOnThisDay('today');
             $data = array_filter(
                 $data,
                 function ($ev) {
-                    return (strtotime($ev['end_time']) >= strtotime('now'));
+                    return strtotime($ev['end_time']) >= strtotime('now');
                 }
             );
             $tom = getPublicEventsOnThisDay('tomorrow');
             $data = array_merge($tom, $data);
             $cards = [];
-            foreach($data as $item)
-            {
-                $cards[] = [ 'title'=>$item['title']
-                    , 'date'=>$item['date']
-                    , 'time'=>$item['start_time']
-                    , 'venue'=>$item['venue']
+            foreach ($data as $item) {
+                $cards[] = ['title' => $item['title'], 'date' => $item['date'], 'time' => $item['start_time'], 'venue' => $item['venue'],
                 ];
             }
             $this->send_data($cards, 'ok');
+
             return;
-        }
-        else if($args[0] === 'venues') {
-            if($args[1] === 'availability') {
+        } elseif ('venues' === $args[0]) {
+            if ('availability' === $args[1]) {
                 $data = getVenuesWithStatusOnThisDayAndTime(
                     $_POST['date'],
                     $_POST['start_time'], $_POST['end_time']
                 );
                 $this->send_data($data, 'ok');
+
                 return;
             }
-        }
-
-        else if($args[0] === 'externalid') {
+        } elseif ('externalid' === $args[0]) {
             $externalID = explode('.', $args[1]);
-            if(count($externalID) != 2) {
+            if (2 != count($externalID)) {
                 $this->send_data([], 'ok');
+
                 return;
             }
             $tableName = $externalID[0];
             $id = $externalID[1];
             $info = getTableEntry(
                 $tableName, 'id,status',
-                ['id'=>$id, 'status'=>'VALID']
+                ['id' => $id, 'status' => 'VALID']
             );
             $this->send_data($info, 'ok');
+
             return;
-        }
-        else if($args[0] === 'bmv') {
-            if($args[1] === 'bookingclasses') {
-                $public = getTableEntry('config', 'id', ["id"=>'BOOKMYVENUE.CLASS']);
+        } elseif ('bmv' === $args[0]) {
+            if ('bookingclasses' === $args[1]) {
+                $public = getTableEntry('config', 'id', ['id' => 'BOOKMYVENUE.CLASS']);
                 $public = explode(',', __get__($public, 'value', ''));
 
-                $nopublic = getTableEntry('config', 'id', ["id"=>'BOOKMYVENUE.NOPUBLIC.CLASS']);
+                $nopublic = getTableEntry('config', 'id', ['id' => 'BOOKMYVENUE.NOPUBLIC.CLASS']);
                 $nopublic = explode(',', __get__($nopublic, 'value', ''));
+
                 $all = array_unique(array_merge($public, $nopublic));
-                $this->send_data(['all'=>$all, 'public'=>$public, 'nonpublic'=>$nopublic], "ok");
+
+                $this->send_data(['all' => $all, 'public' => $public, 'nonpublic' => $nopublic], 'ok');
+
                 return;
             }
-        }
-        else if($args[0] === 'aws_schedule') {
+        } elseif ('aws_schedule' === $args[0]) {
             $awses = getTentativeAWSSchedule();
             $data = [];
-            foreach($awses as &$aws)
-            {
+            foreach ($awses as &$aws) {
                 $info = getExtraAWSInfo($aws['speaker']);
                 $aws = array_merge($aws, $info);
                 $data[$aws['date']][] = $aws;
             }
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'repeatpat') {
+        } elseif ('repeatpat' === $args[0]) {
             $pat = base64_decode($args[1]);
             $data = repeatPatToDays($pat);
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'slot') {
+        } elseif ('slot' === $args[0]) {
             $slot = getSlotInfo($args[1]);
             $this->send_data($slot, 'ok');
+
             return;
         }
-        $this->send_data(['Unknown request'], "ok");
-        return;
+        $this->send_data(['Unknown request'], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis Search API.
      *
-     * @Returns Send array only. Do 
+     * @Returns Send array only. Do
      */
     /* ----------------------------------------------------------------------------*/
     public function search()
     {
         $args = func_get_args();
+
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        $key = getKey();
+        if (!$key) {
+            $this->send_data(['status' => false, msg => 'Not authenticated. Empty key'], 401);
+
+            return;
+        }
+
+        if (!authenticateAPI(getKey())) {
+            $this->send_data(['status' => false, msg => 'Bad key. Did you login?'], 401);
+
             return;
         }
 
         $q = urldecode($args[1]);
-        if($args[0] === 'awsspeaker') {
+        if ('awsspeaker' === $args[0]) {
             $logins = searchInLogins($q, "AND eligible_for_aws='YES'");
             $this->send_data_helper($logins);
+
             return;
-        }
-        else if($args[0] === 'speaker') {
+        } elseif ('speaker' === $args[0]) {
             $speakers = searchInSpeakers($q);
-            foreach($speakers as &$speaker)
-            {
+            foreach ($speakers as &$speaker) {
                 $speaker['email'] = __get__($speaker, 'email', '');
                 $speaker['html'] = speakerToHTML($speaker);
             }
             $this->send_data_helper($speakers);
+
             return;
-        }
-        else if($args[0] === 'host') {
+        } elseif ('host' === $args[0]) {
             $speakers = searchInSpeakers($q);
             $faculty = searchInFaculty($q);
             $this->send_data_helper(array_merge($speakers, $faculty));
+
             return;
-        }
-        else if($args[0] === 'faculty') {
+        } elseif ('faculty' === $args[0]) {
             $faculty = searchInFaculty($q);
             $this->send_data_helper($faculty);
+
             return;
-        }
-        else if($args[0] === 'login') {
+        } elseif ('login' === $args[0]) {
             $logins = searchInLogins($q);
             $this->send_data_helper($logins);
+
             return;
         }
-        else
-        {
-            $this->send_data(['Unsupported query']);
-            return;
-        }
+
+        $this->send_data(['Unsupported query']);
     }
 
     /* --------------------------------------------------------------------------*/
@@ -317,33 +315,34 @@ class Api extends CI_Controller
      *    - /courses/metadata
      *       Return metadata for all courses.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function courses()
     {
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $args = func_get_args();
-        if(count($args)==0) {
-            $args[] = "running";
+        if (0 == count($args)) {
+            $args[] = 'running';
         }
 
-        if($args[0] === 'running') {
+        if ('running' === $args[0]) {
             $year = __get__($args, 1, getCurrentYear());
             $semester = __get__($args, 2, getCurrentSemester());
             $data = getSemesterCourses($year, $semester);
 
             // For convinience, let user know if he/she can register for this
             // course.
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'register') {
+        } elseif ('register' === $args[0]) {
             $data = ['type' => strtoupper($args[2])];
             $data['student_id'] = getLogin();
             assert($args[1]);
@@ -351,341 +350,334 @@ class Api extends CI_Controller
             // We are sending base64 encoded string because course id can have
             // banned characters e.g. '&' in B&B
             $fs = splitAt(base64_decode($args[1]), '-');
-            assert(count($fs)==3);
+            assert(3 == count($fs));
 
             $course = getRunningCourseByID($fs[0], $fs[2], $fs[1]);
-            if(! $course) {
+            if (!$course) {
                 $res['success'] = false;
-                $res['msg'] = "Could not find a valid course: " + implode('-', $fs);
-                $this->send_data($res, "ok");
+                $res['msg'] = 'Could not find a valid course: ' + implode('-', $fs);
+                $this->send_data($res, 'ok');
             }
 
             // Do not send email when using APP.
             $res = handleCourseRegistration($course, $data, $data['type'], getLogin(), getLogin());
 
-            if($res['success']) {
+            if ($res['success']) {
                 $this->send_data($res, 'ok');
             } else {
                 $this->send_data($res, 'error');
             }
 
             $this->send_data($res, 'ok');
+
             return;
-        }
-        else if($args[0] === 'metadata') {
+        } elseif ('metadata' === $args[0]) {
             $cids = base64_decode(__get__($args, 1, base64_encode('all')));
-            if($cids === 'all') {
+            if ('all' === $cids) {
                 $data = [];
                 $metadata = getTableEntries('courses_metadata', 'id', "status='VALID'");
-                foreach($metadata as $m)
-                {
+                foreach ($metadata as $m) {
                     $m['instructors'] = getCourseInstructors($m['id']);
                     $data[$m['id']] = $m;
                 }
-            }
-            else
-            {
+            } else {
                 $data = [];
-                foreach(explode(',', $cids) as $cid) {
+                foreach (explode(',', $cids) as $cid) {
                     $data[$cid] = getCourseById($cid);
                 }
             }
 
             ksort($data);
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === "registration") {
+        } elseif ('registration' === $args[0]) {
             $crs = explode('-', base64_decode($args[1]));
             $data = getCourseRegistrations($crs[0], intval($crs[2]), $crs[1]);
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === "feedback") {
+        } elseif ('feedback' === $args[0]) {
             $data = [];
             $request = __get__($args, 1, '');
-            if($request === "questions") {
+            if ('questions' === $request) {
                 $data = getCourseFeedbackQuestions();
-                $this->send_data($data, "ok");
-                return;
-            }
-            else if($request === "get") {
-                $fs = explode('-', base64_decode($args[2]));
-                assert(count($fs)==3);
-                $data = getCourseFeedback($fs[2], $fs[1], $fs[0], getLogin());
-                $this->send_data($data, "ok");
-                return;
-            }
-            else if($request === "getthis") {
+                $this->send_data($data, 'ok');
 
+                return;
+            } elseif ('get' === $request) {
+                $fs = explode('-', base64_decode($args[2]));
+                assert(3 == count($fs));
+                $data = getCourseFeedback($fs[2], $fs[1], $fs[0], getLogin());
+                $this->send_data($data, 'ok');
+
+                return;
+            } elseif ('getthis' === $request) {
                 $year = $_POST['year'];
                 $semester = $_POST['semester'];
                 $cid = $_POST['course_id'];
                 $instructor_email = $_POST['instructor_email'];
                 $login = getLogin();
                 $data = getCourseThisFeedback($year, $semester, $cid, $login, $instructor_email);
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($request === "submit") {
+            } elseif ('submit' === $request) {
                 $data = $_POST;
                 $data['login'] = getLogin();
                 $res = submitThisFeedback($data);
-                $this->send_data($res, "ok");
-                return;
-            }
-            else {
-                $data = ["Unsupported request: $request"];
-                $this->send_data($data, "ok");
+                $this->send_data($res, 'ok');
+
                 return;
             }
 
             $data = ["Unsupported request: $request"];
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
+            return;
+
+            $data = ["Unsupported request: $request"];
+            $this->send_data($data, 'ok');
+
             return;
         }
-        else
-        {
-            $this->send_data(["Unknown request"], "error");
-            return;
-        }
+
+        $this->send_data(['Unknown request'], 'error');
     }
 
     // Only acadadmin can do these.
     public function course()
     {
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $login = getLogin();
-        if(! in_array('ACAD_ADMIN', getRoles($login))) {
-            $this->send_data([], "Forbidden");
+        if (!in_array('ACAD_ADMIN', getRoles($login))) {
+            $this->send_data([], 'Forbidden');
+
             return;
         }
 
         $args = func_get_args();
-        if($args[0] === 'metadata') {
-            if($args[1] === 'get') {
+        if ('metadata' === $args[0]) {
+            if ('get' === $args[1]) {
                 $cid = base64_decode($args[2]);
                 $data = getCourseById($cid);
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'update') {
+            } elseif ('update' === $args[1]) {
                 $res = updateCourseMetadata($_POST);
-                $this->send_data(['success'=>$res], "ok");
+                $this->send_data(['success' => $res], 'ok');
+
                 return;
-            }
-            else if($args[1] === 'add') {
+            } elseif ('add' === $args[1]) {
                 $isValid = true;
-                foreach(['id', 'name'] as $k) {
-                    if(! $_POST[$k]) {
+                foreach (['id', 'name'] as $k) {
+                    if (!$_POST[$k]) {
                         $isValid = false;
                     }
                 }
 
-                if($isValid) {
+                if ($isValid) {
                     $res = insertCourseMetadata($_POST);
-                    $this->send_data(['success'=>$res, 'payload'=>$_POST], "ok");
+                    $this->send_data(['success' => $res, 'payload' => $_POST], 'ok');
                 } else {
-                    $this->send_data(['success'=>'Invalid entry', 'payload'=>$_POST], "ok");
+                    $this->send_data(['success' => 'Invalid entry', 'payload' => $_POST], 'ok');
                 }
+
                 return;
-            }
-            else if($args[1] === 'delete') {
+            } elseif ('delete' === $args[1]) {
                 $cid = base64_decode($args[2]);
                 $_POST['id'] = $cid;
                 $_POST['status'] = 'INVALID';
                 $res = updateTable('courses_metadata', 'id', 'status', $_POST);
-                $this->send_data(['success'=>$res], "ok");
+                $this->send_data(['success' => $res], 'ok');
+
                 return;
-            }
-            else if($args[1] === 'deactivate') {
+            } elseif ('deactivate' === $args[1]) {
                 $cid = base64_decode($args[2]);
                 $_POST['id'] = $cid;
                 $_POST['status'] = 'DEACTIVATED';
                 $res = updateTable('courses_metadata', 'id', 'status', $_POST);
-                $this->send_data(['success'=>$res], "ok");
+                $this->send_data(['success' => $res], 'ok');
+
                 return;
-            }
-            else if($args[1] === 'activate') {
+            } elseif ('activate' === $args[1]) {
                 $cid = base64_decode($args[2]);
                 $_POST['id'] = $cid;
                 $_POST['status'] = 'VALID';
                 $res = updateTable('courses_metadata', 'id', 'status', $_POST);
-                $this->send_data(['success'=>$res], "ok");
+                $this->send_data(['success' => $res], 'ok');
+
                 return;
             }
-            else
-            {
-                $this->send_data(["Unknown request"], "error");
-                return;
-            }
-        }
-        else if($args[0] === 'running') {
+
+            $this->send_data(['Unknown request'], 'error');
+
+            return;
+        } elseif ('running' === $args[0]) {
             $endpoint = $args[1];
-            if($endpoint === 'update') {
+            if ('update' === $endpoint) {
                 $res = @addOrUpdateRunningCourse($_POST, 'update');
-                $this->send_data($res, "ok");
+                $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'add') {
+            } elseif ('add' === $endpoint) {
                 $res = @addOrUpdateRunningCourse($_POST, 'add');
-                $this->send_data($res, "ok");
+                $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'remove') {
+            } elseif ('remove' === $endpoint) {
                 $res = deleteRunningCourse($_POST);
-                $this->send_data($res, "ok");
+                $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'assignslotvenue') {
+            } elseif ('assignslotvenue' === $endpoint) {
                 $res = assignSlotVenueRunningCourse($_POST);
-                $this->send_data($res, "ok");
+                $this->send_data($res, 'ok');
+
                 return;
             }
-            else
-            {
-                $this->send_data(["Unknown endpoint slot/$endpoint"], "error");
-                return;
-            }
-        }
-        if($args[0] === 'slot') {
-            $endpoint = $args[1];
-            if($endpoint === 'all') {
-                $data = getSlots();
-                $this->send_data($data, "ok");
-                return;
-            }
-            else
-            {
-                $this->send_data(["Unknown endpoint slot/$endpoint"], "error");
-                return;
-            }
-        }
-        else
-        {
-            $this->send_data(["Unknown request"], "error");
+
+            $this->send_data(["Unknown endpoint slot/$endpoint"], 'error');
+
             return;
         }
+        if ('slot' === $args[0]) {
+            $endpoint = $args[1];
+            if ('all' === $endpoint) {
+                $data = getSlots();
+                $this->send_data($data, 'ok');
+
+                return;
+            }
+
+            $this->send_data(["Unknown endpoint slot/$endpoint"], 'error');
+
+            return;
+        }
+
+        $this->send_data(['Unknown request'], 'error');
     }
-
-
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis Journal club endpoint.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function jc()
     {
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $args = func_get_args();
-        if($args[0] === 'update') {
+        if ('update' === $args[0]) {
             $res = updateTable(
                 'jc_presentations', 'id',
                 'title,description,url,presentation_url', $_POST
             );
-            $this->send_data([$res?'Success':'Failed'], 'ok');
+            $this->send_data([$res ? 'Success' : 'Failed'], 'ok');
+
             return;
-        }
-        else if($args[0] === 'acknowledge') {
+        } elseif ('acknowledge' === $args[0]) {
             $_POST['acknowledged'] = 'YES';
             $_POST['id'] = $args[1];
             $res = updateTable('jc_presentations', 'id', 'acknowledged', $_POST);
-            $this->send_data([$res?'Success':'Failed'], 'ok');
+            $this->send_data([$res ? 'Success' : 'Failed'], 'ok');
+
             return;
-        }
-        else if($args[0] === 'info') {
+        } elseif ('info' === $args[0]) {
             $jcID = __get__($args, 1, 'all');
-            if($jcID !== 'all') {
+            if ('all' !== $jcID) {
                 $data = getTableEntry(
                     'journal_clubs', 'id,status',
-                    ["id"=>$jcID, 'status'=>'ACTIVE']
+                    ['id' => $jcID, 'status' => 'ACTIVE']
                 );
             } else {
                 $data = getTableEntries('journal_clubs', 'id', "status='ACTIVE'");
             }
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'subscriptions') {
+        } elseif ('subscriptions' === $args[0]) {
             $jcID = $args[1];
             $data = getTableEntries(
                 'jc_subscriptions', 'login',
                 "jc_id='$jcID' AND status='VALID'"
             );
             $this->send_data($data, 'ok');
+
             return;
         }
-        else
-        {
-            $this->send_data(['msg'=>"Unknown request", 'success'=>false], "ok");
-            return;
-        }
+
+        $this->send_data(['msg' => 'Unknown request', 'success' => false], 'ok');
     }
 
     public function jcadmin()
     {
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         // These requires JC ADMIN privileges.
-        if(! isJCAdmin(getLogin()) ) {
-            $this->send_data([msg=>"You are not an admin", 'success'=>false], 'ok');
+        if (!isJCAdmin(getLogin())) {
+            $this->send_data([msg => 'You are not an admin', 'success' => false], 'ok');
+
             return;
         }
 
         // JC ADMIN tasks.
         $args = func_get_args();
-        if($args[0] === 'remove') {
+        if ('remove' === $args[0]) {
             $_POST['status'] = 'INVALID';
             $_POST['id'] = $args[1];
             $res = removeJCPresentation($_POST);
             $this->send_data($res, 'ok');
+
             return;
-        }
-        else if($args[0] === 'update') {
+        } elseif ('update' === $args[0]) {
             $res = updateTable(
                 'jc_presentations', 'id',
                 'title,description,url,presentation_url', $_POST
             );
-            $this->send_data([$res?'Success':'Failed'], 'ok');
+            $this->send_data([$res ? 'Success' : 'Failed'], 'ok');
+
             return;
-        }
-        else if($args[0] === 'assign') {
+        } elseif ('assign' === $args[0]) {
             $_POST['date'] = dbDate($_POST['date']);
             $_POST['time'] = dbTime($_POST['time']);
             $res = assignJCPresentationToLogin($_POST['presenter'], $_POST);
             $this->send_data($res, 'ok');
+
             return;
-        }
-        else if($args[0] === 'unsubscribe') {
+        } elseif ('unsubscribe' === $args[0]) {
             $jcid = urldecode($args[1]);
             $login = urldecode($args[2]);
-            $data = ['jc_id' => $jcid, 'login'=>$login];
+            $data = ['jc_id' => $jcid, 'login' => $login];
             $res = unsubscribeJC($data);
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'subscribe') {
+        } elseif ('subscribe' === $args[0]) {
             $jcid = $args[1];
             $login = $args[2];
-            $res = subscribeJC(['jc_id'=>$jcid,  'login'=>$login]);
+            $res = subscribeJC(['jc_id' => $jcid,  'login' => $login]);
             $this->send_data($res, 'ok');
+
             return;
         }
     }
@@ -700,20 +692,21 @@ class Api extends CI_Controller
      *     - events/date/2019-03-01              On this date.
      *     - events/date/2019-03-01/2019-04-01   From this date to this date.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function events()
     {
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $args = func_get_args();
-        if(count($args)==0) {
-            $args[] = "latest";
+        if (0 == count($args)) {
+            $args[] = 'latest';
         }
         $this->process_events_requests($args);
     }
@@ -727,26 +720,27 @@ class Api extends CI_Controller
      *     - /aws/date/2019-03-01/2019-04-01    // Find AWS between these  dates.
      *     - /aws/vc_url/get                     // AWS remote url
      *     - /aws/vc_url/set                     // AWS remote url, set
-     *     - /aws/venue/change                  // Change AWS venue. 
-     * @Returns   
+     *     - /aws/venue/change                  // Change AWS venue.
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function aws()
     {
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $args = func_get_args();
-        if(count($args)==0) {
+        if (0 == count($args)) {
             $args = ['latest'];
         }
 
         $results = [];
         $status = 'ok';
-        if($args[0] === 'date') {
+        if ('date' === $args[0]) {
             $from = dbDate($args[1]);
             $to = dbDate(__get__($args, 2, strtotime('+14 day', strtotime($from))));
             $results = getTableEntries(
@@ -754,14 +748,13 @@ class Api extends CI_Controller
                 "date >= '$from' AND date < '$to'"
             );
         }
-        if($args[0] === 'id') {
+        if ('id' === $args[0]) {
             $id = $args[1];
             $results = getTableEntries(
                 'annual_work_seminars', 'date',
                 "id >= '$id'"
             );
-        }
-        else if($args[0] === 'latest') {
+        } elseif ('latest' === $args[0]) {
             $numEvents = __get__($args, 1, 6);
             $from = dbDate('today');
             // echo " x $from $numEvents ";
@@ -769,44 +762,39 @@ class Api extends CI_Controller
                 'upcoming_aws', 'date',
                 "date >= '$from'", '*', $numEvents
             );
-        }
-        else if($args[0] === "venue") {
-            if($args[1] === "change") {
-                $res = updateTable("upcoming_aws", "date", "venue,vc_url", $_POST);
+        } elseif ('venue' === $args[0]) {
+            if ('change' === $args[1]) {
+                $res = updateTable('upcoming_aws', 'date', 'venue,vc_url', $_POST);
                 // Also change in global config (deprecated)
                 $res = insertOrUpdateTable(
-                    'config', 'id,value', 'id,value', ['id'=>'AWS_VC_URL', 'value'=>$_POST['vc_url']]
+                    'config', 'id,value', 'id,value', ['id' => 'AWS_VC_URL', 'value' => $_POST['vc_url']]
                 );
-                $this->send_data(["status"=>$res], "ok");
+                $this->send_data(['status' => $res], 'ok');
+
                 return;
             }
-            else {
-                $this->send_data(["Unsupported endpoint: " . json_encode($args)], "ok");
-                return;
-            }
-        }
-        else if($args[0] === "vc_url") {
+
+            $this->send_data(['Unsupported endpoint: ' . json_encode($args)], 'ok');
+
+            return;
+        } elseif ('vc_url' === $args[0]) {
             // Deprecated. Each AWS gets its own VC_URL. This field still works
             // as a default value. Remove it in the future.
-            if($args[1] === "get") {
+            if ('get' === $args[1]) {
                 // get current AWS VC url from global config.
                 $res = ['AWS_VC_URL' => getConfigValue('AWS_VC_URL')];
-                return $this->send_data($res, "ok");
-            }
-            else if($args[1] === "set") {
+
+                return $this->send_data($res, 'ok');
+            } elseif ('set' === $args[1]) {
                 // set AWS VC url globally.
-                $res = ['success' => insertOrUpdateTable('config', 'id,value', 'id,value'
-                    , ["id"=>"AWS_VC_URL", "value"=>$_POST['AWS_VC_URL']])
-                    , 'status' => 'ok'];
+                $res = ['success' => insertOrUpdateTable('config', 'id,value', 'id,value', ['id' => 'AWS_VC_URL', 'value' => $_POST['AWS_VC_URL']]), 'status' => 'ok'];
                 $this->send_data($res, $status);
             }
-        }
-        else {
+        } else {
             $status = 'warning';
         }
         $this->send_data($results, $status);
     }
-
 
     /* --------------------------------------------------------------------------*/
     /**
@@ -820,7 +808,7 @@ class Api extends CI_Controller
      *   For following venues is a csv list of venues ID.
      *   - /venue/status/{venues}  -- Will query for 'now()'.
      *   - /venue/status/{venues}/startDateTime/endDateTime
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function venue()
@@ -828,8 +816,9 @@ class Api extends CI_Controller
         // This require authentication.
         $data = [];
         $args = func_get_args();
-        if(count($args) == 0) {
-            $this->send_data(["Invalid URL"], "error");
+        if (0 == count($args)) {
+            $this->send_data(['Invalid URL'], 'error');
+
             return;
         }
         $this->process_venue_request($args);
@@ -840,46 +829,46 @@ class Api extends CI_Controller
     {
         // List of venues are available to all even without authentication.
         // Required for MAP to work.
-        if($args[0] === 'list') {
+        if ('list' === $args[0]) {
             $types = __get__($args, 1, 'all');
             // For courses.
-            if($types === 'course') {
+            if ('course' === $types) {
                 $types = 'LECTURE HALL,AUDITORIUM, REMOTE VC';
-            }
-            else if($types === 'aws') {
+            } elseif ('aws' === $types) {
                 $types = 'LECTURE HALL,AUDITORIUM,REMOTE VC';
             }
             $data = [];
-            foreach(explode(',', $types) as $type) {
+            foreach (explode(',', $types) as $type) {
                 $type = urldecode($type);
                 $data = array_merge($data, getVenuesByType($type));
             }
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
         }
 
         // Rest of endpoints needs authentication data.
-        if(! authenticateAPI(getKey(), getLogin())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey(), getLogin())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
-        }
-        else if($args[0] === 'info') {
+        } elseif ('info' === $args[0]) {
             $id = __get__($args, 1, 0);
             $data = getVenueById($id);
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'status') {
+        } elseif ('status' === $args[0]) {
             $data = [];
             // Get the status of given venus Venues id are send by csv.
             $venues = explode(',', __get__($args, 1, 'all'));
             // Select all venues.
-            if(! $venues || ($venues[0] == 'all')) {
+            if (!$venues || ('all' == $venues[0])) {
                 $venues = getVenuesNames();
             }
 
             $startDateTime = intval(__get__($args, 2, strtotime('now')));
-            $endDateTime = intval(__get__($args, 3, $startDateTime+15*3600));
+            $endDateTime = intval(__get__($args, 3, $startDateTime + 15 * 3600));
 
             // Only for a day.
             $date = dbDate($startDateTime);
@@ -887,10 +876,9 @@ class Api extends CI_Controller
             $end_time = dbTime($endDateTime);
 
             $res = [];
-            foreach($venues as $venue)
-            {
+            foreach ($venues as $venue) {
                 $eventsAndReqs = getVenueBookingsOnDateTime($venue, $date, $time, $end_time);
-                $res[] = ['id'=>$venue, 'events'=>$eventsAndReqs];
+                $res[] = ['id' => $venue, 'events' => $eventsAndReqs];
                 $data[$venue] = $eventsAndReqs;
             }
 
@@ -899,23 +887,21 @@ class Api extends CI_Controller
             $data['REQ_END_TIME'] = $end_time;
             $data['venues'] = $res;
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'book') {
-            // Book a venue.
+        } elseif ('book' === $args[0]) {
+            // Book a venue. bookVenue send data back to user.
             $this->bookVenue(
                 base64_decode($args[1]),
                 intval(__get__($args, 2, 0)),
                 intval(__get__($args, 3, 0)),
                 $_POST
             );
+
             return;
         }
-        else
-        {
-            $this->send_data(["unknown endpoint" . $args[0]], "ok");
-            return;
-        }
+
+        $this->send_data(['unknown endpoint' . $args[0]], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
@@ -923,29 +909,29 @@ class Api extends CI_Controller
      * @Synopsis Helper function to book venue.
      *
      * @Param $venueid
-     * @Param $startDateTime 
-     * @Param $endDateTime   
+     * @Param $startDateTime
+     * @Param $endDateTime
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
-    private function bookVenue(string $venueId, int $startDateTime=0
-        , int $endDateTime=0, array $data
+    private function bookVenue(string $venueId, int $startDateTime = 0, int $endDateTime = 0, array $data
     ) {
-        if($startDateTime == 0) {
+        if (0 == $startDateTime) {
             $startDateTime = __get__($data, 'start_date_time', 0);
         }
-        if($endDateTime == 0) {
+        if (0 == $endDateTime) {
             $endDateTime = __get__($data, 'end_date_time', 0);
         }
 
-        $startDateTime = is_numeric($startDateTime)?$startDateTime:intval($startDateTime);
-        $endDateTime = is_numeric($endDateTime)?$endDateTime:intval($endDateTime);
+        $startDateTime = is_numeric($startDateTime) ? $startDateTime : intval($startDateTime);
+        $endDateTime = is_numeric($endDateTime) ? $endDateTime : intval($endDateTime);
 
-        if((! $venueId) || ($startDateTime >= $endDateTime)) {
+        if ((!$venueId) || ($startDateTime >= $endDateTime)) {
             $data = ['msg' => "Could not book for: venue=$venue, startDateTime=$startDateTime
                 and endTime=$endTime"];
-            $this->send_data($data, "error");
+            $this->send_data($data, 'error');
+
             return;
         }
 
@@ -955,19 +941,16 @@ class Api extends CI_Controller
         // Now check if 'dates' or 'repeat_pat is given.
         $request = array_merge(
             $data,
-            ['venue'=>$venueId, 'date' => dbDate($startDateTime)
-            , 'start_time' => dbTime($startDateTime)
-            , 'end_time' => dbTime($endDateTime)]
+            ['venue' => $venueId, 'date' => dbDate($startDateTime), 'start_time' => dbTime($startDateTime), 'end_time' => dbTime($endDateTime)]
         );
 
-        $ret = submitBookingRequest($request);
-        $status = $ret['success']?'ok':'error';
+        $ret = submitBookingRequest($request, getLogin());
+        $status = $ret['success'] ? 'ok' : 'error';
         // $ret['payload'] = json_encode($request);
         $this->send_data($ret, $status);
-        return;
     }
 
-    public function authenticate( )
+    public function authenticate()
     {
         $user = __get__($_POST, 'login', 'NA');
         $password = __get__($_POST, 'password', 'NA');
@@ -978,69 +961,70 @@ class Api extends CI_Controller
 
         // If $res is true then return a token. User can use this token to login
         // as many time as she likes.
-        if($res) {
+        if ($res) {
             $token = __get__(getUserKey($user), 'apikey', '');
-            if(! $token) {
+            if (!$token) {
                 $token = genererateNewKey($user);
             }
             $gmapkey = getConfigValue('GOOGLE_MAP_API_KEY');
         }
 
         $this->send_data(
-            ['apikey'=>$token, 'gmapapikey'=>$gmapkey
-            , 'authenticated'=>$res?true:false], $token?'ok':'erorr'
+            ['apikey' => $token, 'gmapapikey' => $gmapkey, 'authenticated' => $res ? true : false], $token ? 'ok' : 'erorr'
         );
-        return;
     }
 
-    public function authenticate_by_key( )
+    public function authenticate_by_key()
     {
         $user = $_POST['user'];
         $key = $_POST['HIPPO-API-KEY'];
-        if(authenticateAPI($key, $user)) {
-            $this->send_data(['authenticated' => true ], "ok");
+        if (authenticateAPI($key, $user)) {
+            $this->send_data(['authenticated' => true], 'ok');
         } else {
-            $this->send_data(['authenticated' => false ], "error");
+            $this->send_data(['authenticated' => false], 'error');
         }
     }
 
     /* --------------------------------------------------------------------------*/
     /**
-     * @Synopsis  
+     * @Synopsis
      *
      * One can query key value pair from config table. Make sure not to put
-     * any sensitivie information in config table. 
+     * any sensitivie information in config table.
      * TODO: I may have to redo this table.
      *
      *   - /api/config/key e.g.
      *   - /api/config/bookmyvenue.class
-     *   - /api/config/evnet.class 
+     *   - /api/config/evnet.class
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
-    public function config( )
+    public function config()
     {
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $args = func_get_args();
-        if(in_array(strtoupper($args[0]), ['CLIENT_SECRET', 'GOOGLE_MAP_API_KEY'])) {
-            $this->send_data(["Not allowed"], "ok");
+        if (in_array(strtoupper($args[0]), ['CLIENT_SECRET', 'GOOGLE_MAP_API_KEY'])) {
+            $this->send_data(['Not allowed'], 'ok');
+
             return;
         }
 
-        if(__get__($args, 0, '') ) {
+        if (__get__($args, 0, '')) {
             $id = $args[0];
-            $data = getTableEntry('config', 'id', ["id"=>$id]);
-            $this->send_data($data, "ok");
+            $data = getTableEntry('config', 'id', ['id' => $id]);
+            $this->send_data($data, 'ok');
+
             return;
         }
 
-        $this->send_data(["Empty query"], "ok");
+        $this->send_data(['Empty query'], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
@@ -1051,17 +1035,18 @@ class Api extends CI_Controller
      *  - /api/mybooking/delete/event/gid.[eid] -- delete request gid.rid
      */
     /* ----------------------------------------------------------------------------*/
-    public function mybooking( )
+    public function mybooking()
     {
         // Only need api key
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
         $args = func_get_args();
 
         $args = func_get_args();
-        if($args[0] === 'list') {
+        if ('list' === $args[0]) {
             $startDate = dbDate(intval(__get__($args, 1, strtotime('today'))));
             $login = getLogin();
             $requests = getRequestOfUser($login);
@@ -1070,73 +1055,70 @@ class Api extends CI_Controller
             // Group them by gid.
             $requestsGrouped = [];
             $eventsGrouped = [];
-            foreach($requests as $r) {
+            foreach ($requests as $r) {
                 $requestsGrouped[$r['gid']][] = $r;
             }
-            foreach($events as $e) {
+            foreach ($events as $e) {
                 $eventsGrouped[$e['gid']][] = $e;
             }
 
             $this->send_data(
-                ["date"=>$startDate, "requests"=>$requestsGrouped , "events"=>$eventsGrouped],
-                "ok"
+                ['date' => $startDate, 'requests' => $requestsGrouped, 'events' => $eventsGrouped],
+                'ok'
             );
+
             return;
         }
 
         // Delete given request of events.
-        if($args[0] === 'delete') {
+        if ('delete' === $args[0]) {
             $login = $_POST['login'];
-            if($args[1] === 'request') {
+            if ('request' === $args[1]) {
                 $data = explode('.', $args[2]);
                 $gid = $data[0];
                 $rid = __get__($data, 1, '');
-                if($rid) {
+                if ($rid) {
                     $res = changeRequestStatus($gid, $rid, 'CANCELLED');
-                    $this->send_data(['success'=>$res, 'msg'=>"Request $gid.$rid is deleted"], "ok");
+                    $this->send_data(['success' => $res, 'msg' => "Request $gid.$rid is deleted"], 'ok');
+
                     return;
                 }
-                else
-                {
-                    // delete the whole group.
-                    $res = changeStatusOfRequests($gid, 'CANCELLED');
-                    $this->send_data(
-                        ['success'=>$res
-                        , 'msg'=>"Request group $gid is deleted"],
-                        "ok"
+
+                // delete the whole group.
+                $res = changeStatusOfRequests($gid, 'CANCELLED');
+                $this->send_data(
+                        ['success' => $res, 'msg' => "Request group $gid is deleted"],
+                        'ok'
                     );
-                    return;
-                }
-            }
-            else if($args[1] == 'event') {
+
+                return;
+            } elseif ('event' == $args[1]) {
                 $data = explode('.', $args[2]);
                 $gid = $data[0];
                 $login = $_POST['login'];
                 $eid = __get__($data, 1, '');
-                if($eid) {
+                if ($eid) {
                     $res = changeStatusOfEvent($gid, $eid, $login, 'CANCELLED');
                     $this->send_data(
-                        ['success'=>$res, 
-                        'msg'=>"Event $gid.$eid is cancelled"], "ok"
+                        ['success' => $res,
+                        'msg' => "Event $gid.$eid is cancelled", ], 'ok'
                     );
+
                     return;
                 }
-                else
-                {
-                    // delete the whole group.
-                    $res = changeStatusOfEventGroup($gid, $login, 'CANCELLED');
-                    $this->send_data(
-                        ['msg'=>"Event group $gid is cancelled."
-                        , 'success'=>$res], "ok"
+
+                // delete the whole group.
+                $res = changeStatusOfEventGroup($gid, $login, 'CANCELLED');
+                $this->send_data(
+                        ['msg' => "Event group $gid is cancelled.", 'success' => $res], 'ok'
                     );
-                    return;
-                }
-            }
-            else
-            {
-                $this->send_data(['success'=>false, 'msg'=>"Not implemented"], "ok");
+
                 return;
             }
+
+            $this->send_data(['success' => false, 'msg' => 'Not implemented'], 'ok');
+
+            return;
         }
     }
 
@@ -1145,7 +1127,7 @@ class Api extends CI_Controller
      * @Synopsis Return public events from a given date.
      *  - /publicevents/[date=today]/[numtofetch=20]/[offset=0]
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function publicevents()
@@ -1163,14 +1145,13 @@ class Api extends CI_Controller
         $offset = intval(__get__($args, 2, 0));
         $data = getUpcomingPublicEventsFormatted($startDate, $limit, $offset);
         $this->send_data($data, 'ok');
-        return;
     }
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis Transport details.
      *    - /api/transport/day/[from]/[to]/[vehicle]
-     *    e.g., 
+     *    e.g.,
      *       - /api/tranport/day/MANDARA/NCBS/Buggy
      */
     /* ----------------------------------------------------------------------------*/
@@ -1179,7 +1160,7 @@ class Api extends CI_Controller
         $args = func_get_args();
         $firstArg = __get__($args, 0, 'all');
 
-        if($firstArg === 'upcoming') {
+        if ('upcoming' === $firstArg) {
             $day = date('D', strtotime('today'));
             $nowTime = dbTime('now');
             $endTime = dbTime('+2 hours');
@@ -1190,12 +1171,13 @@ class Api extends CI_Controller
                 GROUP BY vehicle,pickup_point,drop_point"
             );
             $this->send_data($data, 'ok');
+
             return;
         }
 
         $day = $firstArg;
         $where = "status='VALID'";
-        if($day != 'all') {
+        if ('all' != $day) {
             $where .= " AND day='$day'";
         }
 
@@ -1203,39 +1185,35 @@ class Api extends CI_Controller
         $dropPoint = __get__($args, 2, '');
         $vehicle = __get__($args, 3, '');
 
-        if($pickupPoint ) {
+        if ($pickupPoint) {
             $where .= " AND pickup_point='$pickupPoint' ";
         }
-        if($dropPoint ) {
+        if ($dropPoint) {
             $where .= " AND drop_point='$dropPoint' ";
         }
-        if($vehicle ) {
+        if ($vehicle) {
             $where .= " AND vehicle='$vehicle' ";
         }
 
         $data = getTableEntries('transport', 'day,pickup_point,trip_start_time', $where);
         $timetableMap = [];
-        foreach( $data as $d )
-        {
-            $timetableMap[strtolower($d['day'])]
-                [strtolower($d['pickup_point'])]
-                [strtolower($d['drop_point'])][] = $d;
+        foreach ($data as $d) {
+            $timetableMap[strtolower($d['day'])][strtolower($d['pickup_point'])][strtolower($d['drop_point'])][] = $d;
         }
 
         // Get routes.
-        $routes = executeQuery( 
+        $routes = executeQuery(
             "SELECT DISTINCT pickup_point,drop_point,url FROM transport WHERE status='VALID'"
         );
-        $res = ['timetable'=> $timetableMap, 'routes'=>$routes];
+        $res = ['timetable' => $timetableMap, 'routes' => $routes];
         $this->send_data($res, 'ok');
-        return;
     }
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis Transport details.
      *    - /api/transportation/timetable/day/[from]/[to]/[vehicle]
-     *    e.g., 
+     *    e.g.,
      *       - /api/tranport/schedule/day/MANDARA/NCBS/Buggy
      *    - /api/transportation/vehicle/[list|remove|add|update]
      *    - /api/transportation/routes/[list|remove|add|update]
@@ -1243,171 +1221,167 @@ class Api extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public function transportation()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $login = getLogin();
         $roles = getRoles($login);
-        if(! in_array('SERVICES_ADMIN', $roles)) {
-            $this->send_data([$roles], "Forbidden.");
+        if (!in_array('SERVICES_ADMIN', $roles)) {
+            $this->send_data([$roles], 'Forbidden.');
+
             return;
         }
 
         $args = func_get_args();
         $endpoint = $args[0];
 
-        if($endpoint === 'timetable') {
+        if ('timetable' === $endpoint) {
             $days = strtolower(__get__($args, 1, 'all'));
             $where = "status='VALID'";
-            if($days != 'all') {
+            if ('all' != $days) {
                 $where .= ' AND (';
                 $temp = [];
-                foreach(explode(',', $days) as $day) {
+                foreach (explode(',', $days) as $day) {
                     $temp[] = " day='$day' ";
                 }
-                $where .= implode(" OR ", $temp);
-                $where .= " )";
+                $where .= implode(' OR ', $temp);
+                $where .= ' )';
             }
 
             $pickupPoint = __get__($args, 2, '');
             $dropPoint = __get__($args, 3, '');
             $vehicle = __get__($args, 4, '');
 
-            if($pickupPoint ) {
+            if ($pickupPoint) {
                 $where .= " AND pickup_point='$pickupPoint' ";
             }
-            if($dropPoint ) {
+            if ($dropPoint) {
                 $where .= " AND drop_point='$dropPoint' ";
             }
-            if($vehicle ) {
+            if ($vehicle) {
                 $where .= " AND vehicle='$vehicle' ";
             }
 
             $data = getTableEntries('transport', 'vehicle,trip_start_time,day', $where);
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($endpoint === 'vehicle') {
-            if($args[1] === 'list') {
+        } elseif ('vehicle' === $endpoint) {
+            if ('list' === $args[1]) {
                 $res = executeQuery("SELECT DISTINCT vehicle FROM transport WHERE status='VALID'");
                 $this->send_data(
                     array_map(
                         function ($x) {
-                            return $x['vehicle']; 
+                            return $x['vehicle'];
                         }, $res
                     ), 'ok'
                 );
+
                 return;
-            }
-            else if($args[1] === 'add') {
-                $res = ["Unsupported endpoint $endpoint/".$args[1]];
+            } elseif ('add' === $args[1]) {
+                $res = ["Unsupported endpoint $endpoint/" . $args[1]];
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'remove') {
-                $res = ["Unsupported endpoint $endpoint/".$args[1]];
+            } elseif ('remove' === $args[1]) {
+                $res = ["Unsupported endpoint $endpoint/" . $args[1]];
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'update') {
-                $res = ["Unsupported endpoint $endpoint/".$args[1]];
+            } elseif ('update' === $args[1]) {
+                $res = ["Unsupported endpoint $endpoint/" . $args[1]];
                 $this->send_data($res, 'ok');
+
                 return;
             }
-            else
-            {
-                $res = ["unknown endpoint $endpoint/".$args[1]];
+
+            $res = ["unknown endpoint $endpoint/" . $args[1]];
+            $this->send_data($res, 'ok');
+
+            return;
+        } elseif ('schedule' === $endpoint) {
+            if ('list' === $args[1]) {
+                $res = ["unknown endpoint $endpoint/" . $args[1]];
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-        }
-        else if($endpoint === 'schedule') {
-            if($args[1] === 'list') {
-                $res = ["unknown endpoint $endpoint/".$args[1]];
-                $this->send_data($res, 'ok');
-                return;
-            }
-            else if($args[1] === 'add') {
+            } elseif ('add' === $args[1]) {
                 $res = [];
+
                 try {
                     $res = addNewTransportationSchedule($_POST);
-                }
-                catch (Exception $e) {
-                    $res = ['success'=>false, 'msg' => $e->getMessage()];
+                } catch (Exception $e) {
+                    $res = ['success' => false, 'msg' => $e->getMessage()];
                 }
 
-                if(!$res['success']) {
+                if (!$res['success']) {
                     $res['payload'] = $_POST;
                 }
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'remove' || $args[1] === 'delete') {
-                if(intval($args[2]) < 0) {
-                    $this->send_data(["Invalid entry."], 'ok');
+            } elseif ('remove' === $args[1] || 'delete' === $args[1]) {
+                if (intval($args[2]) < 0) {
+                    $this->send_data(['Invalid entry.'], 'ok');
+
                     return;
                 }
-                foreach(explode(',', $args[2]) as $id) {
-                    $data = ['id'=> $id];
+                foreach (explode(',', $args[2]) as $id) {
+                    $data = ['id' => $id];
                     $res = deleteFromTable('transport', 'id', $data);
                 }
-                $this->send_data(['success'=>$res], 'ok');
+                $this->send_data(['success' => $res], 'ok');
+
                 return;
-            }
-            else if($args[1] === 'update') {
+            } elseif ('update' === $args[1]) {
                 $keys = 'trip_start_time,trip_end_time,day,comment,day,';
-                $keys .= "edited_by,last_modified_on";
+                $keys .= 'edited_by,last_modified_on';
                 $_POST['last_modified_on'] = strtotime('now');
                 $_POST['edited_by'] = getLogin();
                 $res = updateTable('transport', 'id', $keys, $_POST);
-                $this->send_data(['success'=>$res], 'ok');
+                $this->send_data(['success' => $res], 'ok');
+
                 return;
             }
-            else
-            {
-                $res = ["unknown endpoint $endpoint/".$args[1]];
-                $this->send_data($res, 'ok');
-                return;
-            }
-        }
-        else if($endpoint === 'route') {
-            if($args[1] === 'list') {
-                $routes = executeQuery( 
+
+            $res = ["unknown endpoint $endpoint/" . $args[1]];
+            $this->send_data($res, 'ok');
+
+            return;
+        } elseif ('route' === $endpoint) {
+            if ('list' === $args[1]) {
+                $routes = executeQuery(
                     "SELECT DISTINCT pickup_point,drop_point,url FROM transport WHERE status='VALID'"
                 );
                 $this->send_data($routes, 'ok');
+            } elseif ('add' === $args[1]) {
+                $res = ["unknown endpoint $endpoint/" . $args[1]];
+                $this->send_data($res, 'ok');
 
-            }
-            else if($args[1] === 'add') {
-                $res = ["unknown endpoint $endpoint/".$args[1]];
-                $this->send_data($res, 'ok');
                 return;
-            }
-            else if($args[1] === 'remove') {
-                $res = ["unknown endpoint $endpoint/".$args[1]];
+            } elseif ('remove' === $args[1]) {
+                $res = ["unknown endpoint $endpoint/" . $args[1]];
                 $this->send_data($res, 'ok');
-                return;
 
-            }
-            else if($args[1] === 'update') {
-                $res = ["unknown endpoint $endpoint/".$args[1]];
-                $this->send_data($res, 'ok');
                 return;
+            } elseif ('update' === $args[1]) {
+                $res = ["unknown endpoint $endpoint/" . $args[1]];
+                $this->send_data($res, 'ok');
 
-            }
-            else
-            {
-                $res = ["unknown endpoint $endpoint/".$args[1]];
+                return;
+            } else {
+                $res = ["unknown endpoint $endpoint/" . $args[1]];
                 $this->send_data($res, 'ok');
+
                 return;
             }
-        }
-        else 
-        {
+        } else {
             $res = ["unknown endpoint $endpoint"];
             $this->send_data($res, 'ok');
+
             return;
         }
     }
@@ -1418,34 +1392,30 @@ class Api extends CI_Controller
      *
      * @Param $query
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
-    public function ldap( $query )
+    public function ldap($query)
     {
         // Only need api key
-        if(! authenticateAPI(getKey(), getLogin())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey(), getLogin())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
         $res = getUserInfoFromLdapRelaxed($query);
         $data = [];
-        foreach($res as $ldap)
-        {
-            if(strtolower($ldap['is_active']) != 'true') {
+        foreach ($res as $ldap) {
+            if ('true' != strtolower($ldap['is_active'])) {
                 continue;
             }
 
             $phone = '';
-            if(is_numeric(__get__($ldap, 'extension', 'NA'))) {
+            if (is_numeric(__get__($ldap, 'extension', 'NA'))) {
                 $phone = '+91 80 2366 ' . $ldap['extension'];
             }
-            $data[] = [ 
-                'name'=> implode(' ', [__get__($ldap, 'fname', ''), __get__($ldap, 'lname', '')])
-                , 'email'=>$ldap['email'] 
-                , 'phone' => $phone
-                , 'group' => $ldap['laboffice']
-                , 'extension' => $ldap['extension']
+            $data[] = [
+                'name' => implode(' ', [__get__($ldap, 'fname', ''), __get__($ldap, 'lname', '')]), 'email' => $ldap['email'], 'phone' => $phone, 'group' => $ldap['laboffice'], 'extension' => $ldap['extension'],
             ];
         }
         $this->send_data($data, 'ok');
@@ -1455,7 +1425,7 @@ class Api extends CI_Controller
     /**
      * @Synopsis API related to user profile.
      *
-     * @Param 
+     * @Param
      *   - /me/profile
      *   - /me/photo
      *   - /me/aws
@@ -1465,66 +1435,66 @@ class Api extends CI_Controller
      *   - /me/talk
      *             /register
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function me()
     {
         // Only need api key
-        if(! authenticateAPI(getKey(), getLogin())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey(), getLogin())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $user = getLogin();
         $args = func_get_args();
 
-        if($args[0] === 'profile') {
+        if ('profile' === $args[0]) {
             $endpoint = __get__($args, 1, 'get');
-            if($endpoint === 'get') {
+            if ('get' === $endpoint) {
                 $ldap = getUserInfo($user, true);
                 $remove = ['fname', 'lname', 'mname', 'roles'];
                 $data = array_diff_key($ldap, array_flip($remove));
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
-            }
-            elseif($endpoint === 'update') {
-                $data = ['success'=>false, 'msg'=>''];
+            } elseif ('update' === $endpoint) {
+                $data = ['success' => false, 'msg' => ''];
                 $editables = array_keys(getProfileEditables());
                 $_POST['login'] = getLogin();
                 $res = updateTable('logins', 'login', $editables, $_POST);
-                if($res) {
+                if ($res) {
                     $data['success'] = true;
                 } else {
                     $data['msg'] .= 'Failed to update profile.';
                 }
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
+                return;
+            } elseif ('editables' === $endpoint) {
+                $this->send_data(getProfileEditables(), 'ok');
+
                 return;
             }
-            elseif($endpoint === 'editables') {
-                $this->send_data(getProfileEditables(), "ok");
-                return;
-            }
-            else
-            {
-                $this->send_data(["unknown request $endpoint."], "ok");
-                return;
-            }
-        }
-        else if($args[0] === 'roles') {
+
+            $this->send_data(["unknown request $endpoint."], 'ok');
+
+            return;
+        } elseif ('roles' === $args[0]) {
             $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
-            $this->send_data($data[0], "ok");
+            $this->send_data($data[0], 'ok');
+
             return;
-        }
-        else if($args[0] === 'photo') {
+        } elseif ('photo' === $args[0]) {
             $pic = getUserPhotoB64(getLogin());
-            $this->send_data(['base64'=>$pic], "ok");
+            $this->send_data(['base64' => $pic], 'ok');
+
             return;
-        }
-        else if($args[0] === 'request') {
+        } elseif ('request' === $args[0]) {
             $params = explode('.', $args[1]);
             $where = 'gid';
-            if(intval(__get__($params, 1, -1)) >= 0) {
+            if (intval(__get__($params, 1, -1)) >= 0) {
                 $where .= ',rid';
             }
             $res = updateTable(
@@ -1533,13 +1503,13 @@ class Api extends CI_Controller
                 'title,description,is_public_event,class',
                 $_POST
             );
-            $this->send_data(['success'=>$res, 'msg'=>'Success'], "ok");
+            $this->send_data(['success' => $res, 'msg' => 'Success'], 'ok');
+
             return;
-        }
-        else if($args[0] === 'event') {
+        } elseif ('event' === $args[0]) {
             $params = explode('.', $args[1]);
             $where = 'gid';
-            if(intval(__get__($params, 1, -1)) >= 0) {
+            if (intval(__get__($params, 1, -1)) >= 0) {
                 $where .= ',eid';
             }
             $res = updateTable(
@@ -1548,122 +1518,121 @@ class Api extends CI_Controller
                 'title,description,is_public_event,class,vc_url,url',
                 $_POST
             );
-            $this->send_data(['success'=>$res, 'msg'=>'Success'], "ok");
+            $this->send_data(['success' => $res, 'msg' => 'Success'], 'ok');
+
             return;
-        }
-        else if($args[0] === 'roles') {
+        } elseif ('roles' === $args[0]) {
             $info = getUserInfo($user, true);
             $data = explode(',', $info['roles']);
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'aws') {
+        } elseif ('aws' === $args[0]) {
             $data = getAwsOfSpeaker($user);
             $upcoming = getUpcomingAWSOfSpeaker($user);
-            if($upcoming) {
+            if ($upcoming) {
                 $data[] = $upcoming;
             }
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'acknowledge_aws') {
+        } elseif ('acknowledge_aws' === $args[0]) {
             $user = getLogin();
             $awsID = $args[1];
             $res = updateTable(
                 'upcoming_aws', 'id,speaker', 'acknowledged',
-                ['id'=>$awsID, 'speaker'=>$user, 'acknowledged'=>'YES']
+                ['id' => $awsID, 'speaker' => $user, 'acknowledged' => 'YES']
             );
-            $this->send_data(['res'=>$res], 'ok');
+            $this->send_data(['res' => $res], 'ok');
+
             return;
-        }
-        else if($args[0] === 'talk') {
-            if($args[1] === 'register' || $args[1] === 'add') {
+        } elseif ('talk' === $args[0]) {
+            if ('register' === $args[1] || 'add' === $args[1]) {
                 $_POST['created_by'] = getLogin();
                 $_POST['created_on'] = dbDateTime('now');
                 $_POST['speaker'] = speakerName($_POST['speaker_id']);
                 $data = addNewTalk($_POST);
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'all') {
+            } elseif ('all' === $args[1]) {
                 $data = getMyTalks(getLogin());
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'upcoming' || $args[1] === 'unscheduled') {
+            } elseif ('upcoming' === $args[1] || 'unscheduled' === $args[1]) {
                 $data = getMyUnscheduledTalks(getLogin());
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'cancel') {
+            } elseif ('cancel' === $args[1]) {
                 $data = cancelTalk($args[2]);
                 $this->send_data($data, 'ok');
+
                 return;
             }
-            $this->send_data(["unknown requests"], 'ok');
+            $this->send_data(['unknown requests'], 'ok');
+
             return;
-        }
-        else if($args[0] === 'course') {
+        } elseif ('course' === $args[0]) {
             $data = getMyAllCourses($user);
             ksort($data);
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'jc') {
+        } elseif ('jc' === $args[0]) {
             $endpoint = __get__($args, 1, 'presentations');
-            if($endpoint === 'presentations') {
+            if ('presentations' === $endpoint) {
                 $data = getUpcomingJCPresentations();
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'list') {
+            } elseif ('list' === $endpoint) {
                 $jcs = [];
-                foreach(getUserJCs($user) as $jc) {
+                foreach (getUserJCs($user) as $jc) {
                     $jcs[$jc['jc_id']] = $jc;
                 }
-                $this->send_data($jcs, "ok");
+                $this->send_data($jcs, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'subscribe') {
+            } elseif ('subscribe' === $endpoint) {
                 $jcid = $args[2];
-                $data = ['jc_id'=>$jcid, 'login'=>getLogin()];
+                $data = ['jc_id' => $jcid, 'login' => getLogin()];
                 $res = subscribeJC($data);
-                $this->send_data($res, "ok");
+                $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'unsubscribe') {
+            } elseif ('unsubscribe' === $endpoint) {
                 $jcid = $args[2];
-                $data = ['jc_id'=>$jcid, 'login'=>getLogin()];
+                $data = ['jc_id' => $jcid, 'login' => getLogin()];
                 $res = unsubscribeJC($data);
-                $this->send_data($res, "ok");
+                $this->send_data($res, 'ok');
+
                 return;
             }
-            else {
-                $this->send_data(["unknown endpoint: $endpoint."], 'ok');
-                return;
-            }
-        }
-        else
-        {
-            $data = ['Unknown query'];
-            $this->send_data($data, 'ok');
+
+            $this->send_data(["unknown endpoint: $endpoint."], 'ok');
+
             return;
         }
+
+        $data = ['Unknown query'];
+        $this->send_data($data, 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis API related to user accomodation.
      *
-     * @Param 
-     *   - /accomodation/list/{all|10}  -- list 10/all 
+     * @Param
+     *   - /accomodation/list/{all|10}  -- list 10/all
      *   - /accomodation/update         -- POST shall have id.
      *   - /accomodation/delete/id
      *   - /accomodation/comment/list/[id] -- get comment for given ids(csv)
      *   - /accomodation/comment/post/[id] -- get comment for given ids(csv)
      *   - /accomodation/comment/delete/[id] -- Delete given id ids(csv)
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function accomodation()
@@ -1671,18 +1640,17 @@ class Api extends CI_Controller
         $user = getLogin();
         $args = func_get_args();
 
-        if($args[0] === 'list') {
+        if ('list' === $args[0]) {
             $limit = __get__($args, 1, 0);
             $data = [];
             $available = getTableEntries(
                 'accomodation', 'status,available_from',
                 "status != 'EXPIRED' AND status != 'INVALID'",
-                "*", $limit 
+                '*', $limit
             );
 
             // Add number of comments.
-            foreach( $available as &$item)
-            {
+            foreach ($available as &$item) {
                 $extID = 'accomodation.' . $item['id'];
                 $item['num_comments'] = getNumberOfRowsInTable(
                     'comment',
@@ -1696,16 +1664,18 @@ class Api extends CI_Controller
             $data['status'] = getTableColumnTypes('accomodation', 'status');
             $data['available_for'] = getTableColumnTypes('accomodation', 'available_for');
             $this->send_data($data, 'ok');
+
             return;
         }
 
         // After this we need authentication.
-        if(! authenticateAPI(getKey(), getLogin())) {
-            $this->send_data(["Not authenticated"], "error");
+        if (!authenticateAPI(getKey(), getLogin())) {
+            $this->send_data(['Not authenticated'], 'error');
+
             return;
         }
 
-        if($args[0] === 'create') {
+        if ('create' === $args[0]) {
             $id = getUniqueID('accomodation');
             $_POST['id'] = $id;
             $_POST['status'] = 'AVAILABLE';
@@ -1719,14 +1689,15 @@ class Api extends CI_Controller
                 $_POST
             );
 
-            if($res) {
-                $this->send_data(['success'=>true, 'id'=>$id, 'msg'=>''],  'ok');
+            if ($res) {
+                $this->send_data(['success' => true, 'id' => $id, 'msg' => ''], 'ok');
             } else {
-                $this->send_data(['success'=>false, 'msg'=>'Failed'], 'error');
+                $this->send_data(['success' => false, 'msg' => 'Failed'], 'error');
             }
+
             return;
         }
-        if($args[0] === 'update') {
+        if ('update' === $args[0]) {
             $_POST['last_modified_on'] = dbDateTime('now');
             $res = updateTable(
                 'accomodation', 'id',
@@ -1735,36 +1706,35 @@ class Api extends CI_Controller
                 $_POST
             );
 
-            if($res) {
-                $this->send_data(['id'=>$_POST['id']],  'ok');
+            if ($res) {
+                $this->send_data(['id' => $_POST['id']], 'ok');
             } else {
-                $this->send_data(['Failed'],  'error');
+                $this->send_data(['Failed'], 'error');
             }
+
             return;
-        }
-        else if($args[0] === 'comment') {
+        } elseif ('comment' === $args[0]) {
             $data = $this->handleCommentActions(array_slice($args, 1));
-            $this->send_data($data,  'ok');
+            $this->send_data($data, 'ok');
+
             return;
         }
-        else {
-            $this->send_data(['Unknown query ' + $args[0]],  'ok');
-        }
+
+        $this->send_data(['Unknown query ' + $args[0]], 'ok');
     }
 
     private function handleCommentActions($args)
     {
-        if($args[0] == 'list') {
+        if ('list' == $args[0]) {
             $ids = __get__($args, 1, '');
-            if(! $ids ) {
+            if (!$ids) {
                 $ids = array_map(
                     function ($x) {
-                        return $x['id']; 
+                        return $x['id'];
                     },
                     executeQuery("SELECT id FROM accomodation WHERE status!='INVALID'")
                 );
-            }
-            else {
+            } else {
                 $ids = explode(',', $ids);
             }
 
@@ -1779,66 +1749,65 @@ class Api extends CI_Controller
                 "SELECT * FROM comment WHERE 
                 external_id in ($extIds) AND status='VALID'"
             );
-            $data = ['ids' => $ids, 'comments' => array_values($comments) ];
+            $data = ['ids' => $ids, 'comments' => array_values($comments)];
+
             return $data;
-        }
-        else if($args[0] == 'post') {
+        } elseif ('post' == $args[0]) {
             // posting comment.
             $_POST['commenter'] = getLogin();
-            $_POST['external_id'] = 'accomodation.'.$_POST['id'];
+            $_POST['external_id'] = 'accomodation.' . $_POST['id'];
             $res = User::postComment($_POST);
+
             return $res;
-        }
-        else if($args[0] == 'delete') {
+        } elseif ('delete' == $args[0]) {
             // posting comment.
             $id = __get__($args, 1, 0);
             $res = User::deleteComment($id);
+
             return $res;
         }
-        else {
-            return [ 'This action is not available ' . json_encode($args) ];
-        }
+
+        return ['This action is not available ' . json_encode($args)];
     }
 
-    public function comment( )
+    public function comment()
     {
         // After this we need authentication.
-        if(! authenticateAPI(getKey(), getLogin())) {
-            $this->send_data(["Not authenticated"], "error");
+        if (!authenticateAPI(getKey(), getLogin())) {
+            $this->send_data(['Not authenticated'], 'error');
+
             return;
         }
 
         $args = func_get_args();
-        if($args[0] == 'delete') {
+        if ('delete' == $args[0]) {
             $id = __get__($args, 1, 0);
             $res = User::deleteComment($id);
             $this->send_data($res, 'ok');
+
             return;
-        }
-        else if($args[0] == 'post') {
+        } elseif ('post' == $args[0]) {
             // posting comment.
             $_POST['commenter'] = getLogin();
             $_POST['external_id'] = $_POST['external_id'];
             $res = User::postComment($_POST);
             $this->send_data($res, 'ok');
+
             return;
-        }
-        else if($args[0] === 'get') {
+        } elseif ('get' === $args[0]) {
             // Fetching comments.
             $limit = __get__($args, 1, 20);
             $this->db->select('*')
-                ->where(["external_id" => $args[1], 'status' => 'VALID'])
+                ->where(['external_id' => $args[1], 'status' => 'VALID'])
                 ->order_by('created_on DESC')
                 ->limit($limit);
-            $comms = $this->db->get("comment")->result_array();
+            $comms = $this->db->get('comment')->result_array();
             $this->send_data($comms, 'ok');
+
             return;
         }
-        else
-        {
-            $this->send_data(['unsupported ' + $args[0]], 'failure');
-            return;
-        }
+
+        $this->send_data(['unsupported ' + $args[0]], 'failure');
     }
 
     /* --------------------------------------------------------------------------*/
@@ -1847,7 +1816,7 @@ class Api extends CI_Controller
      *
      *     - /inventory/list/[num=100]
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function inventory()
@@ -1856,24 +1825,24 @@ class Api extends CI_Controller
         $args = func_get_args();
 
         // After this we need authentication.
-        if(! authenticateAPI(getKey(), getLogin())) {
-            $this->send_data(["Not authenticated"], "error");
+        if (!authenticateAPI(getKey(), getLogin())) {
+            $this->send_data(['Not authenticated'], 'error');
+
             return;
         }
 
-        if($args[0] === 'list') {
+        if ('list' === $args[0]) {
             $limit = intval(__get__($args, 1, 300));
             $data = [];
 
             // Generate list of inventories.
             $this->db->select('*')
-                ->where([ 'status'=>'VALID'])
+                ->where(['status' => 'VALID'])
                 ->limit($limit);
 
             $inventories = $this->db->get('inventory')->result_array();
             $available = [];
-            foreach($inventories as $inv )
-            {
+            foreach ($inventories as $inv) {
                 // Fetch imgage is any.
                 $inv['image_id'] = [];
                 $invID = $inv['id'];
@@ -1882,7 +1851,7 @@ class Api extends CI_Controller
                     ->where(['external_id' => "inventory.$invID"]);
 
                 $imgs = $this->db->get('images')->result_array();
-                foreach($imgs as $img) {
+                foreach ($imgs as $img) {
                     $inv['image_id'][] = $img['id'];
                 }
 
@@ -1893,10 +1862,11 @@ class Api extends CI_Controller
             $data['count'] = count($available);
             $data['item_conditions'] = getTableColumnTypes('inventory', 'item_condition');
             $this->send_data($data, 'ok');
+
             return;
         }
 
-        if($args[0] === 'create') {
+        if ('create' === $args[0]) {
             $id = getUniqueID('inventory');
             $_POST['id'] = $id;
             $_POST['status'] = 'AVAILABLE';
@@ -1910,14 +1880,15 @@ class Api extends CI_Controller
                 $_POST
             );
 
-            if($res) {
-                $this->send_data(['id'=>$id],  'ok');
+            if ($res) {
+                $this->send_data(['id' => $id], 'ok');
             } else {
-                $this->send_data(['Failed'],  'error');
+                $this->send_data(['Failed'], 'error');
             }
+
             return;
         }
-        if($args[0] === 'update') {
+        if ('update' === $args[0]) {
             $res = updateTable(
                 'inventory', 'id',
                 'type,available_from,open_vacancies,address,description'
@@ -1925,16 +1896,16 @@ class Api extends CI_Controller
                 $_POST
             );
 
-            if($res) {
-                $this->send_data(['id'=>$_POST['id']],  'ok');
+            if ($res) {
+                $this->send_data(['id' => $_POST['id']], 'ok');
             } else {
-                $this->send_data(['Failed'],  'error');
+                $this->send_data(['Failed'], 'error');
             }
+
             return;
         }
-        else {
-            $this->send_data(['Unknown request ' . $args[0]],  'error');
-        }
+
+        $this->send_data(['Unknown request ' . $args[0]], 'error');
 
         $this->send_data($data, 'ok');
     }
@@ -1945,7 +1916,7 @@ class Api extends CI_Controller
      *
      *     - /labinventory/list/[num=100]
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function labinventory()
@@ -1956,44 +1927,43 @@ class Api extends CI_Controller
         $data = [];
 
         // After this we need authentication.
-        if(! authenticateAPI(getKey(), getLogin())) {
-            $this->send_data(["Not authenticated"], "error");
+        if (!authenticateAPI(getKey(), getLogin())) {
+            $this->send_data(['Not authenticated'], 'error');
+
             return;
         }
 
-        if($args[0] === 'list') {
+        if ('list' === $args[0]) {
             $limit = intval(__get__($args, 1, 500));
             $data = [];
 
             $this->db->select('*')
-                ->where(['status'=>'VALID', 'faculty_in_charge'=>$piOrHost])
+                ->where(['status' => 'VALID', 'faculty_in_charge' => $piOrHost])
                 ->limit($limit);
             $available = $this->db->get('inventory')->result_array();
 
             $itemsToSend = [];
 
             // Should have a default value.
-            $item['borrowing'] = [ ['borrower' => ''] ];
+            $item['borrowing'] = [['borrower' => '']];
 
-            foreach($available as &$item)
-            {
+            foreach ($available as &$item) {
                 $id = $item['id'];
                 $bres = $this->db->get_where(
                     'borrowing',
-                    ['inventory_id'=>$id, 'status'=>'VALID']
+                    ['inventory_id' => $id, 'status' => 'VALID']
                 )->result_array();
                 $item['borrowing'] = $bres;
 
                 // Get the thumbnail.
-                $this->db->select('id, path')->where(['external_id'=>"inventory.$id"]);
+                $this->db->select('id, path')->where(['external_id' => "inventory.$id"]);
                 $images = $this->db->get('images')->result_array();
                 $thumbs = [];
-                foreach( $images as $img )
-                {
+                foreach ($images as $img) {
                     $path = getUploadDir() . '/' . $img['path'];
-                    if(file_exists($path)) {
+                    if (file_exists($path)) {
                         $thumb = getBase64JPEG($path, 100, 0);
-                        $thumbs[] = [ 'id' => $img['id'], 'base64' => $thumb ] ;
+                        $thumbs[] = ['id' => $img['id'], 'base64' => $thumb];
                     }
                 }
                 $item['thumbnails'] = $thumbs;
@@ -2004,52 +1974,51 @@ class Api extends CI_Controller
             $data['count'] = count($available);
             $data['item_conditions'] = getTableColumnTypes('inventory', 'item_condition');
             $this->send_data($data, 'ok');
-            return;
-        }
 
-        else if($args[0] === 'create' || $args[0] === 'update') {
+            return;
+        } elseif ('create' === $args[0] || 'update' === $args[0]) {
             $id = getUniqueID('inventory');
             $_POST['id'] = $id;
             $_POST['edited_by'] = getLogin();
             $_POST['last_modified_on'] = dbDateTime('now');
             $res = User::add_inventory_item_helper($_POST);
 
-            if($res['status']) {
-                $this->send_data(['id'=>$id, 'payload'=>json_encode($_POST)],  'ok');
+            if ($res['status']) {
+                $this->send_data(['id' => $id, 'payload' => json_encode($_POST)], 'ok');
             } else {
-                $this->send_data([$res['msg']],  'error');
+                $this->send_data([$res['msg']], 'error');
             }
+
             return;
-        }
-        else if($args[0] === 'lend') {
+        } elseif ('lend' === $args[0]) {
             $_POST['lender'] = getLogin();
             $_POST['inventory_id'] = $_POST['id'];
             $res = Lab::lend_inventory($_POST);
-            $this->send_data([$res['msg']], $res['status']?'ok':'error');
+            $this->send_data([$res['msg']], $res['status'] ? 'ok' : 'error');
+
             return;
-        }
-        else if($args[0] === 'gotback') {
+        } elseif ('gotback' === $args[0]) {
             $invId = __get__($args, 1, 0);
-            if(!  $this->db->set('status', 'RETURNED')                ->where('inventory_id', $invId)                ->update('borrowing') 
+            if (!$this->db->set('status', 'RETURNED')->where('inventory_id', $invId)->update('borrowing')
             ) {
                 $this->send_data($this->db->error(), 'error');
+
                 return;
             }
             $this->send_data([], 'ok');
-        }
-        else if($args[0] === 'delete') {
+        } elseif ('delete' === $args[0]) {
             $id = __get__($args, 1, 0);
-            $res = updateTable('inventory', 'id', 'status', ['id'=>$id, 'status'=>'INVALID']);
+            $res = updateTable('inventory', 'id', 'status', ['id' => $id, 'status' => 'INVALID']);
 
-            if($res) {
-                $this->send_data(['id'=>$_POST['id']],  'ok');
+            if ($res) {
+                $this->send_data(['id' => $_POST['id']], 'ok');
             } else {
-                $this->send_data(['Failed'],  'error');
+                $this->send_data(['Failed'], 'error');
             }
+
             return;
-        }
-        else {
-            $this->send_data(['Unknown request ' . $args[0]],  'error');
+        } else {
+            $this->send_data(['Unknown request ' . $args[0]], 'error');
         }
 
         $this->send_data($data, 'ok');
@@ -2059,27 +2028,27 @@ class Api extends CI_Controller
     /**
      * @Synopsis Submit geolocation data.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
-    public function geolocation( )
+    public function geolocation()
     {
         $args = func_get_args();
-        if($args[0] === 'submit') {
+        if ('submit' === $args[0]) {
             $salt = 'ZhanduBalmZhanduBalmPeedaHariBalm';
             $crypt_id = crypt(getUserIpAddr(), $salt);
             $_POST['crypt_id'] = $crypt_id;
 
-
-            foreach(explode(',', 'session_num,device_id,altitude,accuracy,heading,speed') as $key) {
+            foreach (explode(',', 'session_num,device_id,altitude,accuracy,heading,speed') as $key) {
                 $_POST[$key] = __get__($_POST, $key, '');
             }
 
             // 10 Km/Hr = 2.77 m/s
-            // || floatVal($_POST['speed']) <= 1.0 // Enable it when 
+            // || floatVal($_POST['speed']) <= 1.0 // Enable it when
             // debugging is over.
-            if(floatVal($_POST['latitude']) <= 0 || floatVal($_POST['longitude']) <= 0.0) {
-                $this->send_data(["Invalid data."], "warn");
+            if (floatval($_POST['latitude']) <= 0 || floatval($_POST['longitude']) <= 0.0) {
+                $this->send_data(['Invalid data.'], 'warn');
+
                 return;
             }
 
@@ -2089,44 +2058,44 @@ class Api extends CI_Controller
                 $_POST
             );
 
-            if($res) {
-                $this->send_data(["Success"], "ok");
+            if ($res) {
+                $this->send_data(['Success'], 'ok');
             } else {
-                $this->send_data(["Failure"], "error");
+                $this->send_data(['Failure'], 'error');
             }
+
             return;
-        }
-        else if($args[0] === 'latest') {
+        } elseif ('latest' === $args[0]) {
             $limit = intval(__get__($args, 1, 500));
 
             // Get last 100 points (doen't matter when)
-            $res = getTableEntries('geolocation', 'timestamp DESC', "", '*', $limit); 
+            $res = getTableEntries('geolocation', 'timestamp DESC', '', '*', $limit);
 
-            // crypt_id is the key. Since we don't know the route. Each crypt id 
+            // crypt_id is the key. Since we don't know the route. Each crypt id
             // is a polyline.
             $data = [];
-            foreach($res as $e) {
+            foreach ($res as $e) {
                 $data[$e['crypt_id']][] = $e;
             }
 
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'get') {
+        } elseif ('get' === $args[0]) {
             $mins = intval(__get__($args, 1, 30));
             $timestamp = dbDateTime(strtotime('now') - $mins * 60);
-            $res = getTableEntries('geolocation', 'crypt_id,timestamp', "timestamp > '$timestamp'"); 
+            $res = getTableEntries('geolocation', 'crypt_id,timestamp', "timestamp > '$timestamp'");
             $data = [];
-            foreach($res as $e) {
+            foreach ($res as $e) {
                 $data[$e['crypt_id']][] = $e;
             }
 
             $this->send_data($data, 'ok');
+
             return;
         }
-        else {
-            $this->send_data(["Unknown request: " . $args[0]], "warn");
-        }
+
+        $this->send_data(['Unknown request: ' . $args[0]], 'warn');
 
         //// From here we need authentication.
         //// After this we need authentication.
@@ -2135,7 +2104,6 @@ class Api extends CI_Controller
         //    $this->send_data(["Not authenticated"], "error");
         //    return;
         //}
-        return;
     }
 
     /* --------------------------------------------------------------------------*/
@@ -2144,65 +2112,62 @@ class Api extends CI_Controller
      *
      * @Param $arg
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function images()
     {
         $args = func_get_args();
-        if(count($args) == 0) {
+        if (0 == count($args)) {
             $args[] = 'get';
         }
 
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
-        if($args[0] === 'get') {
+        if ('get' === $args[0]) {
             $ids = $args[1];
             $data = ['args' => $ids];
-            foreach(explode(',', $ids) as $id)
-            {
+            foreach (explode(',', $ids) as $id) {
                 $images = $this->db->get_where('images', ['id' => trim($id)])->result_array();
-                foreach($images as $res)
-                {
-                    if(! __get__($res, 'path', '')) {
+                foreach ($images as $res) {
+                    if (!__get__($res, 'path', '')) {
                         continue;
                     }
 
                     $filepath = getUploadDir() . '/' . $res['path'];
-                    if(! file_exists($filepath)) {
+                    if (!file_exists($filepath)) {
                         continue;
                     }
-                    try
-                    {
+
+                    try {
                         $data[$id][] = getBase64JPEG($filepath);
-                    } 
-                    catch (Exception $e) 
-                    {
+                    } catch (Exception $e) {
                         $data['exception'] = $e->getMessage();
                     }
                 }
             }
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
         }
-        if($args[0] === 'delete') {
+        if ('delete' === $args[0]) {
             $ids = $args[1];
             $data = ['args' => $ids, 'msg' => ''];
-            foreach(explode(',', $ids) as $id)
-            {
+            foreach (explode(',', $ids) as $id) {
                 $images = $this->db->get_where('images', ['id' => trim($id)])->result_array();
-                foreach($images as $res)
-                {
+                foreach ($images as $res) {
                     $filepath = getUploadDir() . '/' . $res['path'];
-                    if(! file_exists($filepath)) {
-                        $data['msg'] .= " $filepath not found." ;
+                    if (!file_exists($filepath)) {
+                        $data['msg'] .= " $filepath not found.";
                         // File not found. Mark it invalid.
                         $this->db->set('status', 'INVALID')
                             ->where('id', $res['id'])
                             ->update('images');
+
                         continue;
                     }
 
@@ -2214,103 +2179,105 @@ class Api extends CI_Controller
                         ->update('images');
                 }
             }
-            $this->send_data($data, "ok");
-            return;
-        }
-        else
-        {
-            $this->send_data([], "Unsupported command $get");
+            $this->send_data($data, 'ok');
+
             return;
         }
 
-        $this->send_data([], "error");
+        $this->send_data([], "Unsupported command $get");
+
+        return;
+
+        $this->send_data([], 'error');
     }
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis Upload images.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function upload()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $args = func_get_args();
         $res = [];
-        if($args[0] === 'image') {
+        if ('image' === $args[0]) {
             $endpoint = __get__($args, 1, 'inventory');
-            if($endpoint === 'inventory') {
+            if ('inventory' === $endpoint) {
                 $invId = intval(__get__($_POST, 'inventory_id', -1));
-                if($invId < 0) {
-                    $this->send_data($res, "Inventory ID is not found.");
+                if ($invId < 0) {
+                    $this->send_data($res, 'Inventory ID is not found.');
+
                     return;
                 }
 
-                if (! empty($_FILES)) {
+                if (!empty($_FILES)) {
                     $storeFolder = getUploadDir();
-                    $tempFile = $_FILES['file']['tmp_name'];          
+                    $tempFile = $_FILES['file']['tmp_name'];
                     $md5 = md5_file($tempFile);
                     $filename = $md5 . $_FILES['file']['name'];
                     $targetFile = getLoginPicturePath(getLogin());
-                    $res['stored'] = move_uploaded_file($tempFile, $targetFile); 
+                    $res['stored'] = move_uploaded_file($tempFile, $targetFile);
                     // Add this value to database.
                     $this->db->select_max('id', 'maxid');
                     $r = $this->db->get('images')->result_array();
-                    if($r) {
+                    if ($r) {
                         $id = $r[0]['maxid'];
                     } else {
                         $id = 0;
                     }
 
                     // Prepare data to send back to client.
-                    $data = [ 'external_id' => 'inventory.' . $invId ];
+                    $data = ['external_id' => 'inventory.' . $invId];
                     $data['path'] = $filename;
                     $data['uploaded_by'] = getLogin();
-                    $data['id'] = intval($id)+1;
+                    $data['id'] = intval($id) + 1;
                     $this->db->insert('images', $data);
                     $res['dbstatus'] = $this->db->error();
                     $this->send_data($res, 'ok');
+
                     return;
                 }
-                else
-                {
-                    $this->send_data($res, 'No file uploaded.');
-                    return;
-                }
-            }
-            else if($endpoint === 'profile') {
-                $img = $_FILES[ 'file' ];
-                $ext = explode("/", $img['type'])[1];
+
+                $this->send_data($res, 'No file uploaded.');
+
+                return;
+            } elseif ('profile' === $endpoint) {
+                $img = $_FILES['file'];
+                $ext = explode('/', $img['type'])[1];
                 $tempFile = $img['tmp_name'];
                 $conf = getConf();
-                $targetFile = $conf['data']['user_imagedir'].'/'.getLogin().'.jpg';
+                $targetFile = $conf['data']['user_imagedir'] . '/' . getLogin() . '.jpg';
                 saveImageAsJPEG($tempFile, $ext, $targetFile);
                 $res['stored'] = $targetFile;
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'speaker') {
+            } elseif ('speaker' === $endpoint) {
                 $id = $args[2];
-                $img = $_FILES[ 'file' ];
-                $ext = explode("/", $img['type'])[1];
+                $img = $_FILES['file'];
+                $ext = explode('/', $img['type'])[1];
                 $tempFile = $img['tmp_name'];
                 $conf = getConf();
-                $targetFile = $conf['data']['user_imagedir']."/$id.jpg";
+                $targetFile = $conf['data']['user_imagedir'] . "/$id.jpg";
                 saveImageAsJPEG($tempFile, $ext, $targetFile);
                 $res['stored'] = $targetFile;
                 $this->send_data($res, 'ok');
+
                 return;
             }
-            else
-            {
-                $this->send_data(['Unknow request: ' +$endpoint], 'ok');
-                return;
-            }
+
+            $this->send_data(['Unknow request: ' + $endpoint], 'ok');
+
+            return;
+
             $this->send_data($res, 'error');
         }
     }
@@ -2319,7 +2286,7 @@ class Api extends CI_Controller
     /**
      * @Synopsis Forum API.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function forum()
@@ -2327,13 +2294,13 @@ class Api extends CI_Controller
         $args = func_get_args();
         $data = [];
 
-        if(count($args) == 0) {
+        if (0 == count($args)) {
             $args[0] = 'list';
         }
 
-        if($args[0] === 'list') {
+        if ('list' === $args[0]) {
             $limit = 100;
-            if(count($args) > 1) {
+            if (count($args) > 1) {
                 $limit = intval($args[1]);
             }
 
@@ -2346,76 +2313,77 @@ class Api extends CI_Controller
             $data = $this->db->get('forum')->result_array();
 
             // Convert all tags to a list and also collect number of comments.
-            foreach($data as &$e)
-            {
+            foreach ($data as &$e) {
                 $e['tags'] = explode(',', $e['tags']);
                 $eid = 'forum.' . $e['id'];
-                $this->db->select('id')->where(['external_id'=>$eid, 'status'=>'VALID']);
+                $this->db->select('id')->where(['external_id' => $eid, 'status' => 'VALID']);
                 $e['num_comments'] = $this->db->count_all_results('comment');
             }
             $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'alltags' ) {
+        } elseif ('alltags' === $args[0]) {
             // fixme: This should be from database.
             $tags = explode(',', getConfigValue('ALLOWED_BOARD_TAGS'));
             sort($tags, SORT_STRING);
             $this->send_data($tags, 'ok');
+
             return;
         }
 
         // These requires authentications.
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
-        if($args[0] === 'delete' ) {
+        if ('delete' === $args[0]) {
             $id = __get__($args, 1, -1);
             $this->db->set('status', 'DELETED')->where('id', $id);
             $this->db->update('forum');
 
             // Remove any notifications for this id.
-            $this->db->where('external_id', 'forum.'.$id)
+            $this->db->where('external_id', 'forum.' . $id)
                 ->set('status', 'INVALID')
                 ->update('notifications');
 
             $this->send_data(['deleted' => $id], 'ok');
+
             return;
-        }
-        else if($args[0] === 'subscribe') {
+        } elseif ('subscribe' === $args[0]) {
             $forumName = $args[1];
             $login = getLogin();
             User::subscribeToForum($this, $login, $forumName);
-            $this->send_data(["Subscribed"], "ok");
+            $this->send_data(['Subscribed'], 'ok');
+
             return;
-        }
-        else if($args[0] === 'unsubscribe') {
+        } elseif ('unsubscribe' === $args[0]) {
             $forumName = $args[1];
-            if($forumName == 'emergency') {
-                $this->send_data(["Can't unscribe from emergency"], "ok");
+            if ('emergency' == $forumName) {
+                $this->send_data(["Can't unscribe from emergency"], 'ok');
+
                 return;
             }
             $login = getLogin();
             User::unsubscribeToForum($this, $login, $forumName);
-            $this->send_data(["Unsubscribed"], "ok");
+            $this->send_data(['Unsubscribed'], 'ok');
+
             return;
-        }
-        else if($args[0] === 'subscriptions') {
+        } elseif ('subscriptions' === $args[0]) {
             $login = getLogin();
             $data = User::getBoardSubscriptions($this, $login);
-            $this->send_data($data, "ok");
-            return;
-        }
-        else if($args[0] === 'post' ) {
+            $this->send_data($data, 'ok');
 
+            return;
+        } elseif ('post' === $args[0]) {
             // Unique id for the forum post.
             $id = __get__($_POST, 'id', 0);
             $action = 'update';
-            if($id == 0 ) {
+            if (0 == $id) {
                 $this->db->select_max('id', 'maxid');
                 $r = $this->db->get('forum')->result_array();
-                $id = intval($r[0]['maxid'])+1;
+                $id = intval($r[0]['maxid']) + 1;
                 $action = 'new';
             }
 
@@ -2423,12 +2391,10 @@ class Api extends CI_Controller
             $tags = implode(',', $_POST['tags']);
 
             // Commit to table.
-            if($action === 'new') {
+            if ('new' === $action) {
                 $this->db->insert(
                     'forum',
-                    ['id'=>$id, 'created_by'=>$createdBy, 'tags'=>$tags
-                        , 'title'=>$_POST['title']
-                        , 'description'=>$_POST['description']
+                    ['id' => $id, 'created_by' => $createdBy, 'tags' => $tags, 'title' => $_POST['title'], 'description' => $_POST['description'],
                     ]
                 );
                 $data['db_error'] = $this->db->error();
@@ -2436,91 +2402,84 @@ class Api extends CI_Controller
                 // Post to FCM
 
                 // Also add notifications for subscribed users.
-                foreach( $_POST['tags'] as $tag)
-                {
+                foreach ($_POST['tags'] as $tag) {
                     // Get the list of subscribers.
                     sendFirebaseCloudMessage($tag, $_POST['title'], $_POST['description']);
 
                     $subs = $this->db->select('login')
                         ->get_where(
                             'board_subscriptions',
-                            ['board' => $tag, 'status' => 'VALID' ]
+                            ['board' => $tag, 'status' => 'VALID']
                         )->result_array();
 
                     // Create notifications for each subscriber.
-                    foreach($subs as $sub)
-                    {
+                    foreach ($subs as $sub) {
                         $this->db->insert(
-                            "notifications",
-                            ['login'=>$sub['login'], 'title'=>$_POST['title']
-                                , 'text' => $_POST['description'] 
-                                , 'external_id' => 'forum.' . $id 
+                            'notifications',
+                            ['login' => $sub['login'], 'title' => $_POST['title'], 'text' => $_POST['description'], 'external_id' => 'forum.' . $id,
                             ]
                         );
                     }
                 }
-            }
-            else
-            {
+            } else {
                 $this->db->where('id', $id)
                     ->update(
-                        'forum', ['tags'=>$tags
-                        , 'title'=>$_POST['title']
-                        , 'description'=>$_POST['description']
+                        'forum', ['tags' => $tags, 'title' => $_POST['title'], 'description' => $_POST['description'],
                         ]
                     );
                 $data['db_error'] = $this->db->error();
             }
             $this->send_data($data, 'ok');
+
             return;
         }
 
-        $data['status'] = "Invalid request " . $args[0];
+        $data['status'] = 'Invalid request ' . $args[0];
         $this->send_data($data, 'ok');
-        return;
     }
 
     public function notifications()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $login = getLogin();
         $args = func_get_args();
         $data = [];
-        if(count($args) == 0) {
+        if (0 == count($args)) {
             $args[] = 'get';
         }
 
-        if($args[0] === 'get') {
+        if ('get' === $args[0]) {
             $limit = __get__($args, 1, 10);
             $notifications = User::getNotifications($this, $login, $limit);
-            $this->send_data($notifications, "ok");
+            $this->send_data($notifications, 'ok');
+
             return;
-        }
-        else if($args[0] === 'dismiss' || $args[0] == 'markread') {
+        } elseif ('dismiss' === $args[0] || 'markread' == $args[0]) {
             $id = __get__($args, 1, 0);
             $this->db->where('id', $id)
                 ->where('login', $login)
-                ->update("notifications", ["is_read"=>true]);
+                ->update('notifications', ['is_read' => true]);
 
-            $this->send_data(["Marked read: $id"], "ok");
+            $this->send_data(["Marked read: $id"], 'ok');
+
             return;
-        }
-        else if($args[0] == 'markunread') {
+        } elseif ('markunread' == $args[0]) {
             $id = __get__($args, 1, 0);
             $this->db->where('id', $id)
                 ->where('login', $login)
-                ->update("notifications", ["is_read"=>false]);
+                ->update('notifications', ['is_read' => false]);
 
-            $this->send_data(["Marked unread: $id"], "ok");
+            $this->send_data(["Marked unread: $id"], 'ok');
+
             return;
         }
-        else {
-            $this->send_data($data, "Unknown request");
-        }
+
+        $this->send_data($data, 'Unknown request');
     }
 
     /* --------------------------------------------------------------------------*/
@@ -2529,7 +2488,7 @@ class Api extends CI_Controller
      *
      *     - /menu/list/(day=sun|mon|tue|wed|thu|fri|sat)
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function menu()
@@ -2537,7 +2496,7 @@ class Api extends CI_Controller
         $user = getLogin();
         $args = func_get_args();
 
-        if($args[0] === 'list') {
+        if ('list' === $args[0]) {
             $day = __get__($args, 1, date('D', strtotime('today')));
             $available = getTableEntries(
                 'canteen_menu', 'canteen_name,which_meal,available_from',
@@ -2548,61 +2507,62 @@ class Api extends CI_Controller
             $canteens = executeQuery("SELECT DISTINCT canteen_name FROM canteen_menu WHERE status='VALID'");
             $canteens = array_map(
                 function ($x) {
-                    return $x['canteen_name']; 
+                    return $x['canteen_name'];
                 }, $canteens
             );
 
             $meals = executeQuery("SELECT DISTINCT which_meal FROM canteen_menu WHERE status='VALID'");
             $meals = array_map(
                 function ($x) {
-                    return $x['which_meal']; 
+                    return $x['which_meal'];
                 }, $meals
             );
 
             $data['canteens'] = $canteens;
             $data['meals'] = $meals;
             $this->send_data($data, 'ok');
+
             return;
         }
 
         // After this we need authentication.
-        if(! authenticateAPI(getKey(), getLogin())) {
-            $this->send_data(["Not authenticated"], "error");
+        if (!authenticateAPI(getKey(), getLogin())) {
+            $this->send_data(['Not authenticated'], 'error');
+
             return;
-        }
-        else if($args[0] === 'create') {
+        } elseif ('create' === $args[0]) {
             $_POST['modified_by'] = getLogin();
             $id = Adminservices::addToCanteenMenu($_POST);
             $res = ['req' => json_encode($_POST), 'id' => $id];
-            if($id > 0) {
-                $this->send_data($res,  'ok');
+            if ($id > 0) {
+                $this->send_data($res, 'ok');
             } else {
-                $this->send_data(['Failed'],  'error');
+                $this->send_data(['Failed'], 'error');
             }
+
             return;
-        }
-        else if($args[0] === 'update') {
+        } elseif ('update' === $args[0]) {
             $res = Adminservices::updateCanteenItem($_POST);
-            if($res) {
-                $this->send_data(['id'=>$_POST['id']],  'ok');
+            if ($res) {
+                $this->send_data(['id' => $_POST['id']], 'ok');
             } else {
-                $this->send_data(['Failed'],  'error');
+                $this->send_data(['Failed'], 'error');
             }
+
             return;
-        }
-        else if($args[0] === 'delete') {
+        } elseif ('delete' === $args[0]) {
             $id = __get__($args, 1, 0);
             $res = Adminservices::deleteCanteenItem($id);
-            if($res) {
-                $this->send_data(['id'=>$id],  'ok');
+            if ($res) {
+                $this->send_data(['id' => $id], 'ok');
             } else {
-                $this->send_data(['Failed'],  'error');
+                $this->send_data(['Failed'], 'error');
             }
+
             return;
         }
-        else {
-            $this->send_data(['Unknown request ' . $args[0]],  'error');
-        }
+
+        $this->send_data(['Unknown request ' . $args[0]], 'error');
 
         $this->send_data($data, 'ok');
     }
@@ -2612,174 +2572,177 @@ class Api extends CI_Controller
      * @Synopsis caller should check the access permissions, this api is
      * exposed publically. But the user needs to login no matter what.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
-    public function __commontasks() 
+    public function __commontasks()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $args = func_get_args();
-        if($args[0] === 'events') {
+        if ('events' === $args[0]) {
             $data = [];
             $subtask = $args[1];
-            if($subtask === 'upcoming') {
+            if ('upcoming' === $subtask) {
                 $from = intval(__get__($args, 2, 0));
                 $to = intval(__get__($args, 3, 30));
                 $limit = $to - $from; // these many groups
                 $data = getEventsGID('today', 'VALID', $limit, $from);
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($subtask === 'cancel') {
+            } elseif ('cancel' === $subtask) {
                 $gid = $args[2];
                 $eid = __get__($args, 3, '');  // csv of eid
                 $data = cancelEvents($gid, $eid, getLogin(), __get__($_POST, 'reason', ''));
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($subtask === 'gid') {
+            } elseif ('gid' === $subtask) {
                 $gid = $args[2];
                 // All events by gid.
                 $data = getEventsByGroupId($gid, 'VALID', 'today');
-                $this->send_data($data, "ok");
-                return;
-            }
-            else
-            {
-                $data['flash'] = "Unknown request " . $subtask;
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
             }
 
-            $this->send_data($data, "ok");
+            $data['flash'] = 'Unknown request ' . $subtask;
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'table') {
-            if($args[1] === 'fieldinfo') {
+
+            $this->send_data($data, 'ok');
+
+            return;
+        } elseif ('table' === $args[0]) {
+            if ('fieldinfo' === $args[1]) {
                 $data = getTableFieldInfo($args[2]);
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'types') {
+            } elseif ('types' === $args[1]) {
                 $ctypes = getTableColumnTypes($args[2], $args[3]);
-                $this->send_data($ctypes, "ok");
+                $this->send_data($ctypes, 'ok');
+
                 return;
             }
-        }
-        else if($args[0] === 'event') {
+        } elseif ('event' === $args[0]) {
             $data = [];
             $subtask = __get__($args, 1, 'update');
-            if($subtask === 'delete' || $subtask === 'cancel') {
+            if ('delete' === $subtask || 'cancel' === $subtask) {
                 $_POST['status'] = 'CANCELLED';
                 $subtask = 'update';
             }
 
-            if($subtask === 'update') {
+            if ('update' === $subtask) {
                 $res = updateEvent($_POST['gid'], $_POST['eid'], $_POST);
                 $data['flash'] = 'successfully updated';
+            } else {
+                $data['flash'] = 'Unknown request ' . $subtask;
             }
-            else {
-                $data['flash'] = "Unknown request " . $subtask;
-            }
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'email') {
-            if($args[1] === 'talk') {
+        } elseif ('email' === $args[0]) {
+            if ('talk' === $args[1]) {
                 $tid = intval(__get__($args, 2, '-1'));
-                if($tid < 0) {
+                if ($tid < 0) {
                     $this->send_data(
-                        ['success' => false, 'msg'=>"Invalid talk id $tid"],
-                        "ok"
+                        ['success' => false, 'msg' => "Invalid talk id $tid"],
+                        'ok'
                     );
+
                     return;
                 }
                 $email = talkToEmail($tid);
                 $this->send_data($email, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'post') {
+            } elseif ('post' === $args[1]) {
                 $data = $_POST;
                 $res = sendHTMLEmail(
                     $data['email_body'], $data['subject'],
-                    $data['recipient'], $data['cc'], $data['attachments'] 
+                    $data['recipient'], $data['cc'], $data['attachments']
                 );
                 $this->send_data($res, 'ok');
+
                 return;
             }
-            else 
-            { 
-                $this->send_data(['msg' => 'Unknown Request', 'success'=>false], "ok");
-                return;
-            }
-        }
-        else if($args[0] === 'speaker') {
-            if($args[1] === 'fetch') {
+
+            $this->send_data(['msg' => 'Unknown Request', 'success' => false], 'ok');
+
+            return;
+        } elseif ('speaker' === $args[0]) {
+            if ('fetch' === $args[1]) {
                 // Fetch speaker.
                 $speakerId = intval($args[2]);
-                if($speakerId < 0) {
+                if ($speakerId < 0) {
                     $this->send_data(
-                        ['success'=>false, 'msg'=>"Invalid speaker ID" . $speakerId],
-                        "ok"
+                        ['success' => false, 'msg' => 'Invalid speaker ID' . $speakerId],
+                        'ok'
                     );
+
                     return;
                 }
 
                 $data = getSpeakerByID($speakerId);
                 $picpath = getSpeakerPicturePath($speakerId);
                 $photo = '';
-                if(file_exists($picpath)) {
+                if (file_exists($picpath)) {
                     $photo = base64_encode(file_get_contents($picpath));
                 }
                 $data['photo'] = $photo;
                 $data['html'] = speakerToHTML($data);
-                $this->send_data($data, "ok");
+                $this->send_data($data, 'ok');
+
                 return;
             }
-            if($args[1] === 'update' || $args[1] === 'new') {
+            if ('update' === $args[1] || 'new' === $args[1]) {
                 // Updating speaker.
                 $res = addUpdateSpeaker($_POST);
-                $this->send_data($res, "ok");
+                $this->send_data($res, 'ok');
+
                 return;
             }
-            if($args[1] === 'delete') {
+            if ('delete' === $args[1]) {
                 // Delete speakers only if there is no valid talks associated
                 // with it.
                 $speakerID = intval(__get__($args, 2, '-1'));
-                if($speakerID < 0) {
-                    $this->send_data(['success'=>false, 'msg'=>'Invalid speaker ID'], "ok");
+                if ($speakerID < 0) {
+                    $this->send_data(['success' => false, 'msg' => 'Invalid speaker ID'], 'ok');
+
                     return;
                 }
                 $talks = getTableEntries(
                     'talks', 'id',
                     "status='ACTIVE' and speaker_id='$speakerID'"
                 );
-                if($talks && count($talks) > 0) {
-                    $this->send_data(['success'=>false, 'msg'=>'Speaker has valid talks.'], "ok");
+                if ($talks && count($talks) > 0) {
+                    $this->send_data(['success' => false, 'msg' => 'Speaker has valid talks.'], 'ok');
+
                     return;
                 }
-                $res = deleteFromTable('speakers', 'id', ['id'=>$speakerID]);
-                $res = deleteFromTable('talks', 'speaker_id', ['speaker_id'=>$speakerID]);
-                $this->send_data(['success'=>$res, 'msg'=>'Successfully deleted'], "ok");
+                $res = deleteFromTable('speakers', 'id', ['id' => $speakerID]);
+                $res = deleteFromTable('talks', 'speaker_id', ['speaker_id' => $speakerID]);
+                $this->send_data(['success' => $res, 'msg' => 'Successfully deleted'], 'ok');
+
                 return;
             }
-            else
-            {
-                $this->send_data(
+
+            $this->send_data(
                     [
-                    'msg' => 'Unknown Request ' . json_encode($args)
-                    , 'success'=>false], "ok"
+                    'msg' => 'Unknown Request ' . json_encode($args), 'success' => false, ], 'ok'
                 );
-                return;
-            }
-        }
-        else
-        {
-            $this->send_data(['success' => false, 'msg' => $args], "ok");
+
+            return;
+        } else {
+            $this->send_data(['success' => false, 'msg' => $args], 'ok');
+
             return;
         }
     }
@@ -2787,35 +2750,37 @@ class Api extends CI_Controller
     // BMV ADMIN
     public function bmvadmin()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $login = getLogin();
-        if(! in_array('BOOKMYVENUE_ADMIN', getRoles($login))) {
-            $this->send_data([], "Forbidden");
+        if (!in_array('BOOKMYVENUE_ADMIN', getRoles($login))) {
+            $this->send_data([], 'Forbidden');
+
             return;
         }
 
         $args = func_get_args();
-        if($args[0] === 'requests') {
+        if ('requests' === $args[0]) {
             $data = [];
             $subtask = __get__($args, 1, 'pending');
-            if($subtask === 'pending') {
+            if ('pending' === $subtask) {
                 $data = getPendingRequestsGroupedByGID();
-            } else if($subtask === 'date') {
+            } elseif ('date' === $subtask) {
                 $data = getPendingRequestsOnThisDay($args[2]);
             } else {
                 $data = ['flash' => 'Unknown request'];
             }
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'request') {
+        } elseif ('request' === $args[0]) {
             $data = [];
             $subtask = __get__($args, 1, 'status');
-            if($subtask === 'clash') {
+            if ('clash' === $subtask) {
                 $jcLabmeets = getLabmeetAndJC();
                 $jcOrLab = clashesOnThisVenueSlot(
                     $_POST['date'], $_POST['start_time'],
@@ -2823,35 +2788,32 @@ class Api extends CI_Controller
                     $jcLabmeets
                 );
                 $data['clashes'] = $jcOrLab;
-            }
-            else if($subtask === 'approve') {
+            } elseif ('approve' === $subtask) {
                 // Mark is a public event, if admin says so.
-                if($_POST['is_public_event'] === "YES") {
+                if ('YES' === $_POST['is_public_event']) {
                     updateTable('bookmyvenue_requests', 'gid,rid', 'is_public_event', $_POST);
                 }
 
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
                 $data['msg'] = 'APPROVED';
-            }
-            else if($subtask === 'reject') {
+            } elseif ('reject' === $subtask) {
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST);
                 $data['msg'] = 'REJECTED';
-            }
-            else {
+            } else {
                 $data = ['flash' => 'Unknown request'];
             }
 
             // Send final data.
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'events') {
+        } elseif ('events' === $args[0]) {
             return $this->__commontasks(...$args);
-        } else if($args[0] === 'event') {
+        } elseif ('event' === $args[0]) {
             return $this->__commontasks(...$args);
-        } else
-        {
-            $this->send_data(['flash' => 'Unknown Request'], "ok");
+        } else {
+            $this->send_data(['flash' => 'Unknown Request'], 'ok');
+
             return;
         }
     }
@@ -2859,25 +2821,27 @@ class Api extends CI_Controller
     // Common admin tasks.
     public function admin()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $login = getLogin();
         $roles = getRoles($login);
-        if(! (in_array('ACAD_ADMIN', getRoles($login)) 
+        if (!(in_array('ACAD_ADMIN', getRoles($login))
             || in_array('BOOKMYVENUE_ADMIN', $roles))
         ) {
-            $this->send_data([], "Forbidden");
+            $this->send_data([], 'Forbidden');
+
             return;
         }
 
         $args = func_get_args();
         $data = [];
-        if($args[0] === 'talk') {
+        if ('talk' === $args[0]) {
             $endpoint = __get__($args, 1, 'list');
-            if($endpoint === 'list') {
+            if ('list' === $endpoint) {
                 $limit = __get__($args, 2, 100);
 
                 // Don't fetch any talk created 6 months ago.
@@ -2885,189 +2849,185 @@ class Api extends CI_Controller
                     'talks', 'created_on DESC',
                     "status != 'INVALID' AND created_on > DATE_SUB(now(), INTERVAL 6 MONTH)",
                     '*', $limit
-                ); 
+                );
 
                 $data = [];
-                foreach($talks as &$talk) {
+                foreach ($talks as &$talk) {
                     $event = getEventsOfTalkId($talk['id']);
                     // if event was in past then don't use this talk;
-                    if($event) {
-                        if(strtotime($event['date']) < strtotime('yesterday')) {
+                    if ($event) {
+                        if (strtotime($event['date']) < strtotime('yesterday')) {
                             continue;
                         }
                         $talk['event'] = $event;
                     }
                     $req = getBookingRequestOfTalkId($talk['id']);
-                    if($req) {
+                    if ($req) {
                         $talk['request'] = $req;
                     }
                     $data[] = $talk;
                 }
                 $this->send_data($talks, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'get') {
+            } elseif ('get' === $endpoint) {
                 $tid = intval(__get__($args, 2, '-1'));
 
-                if($tid < 0) {
+                if ($tid < 0) {
                     $this->send_data(["Invalid talk id $tid."], 'ok');
+
                     return;
                 }
 
                 // Get talks only in future.
                 $talk = getTableEntry(
                     'talks', 'id,status',
-                    ['id'=>$tid, 'status'=>'VALID']
+                    ['id' => $tid, 'status' => 'VALID']
                 );
                 $event = getEventsOfTalkId($talk['id']);
-                if($event) {
+                if ($event) {
                     $talk['event'] = $event;
                 }
                 $req = getBookingRequestOfTalkId($talk['id']);
-                if($req) {
+                if ($req) {
                     $talk['request'] = $req;
                 }
                 $this->send_data($talk, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'delete') {
+            } elseif ('delete' === $endpoint) {
                 $res = updateThisTalk($_POST);
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($endpoint === 'email') {
+            } elseif ('email' === $endpoint) {
                 $tid = $args[2];
                 $email = talkToEmail($tid);
                 $this->send_data($email, 'ok');
+
                 return;
             }
-            else
-            {
-                $this->send_data(["Unknown request"], "ok");
-                return;
-            }
-        }
-        else if($args[0] === 'event') { 
+
+            $this->send_data(['Unknown request'], 'ok');
+
+            return;
+        } elseif ('event' === $args[0]) {
             return $this->__commontasks(...$args);
-        } else if($args[0] === 'speaker') {
+        } elseif ('speaker' === $args[0]) {
             return $this->__commontasks(...$args);
-        } else if($args[0] === 'table') {
+        } elseif ('table' === $args[0]) {
             return $this->__commontasks(...$args);
-        } else if($args[0] === 'holidays') {
-            if($args[1] === 'list') {
+        } elseif ('holidays' === $args[0]) {
+            if ('list' === $args[1]) {
                 $holidays = getHolidays();
                 $this->send_data($holidays, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'submit') {
-                $res = insertOrUpdateTable('holidays'
-                    , 'date,description,is_public_holiday,schedule_talk_or_aws,comment'
-                    , 'description,is_public_holiday,schedule_talk_or_aws,comment'
-                    , $_POST);
-                $this->send_data(['status'=>$res, 'msg'=>'success'], "ok");
+            } elseif ('submit' === $args[1]) {
+                $res = insertOrUpdateTable('holidays', 'date,description,is_public_holiday,schedule_talk_or_aws,comment', 'description,is_public_holiday,schedule_talk_or_aws,comment', $_POST);
+                $this->send_data(['success' => $res, 'msg' => 'success'], 'ok');
+
                 return;
-            }
-            else if($args[1] === 'delete') {
+            } elseif ('delete' === $args[1]) {
                 $res = deleteFromTable('holidays', 'date', $_POST);
-                $this->send_data(['status'=>$res, 'msg'=>'success'], "ok");
+                $this->send_data(['success' => $res, 'msg' => 'success'], 'ok');
+
                 return;
             }
-            else {
-                $this->send_data(['status'=>false, 'msg'=>"unknown endpoint"]
-                    , 'method not allowed');
-                return;
-            }
+
+            $this->send_data(['status' => false, 'msg' => 'unknown endpoint'], 'method not allowed');
+
+            return;
         }
         // NOTE: Usually admin can not approve requests; he can do so for some
-        // requests associated with talks. 
-        else if($args[0] === 'request') {
-            if($args[1] === 'cancel' || $args[1] === 'delete') {
+        // requests associated with talks.
+        elseif ('request' === $args[0]) {
+            if ('cancel' === $args[1] || 'delete' === $args[1]) {
                 $res = changeRequestStatus(
-                    $request[ 'gid' ],
-                    $request[ 'rid' ], $request[ 'created_by' ],
+                    $request['gid'],
+                    $request['rid'], $request['created_by'],
                     'CANCELLED'
                 );
-                $this->send_data(['status'=>$res], "ok");
+                $this->send_data(['status' => $res], 'ok');
+
                 return;
-            }
-            else if($args[1] === 'approve') {
+            } elseif ('approve' === $args[1]) {
                 // make sure that it is a PUBLIC EVENT.
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
-                $this->send_data($ret, "ok");
+                $this->send_data($ret, 'ok');
+
                 return;
             }
-            else
-            {
-                $data = ['flash' => 'Unknown request'];
-                $this->send_data($data, "ok");
-                return;
-            }
+
+            $data = ['flash' => 'Unknown request'];
+            $this->send_data($data, 'ok');
+
+            return;
         }
-        $this->send_data(["Unknown request: ", $args], "ok");
-        return;
+        $this->send_data(['Unknown request: ', $args], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis API endpoint for acadadmin.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function acadadmin()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $login = getLogin();
-        if(! in_array('ACAD_ADMIN', getRoles($login))) {
-            $this->send_data([], "Forbidden");
+        if (!in_array('ACAD_ADMIN', getRoles($login))) {
+            $this->send_data([], 'Forbidden');
+
             return;
         }
 
         $args = func_get_args();
         $data = [];
-        if($args[0] === 'upcomingaws') {
-            if($args[1] === 'upcoming') {
+        if ('upcomingaws' === $args[0]) {
+            if ('upcoming' === $args[1]) {
                 $awses = getUpcomingAWS();
-                foreach($awses as &$aws)
-                {
+                foreach ($awses as &$aws) {
                     $aws['by'] = loginToHTML($aws['speaker']);
-                    $data[$aws['date']][]=$aws;
+                    $data[$aws['date']][] = $aws;
                 }
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'assign') {
+            } elseif ('assign' === $args[1]) {
                 $_POST['venue'] = __get__($_POST, 'venue', getDefaultAWSVenue($_POST['date']));
                 $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'cancel') {
+            } elseif ('cancel' === $args[1]) {
                 $data = cancelAWS($_POST, getLogin());
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'update') {
+            } elseif ('update' === $args[1]) {
                 $data = updateAWS($_POST, getLogin());
                 $this->send_data($data, 'ok');
+
                 return;
             }
-            else
-            {
-                $this->send_data(["Unknown request"], "ok");
-                return;
-            }
-        }
-        else if($args[0] === 'aws' ) {
-            // These aws has been delivered. 
-            if($args[1] === 'search') {
+
+            $this->send_data(['Unknown request'], 'ok');
+
+            return;
+        } elseif ('aws' === $args[0]) {
+            // These aws has been delivered.
+            if ('search' === $args[1]) {
                 $q = $args[2];
                 $data = [];
-                if(strlen($q) > 2) {
+                if (strlen($q) > 2) {
                     $data = executeQuery(
                         "SELECT id,status,title,speaker,date,venue,supervisor_1 
                         FROM annual_work_seminars 
@@ -3075,78 +3035,76 @@ class Api extends CI_Controller
                         ORDER BY date DESC LIMIT 20"
                     );
                 }
-                foreach($data as &$e) {
+                foreach ($data as &$e) {
                     $e['html'] = '<tt>(' . $e['status'] . ')</tt> '
-                        . '<strong>' . getLoginHTML($e['speaker']) 
-                        . '</strong> on <strong>' 
-                        . humanReadableDate($e['date']) 
-                        . "</strong> '". $e['title'] . "'"
-                        . ' <small>(pi/host: ' . $e['supervisor_1'] .')</small>';
+                        . '<strong>' . getLoginHTML($e['speaker'])
+                        . '</strong> on <strong>'
+                        . humanReadableDate($e['date'])
+                        . "</strong> '" . $e['title'] . "'"
+                        . ' <small>(pi/host: ' . $e['supervisor_1'] . ')</small>';
                     $e['summary'] = $e['speaker']
-                        . ', ' . humanReadableDate($e['date']) 
-                        . ", '". $e['title'] . "'";
+                        . ', ' . humanReadableDate($e['date'])
+                        . ", '" . $e['title'] . "'";
                 }
                 // Send as list. Its a query data.
                 $this->send_data_helper($data);
+
                 return;
-            }
-            else if($args[1] === 'delete') {
+            } elseif ('delete' === $args[1]) {
                 $id = $args[2];
-                if($id && is_int($id)) {
+                if ($id && is_int($id)) {
                     $res = updateTable(
                         'annual_work_seminars', 'id', 'status',
-                        ['id'=>$id, 'status'=>'DELETED']
+                        ['id' => $id, 'status' => 'DELETED']
                     );
                     $this->send_data(
-                        ['success'=>true
-                        , 'msg'=>"Deleted AWS with id $id"]
+                        ['success' => true, 'msg' => "Deleted AWS with id $id"]
                     );
+
                     return;
                 }
-                $this->send_data(['success'=>false, 'msg'=>"Invalid AWS id $id"]);
+                $this->send_data(['success' => false, 'msg' => "Invalid AWS id $id"]);
+
                 return;
-            }
-            else if($args[1] === 'get') {
+            } elseif ('get' === $args[1]) {
                 $data = [];
-                if($args[2] === 'all') {
-                    $awses = executeQuery("SELECT date,speaker,title,status FROM annual_work_seminars");
-                    foreach($awses as $aws) {
-                        $data[$aws['date']]=$aws;
+                if ('all' === $args[2]) {
+                    $awses = executeQuery('SELECT date,speaker,title,status FROM annual_work_seminars');
+                    foreach ($awses as $aws) {
+                        $data[$aws['date']] = $aws;
                     }
-                }
-                else {
+                } else {
                     $id = $args[2];
                     $data = executeQuery("SELECT * FROM annual_work_seminars WHERE id='$id'", true);
-                    $data = count($data) > 0?$data[0]:[];
+                    $data = count($data) > 0 ? $data[0] : [];
                 }
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'update') {
-                $data = ['success'=>false, 'msg'=>'Failed to update AWS.'];
+            } elseif ('update' === $args[1]) {
+                $data = ['success' => false, 'msg' => 'Failed to update AWS.'];
                 $res = updateTable(
                     'annual_work_seminars', 'id',
                     'title,abstract,status,is_presynopsis_seminar', $_POST
                 );
 
-                if($res) {
+                if ($res) {
                     $data['success'] = true;
-                    $data['msg'] .= "Successfully updated.";
+                    $data['msg'] .= 'Successfully updated.';
                 }
                 $this->send_data($data, 'ok');
+
                 return;
             }
-            else
-            {
-                $data = [ "Unknown AWS request: " . json_encode($args)];
-                $this->send_data($data, 'ok');
-                return;
-            }
-        }
-        else if($args[0] === 'course') {
+
+            $data = ['Unknown AWS request: ' . json_encode($args)];
+            $this->send_data($data, 'ok');
+
+            return;
+        } elseif ('course' === $args[0]) {
             assert($args[1]) or die("/course/x requires a valid 'x'");
 
-            if($args[1] === 'registration') {
+            if ('registration' === $args[1]) {
                 // We are sending base64 encoded string because course id can have
                 $data = $_POST;
                 $course = getRunningCourseByID(
@@ -3154,8 +3112,8 @@ class Api extends CI_Controller
                     $data['year'], $data['semester']
                 );
 
-                assert($course) or die("No valid course is found.");
-                assert(__get__($args, 2, '')) or die("Empty TYPE ");
+                assert($course) or die('No valid course is found.');
+                assert(__get__($args, 2, '')) or die('Empty TYPE ');
 
                 // Do not send email when using APP.
                 $res = handleCourseRegistration(
@@ -3164,150 +3122,150 @@ class Api extends CI_Controller
                 );
 
                 $this->send_data($res, 'ok');
+
                 return;
             }
-            if($args[1] === 'grade') {
+            if ('grade' === $args[1]) {
                 // We are sending base64 encoded string because course id can have
                 // Do not send email when using APP.
                 assert(isset($_POST['student_id'])) or die('No valid student id');
                 $res = assignGrade($_POST, getLogin());
                 $this->send_data($res, 'ok');
+
                 return;
             }
-        }
-        else if($args[0] === 'awsroster') {
-            if($args[1] === 'fetch') {
-                $speakers = getAWSSpeakers($sortby='pi_or_host');
-                foreach($speakers as &$speaker)
-                {
-                    if(! $speaker) {
+        } elseif ('awsroster' === $args[0]) {
+            if ('fetch' === $args[1]) {
+                $speakers = getAWSSpeakers($sortby = 'pi_or_host');
+                foreach ($speakers as &$speaker) {
+                    if (!$speaker) {
                         continue;
                     }
                     $extraInfo = getExtraAWSInfo($speaker['login'], $speaker);
                     $speaker = array_merge($speaker, $extraInfo);
                 }
                 $this->send_data($speakers, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'remove') {
+            } elseif ('remove' === $args[1]) {
                 $whom = urldecode($args[2]);
                 assert($whom);
                 $res = removeAWSSpeakerFromList($whom, __get__($_POST, 'reason', ''));
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'add') {
+            } elseif ('add' === $args[1]) {
                 $whom = urldecode($args[2]);
                 $res = addAWSSpeakerToList($whom);
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'available_dates') {
+            } elseif ('available_dates' === $args[1]) {
                 $numDates = intval(__get__($args, 2, 5)); // get next 5 slots.
                 $datesAvailable = awsDatesAvailable($numDates);
-                $this->send_data($datesAvailable, "ok");
+                $this->send_data($datesAvailable, 'ok');
+
                 return;
             }
-            else
-            {
-                $this->send_data(["Unknown request"], "ok");
-                return;
-            }
-        }
-        else if($args[0] === 'reschedule') {
+
+            $this->send_data(['Unknown request'], 'ok');
+
+            return;
+        } elseif ('reschedule' === $args[0]) {
             rescheduleAWS();
-            $this->send_data(['success'=>true, 'msg'=> "Reschedule OK."], "ok");
+            $this->send_data(['success' => true, 'msg' => 'Reschedule OK.'], 'ok');
+
             return;
         }
-        $this->send_data(["Unknown request: " . json_encode($args)], "ok");
-        return;
+        $this->send_data(['Unknown request: ' . json_encode($args)], 'ok');
     }
-
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis Handles people related queries and post.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function people()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
 
         $args = func_get_args();
-        if($args[0] === 'speaker') {
-            if($args[1] === 'add') {
+        if ('speaker' === $args[0]) {
+            if ('add' === $args[1]) {
                 $name = splitNameIntoParts($_POST['name']);
                 $_POST = array_merge($_POST, $name);
                 $ret = addUpdateSpeaker($_POST);
                 $this->send_data($ret, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'update') {
+            } elseif ('update' === $args[1]) {
                 $name = splitNameIntoParts($_POST['name']);
                 $_POST = array_merge($_POST, $name);
                 $ret = addUpdateSpeaker($_POST);
                 $this->send_data($ret, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'fetch') {
-                $this->__commontasks('speaker', 'fetch', $args[2]); 
+            } elseif ('fetch' === $args[1]) {
+                $this->__commontasks('speaker', 'fetch', $args[2]);
+
                 return;
             }
         }
-        $this->send_data(["Unknown request"], "ok");
-        return;
+        $this->send_data(['Unknown request'], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis TALK api.
      *
-     * @Returns   
+     * @Returns
      */
     /* ----------------------------------------------------------------------------*/
     public function talk()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
         $args = func_get_args();
 
-        if($args[0] === 'get') {
+        if ('get' === $args[0]) {
             $talkid = $args[1];
             $data = getTalkWithBooking($talkid, getLogin());
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'update') {
+        } elseif ('update' === $args[0]) {
             $data = updateThisTalk($_POST);
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
-        }
-        else if($args[0] === 'remove' || $args[0] == "cancel") {
+        } elseif ('remove' === $args[0] || 'cancel' == $args[0]) {
             $data = removeThisTalk($args[1], getLogin());
-            $this->send_data($data, "ok");
+            $this->send_data($data, 'ok');
+
             return;
         }
-        $this->send_data(['msg'=>"Unknown request", 'status'=>false], "ok");
-        return;
+        $this->send_data(['msg' => 'Unknown request', 'status' => false], 'ok');
     }
 
     // Emails.
     public function email()
     {
-        if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
             return;
         }
         $args = func_get_args();
+
         return $this->__commontasks('email', ...$args);
     }
 }
-
-?>

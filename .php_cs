@@ -19,6 +19,8 @@
 $finder = PhpCsFixer\Finder::create()
     ->exclude('node_modules')
     ->exclude('vendor')
+    ->exclude('system')
+    ->exclude('temp')
     ->in(__DIR__);
 
 return PhpCsFixer\Config::create()

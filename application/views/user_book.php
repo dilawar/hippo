@@ -10,7 +10,6 @@ require_once BASEPATH . 'autoload.php';
  *  booking.
  */
 
-
 $ref = 'user';
 if (isset($controller)) {
     $ref = $controller;
@@ -21,46 +20,38 @@ echo userHTML();
 
 $roundedTimeNow = round(time() / (15 * 60)) * (15 * 60);
 
-$defaults = array(
-    "date" => dbDate(strtotime('today'))
-    , "start_time" => date('H:i', $roundedTimeNow)
-    , "end_time" => date('H:i', $roundedTimeNow + 3600)
-    , "strength" => 7
-    , "has_skype" => "NO"
-    , "has_projector" => "NO"
-    , "openair" => "NO"
-    , "title" => ''
-    );
-
+$defaults = [
+    'date' => dbDate(strtotime('today')), 'start_time' => date('H:i', $roundedTimeNow), 'end_time' => date('H:i', $roundedTimeNow + 3600), 'strength' => 7, 'has_skype' => 'NO', 'has_projector' => 'NO', 'openair' => 'NO', 'title' => '',
+    ];
 
 /*
  * If external_id is set by controller then we are here to book a  talk.
  */
 if (isset($external_id)) {
-    $expr = explode(".", $external_id);
-    $tableName = $expr[ 0 ];
-    $id = $expr[ 1 ];
-    $entry = getTableEntry($tableName, 'id', array( "id" => $id ));
+    $expr = explode('.', $external_id);
+    $tableName = $expr[0];
+    $id = $expr[1];
+    $entry = getTableEntry($tableName, 'id', ['id' => $id]);
 
-    echo "<h1>Scheduling following talk </h1>";
+    echo '<h1>Scheduling following talk </h1>';
 
     echo '<div style="font-size:small">';
     echo arrayToVerticalTableHTML($entry, 'events', '', 'id,status,date,time,venue');
     echo '</div>';
 
-    $defaults[ 'title' ] = $entry[ 'title' ];
-    $defaults[ 'class' ] = $entry[ 'class' ];
-    $defaults[ 'is_public_event' ] = 'YES';
-    $defaults[ 'speaker' ] = $entry[ 'speaker' ];
-    $defaults[ 'class' ] = $entry[ 'class' ];
+    $defaults['title'] = $entry['title'];
+    $defaults['class'] = $entry['class'];
+    $defaults['is_public_event'] = 'YES';
+    $defaults['speaker'] = $entry['speaker'];
+    $defaults['class'] = $entry['class'];
 
     // Update the title of booking request.
-    $defaults[ 'title' ] = __ucwords__($defaults[ 'class' ]) . ' by '
-            . $defaults[ 'speaker' ] . " on '" . $defaults[ 'title' ] . "'";
+    $defaults['title'] = __ucwords__($defaults['class']) . ' by '
+            . $defaults['speaker'] . " on '" . $defaults['title'] . "'";
 
     // Description is just the title of the talk. Keep it short.
-    $defaults[ 'description' ] = $defaults[ 'title' ];
-    $goback = "user/show_public";
+    $defaults['description'] = $defaults['title'];
+    $goback = 'user/show_public';
 } else {
     echo alertUser(
         'If emails are be sent out to academic community (e.g. 
@@ -76,26 +67,26 @@ if (isset($external_id)) {
 // provided by user.
 foreach ($defaults as $key => $val) {
     if (array_key_exists($key, $_POST)) {
-        $defaults[ $key ] = $_POST[ $key ];
+        $defaults[$key] = $_POST[$key];
     }
 }
 
 $skypeYes = ''; $skypeNo = '';
-if ($defaults[ 'has_skype' ] == 'YES') {
+if ('YES' == $defaults['has_skype']) {
     $skypeYes = 'checked';
 } else {
     $skypeNo = 'checked';
 }
 
 $projectorYes = ''; $projectorNo = '';
-if ($defaults[ 'has_projector' ] == 'YES') {
+if ('YES' == $defaults['has_projector']) {
     $projectorYes = 'checked';
 } else {
     $projectorNo = 'checked';
 }
 
 $openAirNo = ''; $openAirYes = '';
-if ($defaults[ 'openair' ] == 'YES') {
+if ('YES' == $defaults['openair']) {
     $openAirYes = 'checked';
 } else {
     $openAirNo = 'checked';
@@ -108,42 +99,42 @@ if ($defaults[ 'openair' ] == 'YES') {
 <tr>
     <td>Date</td>
     <td><input  class="datepicker" name="date"
-    value=" <?= $defaults['date'] ?>" /> </td>
+    value=" <?= $defaults['date']; ?>" /> </td>
 </tr>
 <tr>
     <td>Start time </td>
     <td><input  class="timepicker" name="start_time"
-    value="<?= $defaults['start_time'] ?>" /> </td>
+    value="<?= $defaults['start_time']; ?>" /> </td>
 </tr>
 <tr>
     <td>End time </td>
     <td><input  class="timepicker" name="end_time"
-    value="<?= $defaults['end_time'] ?>" /> </td>
+    value="<?= $defaults['end_time']; ?>" /> </td>
 </tr>
 <tr>
     <td>Mininum seatings required? </td>
     <td><input type="text" name="strength"
-    value=" <?= $defaults['strength'] ?>" /> </td>
+    value=" <?= $defaults['strength']; ?>" /> </td>
 </tr>
 <tr>
     <td>Do you need video-conference facility?</td>
     <td>
-        <input type="radio" name="has_skype" value="NO" <?= $skypeNo ?> /> No
-        <input type="radio" name="has_skype" value="YES" <?= $skypeYes ?> /> Yes
+        <input type="radio" name="has_skype" value="NO" <?= $skypeNo; ?> /> No
+        <input type="radio" name="has_skype" value="YES" <?= $skypeYes; ?> /> Yes
     </td>
 </tr>
 <tr>
     <td>Do you need a projector?</td>
     <td>
-    <input type="radio" name="has_projector" value="NO" <?= $projectorNo ?> /> No
-    <input type="radio" name="has_projector" value="YES" <?= $projectorYes?> /> Yes
+    <input type="radio" name="has_projector" value="NO" <?= $projectorNo; ?> /> No
+    <input type="radio" name="has_projector" value="YES" <?= $projectorYes; ?> /> Yes
     </td>
 </tr>
 <tr>
     <td>Prefer open-air location?</td>
     <td>
-        <input type="radio" name="openair" value="NO" <?= $openAirNo ?> /> No
-        <input type="radio" name="openair" value="YES" <?= $openAirYes ?> /> Yes
+        <input type="radio" name="openair" value="NO" <?= $openAirNo; ?> /> No
+        <input type="radio" name="openair" value="YES" <?= $openAirYes; ?> /> Yes
     </td>
 </tr>
 </table>
@@ -163,10 +154,10 @@ $publicEvents = getPublicEventsOnThisDay($date);
 
 if (count($publicEvents) > 0) {
     echo "<div class='alert alert-info'>";
-    echo p("You are advised not to schedule any public event which might clash with the followings.");
+    echo p('You are advised not to schedule any public event which might clash with the followings.');
 
     $tohide = 'gid,eid,class,description,status,is_public_event,external_id'
-              . ',calendar_id,calendar_event_id,last_modified_on,url' ;
+              . ',calendar_id,calendar_event_id,last_modified_on,url';
 
     echo '<table class="table-responsive table-bordered">';
     echo arrayHeaderRow($publicEvents[0], 'info', $tohide);
@@ -174,7 +165,7 @@ if (count($publicEvents) > 0) {
         echo arrayToRowHTML($event, 'info', $tohide);
     }
     echo '</table>';
-    echo "</div>";
+    echo '</div>';
 }
 
 /******************************************************************************
@@ -182,9 +173,8 @@ if (count($publicEvents) > 0) {
  * ***************************************************************************/
 $jcAndMeets = getLabmeetAndJC();
 
-
-if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
-    $date = humanReadableDate($_POST[ 'date' ]);
+if (array_key_exists('Response', $_POST) && 'scan' == $_POST['Response']) {
+    $date = humanReadableDate($_POST['date']);
     if (strtotime($_POST['end_time']) < strtotime($_POST['start_time'])) {
         echo printWarning(
             'Event is ending before starting. This will violate causality. Fix 
@@ -192,8 +182,8 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
         );
     }
 
-    $startTime = humanReadableTime($_POST[ 'start_time' ]);
-    $endTime = humanReadableTime($_POST[ 'end_time' ]);
+    $startTime = humanReadableTime($_POST['start_time']);
+    $endTime = humanReadableTime($_POST['end_time']);
 
     echo "<h2> Available venues on $date between $startTime & $endTime </h2>";
 
@@ -212,21 +202,21 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
         if ($listData['quota'] > 0) {
             $listData['note'] .= colored(
                 p("<i class='fa fa-frown-o'></i> This venue has quota limit of <tt> " .
-                $listData['quota'] . " minutes per week</tt> for every user."),
+                $listData['quota'] . ' minutes per week</tt> for every user.'),
                 'red'
             );
         }
 
-        $venueId = $venue[ 'id' ];
+        $venueId = $venue['id'];
         $date = dbDate($_POST['date']);
-        $startTime = $_POST[ 'start_time' ];
-        $endTime = $_POST[ 'end_time' ];
+        $startTime = $_POST['start_time'];
+        $endTime = $_POST['end_time'];
 
         $skip = false;
         $skipMsg = '<tt>' . $venueId . '</tt> does not meet your requirements: ';
-        if ($venue[ 'strength' ] <= $_POST[ 'strength' ]) {
-            $msg = "Required strength=" . $_POST[ 'strength' ] .
-                ' but venue strength=' . $venue[ 'strength' ] . '.';
+        if ($venue['strength'] <= $_POST['strength']) {
+            $msg = 'Required strength=' . $_POST['strength'] .
+                ' but venue strength=' . $venue['strength'] . '.';
             $skipMsg .= $msg;
             $skip = true;
         }
@@ -234,36 +224,38 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
         // One can reduce a Kernaugh map here. The expression is A' + B where
         // A is request for skype variable and B is has_skype field of
         // venue. We take its negative and use continue.
-        if ($_POST[ 'has_skype' ] == 'YES' && ! ($venue[ 'has_skype' ] == 'YES')) {
-            $skipMsg .= " No conference facility. " ;
+        if ('YES' == $_POST['has_skype'] && !('YES' == $venue['has_skype'])) {
+            $skipMsg .= ' No conference facility. ';
             $skip = true;
         }
 
-        if ($_POST[ 'has_projector' ] == 'YES' && ! ($venue[ 'has_projector' ] == 'YES')) {
-            $skipMsg .= " No projector. ";
+        if ('YES' == $_POST['has_projector'] && !('YES' == $venue['has_projector'])) {
+            $skipMsg .= ' No projector. ';
             $skip = true;
         }
 
         // Similarly, openair.
-        if ($_POST[ 'openair' ] == 'YES' && ! ($venue[ 'type' ] == 'OPEN AIR')) {
+        if ('YES' == $_POST['openair'] && !('OPEN AIR' == $venue['type'])) {
             // No need to display anything here.
             $skip = true;
+
             continue;
         }
 
         if ($skip) {
             $listData['reason'] = colored($skipMsg, 'grey');
             $listData['hide'] = $skip;
+
             continue;
         }
 
         /* check if admin has marked it reserved. */
-        if ((! anyOfTheseRoles("BOOKMYVENUE_ADMIN,ADMIN,ACAD_ADMIN"))
+        if ((!anyOfTheseRoles('BOOKMYVENUE_ADMIN,ADMIN,ACAD_ADMIN'))
             && ('NO' === $venue['allow_booking_on_hippo'])) {
             $listData['show_booking_button'] = false;
         }
         if ('NO' === $venue['allow_booking_on_hippo']) {
-            $listData['reason'] .= p("This venue is not available for common booking on Hippo!");
+            $listData['reason'] .= p('This venue is not available for common booking on Hippo!');
         }
 
         // Check if user has surpassed this quota.
@@ -272,17 +264,17 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
             echo " USAGE $usage ";
             $listData['show_booking_button'] = false;
             $listData['reason'] .= p(
-                "You have surpassed your quota on this venue "
+                'You have surpassed your quota on this venue '
                 . venueToShortText($listData['venue'])
                 . ". Your usage $usage mins, allowed "
-                . $listData['quota'] . "."
+                . $listData['quota'] . '.'
             );
         }
 
         /**
-            * @name Now check if any request or booking is already made on this
-            * slot/venue. If yes, then do not book.
-        */
+         * @name Now check if any request or booking is already made on this
+         * slot/venue. If yes, then do not book.
+         */
         $events = getEventsOnThisVenueBetweenTime($venueId, $date, $startTime, $endTime);
 
         $reqs = getRequestsOnThisVenueBetweenTime(
@@ -293,7 +285,7 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
         );
 
         // merge requests and events are together.
-        $all = array( );
+        $all = [];
         if ($events) {
             $all = array_merge($all, $events);
         }
@@ -308,9 +300,9 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
 
         $venueIsTaken = false;
         if (count($all) > 0) {
-            $msg = "Venue <font color=\"red\">"
+            $msg = 'Venue <font color="red">'
                 . strtoupper($venue['id'])
-                . " </font> has been taken by following booking request/event</tt>"
+                . ' </font> has been taken by following booking request/event</tt>'
                 ;
 
             foreach ($all as $r) {
@@ -325,15 +317,15 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
          * Also check if a course is running on this slot/venue.
          */
         $clashingCourses = runningCoursesOnThisVenueSlot(
-            $venue[ 'id' ],
+            $venue['id'],
             $date,
             $startTime,
             $endTime
         );
 
         if ($clashingCourses) {
-            $msg = "Venue <font color=\"red\">" . strtoupper($venue['id']). " </font> 
-                has following course(s)";
+            $msg = 'Venue <font color="red">' . strtoupper($venue['id']) . ' </font> 
+                has following course(s)';
 
             $ignore = 'semester,year,max_registration,allow_deregistration_until,is_audit_allowed,note';
             foreach ($clashingCourses as $id => $r) {
@@ -359,12 +351,12 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
                 $note = '';
                 foreach ($jclabmeets as $jclabmeet) {
                     $note .= '<font color=\"cyan\"> <i class="fa fa-exclamation-circle fa-2x"></i>
-                         Although ' . $venue[ 'id' ]
+                         Although ' . $venue['id']
                         . ' is available, it is usually booked for following JC/Labmeet. Make sure 
                         to check with booking party. They may book it later. </font>';
 
                     $note .= '<div class="alert alert-info" style="font-size:x-small">';
-                    $note .= arrayToTableHTML($jclabmeet, 'info', '', $ignore . ",date,eid", false);
+                    $note .= arrayToTableHTML($jclabmeet, 'info', '', $ignore . ',date,eid', false);
                     $note .= '</div>';
                 }
                 // Append to note if any.
@@ -381,26 +373,25 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
         // Insert all information into form.
         $form = '<form method="post" action="' . site_url("$ref/bookingrequest/$goback") . '">';
         $form .= '<input type="hidden" name="title"
-            value="' . $defaults['title' ] . '">';
+            value="' . $defaults['title'] . '">';
         $form .= '<input type="hidden" name="description"
-            value="' . __get__($defaults, 'description', '')  . '">';
+            value="' . __get__($defaults, 'description', '') . '">';
         $form .= '<input type="hidden" name="external_id"
             value="' . $external_id . '">';
 
         $form .= '<input type="hidden" name="class"
             value="' . __get__($defaults, 'class', 'UNKNOWN') . '">';
 
+        $form .= '<input type="hidden" name="date" value="' . $defaults['date'] . '" >';
 
-        $form .= '<input type="hidden" name="date" value="' . $defaults[ 'date' ] . '" >';
-
         $form .= '<input type="hidden"
-            name="start_time" value="' . $defaults[ 'start_time' ] . '" >';
+            name="start_time" value="' . $defaults['start_time'] . '" >';
         $form .= '<input type="hidden"
-            name="end_time" value="' . $defaults[ 'end_time' ] . '" >';
+            name="end_time" value="' . $defaults['end_time'] . '" >';
         $form .= '<input type="hidden"
-            name="venue" value="' . $venue[ 'id' ] . '" >';
+            name="venue" value="' . $venue['id'] . '" >';
         $form .= '<button class="btn btn-primary" title="Book this venue">Book</button>';
-        $form .= "";
+        $form .= '';
         $form .= '</form>';
 
         // Now contruct a row.
@@ -413,22 +404,21 @@ if (array_key_exists('Response', $_POST) && $_POST['Response'] == "scan") {
         }
 
         if (trim($listData['reason'])) {
-            $row .= "<p class='list-group-item-text'>" .$listData['reason'] . "</p>";
+            $row .= "<p class='list-group-item-text'>" . $listData['reason'] . '</p>';
         }
         if (trim($listData['note'])) {
-            $row .= "<p class='list-group-item-text'>" .$listData['note'] . "</p>";
+            $row .= "<p class='list-group-item-text'>" . $listData['note'] . '</p>';
         }
 
         $row .= '</div>';
 
         $list .= $row;
     }
-    $list .= "</div>";
+    $list .= '</div>';
     echo $list;
 }
 
-
-echo goBackToPageLink("$goback", "Go back");
-echo "</body>";
+echo goBackToPageLink("$goback", 'Go back');
+echo '</body>';
 
 ?>

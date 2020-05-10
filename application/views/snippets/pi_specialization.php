@@ -2,18 +2,17 @@
 
 // Collect all faculty
 $faculty = getFaculty();
-$facultyByEmail = array( );
+$facultyByEmail = [];
 foreach ($faculty as $fac) {
-    $facultyByEmail[ $fac[ 'email' ] ] = $fac;
+    $facultyByEmail[$fac['email']] = $fac;
 }
 $facEmails = array_keys($facultyByEmail);
 
-$specialization = array( );
+$specialization = [];
 foreach (getAllSpecialization() as $spec) {
-    $specialization[$spec[ 'specialization' ] ] = 1;
+    $specialization[$spec['specialization']] = 1;
 }
 $specialization = array_keys($specialization);
-
 
 ?>
 

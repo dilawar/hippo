@@ -22,25 +22,24 @@ echo '
     Whatever you can do with Hippo are listed on this page.
     </li>
     </ul>
-    ' ;
+    ';
 
-
-echo "<h2>How do I book my thesis seminar? </h2>";
-echo "
+echo '<h2>How do I book my thesis seminar? </h2>';
+echo '
     See the section below. While booking, select the talk <tt>CLASS</tt> to 
     <tt>THESIS SEMINAR </tt>.
-    ";
+    ';
 
 echo '<h2>How to book a public talk, lecture or seminar?</h2>';
 
-echo "<ul>
+echo '<ul>
     <li> Keep the photo and email id of speaker handy. You can continue without 
     them but they are very useful for preparing documents. We strongly
     recommend that you arrange photo and email id of speaker. Email of speaker 
     is never  publicly displayed.
     </li>
     <li>
-    After login to <a href=\"https://ncbs.res.in/hippo\">Hippo</a> , go to 
+    After login to <a href="https://ncbs.res.in/hippo">Hippo</a> , go to 
    <tt>Register talk/seminar</tt> and fill details. First
    section is for speaker, second is for talk. Third (optional) contains 
    scheduling information. If there is already some event on your selected
@@ -50,11 +49,10 @@ echo "<ul>
 
     <li>
     If venue is available on given date and time, both talk and venue will be
-    booked pending approval.  After approval, you can see your event <a href=\"https://ncbs.res.in/hippo/events.php\">Here</a>. It will also appear on calendar and emails will be sent
+    booked pending approval.  After approval, you can see your event <a href="https://ncbs.res.in/hippo/events.php">Here</a>. It will also appear on calendar and emails will be sent
     to appropriate mailing lists at appropriate times.
     </li>
-    </ul>";
-
+    </ul>';
 
 echo '<h3> Editing/updating/scheduling talks</h3>';
 echo "<ul>
@@ -68,9 +66,9 @@ echo "<ul>
     </li>
     
     </ul>";
-    
+
 echo '<h2>How to create a general booking request?</h2>';
-echo "
+echo '
     <ul>
         <li>
             Click <tt>QuickBook</tt> on the top-right corner to create your booking.
@@ -83,7 +81,7 @@ echo "
         </li>
 
         <li>
-        Press <button disabled>" . $symbCheck . "</button> in front of your 
+        Press <button disabled>' . $symbCheck . '</button> in front of your 
             preferred venue, you will be
             asked for details of your booking. Please make sure you fill it under
             the right <tt>CLASS</tt> (e.g. <tt>THESIS SEMINAR, LAB MEETING, TALK</tt>
@@ -108,7 +106,7 @@ echo "
             event expires.
         </li>
     </ul> 
-    ";
+    ';
 
 echo '<h2>How to cancel or edit booking request/event?</h2>';
 
@@ -124,10 +122,10 @@ echo '
         </li>
     </ul>';
 
-echo "<p>All the booked events can be viewed 
-    <a target=\"_blank\" 
-    href=\"https://www.ncbs.res.in/hippo/allevents.php\">here</a>
-    </p>" ;
+echo '<p>All the booked events can be viewed 
+    <a target="_blank" 
+    href="https://www.ncbs.res.in/hippo/allevents.php">here</a>
+    </p>';
 
 echo '<h1> Infrequently asked questions. </h1> ';
 
@@ -170,9 +168,7 @@ echo '
 
 echo '</div>';
 
-
-
-echo "<p>TODO .. A lot here </p>";
+echo '<p>TODO .. A lot here </p>';
 
 ?>
 

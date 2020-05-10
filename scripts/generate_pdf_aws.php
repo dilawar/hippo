@@ -1,77 +1,74 @@
 <?php
 
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 
-// This script may also be called by command line by the email bot. To make sure 
+// This script may also be called by command line by the email bot. To make sure
 // $_GET works whether we call it from command line or browser.
-if( isset($argv) )
-    parse_str( implode( '&' , array_slice( $argv, 1 )), $_GET );
+if (isset($argv)) {
+    parse_str(implode('&', array_slice($argv, 1)), $_GET);
+}
 
-
-function awsToTex( $aws )
+function awsToTex($aws)
 {
     // First sanities the html before it can be converted to pdf.
-    foreach( $aws as $key => $value )
-    {
-        // See this 
+    foreach ($aws as $key => $value) {
+        // See this
         // http://stackoverflow.com/questions/9870974/replace-nbsp-characters-that-are-hidden-in-text
-        $value = htmlentities( $value, null, 'utf-8' );
-        $value = str_replace( '&nbsp;', '', $value );
-        $value = preg_replace( '/\s+/', ' ', $value );
-        $value = html_entity_decode( trim( $value ) );
-        $aws[ $key ] = $value;
+        $value = htmlentities($value, null, 'utf-8');
+        $value = str_replace('&nbsp;', '', $value);
+        $value = preg_replace('/\s+/', ' ', $value);
+        $value = html_entity_decode(trim($value));
+        $aws[$key] = $value;
     }
 
-    $speaker = __ucwords__( loginToText( $aws[ 'speaker' ] , false ));
+    $speaker = __ucwords__(loginToText($aws['speaker'], false));
 
-    $supervisors = array( __ucwords__( 
-        loginToText( findAnyoneWithEmail( $aws[ 'supervisor_1' ] ), false ))
-                ,  __ucwords__( 
-        loginToText( findAnyoneWithEmail( $aws[ 'supervisor_2' ] ), false ))
-            );
-    $supervisors = array_filter( $supervisors );
+    $supervisors = [__ucwords__(
+        loginToText(findAnyoneWithEmail($aws['supervisor_1']), false)),  __ucwords__(
+        loginToText(findAnyoneWithEmail($aws['supervisor_2']), false)),
+            ];
+    $supervisors = array_filter($supervisors);
 
-    $tcm = array( );
-    array_push( $tcm, __ucwords__( 
-        loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_1' ] ), false ))
-            , __ucwords__( 
-        loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_2' ] ), false ))
-            ,  __ucwords__( 
-        loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_3' ] ), false ))
-            , __ucwords__( 
-        loginToText( findAnyoneWithEmail( $aws[ 'tcm_member_4' ] ), false ))
+    $tcm = [];
+    array_push($tcm, __ucwords__(
+        loginToText(findAnyoneWithEmail($aws['tcm_member_1']), false)), __ucwords__(
+        loginToText(findAnyoneWithEmail($aws['tcm_member_2']), false)), __ucwords__(
+        loginToText(findAnyoneWithEmail($aws['tcm_member_3']), false)), __ucwords__(
+        loginToText(findAnyoneWithEmail($aws['tcm_member_4']), false))
         );
-    $tcm = array_filter( $tcm );
+    $tcm = array_filter($tcm);
 
-    $title = $aws[ 'title' ];
-    if( strlen( trim( $title ) ) < 1 )
+    $title = $aws['title'];
+    if (strlen(trim($title)) < 1) {
         $title = 'Not disclosed yet!';
+    }
 
-    $abstract =  rescale_inline_images( $aws['abstract'], '8cm' );
+    $abstract = rescale_inline_images($aws['abstract'], '8cm');
 
-    if( strlen( trim( $abstract ) ) < 1 )
+    if (strlen(trim($abstract)) < 1) {
         $abstract = 'Not disclosed yet!';
+    }
 
     // Add user image.
-    $imagefile = getLoginPicturePath( $aws['speaker'], 'hippo' );
-    $imagefile = getThumbnail( $imagefile );
-
+    $imagefile = getLoginPicturePath($aws['speaker'], 'hippo');
+    $imagefile = getThumbnail($imagefile);
 
     // Date and plate
-    $date = '\textsc{\bf \textcolor{red}{ ' . humanReadableDate( $aws[ 'date' ] ) .  ' | 4:00 pm' . '}}';
+    $date = '\textsc{\bf \textcolor{red}{ ' . humanReadableDate($aws['date']) . ' | 4:00 pm' . '}}';
     $place = '\textsc{\bf \textcolor{red}{Haapus (LH1), Eastern Lab Complex}}';
 
     // Two columns here.
     $head = '';
-    $logo = FCPATH.'data/ncbs_logo.png';
+    $logo = FCPATH . 'data/ncbs_logo.png';
 
     // Is presynopsis seminar?
-    if( __get__( $aws, 'is_presynopsis_seminar', 'NO' ) == 'YES' )
+    if ('YES' == __get__($aws, 'is_presynopsis_seminar', 'NO')) {
         $awsType = 'Presynopsis Seminar';
-    else
+    } else {
         $awsType = 'Annual Work Seminar';
+    }
 
-    // Header 
+    // Header
     $head .= '\begin{tikzpicture}[remember picture, overlay
         , every node/.style={rectangle, node distance=5mm,inner sep=0mm} ]';
     $head .= '\node[below=of current page.north west, anchor=north west, xshift=10mm] (logo) 
@@ -96,121 +93,107 @@ function awsToTex( $aws )
     $head .= '\end{tikzpicture}';
 
     // Header
-    $tex = array( $head );
+    $tex = [$head];
     $tex[] = '\par \vspace{3mm}';
 
     // remove html formating before converting to tex.
-    $tempFile = tempnam( sys_get_temp_dir(), "hippo_abstract" );
-    file_put_contents( $tempFile, $abstract );
+    $tempFile = tempnam(sys_get_temp_dir(), 'hippo_abstract');
+    file_put_contents($tempFile, $abstract);
 
-    $cmd = FCPATH.'scripts/html2other.py';
-    hippo_shell_exec( "$cmd $tempFile tex", $texAbstractFile, $stderr );
+    $cmd = FCPATH . 'scripts/html2other.py';
+    hippo_shell_exec("$cmd $tempFile tex", $texAbstractFile, $stderr);
 
-    $texAbstract = file_get_contents( trim($texAbstractFile) );
+    $texAbstract = file_get_contents(trim($texAbstractFile));
 
-    if( strlen(trim($texAbstract)) > 10 )
+    if (strlen(trim($texAbstract)) > 10) {
         $abstract = $texAbstract;
+    }
 
     // Title and abstract
     $extra = '\begin{tabular}{p{0.4\linewidth} p{0.6\linewidth}}';
-    $extra .= '\textbf{Supervisor(s)/Host} & ' . implode( ",", $supervisors) . '\\\\';
-    $extra .= '\textbf{Thesis Committee Member(s)} & ' . implode( ", ", $tcm ) . '\\\\';
+    $extra .= '\textbf{Supervisor(s)/Host} & ' . implode(',', $supervisors) . '\\\\';
+    $extra .= '\textbf{Thesis Committee Member(s)} & ' . implode(', ', $tcm) . '\\\\';
     $extra .= '\end{tabular}';
 
     $autoscale = false;
-    if( $autoscale )
-    {
+    if ($autoscale) {
         $tex[] = '\begin{tcolorbox}[colframe=black!0,colback=red!0
-            , fit to height=17.5cm, fit basedim=14pt] ' 
+            , fit to height=17.5cm, fit basedim=14pt] '
             . $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '} \end{tcolorbox}';
-    }
-    else
+    } else {
         $tex[] = $abstract . '\vspace{5mm}' . '{\normalsize \vfill ' . $extra . '}';
+    }
 
-    return implode( "\n", $tex );
-
+    return implode("\n", $tex);
 } // Function ends.
 
-function pdfFileOfAWS(string $date, string $speaker='') : array
+function pdfFileOfAWS(string $date, string $speaker = ''): array
 {
-    $ret = ['pdf'=> '', 'error' => ''];
+    $ret = ['pdf' => '', 'error' => ''];
 
-    if( ! $date )
-    {
+    if (!$date) {
         $ret['error'] = "Invalid date $date";
+
         return $ret;
     }
 
     $whereExpr = "date='" . $date . "'";
-    if( $speaker )
+    if ($speaker) {
         $whereExpr .= " AND speaker='$speaker'";
+    }
 
-    $awses = getTableEntries( 'annual_work_seminars', '', $whereExpr );
-    $upcomingS = getTableEntries( 'upcoming_aws', '', $whereExpr ); 
-    $awses = array_merge( $awses, $upcomingS );
+    $awses = getTableEntries('annual_work_seminars', '', $whereExpr);
+    $upcomingS = getTableEntries('upcoming_aws', '', $whereExpr);
+    $awses = array_merge($awses, $upcomingS);
 
     // Intialize pdf template.
-    $tex = array( "\documentclass[12pt]{article}"
-        , "\usepackage[margin=15mm,top=15mm,a4paper]{geometry}"
-        , "\usepackage[]{graphicx}"
-        , "\usepackage[]{grffile}"
-        , "\usepackage[]{amsmath,amssymb}"
-        , "\usepackage[]{color}"
-        , "\usepackage{tikz}"
-        , "\usepackage[hidelinks=true]{hyperref}"
-        , "\usepackage{wrapfig}"
-        , '\pagenumbering{gobble}'
-        , '\usepackage{booktabs}'
-        , '\usepackage{fontspec}'
-        , '\renewcommand{\familydefault}{\sfdefault}'
-        , '\linespread{1.15}'
-        , '\usetikzlibrary{calc,positioning,arrows,fit}'
+    $tex = ["\documentclass[12pt]{article}", "\usepackage[margin=15mm,top=15mm,a4paper]{geometry}", "\usepackage[]{graphicx}", "\usepackage[]{grffile}", "\usepackage[]{amsmath,amssymb}", "\usepackage[]{color}", "\usepackage{tikz}", "\usepackage[hidelinks=true]{hyperref}", "\usepackage{wrapfig}", '\pagenumbering{gobble}', '\usepackage{booktabs}', '\usepackage{fontspec}', '\renewcommand{\familydefault}{\sfdefault}', '\linespread{1.15}', '\usetikzlibrary{calc,positioning,arrows,fit}'
         // , '\usepackage{ebgaramond}'
         // , '\usepackage[sfdefault,light]{FiraSans}'
         , '\usepackage{tcolorbox}'
         //, '\tcbuselibrary{fitting}'
-        , '\begin{document}'
-    );
+        , '\begin{document}',
+    ];
 
     $outfile = 'AWS_' . $date;
-    foreach( $awses as $aws )
-    {
+    foreach ($awses as $aws) {
         $outfile .= '_' . trim($aws['speaker']);
-        $tex[] = awsToTex( $aws );
+        $tex[] = awsToTex($aws);
         $tex[] = '\newpage';
     }
 
     $tex[] = '\end{document}';
-    $TeX = implode( "\n", $tex );
+    $TeX = implode("\n", $tex);
 
     // Generate PDF now.
     $texFile = sys_get_temp_dir() . "/$outfile.tex";
 
     // Remove tex from the end and apped pdf.
-    $pdfFile = rtrim( $texFile, 'tex' ) . 'pdf';
+    $pdfFile = rtrim($texFile, 'tex') . 'pdf';
 
-    if( file_exists( $pdfFile ) )
-        unlink( $pdfFile );
+    if (file_exists($pdfFile)) {
+        unlink($pdfFile);
+    }
 
-    file_put_contents( $texFile,  $TeX );
+    file_put_contents($texFile, $TeX);
 
-    $cmd = FCPATH."scripts/tex2pdf.sh $texFile";
+    $cmd = FCPATH . "scripts/tex2pdf.sh $texFile";
 
-    if( file_exists( $texFile ) )
-        hippo_shell_exec( $cmd, $stdout, $stderr );
+    if (file_exists($texFile)) {
+        hippo_shell_exec($cmd, $stdout, $stderr);
+    }
 
-    if( file_exists($pdfFile) )
-    {
+    if (file_exists($pdfFile)) {
         $ret['pdf'] = $pdfFile;
+
         return $ret;
     }
 
-    $ret['error'] = "Failed to genered pdf document <br>
+    $ret['error'] = 'Failed to genered pdf document <br>
         This is usually due to hidden special characters 
-        in your abstract. You need to clean your entry up.";
+        in your abstract. You need to clean your entry up.';
 
     $ret['stdout'] = $cmd . '<br />' . $stdout . $stderr;
+
     return $ret;
 }
-
-?>

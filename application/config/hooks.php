@@ -1,5 +1,6 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+
+defined('BASEPATH') or exit('No direct script access allowed');
 
 /*
 | -------------------------------------------------------------------------
@@ -14,12 +15,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 // NOTE: Using function here is not a great idea since function can't access
 // $_SESSION etc.
-$hook['post_controller_constructor'] = array( 
-    'class' => 'HippoHooks'
-    , 'function' => 'PreController' 
-    , 'filename' => 'HippoHooks.php'
-    , 'filepath' => 'hooks' 
-    , 'params' => array( )
-);
-
-?>
+$hook['post_controller_constructor'] = [
+    'class' => 'HippoHooks', 'function' => 'PreController', 'filename' => 'HippoHooks.php', 'filepath' => 'hooks', 'params' => [],
+];

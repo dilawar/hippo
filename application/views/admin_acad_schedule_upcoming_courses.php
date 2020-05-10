@@ -1,16 +1,16 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 
 echo userHTML();
 $nextSem = getNextSemester();
-$year = $nextSem[ 'year' ];
-$sem = $nextSem[ 'semester' ];
+$year = $nextSem['year'];
+$sem = $nextSem['semester'];
 
 $upcomingCourses = getSemesterCourses($year, $sem);
 $runningCourseMapForAutoCompl = [];
 foreach ($upcomingCourses as $x) {
     $cid = $x['id'] . ': ' . getCourseName($x['course_id']);
-    $runningCourseMapForAutoCompl[ $cid ] = $x['id'];
+    $runningCourseMapForAutoCompl[$cid] = $x['id'];
 }
 ?>
 
@@ -39,7 +39,7 @@ $venueSelectList = venuesToHTMLSelect($lhs);
 $slotSelectList = arrayToSelectList('slot', array_keys($slotMap));
 
 $action = 'Add';
-$default = array( 'slot' => $slotSelectList, 'venue' => $venueSelectList );
+$default = ['slot' => $slotSelectList, 'venue' => $venueSelectList];
 
 // Form: Add new scheduling entry.
 $form = '<form action="admin_acad_schedule_upcoming_courses_action.php"
@@ -70,7 +70,7 @@ if (count($entries) > 0) {
     $table = '<table class="info">';
     $table .= arrayHeaderRow($entries[0], 'info', $tofilter);
     foreach ($entries as $entry) {
-        $cname = getCourseName($entry[ 'course_id' ]);
+        $cname = getCourseName($entry['course_id']);
         $entry['comment'] .= '<br>' . $cname;
         $table .= '<form action="admin_acad_schedule_upcoming_courses_action.php"
             method="post" accept-charset="utf-8">';
@@ -95,12 +95,12 @@ $rows = getTableEntries('upcoming_course_schedule', '', "status='VALID'");
 $table = '<table class="info">';
 $table .= '<tr><th>Slot</th><th>Venue</th><th>Course</th></tr>';
 foreach ($rows as $row) {
-    if (! trim($row['alloted_slot']) || ! trim($row[ 'alloted_venue' ])) {
+    if (!trim($row['alloted_slot']) || !trim($row['alloted_venue'])) {
         continue;
     }
 
-    $rowHTML = '<td>' . $row[ 'alloted_slot' ] . '</td><td>'
-                . $row[ 'alloted_venue' ]
+    $rowHTML = '<td>' . $row['alloted_slot'] . '</td><td>'
+                . $row['alloted_venue']
                 . '</td><td>' . getCourseName($row['course_id']) . '</td>';
     $table .= "<tr> $rowHTML </tr>";
 }
