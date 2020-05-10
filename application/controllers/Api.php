@@ -43,6 +43,8 @@ function authenticateAPI($apikey, $user='')
 
 function getKey()
 {
+    // NOTE: headers are case insensitive. So getHeader function must search
+    // for both cases.
     return __get__($_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
 }
 
@@ -260,9 +262,16 @@ class Api extends CI_Controller
     public function search()
     {
         $args = func_get_args();
+
         // Only need api key
+        $key = getKey();
+        if(! $key ) {
+            $this->send_data(['status'=>false, msg=>'Not authenticated. Empty key'], 401);
+            return;
+        }
+
         if(! authenticateAPI(getKey())) {
-            $this->send_data([], "Not authenticated");
+            $this->send_data(['status'=>false, msg=>'Bad key. Did you login?'], 401);
             return;
         }
 

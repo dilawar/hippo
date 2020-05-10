@@ -36,8 +36,6 @@ class Google_Service_PeopleService_Resource_PeopleConnections extends Google_Ser
    * for. Only `people/me` is valid.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string sortOrder Optional. The order in which the connections
-   * should be sorted. Defaults to `LAST_MODIFIED_ASCENDING`.
    * @opt_param bool requestSyncToken Optional. Whether the response should
    * include `next_sync_token`, which can be used to get all changes since the
    * last request. For subsequent sync requests use the `sync_token` param
@@ -48,12 +46,12 @@ class Google_Service_PeopleService_Resource_PeopleConnections extends Google_Ser
    *
    * When paginating, all other parameters provided to `ListConnections` must
    * match the call that provided the page token.
-   * @opt_param int pageSize Optional. The number of connections to include in the
-   * response. Valid values are between 1 and 2000, inclusive. Defaults to 100 if
-   * not set or set to 0.
    * @opt_param string requestMask.includeField Required. Comma-separated list of
    * person fields to be included in the response. Each path should start with
    * `person.`: for example, `person.names` or `person.photos`.
+   * @opt_param int pageSize Optional. The number of connections to include in the
+   * response. Valid values are between 1 and 2000, inclusive. Defaults to 100 if
+   * not set or set to 0.
    * @opt_param string syncToken Optional. A sync token, received from a previous
    * `ListConnections` call. Provide this to retrieve only the resources changed
    * since the last request. Sync requests that specify `sync_token` have an
@@ -70,6 +68,8 @@ class Google_Service_PeopleService_Resource_PeopleConnections extends Google_Ser
    * memberships * metadata * names * nicknames * occupations * organizations *
    * phoneNumbers * photos * relations * residences * sipAddresses * skills * urls
    * * userDefined
+   * @opt_param string sortOrder Optional. The order in which the connections
+   * should be sorted. Defaults to `LAST_MODIFIED_ASCENDING`.
    * @return Google_Service_PeopleService_ListConnectionsResponse
    */
   public function listPeopleConnections($resourceName, $optParams = array())

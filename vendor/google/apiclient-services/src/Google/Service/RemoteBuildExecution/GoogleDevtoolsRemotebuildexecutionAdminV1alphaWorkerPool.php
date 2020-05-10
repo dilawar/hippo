@@ -17,12 +17,28 @@
 
 class Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerPool extends Google_Model
 {
+  protected $autoscaleType = 'Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdminV1alphaAutoscale';
+  protected $autoscaleDataType = '';
   public $name;
   public $state;
   protected $workerConfigType = 'Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerConfig';
   protected $workerConfigDataType = '';
   public $workerCount;
 
+  /**
+   * @param Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdminV1alphaAutoscale
+   */
+  public function setAutoscale(Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdminV1alphaAutoscale $autoscale)
+  {
+    $this->autoscale = $autoscale;
+  }
+  /**
+   * @return Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdminV1alphaAutoscale
+   */
+  public function getAutoscale()
+  {
+    return $this->autoscale;
+  }
   public function setName($name)
   {
     $this->name = $name;

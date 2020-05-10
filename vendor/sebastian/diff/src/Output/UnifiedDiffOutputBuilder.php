@@ -7,7 +7,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace SebastianBergmann\Diff\Output;
 
 use SebastianBergmann\Diff\Differ;
@@ -68,14 +67,13 @@ final class UnifiedDiffOutputBuilder extends AbstractChunkOutputBuilder
 
         \fclose($buffer);
 
-        // If the last char is not a linebreak: add it.
+        // If the diff is non-empty and last char is not a linebreak: add it.
         // This might happen when both the `from` and `to` do not have a trailing linebreak
         $last = \substr($diff, -1);
 
-        return "\n" !== $last && "\r" !== $last
+        return 0 !== \strlen($diff) && "\n" !== $last && "\r" !== $last
             ? $diff . "\n"
-            : $diff
-        ;
+            : $diff;
     }
 
     private function writeDiffHunks($output, array $diff): void
@@ -117,7 +115,9 @@ final class UnifiedDiffOutputBuilder extends AbstractChunkOutputBuilder
         $hunkCapture = false;
         $sameCount   = $toRange   = $fromRange = 0;
         $toStart     = $fromStart = 1;
+        $i           = 0;
 
+        /** @var int $i */
         foreach ($diff as $i => $entry) {
             if (0 === $entry[1]) { // same
                 if (false === $hunkCapture) {
@@ -134,8 +134,7 @@ final class UnifiedDiffOutputBuilder extends AbstractChunkOutputBuilder
                 if ($sameCount === $cutOff) {
                     $contextStartOffset = ($hunkCapture - $this->contextLines) < 0
                         ? $hunkCapture
-                        : $this->contextLines
-                    ;
+                        : $this->contextLines;
 
                     // note: $contextEndOffset = $this->contextLines;
                     //
@@ -197,8 +196,7 @@ final class UnifiedDiffOutputBuilder extends AbstractChunkOutputBuilder
 
         $contextStartOffset = $hunkCapture - $this->contextLines < 0
             ? $hunkCapture
-            : $this->contextLines
-        ;
+            : $this->contextLines;
 
         // prevent trying to write out more common lines than there are in the diff _and_
         // do not write more than configured through the context lines

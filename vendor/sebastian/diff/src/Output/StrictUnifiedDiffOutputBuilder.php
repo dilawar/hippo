@@ -7,7 +7,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace SebastianBergmann\Diff\Output;
 
 use SebastianBergmann\Diff\ConfigurationException;
@@ -29,6 +28,7 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
         'toFile'              => null,
         'toFileDate'          => null,
     ];
+
     /**
      * @var bool
      */
@@ -70,17 +70,10 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
             throw new ConfigurationException('commonLineThreshold', 'an int > 0', $options['commonLineThreshold']);
         }
 
-        foreach (['fromFile', 'toFile'] as $option) {
-            if (!\is_string($options[$option])) {
-                throw new ConfigurationException($option, 'a string', $options[$option]);
-            }
-        }
-
-        foreach (['fromFileDate', 'toFileDate'] as $option) {
-            if (null !== $options[$option] && !\is_string($options[$option])) {
-                throw new ConfigurationException($option, 'a string or <null>', $options[$option]);
-            }
-        }
+        $this->assertString($options, 'fromFile');
+        $this->assertString($options, 'toFile');
+        $this->assertStringOrNull($options, 'fromFileDate');
+        $this->assertStringOrNull($options, 'toFileDate');
 
         $this->header = \sprintf(
             "--- %s%s\n+++ %s%s\n",
@@ -124,8 +117,7 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
 
         return "\n" !== $last && "\r" !== $last
             ? $diff . "\n"
-            : $diff
-        ;
+            : $diff;
     }
 
     private function writeDiffHunks($output, array $diff): void
@@ -167,7 +159,9 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
         $hunkCapture = false;
         $sameCount   = $toRange = $fromRange = 0;
         $toStart     = $fromStart = 1;
+        $i           = 0;
 
+        /** @var int $i */
         foreach ($diff as $i => $entry) {
             if (0 === $entry[1]) { // same
                 if (false === $hunkCapture) {
@@ -184,8 +178,7 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
                 if ($sameCount === $cutOff) {
                     $contextStartOffset = ($hunkCapture - $this->contextLines) < 0
                         ? $hunkCapture
-                        : $this->contextLines
-                    ;
+                        : $this->contextLines;
 
                     // note: $contextEndOffset = $this->contextLines;
                     //
@@ -249,8 +242,7 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
 
         $contextStartOffset = $hunkCapture - $this->contextLines < 0
             ? $hunkCapture
-            : $this->contextLines
-        ;
+            : $this->contextLines;
 
         // prevent trying to write out more common lines than there are in the diff _and_
         // do not write more than configured through the context lines
@@ -313,6 +305,20 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
             //} else {
                 //  unknown/invalid
             //}
+        }
+    }
+
+    private function assertString(array $options, string $option): void
+    {
+        if (!\is_string($options[$option])) {
+            throw new ConfigurationException($option, 'a string', $options[$option]);
+        }
+    }
+
+    private function assertStringOrNull(array $options, string $option): void
+    {
+        if (null !== $options[$option] && !\is_string($options[$option])) {
+            throw new ConfigurationException($option, 'a string or <null>', $options[$option]);
         }
     }
 }

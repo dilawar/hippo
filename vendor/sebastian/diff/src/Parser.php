@@ -7,7 +7,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace SebastianBergmann\Diff;
 
 /**
@@ -16,8 +15,6 @@ namespace SebastianBergmann\Diff;
 final class Parser
 {
     /**
-     * @param string $string
-     *
      * @return Diff[]
      */
     public function parse(string $string): array
@@ -66,8 +63,9 @@ final class Parser
 
     private function parseFileDiff(Diff $diff, array $lines): void
     {
-        $chunks = [];
-        $chunk  = null;
+        $chunks    = [];
+        $chunk     = null;
+        $diffLines = [];
 
         foreach ($lines as $line) {
             if (\preg_match('/^@@\s+-(?P<start>\d+)(?:,\s*(?P<startrange>\d+))?\s+\+(?P<end>\d+)(?:,\s*(?P<endrange>\d+))?\s+@@/', $line, $match)) {
