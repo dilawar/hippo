@@ -2659,12 +2659,15 @@ class Api extends CI_Controller
                         ['success' => false, 'msg' => "Invalid talk id $tid"],
                         'ok'
                     );
-
                     return;
                 }
                 $email = talkToEmail($tid);
                 $this->send_data($email, 'ok');
-
+                return;
+            } elseif( 'upcoming_aws' === $args[1]) {
+                $monday = $args[2];
+                $email = awsEmailForMonday($monday);
+                $this->send_data($email, 'ok');
                 return;
             } elseif ('post' === $args[1]) {
                 $data = $_POST;
@@ -3264,11 +3267,9 @@ class Api extends CI_Controller
     {
         if (!authenticateAPI(getKey())) {
             $this->send_data([], 'Not authenticated');
-
             return;
         }
         $args = func_get_args();
-
         return $this->__commontasks('email', ...$args);
     }
 }
