@@ -256,14 +256,12 @@ class Api extends CI_Controller
         // Only need api key
         $key = getKey();
         if (!$key) {
-            $this->send_data(['status' => false, msg => 'Not authenticated. Empty key'], 401);
-
+            $this->send_data(['status' => false, 'msg' => 'Not authenticated. Empty key'], 401);
             return;
         }
 
         if (!authenticateAPI(getKey())) {
             $this->send_data(['status' => false, msg => 'Bad key. Did you login?'], 401);
-
             return;
         }
 
@@ -291,7 +289,6 @@ class Api extends CI_Controller
         } elseif ('faculty' === $args[0]) {
             $faculty = searchInFaculty($q);
             $this->send_data_helper($faculty);
-
             return;
         } elseif ('login' === $args[0]) {
             $logins = searchInLogins($q);
@@ -762,6 +759,12 @@ class Api extends CI_Controller
                 'upcoming_aws', 'date',
                 "date >= '$from'", '*', $numEvents
             );
+        } elseif ('weekinfo' === $args[0]) {
+            if ('change' === $args[1]) {
+                $res = updateTable('upcoming_aws', 'date', 'venue,vc_url,chair', $_POST);
+                $this->send_data(['status' => $res], 'ok');
+                return;
+            }
         } elseif ('venue' === $args[0]) {
             if ('change' === $args[1]) {
                 $res = updateTable('upcoming_aws', 'date', 'venue,vc_url', $_POST);
