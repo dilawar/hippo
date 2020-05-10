@@ -66,7 +66,13 @@ function generateAWSEmail($monday)
     $firstAws = $upcomingAws[0];
     $venue = venueToShortText($firstAws['venue']);
 
+    $chair = 'None';
+    if(__get__($aws, 'chair', '')) {
+        $chair = loginToText(findAnyoneWithLoginOrEmail($aws['chair']));
+    }
+
     $data = [
+        'CHAIR' => $chair, 
          'VENUE' => $venue, 'EMAIL_BODY' => $html, 'DATE' => humanReadableDate($monday), 'TIME' => humanReadableTime($firstAws['time']),
     ];
 
