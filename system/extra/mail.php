@@ -76,6 +76,7 @@ function generateAWSEmail($monday)
          'VENUE' => $venue, 'EMAIL_BODY' => $html, 'DATE' => humanReadableDate($monday), 'TIME' => humanReadableTime($firstAws['time']),
     ];
 
+
     $mail = emailFromTemplate('aws_template', $data);
 
     //    try {

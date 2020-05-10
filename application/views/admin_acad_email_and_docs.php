@@ -51,7 +51,8 @@ echo '
 $subject = '';
 $templ = null;
 
-if ('This week AWS' == $default['task']) {
+if ('This week AWS' === $default['task']) 
+{
     $whichDay = $default['date'];
     $awses = getTableEntries('annual_work_seminars', 'date', "date='$whichDay'");
     $upcoming = getTableEntries('upcoming_aws', 'date', "date='$whichDay'");
@@ -67,8 +68,16 @@ if ('This week AWS' == $default['task']) {
         }
 
         echo $emailHtml;
+
+        $chair = __get__($awses[0], 'chair', '');
+        if($chair)
+            $chair = loginToText(findAnyoneWithLoginOrEmail($chair));
+        else
+            $chair = 'None assigned.';
+
         $subject = ' Annual Work Seminars on ' . humanReadableDate($aws['date']);
         $macros = [
+            'CHAIR' => $chair,
             'DATE' => humanReadableDate($awses[0]['date']), 'TIME' => humanReadableTime(strtotime('4:00 pm')), 'VENUE' => venueToShortText($awses[0]['venue']),  'EMAIL_BODY' => $emailHtml, ];
 
         $templ = emailFromTemplate('aws_template', $macros);
@@ -81,7 +90,7 @@ if ('This week AWS' == $default['task']) {
             ;
     }
 } // This week AWS is over here.
-elseif ('This week events' == $default['task']) {
+else if ('This week events' === $default['task']) {
     $html = printInfo(
         'List of public events for the week starting '
         . humanReadableDate($default['date'])
@@ -121,7 +130,7 @@ elseif ('This week events' == $default['task']) {
         'this_week_events',
         ['EMAIL_BODY' => $html]
     );
-} elseif ('This day\'s events' == $default['task']) {
+} elseif ('This day\'s events' === $default['task']) {
     // List todays events.
 
     $templ = [];
