@@ -5,53 +5,41 @@ site_author: Dilawar Singh <dilawars@ncbs.res.in>
 copyright: 'Copyright &copy; 2016-2020 Dilawar Singh'
 repo_url: https://gitlab.com/dilawar/Hippo
 theme:
-    name: material
-    logo: images/logo.svg
-    highlightjs: true
-    hljs_languages:
-        - php
-        - python
+  name: material
+  logo: images/logo.svg
+  highlightjs: true
+  hljs_languages:
+    - php
+    - python
 
 nav:
-    - Home: index.md
-    - User Manual: user_manual.md
-    - BookMyVenue Admin manual: bmv_admin_manual.md
-    - Acadmic Admin Manual: acadmic_admin_manual.md
-    - System Admin Manual: system_admin_manual.md
-    - Developer Document: developer.md
-    - Bug tracker: https://github.com.com/dilawar/hippo/issues
+  - Home: index.md
+  - User Manual: user_manual.md
+  - BookMyVenue Admin manual: bmv_admin_manual.md
+  - Acadmic Admin Manual: acadmic_admin_manual.md
+  - System Admin Manual: system_admin_manual.md
+  - Developer Document: developer.md
+  - Bug tracker: https://github.com.com/dilawar/hippo/issues
 
 extra_css: [extra.css]
 
-markdown_extensions:
-    - admonition
-    - toc
-    - attr_list
-    - footnotes
-    - pymdownx.betterem:
-        smart_enable: all
-    - pymdownx.caret
-    - pymdownx.details
-    - pymdownx.inlinehilite
-    - pymdownx.magiclink
-    - pymdownx.mark
-    - pymdownx.smartsymbols
-    - pymdownx.superfences
-    - pymdownx.tasklist:
-        custom_checkbox: true
-    - pymdownx.tilde
-
 plugins:
-    - search
-    - macros
+  - search
+  - macros
 
-extra:
-    social:
-        - type: 'gitlab'
-          link: 'https://gitlab.com/dilawar'
-    site_url: 'https://ncbs-hippo.readthedocs.io/en/latest/'
-    repo_url: 'https://gitlab.com/dilawar/hippo'
-    intranet: 'http://intranet.ncbs.res.in'
-    webmail: 'https://webmail.ncbs.res.in'
-    bugs: 'https://github.com/dilawar/hippo/issues'
-    hippo_mailing_list: 'mailto@hippo@lists.ncbs.res.in'
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: True
+  - attr_list
+  - footnotes
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: True
+  - pymdownx.tilde
