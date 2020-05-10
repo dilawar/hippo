@@ -1,13 +1,14 @@
 <?php
-require_once BASEPATH."autoload.php";
+
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
-echo "<h2>You are updating your upcoming AWS </h2>";
+echo '<h2>You are updating your upcoming AWS </h2>';
 
 echo alertUser("If you can't find supervisors/TCM members in drop down list,
     you have to go back and add them. Visit <a class=\"clickable\" 
-    href=\"" . site_url("user/update_supervisors") . "\">this link</a>
-    to add them.", false);
+    href=\"" . site_url('user/update_supervisors') . '">this link</a>
+    to add them.', false);
 
 echo alertUser(
     '<strong>DO NOT COPY/PASTE from
@@ -20,13 +21,13 @@ echo alertUser(
     false
 );
 
-echo "<br>";
+echo '<br>';
 
-if ($_POST[ 'response' ] == 'update') {
-    $awsId = $_POST[ 'id' ];
+if ('update' == $_POST['response']) {
+    $awsId = $_POST['id'];
     $aws = getUpcomingAWSById($awsId);
 
-    echo '<form method="post" action="' . site_url("user/aws/update_upcoming_aws/submit").'">';
+    echo '<form method="post" action="' . site_url('user/aws/update_upcoming_aws/submit') . '">';
     echo editableAWSTable(-1, $aws);
     echo '<input type="hidden", name="id" value="' . $awsId . '">';
     echo '</form>';

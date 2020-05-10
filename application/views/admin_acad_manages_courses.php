@@ -1,5 +1,5 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 // In config/constansts.php
@@ -12,8 +12,8 @@ function showEditCourse($buttonVal, $course)
 {
     global $symbDelete;
     $editHTML = "<h3 id='editcourse'>$buttonVal course</h3>";
-    $editHTML .= printNote("<tt>ID</tt> of course can not be more than 8 chars.");
-    $editHTML .= '<form method="post" action="'.site_url('adminacad/all_courses_action').'">';
+    $editHTML .= printNote('<tt>ID</tt> of course can not be more than 8 chars.');
+    $editHTML .= '<form method="post" action="' . site_url('adminacad/all_courses_action') . '">';
     $editHTML .= dbTableToHTMLTable(
         'courses_metadata',
         $course,
@@ -30,29 +30,29 @@ function showEditCourse($buttonVal, $course)
         '</button>';
     $editHTML .= '<button class="btn btn-info" id="addMoreInstructors">Add more instructors</button>';
     $editHTML .= '</form>';
+
     return $editHTML;
 }
-
 
 // Javascript.
 $courses = getTableEntries('courses_metadata');
 
-$instructors = array();
+$instructors = [];
 foreach (getFaculty() as $fac) {
-    $instructors[ ] = $fac[ 'email' ];
+    $instructors[] = $fac['email'];
 }
 
-$coursesMap = array( );
+$coursesMap = [];
 $coursesId = array_map(function ($x) {
     return $x['id'];
 }, $courses);
 
 foreach ($courses as $course) {
-    $coursesMap[ $course[ 'id' ] ] = $course;
+    $coursesMap[$course['id']] = $course;
 }
 
-echo p("To update schedule of currently running courses,"
-    . goBackToPageLinkInline("adminacad/courses", "click here."));
+echo p('To update schedule of currently running courses,'
+    . goBackToPageLinkInline('adminacad/courses', 'click here.'));
 ?>
 
 <script type="text/javascript" charset="utf-8">
@@ -76,7 +76,7 @@ $(function() {
 
 // Autocomplete speaker.
 $( function() {
-    var coursesDict = <?php echo json_encode($coursesMap) ?>;
+    var coursesDict = <?php echo json_encode($coursesMap); ?>;
     var courses = <?php echo json_encode($coursesId); ?>;
     $( "#course" ).autocomplete( { source : courses });
     $( "#course" ).attr( "placeholder", "Type to select a course ID." );
@@ -87,14 +87,13 @@ $( function() {
 
 <?php
 
-
 // Logic for POST requests.
-$course = array('id' => '', 'day' => '', 'start_time' => '', 'end_time' => '' );
-echo "<h1>All courses</h1>";
-echo p("The form to ADD a new course or EDIT a selected course is at the bottom.");
+$course = ['id' => '', 'day' => '', 'start_time' => '', 'end_time' => ''];
+echo '<h1>All courses</h1>';
+echo p('The form to ADD a new course or EDIT a selected course is at the bottom.');
 echo '<input id="filter_all_courses" placeholder="Type to filter courses" />';
 
-echo coursesTable($editable=true, $with_form=true, $class="small_font table");
+echo coursesTable($editable = true, $with_form = true, $class = 'small_font table');
 
 echo '<h1>Add/Update a course</h1>';
 echo '<form method="post" action="#editcourse">';
@@ -116,18 +115,17 @@ if (__get__($_POST, 'response', 'Edit') && __get__($_POST, 'id', false)) {
     }
 }
 
-
 echo showEditCourse($buttonVal, $course);
 
-echo "<br/><br/>";
+echo '<br/><br/>';
 echo goBackToPageLink('adminacad/home', 'Go back');
 echo '<br>';
 ?>
 
 <!-- This should be copy pasted -->
-<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
-<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
-<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));
 </script>

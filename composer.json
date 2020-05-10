@@ -25,5 +25,10 @@
 		"vimeo/psalm": "^3.6",
 		"friendsofphp/php-cs-fixer": "^2.16",
 		"squizlabs/php_codesniffer": "*"
-	}
+	},
+        "scripts": {
+            "format": [
+                "vendor/bin/php-cs-fixer fix"
+            ]
+        }
 }

@@ -79,9 +79,7 @@ $( function() {
 
 // Logic for POST requests.
 $speaker = $cFormData ?? [
-    'first_name' => '', 'middle_name' => '', 'last_name' => ''
-    , 'email' => '', 'department' => '', 'institute' => '', 'title' => ''
-    , 'id' => '', 'designation' => '', 'homepage' => '',
+    'first_name' => '', 'middle_name' => '', 'last_name' => '', 'email' => '', 'department' => '', 'institute' => '', 'title' => '', 'id' => '', 'designation' => '', 'homepage' => '',
     ];
 
 $talk = $cFormData ?? ['created_by' => whoAmI(), 'created_on' => dbDateTime('now')];

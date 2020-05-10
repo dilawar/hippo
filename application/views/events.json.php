@@ -1,12 +1,13 @@
 <?php
-include_once("database.php");
+
+include_once 'database.php';
 
 // Write the list of events in json format. This url is used by Calendar class
 // to read the event list and populate its user-interface accordingly.
 $upcomingEvents = getEvents(strtotime('today'));
-$formattedEvents = array( );
+$formattedEvents = [];
 foreach ($upcomingEvents as $event) {
-    $e = array();
+    $e = [];
     $e['id'] = $event['gid'] . '.' . $event['eid'];
     $e['class'] = ''; //$event['class'];
     $e['title'] = $event['title'];
@@ -16,4 +17,4 @@ foreach ($upcomingEvents as $event) {
     array_push($formattedEvents, $e);
 }
 
-echo('{ "success" : 1, "result":' . json_encode($formattedEvents) . "}");
+echo '{ "success" : 1, "result":' . json_encode($formattedEvents) . '}';

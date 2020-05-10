@@ -1,4 +1,5 @@
 <?php
+
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /*
@@ -73,8 +74,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = true;
 
-$db['default'] = array(
-    'dsn'	=> '',
+$db['default'] = [
+    'dsn' => '',
     'hostname' => 'localhost',
     'username' => '',
     'password' => '',
@@ -91,6 +92,6 @@ $db['default'] = array(
     'encrypt' => false,
     'compress' => false,
     'stricton' => false,
-    'failover' => array(),
-    'save_queries' => true
-);
+    'failover' => [],
+    'save_queries' => true,
+];

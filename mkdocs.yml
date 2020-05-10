@@ -2,7 +2,7 @@ site_name: NCBS Hippo
 author: Dilawar Singh <dilawars@ncbs.res.in>
 site_url: https://ncbs.res.in/hippo
 site_author: Dilawar Singh <dilawars@ncbs.res.in>
-copyright: 'Copyright &copy; 2016-2019 Dilawar Singh'
+copyright: 'Copyright &copy; 2016-2020 Dilawar Singh'
 repo_url: https://gitlab.com/dilawar/Hippo
 theme:
     name: material

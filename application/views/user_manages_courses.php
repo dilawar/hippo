@@ -6,33 +6,31 @@ $me = whoAmI();
 echo userHTML();
 $sem = getCurrentSemester();
 $year = getCurrentYear();
-$runningCourses = array( );
+$runningCourses = [];
 $semCourses = getSemesterCourses($year, $sem);
 foreach ($semCourses as $rc) {
-    $cid = $rc[ 'course_id' ];
-    $rc[ 'name' ] = getCourseName($cid);
-    $rc[ 'slot_tiles' ] = getCourseSlotTiles($rc);
-    $runningCourses[ $cid ] = $rc;
+    $cid = $rc['course_id'];
+    $rc['name'] = getCourseName($cid);
+    $rc['slot_tiles'] = getCourseSlotTiles($rc);
+    $runningCourses[$cid] = $rc;
 }
 // User courses and slots.
 $myRegistrations = getMyCourses($sem, $year, $user = $me);
-$mySlots = array( );
+$mySlots = [];
 foreach ($myRegistrations as $c) {
     // Get the running courses.  In rare case, use may have enrolled in course
     // which is not running anymore.
     $course = __get__($runningCourses, $c['course_id'], null);
     if ($course) {
-        $mySlots[ ] = $runningCourses[ $c[ 'course_id' ] ]['slot'];
+        $mySlots[] = $runningCourses[$c['course_id']]['slot'];
     } else {
         // This course is no longer running. Drop it.
         updateTable(
             'course_registration',
             'student_id,year,semester,course_id',
             'status',
-            array( 'student_id' => $me, 'year' => $year
-                , 'semester' => $sem, 'course_id' => $c[ 'course_id' ]
-                , 'status' => 'INVALID'
-            )
+            ['student_id' => $me, 'year' => $year, 'semester' => $sem, 'course_id' => $c['course_id'], 'status' => 'INVALID',
+            ]
         );
     }
 }
@@ -40,9 +38,9 @@ $mySlots = array_unique($mySlots);
 
 /* --------------------------------------------------------------------------*/
 /**
-    * @Synopsis  Course enrollment.
-    * Check each course date. If course is starting at date x, then start the
-    * coruse x-7 days and let people register till x+7 days.
+ * @Synopsis  Course enrollment.
+ * Check each course date. If course is starting at date x, then start the
+ * coruse x-7 days and let people register till x+7 days.
  */
 /* ----------------------------------------------------------------------------*/
 $today = strtotime('today');
@@ -52,26 +50,27 @@ $courseMap = [];
 $options = [];
 $blockedCourses = [];
 foreach ($runningCourses as $c) {
-    $cstart = strtotime($c[ 'start_date' ]);
+    $cstart = strtotime($c['start_date']);
 
     // Registration is allowed within 3 weeks.
-    if (($cstart + 21*24*3600) > $today) {
+    if (($cstart + 21 * 24 * 3600) > $today) {
         // Ignore any course which is colliding with any registered course.
-        $cid = $c[ 'course_id' ];
+        $cid = $c['course_id'];
         $cname = getCourseName($cid);
-        $slot = $c[ 'slot' ];
+        $slot = $c['slot'];
 
         // A course may be running on the same slot but may not overlap in
         // dates.
         if (collisionWithMyRegistrations($c, $myRegistrations)['collision']) {
-            $blockedCourses[ $cid ] = $cname;
+            $blockedCourses[$cid] = $cname;
+
             continue;
         }
 
         if ($cid) {
-            $options[] = $cid ;
-            $courseInfoHTML = ((strlen($cname) > 32)?substr($cname, 0, 30) . '... ' : $cname) .
-                " (Slot " . $c['slot'] . "/" . $c['venue'] . ")";
+            $options[] = $cid;
+            $courseInfoHTML = ((strlen($cname) > 32) ? substr($cname, 0, 30) . '... ' : $cname) .
+                ' (Slot ' . $c['slot'] . '/' . $c['venue'] . ')';
             $courseMap[$cid] = $courseInfoHTML;
         }
     }
@@ -91,9 +90,9 @@ $myCourseTables = coursesToHTMLTable($myRegistrations, $runningCourses, $withFee
 </ul>
 
 <p>A course will be visible in registration form upto 21 days from its starting date. </p>
-<?php if (count($courseMap)>0): ?>
+<?php if (count($courseMap) > 0) : ?>
     <form method="post" action="manage_course/register">
-    <?= dbTableToHTMLTable('course_registration', $default, 'course_id:required,type:required', 'Submit', 'status,registered_on,last_modified_on,grade,grade_is_given_on')?>
+    <?= dbTableToHTMLTable('course_registration', $default, 'course_id:required,type:required', 'Submit', 'status,registered_on,last_modified_on,grade,grade_is_given_on'); ?>
     </form>
 <?php else: ?>
     <div class="text">
@@ -110,7 +109,7 @@ $action = 'drop';
 
 <div class="card p-2 m-2">
     <div class="card-header h2">
-        You are registered for following course(s) in <?=$sem?>-<?=$year?>
+        You are registered for following course(s) in <?=$sem; ?>-<?=$year; ?>
     </div>
 
     <div class="card-body">
@@ -132,7 +131,7 @@ $action = 'drop';
         <?php if (count($myRegistrations) > 0): ?>
             <div class="row">
             <?php foreach ($myCourseTables as $table): ?>
-                <div class="col"><?= $table ?></div>
+                <div class="col"><?= $table; ?></div>
             <?php endforeach; ?>
             </div>
         <?php else: ?>
@@ -140,7 +139,7 @@ $action = 'drop';
         <?php endif; ?>
     </div>
 </div> 
-<?=goBackToPageLink("user/home", "Go back")?>
+<?=goBackToPageLink('user/home', 'Go back'); ?>
 
 <!-- Summary of runnung courses. -->
 <?php
@@ -156,9 +155,9 @@ foreach ($runningCourses as $cid => $course) {
     $cname = $cinfo['name'];
 
     $timeline = dbDate($course['start_date']) . ' to ' . dbDate($course['end_date']);
-    $whereWhen =  'Slot ' . $course['slot'] . '<br />' . $course['venue'];
-    $isAudit = ($course['is_audit_allowed'] == 'YES')?'YES':colored('NO', 'blue');
-    $maxAllowed = ($course['max_registration'] > 0)?$course['max_registration']:'Unlimited';
+    $whereWhen = 'Slot ' . $course['slot'] . '<br />' . $course['venue'];
+    $isAudit = ('YES' == $course['is_audit_allowed']) ? 'YES' : colored('NO', 'blue');
+    $maxAllowed = ($course['max_registration'] > 0) ? $course['max_registration'] : 'Unlimited';
     $numEnrollments = count(getCourseRegistrations($cid, $course['year'], $course['semester']));
     $note = $course['note'];
 
@@ -172,15 +171,15 @@ foreach ($runningCourses as $cid => $course) {
     $row .= "<td style='min-width:300px'><small> $note </small></td>";
     $row .= '</tr>';
 
-    $table .=  $row;
+    $table .= $row;
 }
 $table .= '</table>';
 ?>
 <div class="card">
 <div class="card-header h2">Summary of running courses</div>
-<div class="card-body"> <?=$table ?> </div>
+<div class="card-body"> <?=$table; ?> </div>
 </div>
-<?=goBackToPageLink("user/home", "Go back")?>
+<?=goBackToPageLink('user/home', 'Go back'); ?>
 
 <!-- MY all courses. -->
 <div class="card">
@@ -194,7 +193,7 @@ $myAllCourses = getTableEntries(
 );
 
 // Add feedback URL as well.
-$myCoursesWithFeedback = array();
+$myCoursesWithFeedback = [];
 foreach ($myAllCourses as $course) {
     $cid = $course['course_id'];
     $cname = getCourseName($cid);
@@ -204,7 +203,7 @@ foreach ($myAllCourses as $course) {
     $year = $course['year'];
     $sem = $course['semester'];
     $res = feedbackForm($year, $sem, $cid);
-    if ($res['num_unanswered']  > 0) {
+    if ($res['num_unanswered'] > 0) {
         $course['Feedback'] = $res['html'];
     } else {
         $course['Feedback'] = showCourseFeedbackLink($year, $sem, $cid);
@@ -217,17 +216,17 @@ if (count($myCoursesWithFeedback) > 0) {
     $table = '<table class="info sorttable w-auto">';
     $table .= arrayToTHRow($myCoursesWithFeedback[0], 'info', $hide);
     foreach ($myCoursesWithFeedback as $course) {
-        $cid = $course[ 'course_id' ];
+        $cid = $course['course_id'];
         $table .= arrayToRowHTML($course, 'info', $hide);
     }
-    $table .= "</table>";
+    $table .= '</table>';
     echo $table;
 } else {
     echo printInfo("I could not find any course belonging to '$user' in my database.");
 }
 echo '</div>';
 
-echo goBackToPageLink("user/home", "Go back");
+echo goBackToPageLink('user/home', 'Go back');
 
 ?>
 

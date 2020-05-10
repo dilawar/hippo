@@ -16,27 +16,27 @@ $tab .= '<tr><td>';
 if (file_exists($picPath)) {
     $tab .= showImage($picPath);
 } else {
-    $tab .= printInfo("I could not find your picture in my database.  Please upload one.");
+    $tab .= printInfo('I could not find your picture in my database.  Please upload one.');
 }
 
 $tab .= '</td></tr><tr><td>';
 
 // Form to upload a picture
-$picAction = '<form action="' . site_url("/user/info/upload_picture") . '" 
+$picAction = '<form action="' . site_url('/user/info/upload_picture') . '" 
     method="post" enctype="multipart/form-data">';
 
-$picAction .=  '<p><small>
+$picAction .= '<p><small>
     This picture will be used in AWS notifications. It will be
     rescaled to fit 5 cm x 5 cm space. I will not accept any picture bigger
     than 1MB in size. Allowed formats (PNG/JPG/GIF/BMP).
     </small></p>
     ';
-$picAction .=  '<input type="file" name="picture" id="picture" value="" />';
-$picAction .=  '<button name="Response" title="Upload your picture" value="upload">Upload</button>';
-$picAction .=  '</form>';
-$picAction .=  '</td></tr>';
-$picAction .=  '</table>';
-$picAction .=  '<br>';
+$picAction .= '<input type="file" name="picture" id="picture" value="" />';
+$picAction .= '<button name="Response" title="Upload your picture" value="upload">Upload</button>';
+$picAction .= '</form>';
+$picAction .= '</td></tr>';
+$picAction .= '</table>';
+$picAction .= '<br>';
 
 $tab .= $picAction;
 echo $tab;
@@ -53,24 +53,24 @@ $specializations = array_map(
     getAllSpecialization()
 );
 
-$info[ 'specialization' ] = arrayToSelectList(
+$info['specialization'] = arrayToSelectList(
     'specialization',
     $specializations,
-    array(),
+    [],
     false,
     __get__($info, 'specialization', '')
 );
 
 // Prepare select list of faculty.
 $faculty = getTableEntries('faculty', 'email', "status='ACTIVE'");
-$facultyEmails = array( );
-$facMap = array( );
+$facultyEmails = [];
+$facMap = [];
 foreach ($faculty as $fac) {
-    $facultyEmails[] = $fac[ 'email'];
-    $facMap[ $fac['email'] ] = arrayToName($fac, $with_email = true);
+    $facultyEmails[] = $fac['email'];
+    $facMap[$fac['email']] = arrayToName($fac, $with_email = true);
 }
 
-$info[ 'pi_or_host' ] = arrayToSelectList(
+$info['pi_or_host'] = arrayToSelectList(
     'pi_or_host',
     $facultyEmails,
     $facMap,
@@ -80,12 +80,12 @@ $info[ 'pi_or_host' ] = arrayToSelectList(
 
 echo '<form method="post" action="' . site_url('/user/info/action') . '" >';
 echo dbTableToHTMLTable('logins', $info, implode(',', $editables));
-echo "</form>";
+echo '</form>';
 
-if (__get__($info, 'eligible_for_aws', 'NO') =="NO") {
+if ('NO' == __get__($info, 'eligible_for_aws', 'NO')) {
     echo alertUser(
-        "If you are <tt>ELIGIBLE FOR AWS</tt>, please write to academic office to include 
-        your name."
+        'If you are <tt>ELIGIBLE FOR AWS</tt>, please write to academic office to include 
+        your name.'
     );
 }
 
@@ -102,29 +102,29 @@ if (__get__($info, 'eligible_for_aws', 'NO') =="NO") {
 //$form .= '</form>';
 //echo $form;
 
-echo "<h2>Advanced settings</h2>";
-echo printInfo("This section is related to mobile apps developed by third party.");
+echo '<h2>Advanced settings</h2>';
+echo printInfo('This section is related to mobile apps developed by third party.');
 $myKeys = getUserKeys(whoAmI());
 
 $table = '<table class="info">';
 $table .= '<tr><th>ID</th><th>KEY</th> <th>created on</th> <th></th></tr>';
 foreach ($myKeys as $key) {
     $id = $key['id'];
-    $revokeForm = '<form method="post" action="'.site_url("/user/revoke_key/$id").'">';
-    $revokeForm .= "<button>Revoke</button>";
+    $revokeForm = '<form method="post" action="' . site_url("/user/revoke_key/$id") . '">';
+    $revokeForm .= '<button>Revoke</button>';
     $revokeForm .= '</form>';
-    $table .= "<tr>" . arrayToRowHTML($key, 'info', 'level,login,ignore_limits', '', false)
+    $table .= '<tr>' . arrayToRowHTML($key, 'info', 'level,login,ignore_limits', '', false)
         . "<td> $revokeForm </td></tr>";
 }
 
-$table .= "</table>";
+$table .= '</table>';
 echo $table;
 
 // Add a new key
-$form = "<form method='post' action='" . site_url("/user/generate_key"). "'>";
-$form .= "<button>Generate a New Key</button>";
-$form .= "</form>";
+$form = "<form method='post' action='" . site_url('/user/generate_key') . "'>";
+$form .= '<button>Generate a New Key</button>';
+$form .= '</form>';
 
 echo $form;
 
-echo goBackToPageLink("/user/home", "Go back");
+echo goBackToPageLink('/user/home', 'Go back');

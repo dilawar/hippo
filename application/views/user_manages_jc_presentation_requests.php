@@ -1,30 +1,27 @@
 <?php
-require_once BASEPATH."autoload.php";
+
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 $myJCS = getMyJCs();
 $myJCIds = getValuesByKey($myJCS, 'jc_id');
-$jcSelect = arrayToSelectList('jc_id', $myJCIds, array(), false, $myJCIds[0]);
+$jcSelect = arrayToSelectList('jc_id', $myJCIds, [], false, $myJCIds[0]);
 
-$default = array(
-        'presenter' => whoAmI()
-        , 'jc_id' => $jcSelect
-        , 'id' => __get__($_POST, 'id', getUniqueID('jc_requests'))
-    );
-
+$default = [
+        'presenter' => whoAmI(), 'jc_id' => $jcSelect, 'id' => __get__($_POST, 'id', getUniqueID('jc_requests')),
+    ];
 
 // On this page below, we let user edit the entry here only.
-if (__get__($_POST, 'response', '') == 'Edit') {
+if ('Edit' == __get__($_POST, 'response', '')) {
     $default = array_merge($default, $_POST);
 }
-
 
 echo '<h1> Submit a presentation request </h1>';
 
 echo printInfo(
     "Make sure to add 'Why paper is interesting to be presented to
         community?' in <tt>DESCRIPTION</tt> field.  When done editing, press " .
-        goBackToPageLinkInline("user/jc", 'Go Back') . " button."
+        goBackToPageLinkInline('user/jc', 'Go Back') . ' button.'
 );
 
 // Make a form.
@@ -33,8 +30,8 @@ echo ' <form action="" method="post" accept-charset="utf-8">';
 echo dbTableToHTMLTable('jc_requests', $default, $editables);
 echo '</form>';
 
-if (__get__($_POST, 'response', '') == 'submit') {
-    $_POST[ 'status' ] = 'VALID';
+if ('submit' == __get__($_POST, 'response', '')) {
+    $_POST['status'] = 'VALID';
     $res = insertOrUpdateTable(
         'jc_requests',
         'id,jc_id,presenter,date,title,description,url',
@@ -45,13 +42,13 @@ if (__get__($_POST, 'response', '') == 'submit') {
     if ($res) {
         echo printInfo('Successfully added/updated your entry');
     }
-} elseif (__get__($_POST, 'response', '') == 'delete') {
-    $id = $_POST[ 'id' ];
-    $data[ 'id' ] = $id;
-    $data[ 'status' ] = 'CANCELLED';
+} elseif ('delete' == __get__($_POST, 'response', '')) {
+    $id = $_POST['id'];
+    $data['id'] = $id;
+    $data['status'] = 'CANCELLED';
     $res = updateTable('jc_requests', 'id', 'status', $data);
     if ($res) {
-        echo printInfo("Your request has been cancelled/invalidated.");
+        echo printInfo('Your request has been cancelled/invalidated.');
     }
 }
 echo goBackToPageLink('user/jc', 'Go Back');

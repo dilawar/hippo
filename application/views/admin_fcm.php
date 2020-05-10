@@ -1,8 +1,8 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
-echo "<h2>Send notifications to Hippo App</h2>";
+echo '<h2>Send notifications to Hippo App</h2>';
 
 $topics = getConfigValue('ALLOWED_BOARD_TAGS');
 $topics = explode(',', "hippo,$topics");
@@ -10,7 +10,7 @@ sort($topics);
 $selectHTML = arrayToSelectList('topic', $topics);
 
 $form = "
-<form method='post' action='". site_url('admin/sendfcm') . "' accept-charset='utf-8'>
+<form method='post' action='" . site_url('admin/sendfcm') . "' accept-charset='utf-8'>
     <table class='table'>
         <tr>
             <td>Select a topic</td>
@@ -38,8 +38,7 @@ $form = "
 
 echo "<div>$form</div>";
 
-
-echo goBackToPageLink("admin");
+echo goBackToPageLink('admin');
 
 ?>
 

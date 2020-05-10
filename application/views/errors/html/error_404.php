@@ -63,4 +63,4 @@ p {
 </body>
 </html>
 
-<?php echo("You requested: " . $_SERVER['REQUEST_URI']) ; ?>
+<?php echo 'You requested: ' . $_SERVER['REQUEST_URI']; ?>

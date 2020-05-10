@@ -1,12 +1,13 @@
 <?php
+
 include_once FCPATH . 'system/autoload.php';
-mustHaveAllOfTheseRoles(array( 'ADMIN' ));
+mustHaveAllOfTheseRoles(['ADMIN']);
 echo userHTML();
 
 echo '<h3>Add a holiday or non-working day</h3>';
 
-$default = array( );
-echo '<form method="post" action="'.site_url("admin/add_holiday").'">';
+$default = [];
+echo '<form method="post" action="' . site_url('admin/add_holiday') . '">';
 echo dbTableToHTMLTable(
     'holidays',
     $default,
@@ -18,7 +19,7 @@ echo '<h3>List of holidays in my database</h3>';
 
 $holidays = getHolidays();
 foreach ($holidays as $index => $holiday) {
-    echo '<form method="post" action="'. site_url('admin/delete_holiday') . '">';
+    echo '<form method="post" action="' . site_url('admin/delete_holiday') . '">';
     echo '<small><table>';
     echo '<tr>';
     echo '<td>' . ($index + 1) . '</td><td>' . arrayToTableHTML($holiday, 'info') . '</td>';
@@ -32,4 +33,4 @@ foreach ($holidays as $index => $holiday) {
     echo '</form>';
 }
 
-echo goBackToPageLink("admin/home", "Go back");
+echo goBackToPageLink('admin/home', 'Go back');

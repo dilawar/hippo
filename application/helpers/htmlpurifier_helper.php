@@ -22,7 +22,7 @@ if (!defined('BASEPATH')) {
 if (!function_exists('html_purify')) {
     function html_purify($dirty_html, $config = false)
     {
-        require_once APPPATH.'third_party/htmlpurifier-4.10.0-standalone/HTMLPurifier.standalone.php';
+        require_once APPPATH . 'third_party/htmlpurifier-4.10.0-standalone/HTMLPurifier.standalone.php';
 
         if (is_array($dirty_html)) {
             foreach ($dirty_html as $key => $val) {
@@ -40,16 +40,18 @@ if (!function_exists('html_purify')) {
                     $config->set('AutoFormat.AutoParagraph', true);
                     $config->set('AutoFormat.Linkify', true);
                     $config->set('AutoFormat.RemoveEmpty', true);
+
                     break;
 
                 case false:
                     $config = HTMLPurifier_Config::createDefault();
                     $config->set('Core.Encoding', $ci->config->item('charset'));
                     $config->set('HTML.Doctype', 'XHTML 1.0 Strict');
+
                     break;
 
                 default:
-                    show_error('The HTMLPurifier configuration labeled "'.htmlspecialchars($config, ENT_QUOTES, $ci->config->item('charset')).'" could not be found.');
+                    show_error('The HTMLPurifier configuration labeled "' . htmlspecialchars($config, ENT_QUOTES, $ci->config->item('charset')) . '" could not be found.');
             }
 
             $purifier = new HTMLPurifier($config);

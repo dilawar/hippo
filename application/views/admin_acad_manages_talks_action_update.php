@@ -1,12 +1,12 @@
 <?php
-require_once BASEPATH.'autoload.php';
 
+require_once BASEPATH . 'autoload.php';
 
-if (! $_POST[ 'response' ]) {
+if (!$_POST['response']) {
     // Go back to previous page.
-    goToPage("admin_acad.php", 0);
+    goToPage('admin_acad.php', 0);
     exit;
-} elseif ($_POST[ 'response' ] == 'submit') {
+} elseif ('submit' == $_POST['response']) {
     $res = updateTable(
         'talks',
         'id',
@@ -24,26 +24,26 @@ if (! $_POST[ 'response' ]) {
 
         $success = true;
 
-        $event = getEventsOfTalkId($_POST[ 'id' ]);
-        $request = getBookingRequestOfTalkId($_POST[ 'id' ]);
+        $event = getEventsOfTalkId($_POST['id']);
+        $request = getBookingRequestOfTalkId($_POST['id']);
 
         if ($event) {
-            echo printInfo("Updating event related to this talk");
-            $event[ 'title' ] = talkToEventTitle($talk);
-            $event[ 'description' ] = $talk[ 'description' ];
+            echo printInfo('Updating event related to this talk');
+            $event['title'] = talkToEventTitle($talk);
+            $event['description'] = $talk['description'];
             $res = updateTable('events', 'gid,eid', 'title,description', $event);
             if ($res) {
-                echo printInfo("... Updated successfully");
+                echo printInfo('... Updated successfully');
             } else {
                 $success = false;
             }
         } elseif ($request) {
-            echo printInfo("Updating booking request related to this talk");
-            $request[ 'title' ] = talkToEventTitle($talk);
-            $request[ 'description' ] = $talk[ 'description' ];
+            echo printInfo('Updating booking request related to this talk');
+            $request['title'] = talkToEventTitle($talk);
+            $request['description'] = $talk['description'];
             $res = updateTable('bookmyvenue_requests', 'gid,eid', 'title,description', $request);
             if ($res) {
-                echo printInfo("... Updated successfully");
+                echo printInfo('... Updated successfully');
             } else {
                 $success = false;
             }
@@ -54,11 +54,11 @@ if (! $_POST[ 'response' ]) {
             exit;
         }
     } else {
-        echo printWarning("Failed to update the talk ");
+        echo printWarning('Failed to update the talk ');
     }
 } else {
-    echo printInfo("Unknown operation " . $_POST[ 'response' ]);
+    echo printInfo('Unknown operation ' . $_POST['response']);
 }
-    
-echo goBackToPageLink('admin_acad_manages_talks.php', "Go back");
+
+echo goBackToPageLink('admin_acad_manages_talks.php', 'Go back');
 exit;

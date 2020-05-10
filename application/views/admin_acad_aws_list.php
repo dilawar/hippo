@@ -8,7 +8,7 @@ $( function() {
 </script>
 
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 $awses = $AWSES_CI;
@@ -25,19 +25,19 @@ foreach ($awses as $aws) {
 <table class="table">
 <?php foreach ($awsByDate as $date => $awses): ?> 
     <tr>
-        <td> <?= humanReadableDate($date) ?> </td>
+        <td> <?= humanReadableDate($date); ?> </td>
         <?php foreach ($awses as $aws): ?>
-        <td> <?= $aws['title'] ?> </td>
+        <td> <?= $aws['title']; ?> </td>
         <?php endforeach; ?>
     </tr>
-<?php endforeach;?>
+<?php endforeach; ?>
 </table>
 
 
-<?= goBackToPageLink("Go back") ?>
-<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
-<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
-<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<?= goBackToPageLink('Go back'); ?>
+<script src="<?=base_url(); ?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));

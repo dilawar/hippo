@@ -1,4 +1,5 @@
 <?php
+
 include_once 'header.php';
 include_once 'database.php';
 include_once 'methods.php';
@@ -12,7 +13,6 @@ $myItems = getMyInvetory();
 // Show user inventory here.
 echo ' <h1>Show my inventory</h1> ';
 $filter = 'last_modified_on,edited_by';
-
 
 if (count($myItems) > 0) {
     echo '<table class="info"> ';
@@ -31,15 +31,11 @@ if (count($myItems) > 0) {
     echo printWarning("You don't have any item in inventory.");
 }
 
-
 echo ' <h1>Add new item to inventory</h1> ';
 
 $editables = 'common_name,exact_name,vendor,description,quantity_with_unit';
-$default = array( 'edited_by' => whoAmI()
-    , 'last_modified_on' => dbDateTime('now')
-    , 'id' => getUniqueID('inventory')
-    , 'owner' => whoAmI()
-    );
+$default = ['edited_by' => whoAmI(), 'last_modified_on' => dbDateTime('now'), 'id' => getUniqueID('inventory'), 'owner' => whoAmI(),
+    ];
 
 // This button is for show/hide form. It must not be part of form below.
 echo '<button class="show_as_link" onclick="ToggleShowHide(this)">Show Form</button> ';
@@ -53,4 +49,4 @@ echo ' <form action="user_add_inventory_action.php" method="post" accept-charset
 echo $table;
 echo '</form>';
 
-echo goBackToPageLink("user/home", "Go Back");
+echo goBackToPageLink('user/home', 'Go Back');

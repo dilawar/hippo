@@ -1,5 +1,5 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 $ref = 'adminbmv';
@@ -19,8 +19,8 @@ $form = '
         <tr>
             <th>Start Date</th> <th>End date</th>
         </tr><tr>
-            <td><input class="datepicker" name="start_date" id="" value="'.$start_date .'" /></td>
-            <td><input class="datepicker" name="end_date" id="" value="'.$end_date .'" /></td>
+            <td><input class="datepicker" name="start_date" id="" value="' . $start_date . '" /></td>
+            <td><input class="datepicker" name="end_date" id="" value="' . $end_date . '" /></td>
             <td> <button type="submit">Browse</button> </td>
         </tr>
     </table>
@@ -31,13 +31,12 @@ $form = '
 echo $form;
 
 if (isset($_POST)) {
-    $end_date   = __get__($_POST, 'end_date', dbDate('today'));
+    $end_date = __get__($_POST, 'end_date', dbDate('today'));
     $start_date = __get__($_POST, 'start_date', dbDate('-3 month'));
 }
 
-
-echo "<h2>Events between " .humanReadableDate($start_date) ." and "
-    . humanReadableDate($end_date) . "</h2>";
+echo '<h2>Events between ' . humanReadableDate($start_date) . ' and '
+    . humanReadableDate($end_date) . '</h2>';
 
 //$allevents = getTableEntries( 'events', 'date'
 //    , "date > '$start_date' AND date < '$end_date' AND external_id LIKE 'talks.%'
@@ -59,13 +58,12 @@ $table .= '</table>';
 
 echo $table;
 
-
 echo goBackToPageLink("$ref/home");
 
 ?>
-<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
-<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
-<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));
 </script>

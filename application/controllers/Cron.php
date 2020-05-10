@@ -1,4 +1,5 @@
 <?php
+
 require_once FCPATH . './cron/helper.php';
 require_once FCPATH . './cron/update_database.php';
 require_once FCPATH . './cron/aws_annoy.php';
@@ -20,35 +21,24 @@ class Cron extends CI_Controller
     public function run()
     {
         // Execute all scripts in ./views/controller/cron folder.
-        $tasks = array(
-             'update_database'
-            , 'aws_annoy'
-            , 'aws_friday_notification'
-            , 'aws_friday_notify_faculty'
-            , 'aws_monday'
-            , 'aws_schedule_fac_student'
-            , 'booking_expiring_notice'
-            , 'events_everyday_morning'
-            , 'events_weekly_summary'
-            , 'jc_assign_n_weeks_in_advance'
-            , 'jc'
-            , 'lablist_every_two_months'
-            , 'sync_calendar'
-        );
+        $tasks = [
+             'update_database', 'aws_annoy', 'aws_friday_notification', 'aws_friday_notify_faculty', 'aws_monday', 'aws_schedule_fac_student', 'booking_expiring_notice', 'events_everyday_morning', 'events_weekly_summary', 'jc_assign_n_weeks_in_advance', 'jc', 'lablist_every_two_months', 'sync_calendar',
+        ];
 
         foreach ($tasks as $i => $t) {
             echo printInfo("Running cron job for task $t");
+
             try {
                 hippo_shell_exec("php index.php cron $t", $stdout, $stderr);
                 echo printInfo($stderr);
                 echo printInfo($stdout);
             } catch (Exception $e) {
                 $body = p(" Hippo could not finish a scheduled task '$t' successfully.");
-                $body .= p("Error was " . $e->getMessage());
+                $body .= p('Error was ' . $e->getMessage());
                 sendHTMLEmail(
                     $body,
-                    "WARN! Hippo failed to do a routine task (cron)",
-                    "hippo@lists.ncbs.res.in"
+                    'WARN! Hippo failed to do a routine task (cron)',
+                    'hippo@lists.ncbs.res.in'
                 );
             }
         }

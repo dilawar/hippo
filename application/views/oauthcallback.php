@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 include_once 'header.php';
@@ -11,7 +12,6 @@ require_once './calendar/methods.php';
 
 mustHaveAllOfTheseRoles('BOOKMYVENUE_ADMIN', 'ADMIN', 'ACAD_ADMIN');
 
-
 echo userHTML();
 
 // We come here from google-calendar
@@ -19,18 +19,18 @@ echo userHTML();
 // sends us a GET response. Use this token to process all other queries.
 
 if (array_key_exists('google_command', $_SESSION)) {
-    if ($_SESSION['google_command'] == 'synchronize_all_events') {
+    if ('synchronize_all_events' == $_SESSION['google_command']) {
         synchronize_google_calendar();
         ob_flush();
         flush();
     } else {
-        echo printWarning("Unsupported  command " .  $_SESSION['google_command']);
+        echo printWarning('Unsupported  command ' . $_SESSION['google_command']);
     }
 } else {
-    echo printInfo("No command is given regarging google calendar");
+    echo printInfo('No command is given regarging google calendar');
 }
 
-echo goBackToPageLink("bookmyvenue_admin.php", "Go back");
+echo goBackToPageLink('bookmyvenue_admin.php', 'Go back');
 echo '<br> <br> <br>';
 
 exit;

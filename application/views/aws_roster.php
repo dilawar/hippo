@@ -1,13 +1,14 @@
 <?php
-require_once BASEPATH.'autoload.php';
+
+require_once BASEPATH . 'autoload.php';
 
 // Called from controller.
 
 echo heading('Upcoming AWS', 1);
 
-$dateMap = array( );
+$dateMap = [];
 foreach ($upcomingAWS as $aws) {
-    $dateMap[ $aws['date'] ][] = $aws;
+    $dateMap[$aws['date']][] = $aws;
 }
 
 ksort($dateMap);
@@ -18,12 +19,12 @@ foreach ($dateMap as $date => $awses) {
     $table .= '<td>' . humanReadableDate($date) . '</td>';
 
     foreach ($awses as $aws) {
-        $piOrHost = getPIOrHost($aws[ 'speaker' ]);
+        $piOrHost = getPIOrHost($aws['speaker']);
         $table .= '<td>' . loginToHTML($aws['speaker'])
             . ' <br /><small><tt>' . $piOrHost . '</tt></small></td>';
     }
 
-    for ($i = 0; $i < 4 - count($awses) ; $i++) {
+    for ($i = 0; $i < 4 - count($awses); ++$i) {
         $table .= '<td></td>';
     }
 
@@ -37,8 +38,8 @@ echo $table;
 echo heading('List of AWS Speakers', 1);
 
 echo alertUser(
-    "If your name is not on this list, please write to "
-        . mailto("acadoffice@ncbs.res.in", "Academic Office") . ".",
+    'If your name is not on this list, please write to '
+        . mailto('acadoffice@ncbs.res.in', 'Academic Office') . '.',
     false
 );
 
@@ -49,11 +50,11 @@ foreach ($speakers as $i => $speaker) {
     $login = $speaker['login'];
     $speaker = getLoginInfo($login);
 
-    if (! trim($login)) {
+    if (!trim($login)) {
         continue;
     }
 
-    $index += 1;
+    ++$index;
     $name = arrayToName($speaker);
     $pi = getPIOrHost($login);
     $specialization = getSpecialization($login, $pi);
@@ -66,4 +67,4 @@ foreach ($speakers as $i => $speaker) {
 $table .= '</table>';
 echo $table;
 
-echo goBackToPageLink("info/aws", "Go back");
+echo goBackToPageLink('info/aws', 'Go back');

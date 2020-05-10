@@ -5,7 +5,7 @@ include_once 'methods.php';
 include_once 'tohtml.php';
 include_once 'check_access_permissions.php';
 
-mustHaveAnyOfTheseRoles(array( "USER" ));
+mustHaveAnyOfTheseRoles(['USER']);
 
 echo userHTML();
 
@@ -23,7 +23,7 @@ echo ' <button class="submit" name="class" value="continue">Continue ...</button
 echo '</form>';
 
 if (__get__($_POST, 'bmvclass', '')) {
-    $class = $_POST[ 'bmvclass' ];
+    $class = $_POST['bmvclass'];
 
     echo "Booking for $class";
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * CodeIgniter
+ * CodeIgniter.
  *
  * An open source application development framework for PHP
  *
@@ -26,58 +26,58 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @package	CodeIgniter
  * @author	EllisLab Dev Team
  * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
  * @copyright	Copyright (c) 2014 - 2018, British Columbia Institute of Technology (http://bcit.ca/)
  * @license	http://opensource.org/licenses/MIT	MIT License
- * @link	https://codeigniter.com
+ *
+ * @see	https://codeigniter.com
  * @since	Version 3.0.0
  * @filesource
  */
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
- * PDO Informix Database Adapter Class
+ * PDO Informix Database Adapter Class.
  *
  * Note: _DB is an extender class that the app controller
  * creates dynamically based on whether the query builder
  * class is being used or not.
  *
- * @package		CodeIgniter
- * @subpackage	Drivers
  * @category	Database
+ *
  * @author		EllisLab Dev Team
- * @link		https://codeigniter.com/user_guide/database/
+ *
+ * @see		https://codeigniter.com/user_guide/database/
  */
 class CI_DB_pdo_informix_driver extends CI_DB_pdo_driver
 {
-
     /**
-     * Sub-driver
+     * Sub-driver.
      *
-     * @var	string
+     * @var string
      */
     public $subdriver = 'informix';
 
     // --------------------------------------------------------------------
 
     /**
-     * ORDER BY random keyword
+     * ORDER BY random keyword.
      *
-     * @var	array
+     * @var array
      */
-    protected $_random_keyword = array('ASC', 'ASC'); // Currently not supported
+    protected $_random_keyword = ['ASC', 'ASC']; // Currently not supported
 
     // --------------------------------------------------------------------
 
     /**
-     * Class constructor
+     * Class constructor.
      *
      * Builds the DSN if not already set.
      *
-     * @param	array	$params
-     * @return	void
+     * @param array $params
+     *
+     * @return void
      */
     public function __construct($params)
     {
@@ -89,52 +89,53 @@ class CI_DB_pdo_informix_driver extends CI_DB_pdo_driver
             // Pre-defined DSN
             if (empty($this->hostname) && empty($this->host) && empty($this->port) && empty($this->service)) {
                 if (isset($this->DSN)) {
-                    $this->dsn .= 'DSN='.$this->DSN;
-                } elseif (! empty($this->database)) {
-                    $this->dsn .= 'DSN='.$this->database;
+                    $this->dsn .= 'DSN=' . $this->DSN;
+                } elseif (!empty($this->database)) {
+                    $this->dsn .= 'DSN=' . $this->database;
                 }
 
                 return;
             }
 
             if (isset($this->host)) {
-                $this->dsn .= 'host='.$this->host;
+                $this->dsn .= 'host=' . $this->host;
             } else {
-                $this->dsn .= 'host='.(empty($this->hostname) ? '127.0.0.1' : $this->hostname);
+                $this->dsn .= 'host=' . (empty($this->hostname) ? '127.0.0.1' : $this->hostname);
             }
 
             if (isset($this->service)) {
-                $this->dsn .= '; service='.$this->service;
-            } elseif (! empty($this->port)) {
-                $this->dsn .= '; service='.$this->port;
+                $this->dsn .= '; service=' . $this->service;
+            } elseif (!empty($this->port)) {
+                $this->dsn .= '; service=' . $this->port;
             }
 
-            empty($this->database) or $this->dsn .= '; database='.$this->database;
-            empty($this->server) or $this->dsn .= '; server='.$this->server;
+            empty($this->database) or $this->dsn .= '; database=' . $this->database;
+            empty($this->server) or $this->dsn .= '; server=' . $this->server;
 
-            $this->dsn .= '; protocol='.(isset($this->protocol) ? $this->protocol : 'onsoctcp')
-                .'; EnableScrollableCursors=1';
+            $this->dsn .= '; protocol=' . (isset($this->protocol) ? $this->protocol : 'onsoctcp')
+                . '; EnableScrollableCursors=1';
         }
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Show table query
+     * Show table query.
      *
      * Generates a platform-specific query string so that the table names can be fetched
      *
-     * @param	bool	$prefix_limit
-     * @return	string
+     * @param bool $prefix_limit
+     *
+     * @return string
      */
     protected function _list_tables($prefix_limit = false)
     {
         $sql = 'SELECT "tabname" FROM "systables"
-			WHERE "tabid" > 99 AND "tabtype" = \'T\' AND LOWER("owner") = '.$this->escape(strtolower($this->username));
+			WHERE "tabid" > 99 AND "tabtype" = \'T\' AND LOWER("owner") = ' . $this->escape(strtolower($this->username));
 
-        if ($prefix_limit === true && $this->dbprefix !== '') {
-            $sql .= ' AND "tabname" LIKE \''.$this->escape_like_str($this->dbprefix)."%' "
-                .sprintf($this->_like_escape_str, $this->_like_escape_chr);
+        if (true === $prefix_limit && '' !== $this->dbprefix) {
+            $sql .= ' AND "tabname" LIKE \'' . $this->escape_like_str($this->dbprefix) . "%' "
+                . sprintf($this->_like_escape_str, $this->_like_escape_chr);
         }
 
         return $sql;
@@ -143,16 +144,17 @@ class CI_DB_pdo_informix_driver extends CI_DB_pdo_driver
     // --------------------------------------------------------------------
 
     /**
-     * Show column query
+     * Show column query.
      *
      * Generates a platform-specific query string so that the column names can be fetched
      *
-     * @param	string	$table
-     * @return	string
+     * @param string $table
+     *
+     * @return string
      */
     protected function _list_columns($table = '')
     {
-        if (strpos($table, '.') !== false) {
+        if (false !== strpos($table, '.')) {
             sscanf($table, '%[^.].%s', $owner, $table);
         } else {
             $owner = $this->username;
@@ -161,17 +163,18 @@ class CI_DB_pdo_informix_driver extends CI_DB_pdo_driver
         return 'SELECT "colname" FROM "systables", "syscolumns"
 			WHERE "systables"."tabid" = "syscolumns"."tabid"
 				AND "systables"."tabtype" = \'T\'
-				AND LOWER("systables"."owner") = '.$this->escape(strtolower($owner)).'
-				AND LOWER("systables"."tabname") = '.$this->escape(strtolower($table));
+				AND LOWER("systables"."owner") = ' . $this->escape(strtolower($owner)) . '
+				AND LOWER("systables"."tabname") = ' . $this->escape(strtolower($table));
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Returns an object with field data
+     * Returns an object with field data.
      *
-     * @param	string	$table
-     * @return	array
+     * @param string $table
+     *
+     * @return array
      */
     public function field_data($table)
     {
@@ -215,11 +218,11 @@ class CI_DB_pdo_informix_driver extends CI_DB_pdo_driver
 				AND "systables"."tabid" = "sysdefaults"."tabid"
 				AND "syscolumns"."colno" = "sysdefaults"."colno"
 				AND "systables"."tabtype" = \'T\'
-				AND LOWER("systables"."owner") = '.$this->escape(strtolower($this->username)).'
-				AND LOWER("systables"."tabname") = '.$this->escape(strtolower($table)).'
+				AND LOWER("systables"."owner") = ' . $this->escape(strtolower($this->username)) . '
+				AND LOWER("systables"."tabname") = ' . $this->escape(strtolower($table)) . '
 			ORDER BY "syscolumns"."colno"';
 
-        return (($query = $this->query($sql)) !== false)
+        return (false !== ($query = $this->query($sql)))
             ? $query->result_object()
             : false;
     }
@@ -227,68 +230,75 @@ class CI_DB_pdo_informix_driver extends CI_DB_pdo_driver
     // --------------------------------------------------------------------
 
     /**
-     * Update statement
+     * Update statement.
      *
      * Generates a platform-specific update string from the supplied data
      *
-     * @param	string	$table
-     * @param	array	$values
-     * @return	string
+     * @param string $table
+     * @param array  $values
+     *
+     * @return string
      */
     protected function _update($table, $values)
     {
         $this->qb_limit = false;
-        $this->qb_orderby = array();
+        $this->qb_orderby = [];
+
         return parent::_update($table, $values);
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Truncate statement
+     * Truncate statement.
      *
      * Generates a platform-specific truncate string from the supplied data
      *
      * If the database does not support the TRUNCATE statement,
      * then this method maps to 'DELETE FROM table'
      *
-     * @param	string	$table
-     * @return	string
+     * @param string $table
+     *
+     * @return string
      */
     protected function _truncate($table)
     {
-        return 'TRUNCATE TABLE ONLY '.$table;
+        return 'TRUNCATE TABLE ONLY ' . $table;
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Delete statement
+     * Delete statement.
      *
      * Generates a platform-specific delete string from the supplied data
      *
-     * @param	string	$table
-     * @return	string
+     * @param string $table
+     *
+     * @return string
      */
     protected function _delete($table)
     {
         $this->qb_limit = false;
+
         return parent::_delete($table);
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * LIMIT
+     * LIMIT.
      *
      * Generates a platform-specific LIMIT clause
      *
-     * @param	string	$sql	$SQL Query
-     * @return	string
+     * @param string $sql $SQL Query
+     *
+     * @return string
      */
     protected function _limit($sql)
     {
-        $select = 'SELECT '.($this->qb_offset ? 'SKIP '.$this->qb_offset : '').'FIRST '.$this->qb_limit.' ';
+        $select = 'SELECT ' . ($this->qb_offset ? 'SKIP ' . $this->qb_offset : '') . 'FIRST ' . $this->qb_limit . ' ';
+
         return preg_replace('/^(SELECT\s)/i', $select, $sql, 1);
     }
 }

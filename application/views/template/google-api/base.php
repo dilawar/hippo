@@ -8,17 +8,17 @@ function isWebRequest()
 
 function pageHeader($title)
 {
-    $ret = "<!doctype html>
+    $ret = '<!doctype html>
   <html>
   <head>
-    <title>" . $title . "</title>
+    <title>' . $title . "</title>
     <link href='styles/style.css' rel='stylesheet' type='text/css' />
   </head>
   <body>\n";
-    if ($_SERVER['PHP_SELF'] != "/index.php") {
+    if ('/index.php' != $_SERVER['PHP_SELF']) {
         $ret .= "<p><a href='index.php'>Back</a></p>";
     }
-    $ret .= "<header><h1>" . $title . "</h1></header>";
+    $ret .= '<header><h1>' . $title . '</h1></header>';
 
     // Start the session (for storing access tokens and things)
     if (!headers_sent()) {
@@ -28,17 +28,16 @@ function pageHeader($title)
     return $ret;
 }
 
-
 function pageFooter($file = null)
 {
-    $ret = "";
+    $ret = '';
     if ($file) {
-        $ret .= "<h3>Code:</h3>";
+        $ret .= '<h3>Code:</h3>';
         $ret .= "<pre class='code'>";
         $ret .= htmlspecialchars(file_get_contents($file));
-        $ret .= "</pre>";
+        $ret .= '</pre>';
     }
-    $ret .= "</html>";
+    $ret .= '</html>';
 
     return $ret;
 }
@@ -124,7 +123,6 @@ function setClientCredentialsFile($apiKey)
     $file = __DIR__ . '/../../tests/.apiKey';
     file_put_contents($file, $apiKey);
 }
-
 
 function getApiKey()
 {

@@ -1,5 +1,5 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 
 // From constants.php
 global $symbDelete;
@@ -10,11 +10,9 @@ global $symbCancel;
 echo userHTML();
 
 // Logic for POST requests.
-$speaker = array(
-    'first_name' => '', 'middle_name' => '', 'last_name' => '', 'email' => ''
-    , 'department' => '', 'institute' => '', 'title' => '', 'id' => ''
-    , 'homepage' => ''
-    );
+$speaker = [
+    'first_name' => '', 'middle_name' => '', 'last_name' => '', 'email' => '', 'department' => '', 'institute' => '', 'title' => '', 'id' => '', 'homepage' => '',
+    ];
 
 // Get talks only in future.
 if (!isset($months)) {
@@ -26,7 +24,7 @@ $whereExpr = "created_by='" . whoAmI() . "'";
 $whereExpr .= "AND status!='INVALID' AND DATE(created_on)>'$cutoff'";
 $talks = getTableEntries('talks', 'created_on DESC', $whereExpr);
 
-$upcomingTalks = array( );
+$upcomingTalks = [];
 
 /* Filter talk which have not been delivered yet. */
 foreach ($talks as $t) {
@@ -35,7 +33,7 @@ foreach ($talks as $t) {
     $event = getEventsOfTalkId($t['id']);
     if ($event) {
         // This talk has been delivered successfully.
-        if (strtotime($event[ 'date' ]) <= strtotime('today') - 12 * 3600) {
+        if (strtotime($event['date']) <= strtotime('today') - 12 * 3600) {
             continue;
         }
     }
@@ -47,8 +45,8 @@ echo '<h2>Upcoming events such as talks, seminar and lectures.</h2>';
 if (count($upcomingTalks) < 1) {
     echo alertUser("You don't have any upcoming talk.", false);
 } else {
-    echo printNote("Following talks were created by you. You can only see upcoming
-    talks and talks delivered less than 12 hours ago.");
+    echo printNote('Following talks were created by you. You can only see upcoming
+    talks and talks delivered less than 12 hours ago.');
 }
 
 // Show upcoming talks to user. She has edit, delete or schedule them.
@@ -61,7 +59,7 @@ foreach ($upcomingTalks as $t) {
     echo '</td>';
 
     echo '<td colspan="2">';
-    echo '<form method="post" action="'.site_url("user/manage_talks_action") .'">';
+    echo '<form method="post" action="' . site_url('user/manage_talks_action') . '">';
     echo '<table border="0">';
     echo '<tr>';
     echo '<div style="font:x-small">';
@@ -69,7 +67,7 @@ foreach ($upcomingTalks as $t) {
     echo '</div>';
     echo '</tr><tr>';
     echo '
-        <input type="hidden" name="id" value="' . $t[ 'id' ] . '" />
+        <input type="hidden" name="id" value="' . $t['id'] . '" />
         <td><button class="btn btn-danger" 
                 onclick="AreYouSure(this)" name="response" 
             title="Delete this entry" >' . $symbDelete . '</button></td>';
@@ -78,24 +76,24 @@ foreach ($upcomingTalks as $t) {
     $event = getTableEntry(
         'events',
         'external_id,status',
-        array( 'external_id' => 'talks.' . $t[ 'id' ], 'status' => 'VALID' )
+        ['external_id' => 'talks.' . $t['id'], 'status' => 'VALID']
     );
 
     $request = getTableEntry(
         'bookmyvenue_requests',
         'external_id,status',
-        array( 'external_id' => 'talks.' . $t[ 'id' ], 'status'  => 'PENDING' )
+        ['external_id' => 'talks.' . $t['id'], 'status' => 'PENDING']
     );
 
     // If either a request of event is found, don't let user schedule the talk.
     // Here we disable the schedule button.
-    if (! ($request || $event)) {
+    if (!($request || $event)) {
         echo '<td>';
         echo '<button class="btn btn-primary"
             style="float:right" title="Schedule this talk" 
             name="response" value="schedule">Book A Venue</button> <br />';
         echo '</td>';
-        echo printNote("IMP: No venue has been booked yet for this event.");
+        echo printNote('IMP: No venue has been booked yet for this event.');
     } else {
         echo '<td></td>';
     }
@@ -117,8 +115,8 @@ foreach ($upcomingTalks as $t) {
     // of second table.
     if ($event) {
         // If event is already approved, show it here.
-        echo "<strong>Above talk has been confirmed and event detail is shown 
-            below.</strong>";
+        echo '<strong>Above talk has been confirmed and event detail is shown 
+            below.</strong>';
 
         $html = arrayToTableHTML($event, 'events', '', 'eid,class,external_id,url,modified_by,timestamp,calendar_id' .
             ',status,calendar_event_id,last_modified_on');
@@ -127,34 +125,33 @@ foreach ($upcomingTalks as $t) {
     }
     // Else there might be a pending request.
     elseif ($request) {
-        echo "<strong>The booking request pending review for above talk. </strong>";
-        $gid = $request[ 'gid' ];
-        echo arrayToTableHTML($request, 'requests table table-sm'
-            , '', 'eid,class,external_id,url,modified_by,timestamp,calendar_id' .
+        echo '<strong>The booking request pending review for above talk. </strong>';
+        $gid = $request['gid'];
+        echo arrayToTableHTML($request, 'requests table table-sm', '', 'eid,class,external_id,url,modified_by,timestamp,calendar_id' .
             ',status,calendar_event_id,last_modified_on');
 
-        echo '<form method="post" action="'.site_url("user/delete_booking_of_talk/$gid") .'">';
-        echo "<table class=\"show_requests\"><tr>";
+        echo '<form method="post" action="' . site_url("user/delete_booking_of_talk/$gid") . '">';
+        echo '<table class="show_requests"><tr>';
         echo "<td><button onclick=\"AreYouSure(this)\" 
             name=\"response\" title=\"Cancel this request\"> $symbCancel </button></td>";
         echo '</form>';
 
-        echo '<form method="post" action="'.site_url("user/edit_booking_of_talk/$gid") .'">';
+        echo '<form method="post" action="' . site_url("user/edit_booking_of_talk/$gid") . '">';
         echo "<td style=\"float:right\">
             <button class='btn btn-primary' 
                 name=\"response\" title=\"Edit this request\"
             value=\"edit\"> $symbEdit </button></td>";
         echo "<input type=\"hidden\" name=\"gid\" value=\"$gid\" />";
         echo '</form>';
-        echo "</tr></table>";
+        echo '</tr></table>';
     }
-    echo "<hr>";
-    echo "<br />";
+    echo '<hr>';
+    echo '<br />';
 }
-    
-echo goBackToPageLink("user/home", "Go Home");
 
-echo " <br /> <br />";
+echo goBackToPageLink('user/home', 'Go Home');
+
+echo ' <br /> <br />';
 echo '<div id="show_hide">';
 echo "<h2>Your booked events in last $months months</h2>";
 $hide = 'id,speaker_id,created_by,status';

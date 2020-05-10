@@ -8,7 +8,7 @@ $( function() {
 </script>
 
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 $awses = getTableEntries('annual_work_seminars', 'date', '');
@@ -18,15 +18,15 @@ $awsAsTCMMembers = [];
 $awsAsSupervisor = [];
 $aswsStudent = [];
 foreach ($awses as $aws) {
-    for ($i=1; $i <= 4; $i++) {
-        $tcmMember = __get__($aws, "tcm_member_$i", "");
+    for ($i = 1; $i <= 4; ++$i) {
+        $tcmMember = __get__($aws, "tcm_member_$i", '');
         if ($tcmMember) {
             $awsAsTCMMembers[$tcmMember][] = $aws;
         }
     }
 
-    for ($i=1; $i <= 2; $i++) {
-        $superAWS = __get__($aws, "supervisor_$i", "");
+    for ($i = 1; $i <= 2; ++$i) {
+        $superAWS = __get__($aws, "supervisor_$i", '');
         if ($superAWS) {
             $awsAsSupervisor[$superAWS][] = $aws;
         }
@@ -59,22 +59,20 @@ foreach ($awsAsSupervisor as $super => $awses) {
             continue;
         }
         $row = '<tr>';
-        $row .= "<td>" . ($i +1) . " </td>";
-        $row .= "<td>" . arrayToName($info) . '<br />' .
-             __get__($info, 'email', 'NA') . "</td>";
-        $row .= "<td>" .
+        $row .= '<td>' . ($i + 1) . ' </td>';
+        $row .= '<td>' . arrayToName($info) . '<br />' .
+             __get__($info, 'email', 'NA') . '</td>';
+        $row .= '<td>' .
             __get__($info, 'designation', __get__($info, 'title', null), 'NA')
-            . " </td>";
-        $row .= "<td>" . $info['status'] . "</td>";
+            . ' </td>';
+        $row .= '<td>' . $info['status'] . '</td>';
         $row .= "<td> $superName <br /> <tt>$super</tt> </td>";
-        $row .= "</tr> ";
+        $row .= '</tr> ';
         $tableStudent .= $row;
     }
 }
 
-$tableStudent .= "</table>";
-
-
+$tableStudent .= '</table>';
 
 $tableA = "<table id='aws_supervisor_wise'
     class='datatable exportable table table-condensed'>";
@@ -95,26 +93,25 @@ foreach ($awsAsSupervisor as $super => $awses) {
         return isEligibleForAWS($x);
     });
     $activeStudentHTML = implode(
-        ",<br />",
+        ',<br />',
         array_map(function ($st) {
             return getLoginHTML($st);
         }, $activeStudents)
     );
     $studentHTML = implode(
-        ",<br />",
+        ',<br />',
         array_map(function ($st) {
             return getLoginHTML($st);
         }, $students)
     );
     $row .= "<td> $superName <br /> <tt>$super</tt> </td>";
-    $row .= "<td>" .count($awses) . " </td>";
+    $row .= '<td>' . count($awses) . ' </td>';
     $row .= "<td> $activeStudentHTML </td>";
     $row .= "<td> $studentHTML </td>";
-    $row .= "<td>" . count($activeStudents) . "/" . count($students) . " </td>";
-    $row .= "</tr> ";
+    $row .= '<td>' . count($activeStudents) . '/' . count($students) . ' </td>';
+    $row .= '</tr> ';
     $tableA .= $row;
-} $tableA .= "</table>";
-
+} $tableA .= '</table>';
 
 $tableB = "<table id='aws_tcm_wise' class='sortable exportable info'>";
 $tableB .= '<tr> 
@@ -135,13 +132,13 @@ foreach ($awsAsTCMMembers as $tcm => $awses) {
     });
     $row .= "<td> $tcmName </td>";
     $row .= "<td> $tcm </td>";
-    $row .= "<td>" . count($activeStudents) . " </td>";
-    $row .= "<td>" .implode(", ", $activeStudents) . " </td>";
-    $row .= "<td>" .implode(", ", $students) . " </td>";
-    $row .= "</tr> ";
+    $row .= '<td>' . count($activeStudents) . ' </td>';
+    $row .= '<td>' . implode(', ', $activeStudents) . ' </td>';
+    $row .= '<td>' . implode(', ', $students) . ' </td>';
+    $row .= '</tr> ';
     $tableB .= $row;
 }
-$tableB .= "</table>";
+$tableB .= '</table>';
 
 echo "<div id='accordion'>
     <h1>Student wise AWS list</h1>
@@ -153,13 +150,13 @@ echo "<div id='accordion'>
     </div>
     ";
 
-echo goBackToPageLink("Go back");
+echo goBackToPageLink('Go back');
 
 ?>
 
-<script src="<?=base_url()?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
-<script src="<?=base_url()?>./node_modules/file-saverjs/FileSaver.min.js"></script>
-<script src="<?=base_url()?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/xlsx/dist/xlsx.core.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/file-saverjs/FileSaver.min.js"></script>
+<script src="<?=base_url(); ?>./node_modules/tableexport/dist/js/tableexport.min.js"></script>
 
 <script type="text/javascript" charset="utf-8">
 TableExport(document.getElementsByClassName("exportable"));

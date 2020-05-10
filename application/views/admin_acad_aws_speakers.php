@@ -1,24 +1,23 @@
 <?php
-include_once BASEPATH.'autoload.php';
+include_once BASEPATH . 'autoload.php';
 
 $ref = $controller;
 
-$speakerPiMap = array( );
+$speakerPiMap = [];
 // Collect all faculty
 $faculty = getFaculty();
-$facultyByEmail = array( );
+$facultyByEmail = [];
 foreach ($faculty as $fac) {
-    $facultyByEmail[ $fac[ 'email' ] ] = $fac;
-    $speakerPiMap[ $fac['email' ] ] = array( );
+    $facultyByEmail[$fac['email']] = $fac;
+    $speakerPiMap[$fac['email']] = [];
 }
 
-
 $facEmails = array_keys($facultyByEmail);
-$logins = array( );
+$logins = [];
 foreach (getAWSSpeakers() as $login) {
-    $piOrHost = getPIOrHost($login[ 'login' ]);
-    $logins[] = $login[ 'login' ];
-    $speakerPiMap[ $piOrHost ][] = $login;
+    $piOrHost = getPIOrHost($login['login']);
+    $logins[] = $login['login'];
+    $speakerPiMap[$piOrHost][] = $login;
 }
 ksort($speakerPiMap);
 
@@ -45,26 +44,26 @@ $( function() {
 // Auto update PI_OR_HOST.
 // If pi_or_host is not found, use ldap info.
 foreach ($speakerPiMap as $pi => $logins) {
-    if ((! $pi) or $pi == 'UNSPECIFIED' or strpos($pi, '@') === false) {
+    if ((!$pi) or 'UNSPECIFIED' == $pi or false === strpos($pi, '@')) {
         foreach ($logins as $login) {
-            if (! $login['login']) {
+            if (!$login['login']) {
                 continue;
             }
 
-            $ldap = getUserInfoFromLdap($login[ 'login' ]);
-            $email = getEmailByName($ldap[ 'laboffice' ]);
+            $ldap = getUserInfoFromLdap($login['login']);
+            $email = getEmailByName($ldap['laboffice']);
             if ($email) {
                 // Update the table with laboffice from intranet.
                 $res = updateTable(
                     'logins',
                     'login',
                     'pi_or_host',
-                    array( 'login' => $login[ 'login' ], 'pi_or_host' => $email )
+                    ['login' => $login['login'], 'pi_or_host' => $email]
                 );
 
                 if ($res) {
                     echo printInfo(
-                        "Successfully updated PI_OR_HOST for " . $login[ 'login' ] .  " to $email"
+                        'Successfully updated PI_OR_HOST for ' . $login['login'] . " to $email"
                     );
                 }
             }
@@ -72,15 +71,14 @@ foreach ($speakerPiMap as $pi => $logins) {
     }
 }
 
-
-/**
+/*
     * @name User interface.
     * @{ */
-/**  @} */
+/*  @} */
 
-if ($ref == "adminacad") {
+if ('adminacad' == $ref) {
     echo '
-        <form action="'.site_url("$ref/aws_speakers_action") . '" method="post">
+        <form action="' . site_url("$ref/aws_speakers_action") . '" method="post">
         <table border="0">
         <tr>
             <td><input type="text" name="login" id="login" placeholder="Speaker id"/></td>
@@ -91,7 +89,6 @@ if ($ref == "adminacad") {
         </form>';
 }
 
-
 echo ' <h2>Table of active speakers</h2> ';
 
 $index = 0;
@@ -100,31 +97,31 @@ foreach ($speakerPiMap as $pi => $speakers) {
         continue;
     }
 
-    echo "<h3>AWS Speaker list for " . $pi . "</h3>";
-    $table = "<table class=\"info\">";
-    $table .="<tr>";
+    echo '<h3>AWS Speaker list for ' . $pi . '</h3>';
+    $table = '<table class="info">';
+    $table .= '<tr>';
 
     $i = 0;
     foreach ($speakers as $login) {
-        if (! $login) {
+        if (!$login) {
             continue;
         }
 
         $speaker = getLoginInfo($login['login']);
 
-        $i ++;
-        $index ++;
-        $table .= "<td> $index: " . arrayToName($speaker) . "<br />
-            <tt>(" .  $speaker[ 'email' ] . ")</tt></td>";
-        if ($i % 4 == 0) {
-            $table .= "<tr></tr>";
+        ++$i;
+        ++$index;
+        $table .= "<td> $index: " . arrayToName($speaker) . '<br />
+            <tt>(' . $speaker['email'] . ')</tt></td>';
+        if (0 == $i % 4) {
+            $table .= '<tr></tr>';
         }
     }
-    $table .= "</tr>";
-    $table .= "</table>";
+    $table .= '</tr>';
+    $table .= '</table>';
     echo $table;
 }
 
-echo goBackToPageLink("$ref", "Go back");
+echo goBackToPageLink("$ref", 'Go back');
 
 ?>

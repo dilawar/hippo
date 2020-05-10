@@ -1,12 +1,12 @@
 <?php
 
-include_once("header.php");
-include_once("methods.php");
-include_once("database.php");
+include_once 'header.php';
+include_once 'methods.php';
+include_once 'database.php';
 include_once 'tohtml.php';
 include_once 'check_access_permissions.php';
 
-mustHaveAnyOfTheseRoles(array( 'USER' ));
+mustHaveAnyOfTheseRoles(['USER']);
 
 $googleMapAPIKey = getConfigValue('GOOGLE_MAP_API_KEY');
 
@@ -15,7 +15,7 @@ $user = whoAmI();
 
 ?>
 
-<script src="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=places&key=<?php echo $googleMapAPIKey ?>"></script>
+<script src="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=places&key=<?php echo $googleMapAPIKey; ?>"></script>
 </head>
 <body>
     <script>
@@ -31,18 +31,17 @@ $user = whoAmI();
 <?php
 // All alerts.
 $allAlerts = getTableEntries('alerts');
-$count = array( );
+$count = [];
 foreach ($allAlerts as $alert) {
-    $count[ $alert[ 'value' ] ] = 1 + __get__($count, $alert['value'], 0);
+    $count[$alert['value']] = 1 + __get__($count, $alert['value'], 0);
 }
 
-$apartmentTypes = array( 'SHARE', '1BHK', '2BHK', '3BHK', 'STUDIO', 'PALACE' );
+$apartmentTypes = ['SHARE', '1BHK', '2BHK', '3BHK', 'STUDIO', 'PALACE'];
 $apartmentSelect = arrayToSelectList('value', $apartmentTypes);
 
-
 // Create alerts.
-echo " <h2>My Email Alerts</h2> ";
-echo printInfo("You will receive email whenever following types of listings are added by others.");
+echo ' <h2>My Email Alerts</h2> ';
+echo printInfo('You will receive email whenever following types of listings are added by others.');
 
 $where = "login='$user' AND on_table='apartments' AND  on_field='type'";
 $myAlerts = getTableEntries('alerts', 'login', $where);
@@ -71,7 +70,6 @@ echo '<td> <button name="response" value="New Alert">Add Alert </button> </td>';
 echo ' </tr></table>';
 echo '</form>';
 
-
 // Show all apartments.
 echo ' <br /> <br />';
 echo ' <h2>My TO-LET entries </h2> ';
@@ -91,7 +89,7 @@ foreach ($myApartments as $apt) {
     echo '<td>' . arrayToTableHTML($apt, 'info', '', 'status,last_modified_on,created_by') . '</td>';
     echo ' <td>
             <button name="response" value="Update" > Edit </button> </td> ';
-    echo '<input type="hidden" name="id" value="' . $apt[ 'id' ] . '" />';
+    echo '<input type="hidden" name="id" value="' . $apt['id'] . '" />';
     echo ' </form> ';
     echo '</tr>';
 }
@@ -99,16 +97,13 @@ foreach ($myApartments as $apt) {
 echo '</table>';
 echo '</div>';
 
-
-$default = array(  'created_by' => $_SESSION[ 'user' ]
-        , 'created_on' => dbDateTime('now')
-        , 'open_vacancies' => 1
-    );
+$default = ['created_by' => $_SESSION['user'], 'created_on' => dbDateTime('now'), 'open_vacancies' => 1,
+    ];
 
 // If edit button is pressed.
 if ('Update' == __get__($_POST, 'response', '')) {
     $default = getTableEntry('apartments', 'id', $_POST);
-    $default[ 'last_modified_on' ] = dbDateTime('now');
+    $default['last_modified_on'] = dbDateTime('now');
     $action = 'Update listing';
 }
 
@@ -128,6 +123,6 @@ echo dbTableToHTMLTable('apartments', $default, $editable, $action);
 echo '</form>';
 echo '</div>';
 
-echo goBackToPageLink("user/home", "Go back");
+echo goBackToPageLink('user/home', 'Go back');
 
 ?>

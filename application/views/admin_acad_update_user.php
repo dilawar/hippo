@@ -1,10 +1,10 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
-$faculty = array( );
+$faculty = [];
 foreach (getFaculty() as $fac) {
-    $faculty[ ] = $fac[ 'email'] ;
+    $faculty[] = $fac['email'];
 }
 ?>
 
@@ -20,21 +20,21 @@ $(function() {
 
 echo "<p>Make sure to double check '<tt>PI OR HOST</tt>' and '<tt>JOINED ON</tt>' date.</p>";
 
-if (! __get__($_POST, 'login')) {
+if (!__get__($_POST, 'login')) {
     echo printWarning("You didn't select anyone. Going back ... ");
     redirect('adminacad/home');
 }
 
 $default = getUserInfo($_POST['login'], true);
 
-if (! $default) {
-    echo printWarning("Invalid username. I did not find anyone named "
-        .  $_POST[ 'login' ] . " on LDAP server");
+if (!$default) {
+    echo printWarning('Invalid username. I did not find anyone named '
+        . $_POST['login'] . ' on LDAP server');
     echo goBackToPageLink('user/home', 'Go back');
     exit;
 }
 
-echo '<form method="post" action="'.site_url("adminacad/update_user").'">';
+echo '<form method="post" action="' . site_url('adminacad/update_user') . '">';
 echo dbTableToHTMLTable(
     'logins',
     $default,

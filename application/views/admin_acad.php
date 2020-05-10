@@ -1,8 +1,8 @@
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
-$ref = "adminacad";
+$ref = 'adminacad';
 if (isset($controller)) {
     $ref = $controller;
 }
@@ -31,8 +31,8 @@ $symbUpdate = '<i class="fa fa-check"></i>';
 
 echo '<table class="admin table">';
 echo '<tr>';
-echo '<td><a class="clickable" href="'.site_url('adminacad/upcoming_aws').'">Manage Upcoming AWSes</a></td>';
-echo '<td><a class="clickable" href="'.site_url('adminacad/scheduling_request'). '">
+echo '<td><a class="clickable" href="' . site_url('adminacad/upcoming_aws') . '">Manage Upcoming AWSes</a></td>';
+echo '<td><a class="clickable" href="' . site_url('adminacad/scheduling_request') . '">
         Manage ' . count($pendingScheduleRequest) . ' Pending Scheduling Requests</a></td>';
 echo '</tr></table>';
 echo ' <br /> ';
@@ -62,19 +62,19 @@ echo '<table class="admin table">
 echo '<br />';
 echo '<table class="admin table">
     <tr>
-        <td> <a class="clickable_small" href="'.site_url('adminacad/add_aws_entry').'">Add Missing AWS entry</td>
-        <td> <a class="clickable_small" href="'.site_url('adminacad/aws_db').'">AWS Database</a> </td>
+        <td> <a class="clickable_small" href="' . site_url('adminacad/add_aws_entry') . '">Add Missing AWS entry</td>
+        <td> <a class="clickable_small" href="' . site_url('adminacad/aws_db') . '">AWS Database</a> </td>
     </tr>
     <tr>
         <td> <a class="clickable_small"
-            href="'.site_url('adminacad/aws_edit_requests').'">Manage ' . count($pendingRequests) .
+            href="' . site_url('adminacad/aws_edit_requests') . '">Manage ' . count($pendingRequests) .
             ' pending requests</a>
         </td>
-        <td> <a class="clickable_small" href="'.site_url('adminacad/email_and_docs').'">Emails and Documents</td>
+        <td> <a class="clickable_small" href="' . site_url('adminacad/email_and_docs') . '">Emails and Documents</td>
     </tr>
     <tr>
         <td> <a class="clickable_small"
-            href="'.site_url('adminacad/faculty').'">Manage Faculty and Course Instructors</a>
+            href="' . site_url('adminacad/faculty') . '">Manage Faculty and Course Instructors</a>
         </td>
         <td></td>
     </tr>
@@ -82,35 +82,35 @@ echo '<table class="admin table">
 
 $login = null;
 $date = null;
-if (isset($_POST[ 'response' ])) {
-    if ($_POST[ 'response' ] == 'Select') {
-        $login = $_POST[ 'login' ];
-        $date = $_POST[ 'date' ];
+if (isset($_POST['response'])) {
+    if ('Select' == $_POST['response']) {
+        $login = $_POST['login'];
+        $date = $_POST['date'];
     }
 
-    $awss = array( );
+    $awss = [];
     if ($login and $date) {
-        $awss = array( getMyAwsOn($login, $date) );
+        $awss = [getMyAwsOn($login, $date)];
     } elseif ($login) {
         $awss = getAwsOfSpeaker($login);
     }
 
     /* These AWS are upcoming */
     foreach ($awss as $aws) {
-        if (! $aws) {
+        if (!$aws) {
             continue;
         }
 
-        $speaker = $aws[ 'speaker' ];
+        $speaker = $aws['speaker'];
         $date = $aws['date'];
-        echo printInfo("<a>Entry for $speaker (" . loginToText($speaker) . ") on " .
-            date('D M d, Y', strtotime($date)) . "</a>");
+        echo printInfo("<a>Entry for $speaker (" . loginToText($speaker) . ') on ' .
+            date('D M d, Y', strtotime($date)) . '</a>');
 
         echo arrayToVerticalTableHTML($aws, 'annual_work_seminars');
         echo '<br />';
 
         /* This forms remain on this page only */
-        echo '<form method="post" action="'.site_url("adminacad/updateaws").'">
+        echo '<form method="post" action="' . site_url('adminacad/updateaws') . '">
             <input type="hidden" name="speaker" value="' . $speaker . '">
             <input type="hidden" name="date" value="' . $date . '" >
             <input type="hidden" name="id" value="' . $aws['id'] . '" >
@@ -122,10 +122,9 @@ if (isset($_POST[ 'response' ])) {
             ';
     }
     if (count($awss) > 0) {
-        echo goBackToPageLink("adminacad/home", "Refresh");
+        echo goBackToPageLink('adminacad/home', 'Refresh');
     }
 }
-
 
 /*
  * Course work,
@@ -135,38 +134,38 @@ echo '
   <table class="admin table">
     <tr>
         <td>
-            <a class="clickable" href="'.site_url('adminacad/enrollments').'"
+            <a class="clickable" href="' . site_url('adminacad/enrollments') . '"
                 title="Add/Remove student enrollments from  courses and assign grades"
             >Manage Enrollments</a>
             Add/Remove student enrollments from  courses and assign grades
             <br />
 
-            <a href="'.site_url('adminacad/show_enrollments').'"
+            <a href="' . site_url('adminacad/show_enrollments') . '"
             title="Show enrollments of a student"
             >Show Enrollments</a>
         </td>
         <td>
-            <a class="clickable" href="'.site_url('adminacad/grades').'">Manage Grades</a>
+            <a class="clickable" href="' . site_url('adminacad/grades') . '">Manage Grades</a>
             <p>Add/Remove student enrollments from  courses and assign grades.</p>
         </td>
     </tr>
     <tr>
         <td>
-            <a class="clickable" href="'.site_url('adminacad/courses').'"> Manage Courses</a>
+            <a class="clickable" href="' . site_url('adminacad/courses') . '"> Manage Courses</a>
             <br />
-            <a class="" href="'.site_url('adminacad/allcourses').'">(Edit Description)</a>
+            <a class="" href="' . site_url('adminacad/allcourses') . '">(Edit Description)</a>
         </td>
         <td> <a class="clickable"
-             href="'.site_url('adminacad/slots').'">Manage Slots</a> <br />
+             href="' . site_url('adminacad/slots') . '">Manage Slots</a> <br />
             Add/Delete or update slot.
         </td>
     </tr>
     <tr>
-        <td><a class="clickable" href="'.site_url('adminacad/show_course_feedback').'">
+        <td><a class="clickable" href="' . site_url('adminacad/show_course_feedback') . '">
             Show Feedback on Courses</a> 
             <br /> Course Feedback data.
         </td>
-        <td><a class="clickable" href="'.site_url('adminacad/feedbackquestionnaire').'">
+        <td><a class="clickable" href="' . site_url('adminacad/feedbackquestionnaire') . '">
             Update Course-Feedback Questionnaire</a> 
             <br /> Prepare course feedback questionnaire.
         </td>
@@ -179,46 +178,43 @@ echo '<h1>Journal Clubs</h1>';
 echo '
   <table class="admin table">
     <tr>
-        <td><a class="clickable" href="'.site_url('adminacad/jc').'">Add/Update Journal Clubs</a> </td>
-        <td><a class="clickable" href="'.site_url('adminacad/jc_admins').'">Manage Journal Club Admins</a></td>
+        <td><a class="clickable" href="' . site_url('adminacad/jc') . '">Add/Update Journal Clubs</a> </td>
+        <td><a class="clickable" href="' . site_url('adminacad/jc_admins') . '">Manage Journal Club Admins</a></td>
     </tr>
   </table>
   ';
 
-
-
 echo '<h1>Manage talks and seminars</h1>';
 echo '<table class="admin table">';
 echo '<tr>
-        <td> <a class="clickable" href="'.site_url('adminacad/manages_talks').'">Manage talks/seminar</td>
-        <td> <a class="clickable" href="'.site_url('adminacad/manages_speakers').'">Manage talk/seminar speakers</td>
+        <td> <a class="clickable" href="' . site_url('adminacad/manages_talks') . '">Manage talks/seminar</td>
+        <td> <a class="clickable" href="' . site_url('adminacad/manages_speakers') . '">Manage talk/seminar speakers</td>
     </tr>';
 echo '</table>';
 
-
 echo '<h1>Extra</h1>';
-echo "<h2>AWS Housekeeping</h2>";
+echo '<h2>AWS Housekeeping</h2>';
 
 $badEntries = doAWSHouseKeeping();
-if (count($badEntries) == 0) {
-    echo printInfo("AWSs are in order.");
+if (0 == count($badEntries)) {
+    echo printInfo('AWSs are in order.');
 } else {
     // can't make two forms on same page with same action. They will merge.
-    echo printNote("Following entries could not be moved to main AWS list. Most
+    echo printNote('Following entries could not be moved to main AWS list. Most
         likely these entries have no data. You need to fix them. You need to know
-        at least one supervisor to fix them. ");
+        at least one supervisor to fix them. ');
 
-    echo '<form action="' . site_url("adminacad/update_upcoming_aws") . '" method="post">';
+    echo '<form action="' . site_url('adminacad/update_upcoming_aws') . '" method="post">';
     foreach ($badEntries as $aws) {
-        echo alertUser("This AWS is incomplete.", false);
+        echo alertUser('This AWS is incomplete.', false);
         echo arrayToVerticalTableHTML($aws, 'info', '', 'status,comment');
         echo '<input type="hidden" name="response" value="update" />';
-        echo '<button name="id" value="' . $aws[ 'id' ] . '">Fix</button>';
+        echo '<button name="id" value="' . $aws['id'] . '">Fix</button>';
     }
     echo '</form>';
 }
 
-echo "<h2>Information</h2>";
+echo '<h2>Information</h2>';
 echo '
   <table border="0" class="admin table">
     <tr>
@@ -227,17 +223,16 @@ echo '
             in "Date Wise" list.  </small>
         </td>
         <td>
-            <a href="'.site_url('adminacad/summary_user_wise').'">User wise</a>
+            <a href="' . site_url('adminacad/summary_user_wise') . '">User wise</a>
             <br />
-            <a href="'.site_url('adminacad/summary_date_wise').'">Date wise</a>
+            <a href="' . site_url('adminacad/summary_date_wise') . '">Date wise</a>
         </td>
     </tr>
     <tr>
         <td>List of AWS speakers</td>
-        <td> <a href="'.site_url('adminacad/aws_speakers').'">AWS speaker</a> </td>
+        <td> <a href="' . site_url('adminacad/aws_speakers') . '">AWS speaker</a> </td>
     </tr>
   </table>';
-
 
 echo goBackToPageLink('adminacad', 'Go back');
 

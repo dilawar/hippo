@@ -9,15 +9,15 @@ function changeBackgroundById(x, color)
 </script>
 
 <?php
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 echo userHTML();
 
 global $symbDelete;
 global $symbCross;
 
-$ref = "user";
+$ref = 'user';
 if (isset($controller)) {
-    $ref=$controller;
+    $ref = $controller;
 }
 
 $user = whoAmI();
@@ -28,13 +28,12 @@ $items = getTableEntries(
     "status='VALID' AND requires_booking='YES' AND faculty_in_charge='$piOrHost'"
 );
 
-$itemMap = array();
+$itemMap = [];
 foreach ($items as $equip) {
-    $itemMap[ $equip['id']] = $equip;
+    $itemMap[$equip['id']] = $equip;
 }
 
 // Show book-equipment form only if items for booking are available.
-
 
 $equipIDS = array_map(function ($x) {
     return $x['id'];
@@ -47,12 +46,8 @@ foreach ($items as $item) {
 $equipSelect = arrayToSelectList('inventory', $equipIDS, $enames);
 
 $editable = 'inventory_id,date,start_time,end_time,comment';
-$default = array( 'id' => getUniqueID('inventory_bookings')
-                    , 'booked_by' => whoAmI()
-                    , 'created_on' => dbDateTime('now')
-                    , 'modified_on' => dbDateTime('now')
-                    , 'inventory_id' => $equipSelect
-                );
+$default = ['id' => getUniqueID('inventory_bookings'), 'booked_by' => whoAmI(), 'created_on' => dbDateTime('now'), 'modified_on' => dbDateTime('now'), 'inventory_id' => $equipSelect,
+                ];
 
 $multiBook = ' <table class="editable_book_equipments">';
 $multiBook .= '<caption>Multiple booking using repeat pattern.</caption>';
@@ -101,29 +96,28 @@ if (count($items) > 0) {
         can be used to book for multiple days. 
         ');
     echo '<table><tr><td>';
-    echo '<form action="'. site_url("user/book_equipment") .'" method="post" accept-charset="utf-8">';
+    echo '<form action="' . site_url('user/book_equipment') . '" method="post" accept-charset="utf-8">';
     echo dbTableToHTMLTable('inventory_bookings', $default, $editable, 'Book');
     echo '</form>';
     echo '</td><td>';
-    echo '<form action="'. site_url("user/multibook_equipment") .'" method="post">';
+    echo '<form action="' . site_url('user/multibook_equipment') . '" method="post">';
     echo $multiBook;
     echo '</form>';
     echo '</td></tr>';
     echo '</table>';
 } else {
-    echo printNote("I could not find any equipment which requires booking.");
+    echo printNote('I could not find any equipment which requires booking.');
 }
 
-
 // Only select equipment which belongs to our lab.
-$whereExpr = array();
+$whereExpr = [];
 foreach ($items as $i => $eq) {
     $whereExpr[] = "inventory_id='" . $eq['id'] . "'";
 }
-$equipIdsWhere = implode(" OR ", $whereExpr);
+$equipIdsWhere = implode(' OR ', $whereExpr);
 
 // If there is an item to book. Create it.
-$bookings = array();
+$bookings = [];
 if ($whereExpr) {
     $bookings = getTableEntries('inventory_bookings', 'date', "status='VALID' AND ($equipIdsWhere)");
 }
@@ -139,22 +133,22 @@ if (count($bookings) > 0) {
 
         if (whoAmI() == $booking['booked_by']) {
             $bid = $booking['id'];
-            $html .= '<form action="'.site_url("user/cancel_equipment_booking/$bid").'">';
+            $html .= '<form action="' . site_url("user/cancel_equipment_booking/$bid") . '">';
             $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
                 response="cancel" title="Delete this request">' . $symbCross . '</button>';
             $html .= '</form>';
 
             // Create a form to cancel all requests on this equipment.
-            $html .= '<form action="'.site_url("user/cancel_equipment_bookings/$eid").'">';
+            $html .= '<form action="' . site_url("user/cancel_equipment_bookings/$eid") . '">';
             $html .= '<button style="float:right;background-color:none;" onclick="AreYouSure(this)" 
                 response="cancel" title="Cancel all booking for this equipment." 
                 onmouseover="changeBackgroundById(this, \'lightblue\')" 
                 onmouseleave="changeBackgroundById(this, \'white\')"
-                value="'. $eid .'">' . $symbDelete . '</button>';
+                value="' . $eid . '">' . $symbDelete . '</button>';
             $html .= '</form>';
         }
         echo "<td><div id='equipment_booking_id_$eid' class='sticker'>$html</div></td>";
-        if (($i+1) % 5 == 0) {
+        if (0 == ($i + 1) % 5) {
             echo '</tr><tr>';
         }
     }
@@ -166,9 +160,9 @@ if (count($bookings) > 0) {
 echo '<h1>Available items</h1>';
 
 echo printNote(
-    "Following " . count($items). " items are available for booking 
-    for faculty-in-charge " . mailto($piOrHost)  . ". Whey  don't you 
-    <a href=\"". site_url("user/inventory_manage") . "\">Add Items To Inventory</a>."
+    'Following ' . count($items) . ' items are available for booking 
+    for faculty-in-charge ' . mailto($piOrHost) . ". Whey  don't you 
+    <a href=\"" . site_url('user/inventory_manage') . '">Add Items To Inventory</a>.'
 );
 
 if (count($items) > 0) {
@@ -177,9 +171,8 @@ if (count($items) > 0) {
     echo '</table>';
 }
 
-
 echo ' <br />';
 
-echo goBackToPageLink("$ref/home", "Go Home");
+echo goBackToPageLink("$ref/home", 'Go Home');
 ?>
 

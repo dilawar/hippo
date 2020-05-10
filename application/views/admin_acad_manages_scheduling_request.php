@@ -1,6 +1,6 @@
 <?php
 
-require_once BASEPATH.'autoload.php';
+require_once BASEPATH . 'autoload.php';
 
 // First, review request for upcoming AWS.
 $schedulingReqs = getTableEntries('aws_scheduling_request', 'status', "status='PENDING'");
@@ -10,11 +10,11 @@ if (isset($controller)) {
     $ref = $controller;
 }
 
-if (count($schedulingReqs) == 0) {
-    echo flashMessage("No scheduling request found.");
+if (0 == count($schedulingReqs)) {
+    echo flashMessage('No scheduling request found.');
     goToPage("$ref/home");
 } else {
-    echo "<h2>Manage pending requests</h2>";
+    echo '<h2>Manage pending requests</h2>';
     foreach ($schedulingReqs as $req) {
         echo '<form method="post" action="' . site_url("$ref/scheduling_request_submit") . '">';
         echo dbTableToHTMLTable('aws_scheduling_request', $req, '', '');

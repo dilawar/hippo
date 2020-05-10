@@ -1,7 +1,7 @@
 
 <?php
 
-include_once "header.php";
+include_once 'header.php';
 include_once 'tohtml.php';
 include_once 'methods.php';
 ?>
@@ -10,15 +10,15 @@ include_once 'methods.php';
 
 
 <?php
-$imageUrl = __DIR__ . "/data/ncbs_map_route_map_to_lecture_halls.jpeg";
+$imageUrl = __DIR__ . '/data/ncbs_map_route_map_to_lecture_halls.jpeg';
 
-echo "<h1> NCSB Map</h1>";
+echo '<h1> NCSB Map</h1>';
 
 if (file_exists($imageUrl)) {
-    echo  "Selected location <p id=\"location_info\"></p>";
+    echo  'Selected location <p id="location_info"></p>';
 
     $html = '<img width="800px"  height="auto" id="ncbsmap_img" 
-            src="' . dataURI($imageUrl, 'image/jpg') .  '" usemap="#ncbsmap" >';
+            src="' . dataURI($imageUrl, 'image/jpg') . '" usemap="#ncbsmap" >';
     echo $html;
     echo '
     <map name="ncbsmap">
@@ -39,7 +39,7 @@ if (file_exists($imageUrl)) {
         </script>
     ";
 } else {
-    echo printWarning("No map is found.");
+    echo printWarning('No map is found.');
 }
 
 echo closePage();

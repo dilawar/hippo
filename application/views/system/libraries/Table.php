@@ -1,6 +1,6 @@
 <?php
 /**
- * CodeIgniter
+ * CodeIgniter.
  *
  * An open source application development framework for PHP
  *
@@ -26,94 +26,94 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @package	CodeIgniter
  * @author	EllisLab Dev Team
  * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
  * @copyright	Copyright (c) 2014 - 2018, British Columbia Institute of Technology (http://bcit.ca/)
  * @license	http://opensource.org/licenses/MIT	MIT License
- * @link	https://codeigniter.com
+ *
+ * @see	https://codeigniter.com
  * @since	Version 1.3.1
  * @filesource
  */
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
- * HTML Table Generating Class
+ * HTML Table Generating Class.
  *
  * Lets you create tables manually or from database result objects, or arrays.
  *
- * @package		CodeIgniter
- * @subpackage	Libraries
  * @category	HTML Tables
+ *
  * @author		EllisLab Dev Team
- * @link		https://codeigniter.com/user_guide/libraries/table.html
+ *
+ * @see		https://codeigniter.com/user_guide/libraries/table.html
  */
 class CI_Table
 {
-
     /**
-     * Data for table rows
+     * Data for table rows.
      *
      * @var array
      */
-    public $rows		= array();
+    public $rows = [];
 
     /**
-     * Data for table heading
+     * Data for table heading.
      *
      * @var array
      */
-    public $heading		= array();
+    public $heading = [];
 
     /**
-     * Whether or not to automatically create the table header
+     * Whether or not to automatically create the table header.
      *
      * @var bool
      */
-    public $auto_heading	= true;
+    public $auto_heading = true;
 
     /**
-     * Table caption
+     * Table caption.
      *
      * @var string
      */
-    public $caption		= null;
+    public $caption = null;
 
     /**
-     * Table layout template
+     * Table layout template.
      *
      * @var array
      */
-    public $template	= null;
+    public $template = null;
 
     /**
-     * Newline setting
+     * Newline setting.
      *
      * @var string
      */
-    public $newline		= "\n";
+    public $newline = "\n";
 
     /**
-     * Contents of empty cells
+     * Contents of empty cells.
      *
      * @var string
      */
-    public $empty_cells	= '';
+    public $empty_cells = '';
 
     /**
-     * Callback for custom table layout
+     * Callback for custom table layout.
      *
      * @var function
      */
-    public $function	= null;
+    public $function = null;
 
     /**
-     * Set the template from the table config file if it exists
+     * Set the template from the table config file if it exists.
      *
-     * @param	array	$config	(default: array())
-     * @return	void
+     * @param array $config (default: array())
+     *
+     * @return void
      */
-    public function __construct($config = array())
+    public function __construct($config = [])
     {
         // initialize config
         foreach ($config as $key => $val) {
@@ -126,34 +126,38 @@ class CI_Table
     // --------------------------------------------------------------------
 
     /**
-     * Set the template
+     * Set the template.
      *
-     * @param	array	$template
-     * @return	bool
+     * @param array $template
+     *
+     * @return bool
      */
     public function set_template($template)
     {
-        if (! is_array($template)) {
+        if (!is_array($template)) {
             return false;
         }
 
         $this->template = $template;
+
         return true;
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Set the table heading
+     * Set the table heading.
      *
      * Can be passed as an array or discreet params
      *
      * @param	mixed
-     * @return	CI_Table
+     *
+     * @return CI_Table
      */
-    public function set_heading($args = array())
+    public function set_heading($args = [])
     {
         $this->heading = $this->_prep_args(func_get_args());
+
         return $this;
     }
 
@@ -165,13 +169,14 @@ class CI_Table
      * columns. This allows a single array with many elements to be
      * displayed in a table that has a fixed column count.
      *
-     * @param	array	$array
-     * @param	int	$col_limit
-     * @return	array
+     * @param array $array
+     * @param int   $col_limit
+     *
+     * @return array
      */
-    public function make_columns($array = array(), $col_limit = 0)
+    public function make_columns($array = [], $col_limit = 0)
     {
-        if (! is_array($array) or count($array) === 0 or ! is_int($col_limit)) {
+        if (!is_array($array) or 0 === count($array) or !is_int($col_limit)) {
             return false;
         }
 
@@ -179,16 +184,16 @@ class CI_Table
         // will want headings from a one-dimensional array
         $this->auto_heading = false;
 
-        if ($col_limit === 0) {
+        if (0 === $col_limit) {
             return $array;
         }
 
-        $new = array();
+        $new = [];
         do {
             $temp = array_splice($array, 0, $col_limit);
 
             if (count($temp) < $col_limit) {
-                for ($i = count($temp); $i < $col_limit; $i++) {
+                for ($i = count($temp); $i < $col_limit; ++$i) {
                     $temp[] = '&nbsp;';
                 }
             }
@@ -202,56 +207,61 @@ class CI_Table
     // --------------------------------------------------------------------
 
     /**
-     * Set "empty" cells
+     * Set "empty" cells.
      *
      * Can be passed as an array or discreet params
      *
-     * @param	mixed	$value
-     * @return	CI_Table
+     * @param mixed $value
+     *
+     * @return CI_Table
      */
     public function set_empty($value)
     {
         $this->empty_cells = $value;
+
         return $this;
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Add a table row
+     * Add a table row.
      *
      * Can be passed as an array or discreet params
      *
      * @param	mixed
-     * @return	CI_Table
+     *
+     * @return CI_Table
      */
-    public function add_row($args = array())
+    public function add_row($args = [])
     {
         $this->rows[] = $this->_prep_args(func_get_args());
+
         return $this;
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Prep Args
+     * Prep Args.
      *
      * Ensures a standard associative array format for all cell data
      *
      * @param	array
-     * @return	array
+     *
+     * @return array
      */
     protected function _prep_args($args)
     {
         // If there is no $args[0], skip this and treat as an associative array
         // This can happen if there is only a single key, for example this is passed to table->generate
         // array(array('foo'=>'bar'))
-        if (isset($args[0]) && count($args) === 1 && is_array($args[0]) && ! isset($args[0]['data'])) {
+        if (isset($args[0]) && 1 === count($args) && is_array($args[0]) && !isset($args[0]['data'])) {
             $args = $args[0];
         }
 
         foreach ($args as $key => $val) {
-            is_array($val) or $args[$key] = array('data' => $val);
+            is_array($val) or $args[$key] = ['data' => $val];
         }
 
         return $args;
@@ -260,30 +270,33 @@ class CI_Table
     // --------------------------------------------------------------------
 
     /**
-     * Add a table caption
+     * Add a table caption.
      *
-     * @param	string	$caption
-     * @return	CI_Table
+     * @param string $caption
+     *
+     * @return CI_Table
      */
     public function set_caption($caption)
     {
         $this->caption = $caption;
+
         return $this;
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Generate the table
+     * Generate the table.
      *
-     * @param	mixed	$table_data
-     * @return	string
+     * @param mixed $table_data
+     *
+     * @return string
      */
     public function generate($table_data = null)
     {
         // The table data can optionally be passed to this function
         // either as a database result object or an array
-        if (! empty($table_data)) {
+        if (!empty($table_data)) {
             if ($table_data instanceof CI_DB_result) {
                 $this->_set_from_db_result($table_data);
             } elseif (is_array($table_data)) {
@@ -300,66 +313,66 @@ class CI_Table
         $this->_compile_template();
 
         // Validate a possibly existing custom cell manipulation function
-        if (isset($this->function) && ! is_callable($this->function)) {
+        if (isset($this->function) && !is_callable($this->function)) {
             $this->function = null;
         }
 
         // Build the table!
 
-        $out = $this->template['table_open'].$this->newline;
+        $out = $this->template['table_open'] . $this->newline;
 
         // Add any caption here
         if ($this->caption) {
-            $out .= '<caption>'.$this->caption.'</caption>'.$this->newline;
+            $out .= '<caption>' . $this->caption . '</caption>' . $this->newline;
         }
 
         // Is there a table heading to display?
-        if (! empty($this->heading)) {
-            $out .= $this->template['thead_open'].$this->newline.$this->template['heading_row_start'].$this->newline;
+        if (!empty($this->heading)) {
+            $out .= $this->template['thead_open'] . $this->newline . $this->template['heading_row_start'] . $this->newline;
 
             foreach ($this->heading as $heading) {
                 $temp = $this->template['heading_cell_start'];
 
                 foreach ($heading as $key => $val) {
-                    if ($key !== 'data') {
-                        $temp = str_replace('<th', '<th '.$key.'="'.$val.'"', $temp);
+                    if ('data' !== $key) {
+                        $temp = str_replace('<th', '<th ' . $key . '="' . $val . '"', $temp);
                     }
                 }
 
-                $out .= $temp.(isset($heading['data']) ? $heading['data'] : '').$this->template['heading_cell_end'];
+                $out .= $temp . ($heading['data'] ?? '') . $this->template['heading_cell_end'];
             }
 
-            $out .= $this->template['heading_row_end'].$this->newline.$this->template['thead_close'].$this->newline;
+            $out .= $this->template['heading_row_end'] . $this->newline . $this->template['thead_close'] . $this->newline;
         }
 
         // Build the table rows
-        if (! empty($this->rows)) {
-            $out .= $this->template['tbody_open'].$this->newline;
+        if (!empty($this->rows)) {
+            $out .= $this->template['tbody_open'] . $this->newline;
 
             $i = 1;
             foreach ($this->rows as $row) {
-                if (! is_array($row)) {
+                if (!is_array($row)) {
                     break;
                 }
 
                 // We use modulus to alternate the row colors
                 $name = fmod($i++, 2) ? '' : 'alt_';
 
-                $out .= $this->template['row_'.$name.'start'].$this->newline;
+                $out .= $this->template['row_' . $name . 'start'] . $this->newline;
 
                 foreach ($row as $cell) {
-                    $temp = $this->template['cell_'.$name.'start'];
+                    $temp = $this->template['cell_' . $name . 'start'];
 
                     foreach ($cell as $key => $val) {
-                        if ($key !== 'data') {
-                            $temp = str_replace('<td', '<td '.$key.'="'.$val.'"', $temp);
+                        if ('data' !== $key) {
+                            $temp = str_replace('<td', '<td ' . $key . '="' . $val . '"', $temp);
                         }
                     }
 
-                    $cell = isset($cell['data']) ? $cell['data'] : '';
+                    $cell = $cell['data'] ?? '';
                     $out .= $temp;
 
-                    if ($cell === '' or $cell === null) {
+                    if ('' === $cell or null === $cell) {
                         $out .= $this->empty_cells;
                     } elseif (isset($this->function)) {
                         $out .= call_user_func($this->function, $cell);
@@ -367,13 +380,13 @@ class CI_Table
                         $out .= $cell;
                     }
 
-                    $out .= $this->template['cell_'.$name.'end'];
+                    $out .= $this->template['cell_' . $name . 'end'];
                 }
 
-                $out .= $this->template['row_'.$name.'end'].$this->newline;
+                $out .= $this->template['row_' . $name . 'end'] . $this->newline;
             }
 
-            $out .= $this->template['tbody_close'].$this->newline;
+            $out .= $this->template['tbody_close'] . $this->newline;
         }
 
         $out .= $this->template['table_close'];
@@ -387,30 +400,32 @@ class CI_Table
     // --------------------------------------------------------------------
 
     /**
-     * Clears the table arrays.  Useful if multiple tables are being generated
+     * Clears the table arrays.  Useful if multiple tables are being generated.
      *
-     * @return	CI_Table
+     * @return CI_Table
      */
     public function clear()
     {
-        $this->rows = array();
-        $this->heading = array();
+        $this->rows = [];
+        $this->heading = [];
         $this->auto_heading = true;
+
         return $this;
     }
 
     // --------------------------------------------------------------------
 
     /**
-     * Set table data from a database result object
+     * Set table data from a database result object.
      *
-     * @param	CI_DB_result	$object	Database result object
-     * @return	void
+     * @param CI_DB_result $object Database result object
+     *
+     * @return void
      */
     protected function _set_from_db_result($object)
     {
         // First generate the headings from the table column names
-        if ($this->auto_heading === true && empty($this->heading)) {
+        if (true === $this->auto_heading && empty($this->heading)) {
             $this->heading = $this->_prep_args($object->list_fields());
         }
 
@@ -422,14 +437,15 @@ class CI_Table
     // --------------------------------------------------------------------
 
     /**
-     * Set table data from an array
+     * Set table data from an array.
      *
-     * @param	array	$data
-     * @return	void
+     * @param array $data
+     *
+     * @return void
      */
     protected function _set_from_array($data)
     {
-        if ($this->auto_heading === true && empty($this->heading)) {
+        if (true === $this->auto_heading && empty($this->heading)) {
             $this->heading = $this->_prep_args(array_shift($data));
         }
 
@@ -441,20 +457,21 @@ class CI_Table
     // --------------------------------------------------------------------
 
     /**
-     * Compile Template
+     * Compile Template.
      *
-     * @return	void
+     * @return void
      */
     protected function _compile_template()
     {
-        if ($this->template === null) {
+        if (null === $this->template) {
             $this->template = $this->_default_template();
+
             return;
         }
 
         $this->temp = $this->_default_template();
-        foreach (array('table_open', 'thead_open', 'thead_close', 'heading_row_start', 'heading_row_end', 'heading_cell_start', 'heading_cell_end', 'tbody_open', 'tbody_close', 'row_start', 'row_end', 'cell_start', 'cell_end', 'row_alt_start', 'row_alt_end', 'cell_alt_start', 'cell_alt_end', 'table_close') as $val) {
-            if (! isset($this->template[$val])) {
+        foreach (['table_open', 'thead_open', 'thead_close', 'heading_row_start', 'heading_row_end', 'heading_cell_start', 'heading_cell_end', 'tbody_open', 'tbody_close', 'row_start', 'row_end', 'cell_start', 'cell_end', 'row_alt_start', 'row_alt_end', 'cell_alt_start', 'cell_alt_end', 'table_close'] as $val) {
+            if (!isset($this->template[$val])) {
                 $this->template[$val] = $this->temp[$val];
             }
         }
@@ -463,37 +480,37 @@ class CI_Table
     // --------------------------------------------------------------------
 
     /**
-     * Default Template
+     * Default Template.
      *
-     * @return	array
+     * @return array
      */
     protected function _default_template()
     {
-        return array(
-            'table_open'		=> '<table border="0" cellpadding="4" cellspacing="0">',
+        return [
+            'table_open' => '<table border="0" cellpadding="4" cellspacing="0">',
 
-            'thead_open'		=> '<thead>',
-            'thead_close'		=> '</thead>',
+            'thead_open' => '<thead>',
+            'thead_close' => '</thead>',
 
-            'heading_row_start'	=> '<tr>',
-            'heading_row_end'	=> '</tr>',
-            'heading_cell_start'	=> '<th>',
-            'heading_cell_end'	=> '</th>',
+            'heading_row_start' => '<tr>',
+            'heading_row_end' => '</tr>',
+            'heading_cell_start' => '<th>',
+            'heading_cell_end' => '</th>',
 
-            'tbody_open'		=> '<tbody>',
-            'tbody_close'		=> '</tbody>',
+            'tbody_open' => '<tbody>',
+            'tbody_close' => '</tbody>',
 
-            'row_start'		=> '<tr>',
-            'row_end'		=> '</tr>',
-            'cell_start'		=> '<td>',
-            'cell_end'		=> '</td>',
+            'row_start' => '<tr>',
+            'row_end' => '</tr>',
+            'cell_start' => '<td>',
+            'cell_end' => '</td>',
 
-            'row_alt_start'		=> '<tr>',
-            'row_alt_end'		=> '</tr>',
-            'cell_alt_start'	=> '<td>',
-            'cell_alt_end'		=> '</td>',
+            'row_alt_start' => '<tr>',
+            'row_alt_end' => '</tr>',
+            'cell_alt_start' => '<td>',
+            'cell_alt_end' => '</td>',
 
-            'table_close'		=> '</table>'
-        );
+            'table_close' => '</table>',
+        ];
     }
 }

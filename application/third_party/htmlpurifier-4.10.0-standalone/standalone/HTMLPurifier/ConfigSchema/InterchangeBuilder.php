@@ -2,10 +2,10 @@
 
 class HTMLPurifier_ConfigSchema_InterchangeBuilder
 {
-
     /**
      * Used for processing DEFAULT, nothing else.
-     * @type HTMLPurifier_VarParser
+     *
+     * @var HTMLPurifier_VarParser
      */
     protected $varParser;
 
@@ -19,18 +19,21 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
 
     /**
      * @param string $dir
+     *
      * @return HTMLPurifier_ConfigSchema_Interchange
      */
     public static function buildFromDirectory($dir = null)
     {
         $builder = new HTMLPurifier_ConfigSchema_InterchangeBuilder();
         $interchange = new HTMLPurifier_ConfigSchema_Interchange();
+
         return $builder->buildDir($interchange, $dir);
     }
 
     /**
      * @param HTMLPurifier_ConfigSchema_Interchange $interchange
-     * @param string $dir
+     * @param string                                $dir
+     *
      * @return HTMLPurifier_ConfigSchema_Interchange
      */
     public function buildDir($interchange, $dir = null)
@@ -43,10 +46,10 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
             $interchange->name = $info['name'];
         }
 
-        $files = array();
+        $files = [];
         $dh = opendir($dir);
         while (false !== ($file = readdir($dh))) {
-            if (!$file || $file[0] == '.' || strrchr($file, '.') !== '.txt') {
+            if (!$file || '.' == $file[0] || '.txt' !== strrchr($file, '.')) {
                 continue;
             }
             $files[] = $file;
@@ -57,12 +60,13 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
         foreach ($files as $file) {
             $this->buildFile($interchange, $dir . '/' . $file);
         }
+
         return $interchange;
     }
 
     /**
      * @param HTMLPurifier_ConfigSchema_Interchange $interchange
-     * @param string $file
+     * @param string                                $file
      */
     public function buildFile($interchange, $file)
     {
@@ -75,8 +79,10 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
 
     /**
      * Builds an interchange object based on a hash.
+     *
      * @param HTMLPurifier_ConfigSchema_Interchange $interchange HTMLPurifier_ConfigSchema_Interchange object to build
-     * @param HTMLPurifier_StringHash $hash source data
+     * @param HTMLPurifier_StringHash               $hash        source data
+     *
      * @throws HTMLPurifier_ConfigSchema_Exception
      */
     public function build($interchange, $hash)
@@ -87,8 +93,8 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
         if (!isset($hash['ID'])) {
             throw new HTMLPurifier_ConfigSchema_Exception('Hash does not have any ID');
         }
-        if (strpos($hash['ID'], '.') === false) {
-            if (count($hash) == 2 && isset($hash['DESCRIPTION'])) {
+        if (false === strpos($hash['ID'], '.')) {
+            if (2 == count($hash) && isset($hash['DESCRIPTION'])) {
                 $hash->offsetGet('DESCRIPTION'); // prevent complaining
             } else {
                 throw new HTMLPurifier_ConfigSchema_Exception('All directives must have a namespace');
@@ -101,7 +107,8 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
 
     /**
      * @param HTMLPurifier_ConfigSchema_Interchange $interchange
-     * @param HTMLPurifier_StringHash $hash
+     * @param HTMLPurifier_StringHash               $hash
+     *
      * @throws HTMLPurifier_ConfigSchema_Exception
      */
     public function buildDirective($interchange, $hash)
@@ -174,7 +181,8 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
     }
 
     /**
-     * Evaluates an array PHP code string without array() wrapper
+     * Evaluates an array PHP code string without array() wrapper.
+     *
      * @param string $contents
      */
     protected function evalArray($contents)
@@ -184,22 +192,27 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
 
     /**
      * Converts an array list into a lookup array.
+     *
      * @param array $array
+     *
      * @return array
      */
     protected function lookup($array)
     {
-        $ret = array();
+        $ret = [];
         foreach ($array as $val) {
             $ret[$val] = true;
         }
+
         return $ret;
     }
 
     /**
      * Convenience function that creates an HTMLPurifier_ConfigSchema_Interchange_Id
      * object based on a string Id.
+     *
      * @param string $id
+     *
      * @return HTMLPurifier_ConfigSchema_Interchange_Id
      */
     protected function id($id)
@@ -210,7 +223,8 @@ class HTMLPurifier_ConfigSchema_InterchangeBuilder
     /**
      * Triggers errors for any unused keys passed in the hash; such keys
      * may indicate typos, missing values, etc.
-     * @param HTMLPurifier_StringHash $hash Hash to check.
+     *
+     * @param HTMLPurifier_StringHash $hash hash to check
      */
     protected function _findUnused($hash)
     {

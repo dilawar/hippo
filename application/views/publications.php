@@ -1,8 +1,7 @@
 <?php
-include_once FCPATH.'./system/autoload.php';
+include_once FCPATH . './system/autoload.php';
 
-
-function pubmedToTable() : string
+function pubmedToTable(): string
 {
     $pubmedJSON = FCPATH . '/temp/pubmed.json';
     if (file_exists($pubmedJSON)) {
@@ -20,14 +19,15 @@ function pubmedToTable() : string
             $table .= '</tr>';
         }
         $table .= '</table>';
+
         return $table;
-    } else {
-        return '';
     }
+
+    return '';
 }
 
 $entries = getTableEntries('publications', 'date');
-echo "Total publications found " . count($entries);
+echo 'Total publications found ' . count($entries);
 
 $bibs = [];
 foreach ($entries as $entry) {
@@ -40,8 +40,8 @@ krsort($bibs);
 foreach ($bibs as $year => $bibs) {
     $table = '<table class="show_info">';
     foreach ($bibs as $i => $bib) {
-        $row = "<td>".($i+1)."</td>";
-        $row .= "<td>". $bib['title'] ;
+        $row = '<td>' . ($i + 1) . '</td>';
+        $row .= '<td>' . $bib['title'];
         $title = $bib['title'];
         $titleSha = hash('sha512', $title);
         $authors = array_map(
@@ -52,15 +52,15 @@ foreach ($bibs as $year => $bibs) {
         );
 
         $publisher = __get__($bib, 'journal', __get__($bib, 'publisher', 'Unknown'));
-        $row .= "<br /> <small>" . $publisher . "</small>" ;
-        $row .= "<br/> <strong> <small>". implode(',', $authors) . "</small> </strong>";
-        $row .= "</td>";
+        $row .= '<br /> <small>' . $publisher . '</small>';
+        $row .= '<br/> <strong> <small>' . implode(',', $authors) . '</small> </strong>';
+        $row .= '</td>';
         $table .= "<tr>$row</tr>";
     }
-    $table .= "</table>";
+    $table .= '</table>';
     echo "<h3>Publications in $year</h3>";
     echo $table;
-    echo "<hr />";
+    echo '<hr />';
 }
 
 ?>
