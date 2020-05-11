@@ -762,7 +762,7 @@ class Api extends CI_Controller
         } elseif ('weekinfo' === $args[0]) {
             if ('change' === $args[1]) {
                 $res = updateTable('upcoming_aws', 'date', 'venue,vc_url,chair', $_POST);
-                $this->send_data(['status' => $res], 'ok');
+                $this->send_data(['success' => $res], 'ok');
                 return;
             }
         } elseif ('venue' === $args[0]) {
@@ -772,7 +772,8 @@ class Api extends CI_Controller
                 $res = insertOrUpdateTable(
                     'config', 'id,value', 'value', ['id' => 'AWS_VC_URL', 'value' => $_POST['vc_url']]
                 );
-                $this->send_data(['status' => $res], 'ok');
+                $this->send_data(['success' => $res], 'ok');
+
                 return;
             }
 
