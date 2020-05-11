@@ -770,10 +770,9 @@ class Api extends CI_Controller
                 $res = updateTable('upcoming_aws', 'date', 'venue,vc_url', $_POST);
                 // Also change in global config (deprecated)
                 $res = insertOrUpdateTable(
-                    'config', 'id,value', 'id,value', ['id' => 'AWS_VC_URL', 'value' => $_POST['vc_url']]
+                    'config', 'id,value', 'value', ['id' => 'AWS_VC_URL', 'value' => $_POST['vc_url']]
                 );
                 $this->send_data(['status' => $res], 'ok');
-
                 return;
             }
 
@@ -2923,6 +2922,26 @@ class Api extends CI_Controller
             return $this->__commontasks(...$args);
         } elseif ('table' === $args[0]) {
             return $this->__commontasks(...$args);
+        } elseif ('templates' === $args[0]) {
+            // templates.
+            if('list' === $args[1]) {
+                $templates = getTableEntries('email_templates', 'id', "id>'0'");
+                $this->send_data($templates, 'ok');
+                return;
+            }
+            elseif('submit' === $args[1]) {
+                $toupdate = 'description,recipients,cc,when_to_send';
+                $res = insertOrUpdateTable('email_templates', 'id,'.$toupdate, $toupdate, $_POST);
+                $this->send_data(['success'=>$res], 'ok');
+                return;
+            }
+            elseif('delete' === $args[1]) {
+                $res = deleteFromTable('email_templates', 'id', $_POST);
+                $this->send_data(['success'=>$res], 'ok');
+                return;
+            }
+            $this->send_data(["Unknown endpoint: ". json_encode($args)], 401);
+            return;
         } elseif ('holidays' === $args[0]) {
             if ('list' === $args[1]) {
                 $holidays = getHolidays();
@@ -2969,7 +2988,7 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
 
             return;
-        }
+        } 
         $this->send_data(['Unknown request: ', $args], 'ok');
     }
 
