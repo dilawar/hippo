@@ -778,13 +778,6 @@ class Api extends CI_Controller
                 'upcoming_aws', 'date',
                 "date >= '$from'", '*', $numEvents
             );
-        } elseif ('weekinfo' === $args[0]) {
-            if ('change' === $args[1]) {
-                $res = updateTable('upcoming_aws', 'date', 'venue,vc_url,chair', $_POST);
-                $this->send_data(['success' => $res], 'ok');
-
-                return;
-            }
         } elseif ('venue' === $args[0]) {
             if ('change' === $args[1]) {
                 $res = updateTable('upcoming_aws', 'date', 'venue,vc_url', $_POST);
@@ -3117,9 +3110,34 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
 
                 return;
+            } elseif ('weekinfo' === $args[1]) {
+                if ('change' === $args[2]) {
+
+                    // Check if chair is different then reassign it and mark
+                    // has_chair_confirmed to 'NO'.
+                    $res = updateTable('upcoming_aws', 'date', 'venue,vc_url,chair', $_POST);
+
+                    $this->send_data(['success' => $res, 'msg' => ''], 'ok');
+
+                    return;
+                }
+            } elseif ('confirmchair' === $args[1]) {
+                $date = __get__($args, 2, '');
+                if (!$date) {
+                    $data = ['success' => false, 'msg' => "Invalid date $date"];
+                    $this->send_data($data, 'ok');
+
+                    return;
+                }
+                $res = updateTable('upcoming_aws', 'date', 'has_chair_confirmed', ['date' => $date, 'has_chair_confirmed' => 'YES']
+                );
+
+                $this->send_data(['success' => $res, 'msg' => ''], 'ok');
+
+                return;
             }
 
-            $this->send_data(['Unknown request'], 'ok');
+            $this->send_data(['success' => false, 'msg' => 'Unknown endpoint' . json_encode($args)], 'ok');
 
             return;
         } elseif ('aws' === $args[0]) {
@@ -3202,8 +3220,6 @@ class Api extends CI_Controller
 
             return;
         } elseif ('course' === $args[0]) {
-            assert($args[1]) or die("/course/x requires a valid 'x'");
-
             if ('registration' === $args[1]) {
                 // We are sending base64 encoded string because course id can have
                 $data = $_POST;
@@ -3277,7 +3293,7 @@ class Api extends CI_Controller
 
             return;
         }
-        $this->send_data(['Unknown request: ' . json_encode($args)], 'ok');
+        $this->send_data(['success' => true, 'msg' => 'Unknown request: ' . json_encode($args)], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/

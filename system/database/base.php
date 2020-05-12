@@ -386,6 +386,7 @@ class BMVPDO extends PDO
                 , is_presynopsis_seminar ENUM( 'YES', 'NO' ) default 'NO'
                 , venue VARCHAR(100) NOT NULL
                 , chair VARCHAR(100)
+                , has_chair_confirmed ENUM('YES', 'NO') default 'NO'
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
                 , UNIQUE (speaker, date, venue) )"
         );
