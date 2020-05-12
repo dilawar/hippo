@@ -2183,6 +2183,8 @@ function arrayToMultiCheckbox( string $name, string $values, string $default='' 
     * @brief Generate a email statement form given template id. Templte must
     * exits in a database table.
     *
+    * Replaces @KEY@ by KEY value in options.
+    *
     * @param $templateName
     * @param $options
     *

@@ -2193,10 +2193,8 @@ function updateTable($tablename, $wherekeys, $keys, array $data)
     $values = array( );
     $cols = array();
     foreach ($keys as $k) {
-        // If values for this key in $data is null then don't use it here.
-        if (null === $data[$k]) {
+        if (! $data[$k]) 
             continue;
-        }
 
         array_push($cols, $k);
         array_push($values, "$k=:$k");
@@ -2270,36 +2268,20 @@ function temporaryAwsSchedule($speaker)
 }
 
 /**
- * @brief Fetch faculty from database. Order by last-name
+ * @brief Fetch faculty from database. 
  *
  * @param $status
  *
  * @return
  */
-function getFaculty($status = '', $order_by = 'first_name')
+function getFaculty($status='', $order_by = 'first_name') : array
 {
-    $hippoDB = initDB();
-    ;
-    $query = 'SELECT * FROM faculty';
-    $whereExpr = " WHERE affiliation != 'OTHER' ";
-    if ($status) {
-        $query .= " $whereExpr AND status=:status ";
-    } else {
-        $query .= " $whereExpr AND status != 'INACTIVE' ";
-    }
-
-    if ($order_by) {
-        $query .= " ORDER BY  '$order_by' ";
-    }
-
-    $stmt = $hippoDB->prepare($query);
-
-    if ($status) {
-        $stmt->bindValue(':status', $status);
-    }
-
-    $stmt->execute();
-    return fetchEntries($stmt);
+    if(! $status)
+        $where = " status!='INVALID'";
+    else
+        $where = " status='$status'";
+    // $where .= " AND affiliation != 'OTHER'";
+    return getTableEntries('faculty', 'first_name', $where);
 }
 
 /**
@@ -3448,13 +3430,13 @@ function totalClassEvents()
  * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getTableFieldInfo($tableName)
+function getTableFieldInfo($tableName) : array
 {
     $schema = getTableSchema($tableName);
     $res = [];
     foreach ($schema as $row) {
         $type = $row['Type'];
-        $fname = $row['Field'];
+        $fname = strtolower($row['Field']);
         if (preg_match("/^(enum|set)\((.*)\)$/", $type, $match)) {
             $fs = [];
             foreach (explode(",", $match[2]) as &$v) {
@@ -3464,6 +3446,10 @@ function getTableFieldInfo($tableName)
         } else {
             if (__substr__('varchar', $type)) {
                 $res[$fname] = ['text', ''];
+            } elseif (__substr__('datetime', $type)) {
+                $res[$fname] = ['datetime', ''];
+            } elseif (__substr__('timestamp', $type)) {
+                $res[$fname] = ['datetime', ''];
             } elseif (__substr__('date', $type)) {
                 $res[$fname] = ['date', ''];
             } elseif (__substr__('time', $type)) {

@@ -48,6 +48,20 @@ function getKey()
     return __get__($_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
 }
 
+function hasRoles($whichRoles): bool
+{
+    $roles = getRoles(getLogin());
+    foreach (explode(',', $whichRoles) as $r1) {
+        foreach ($roles as $r2) {
+            if ($r1 === $r2) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 class Api extends CI_Controller
 {
     // To enable CORS just for this API. DO NOT CHANGE THEM IN apache2.conf or
@@ -55,7 +69,7 @@ class Api extends CI_Controller
     public function __construct($config = 'rest')
     {
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Headers: cache-control,login,hippo-api-key,x-requested-with,Content-Type');
+        header('Access-Control-Allow-Headers: cache-control,hippo-login,login,hippo-api-key,x-requested-with,Content-Type');
         header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
         parent::__construct();
     }
@@ -158,7 +172,9 @@ class Api extends CI_Controller
             $this->send_data([], 'Not authenticated');
 
             return;
-        } elseif ('flashcards' === $args[0]) {
+        }
+
+        if ('flashcards' === $args[0]) {
             $data = getPublicEventsOnThisDay('today');
             $data = array_filter(
                 $data,
@@ -257,11 +273,13 @@ class Api extends CI_Controller
         $key = getKey();
         if (!$key) {
             $this->send_data(['status' => false, 'msg' => 'Not authenticated. Empty key'], 401);
+
             return;
         }
 
         if (!authenticateAPI(getKey())) {
             $this->send_data(['status' => false, msg => 'Bad key. Did you login?'], 401);
+
             return;
         }
 
@@ -289,6 +307,7 @@ class Api extends CI_Controller
         } elseif ('faculty' === $args[0]) {
             $faculty = searchInFaculty($q);
             $this->send_data_helper($faculty);
+
             return;
         } elseif ('login' === $args[0]) {
             $logins = searchInLogins($q);
@@ -762,7 +781,8 @@ class Api extends CI_Controller
         } elseif ('weekinfo' === $args[0]) {
             if ('change' === $args[1]) {
                 $res = updateTable('upcoming_aws', 'date', 'venue,vc_url,chair', $_POST);
-                $this->send_data(['status' => $res], 'ok');
+                $this->send_data(['success' => $res], 'ok');
+
                 return;
             }
         } elseif ('venue' === $args[0]) {
@@ -770,9 +790,9 @@ class Api extends CI_Controller
                 $res = updateTable('upcoming_aws', 'date', 'venue,vc_url', $_POST);
                 // Also change in global config (deprecated)
                 $res = insertOrUpdateTable(
-                    'config', 'id,value', 'id,value', ['id' => 'AWS_VC_URL', 'value' => $_POST['vc_url']]
+                    'config', 'id,value', 'value', ['id' => 'AWS_VC_URL', 'value' => $_POST['vc_url']]
                 );
-                $this->send_data(['status' => $res], 'ok');
+                $this->send_data(['success' => $res], 'ok');
 
                 return;
             }
@@ -1075,7 +1095,7 @@ class Api extends CI_Controller
 
         // Delete given request of events.
         if ('delete' === $args[0]) {
-            $login = $_POST['login'];
+            $login = getLogin();
             if ('request' === $args[1]) {
                 $data = explode('.', $args[2]);
                 $gid = $data[0];
@@ -1443,7 +1463,6 @@ class Api extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public function me()
     {
-        // Only need api key
         if (!authenticateAPI(getKey(), getLogin())) {
             $this->send_data([], 'Not authenticated');
 
@@ -1456,7 +1475,10 @@ class Api extends CI_Controller
         if ('profile' === $args[0]) {
             $endpoint = __get__($args, 1, 'get');
             if ('get' === $endpoint) {
+                // If no userid is given, use current user.
+                $user = $args[2] ?? $user;
                 $ldap = getUserInfo($user, true);
+
                 $remove = ['fname', 'lname', 'mname', 'roles'];
                 $data = array_diff_key($ldap, array_flip($remove));
                 $this->send_data($data, 'ok');
@@ -1464,6 +1486,13 @@ class Api extends CI_Controller
                 return;
             } elseif ('update' === $endpoint) {
                 $data = ['success' => false, 'msg' => ''];
+                if ($_POST['HIPPO-LOGIN'] !== $_POST['login']) {
+                    $data['msg'] = 'You can not update profile of ' . $_POST['login']
+                        . ' using this endpoint.';
+                    $this->send_data($data, 'ok');
+
+                    return;
+                }
                 $editables = array_keys(getProfileEditables());
                 $_POST['login'] = getLogin();
                 $res = updateTable('logins', 'login', $editables, $_POST);
@@ -1490,7 +1519,16 @@ class Api extends CI_Controller
 
             return;
         } elseif ('photo' === $args[0]) {
-            $pic = getUserPhotoB64(getLogin());
+            $login = $args[1] ?? getLogin();
+            if ($login !== getLogin()) {
+                $roles = getRoles($login);
+                if (!(in_array('ADMIN', $roles) || in_array('ACAD_ADMIN', $roles))) {
+                    $this->send_data([], 'Forbidden');
+
+                    return;
+                }
+            }
+            $pic = getUserPhotoB64($login);
             $this->send_data(['base64' => $pic], 'ok');
 
             return;
@@ -2666,6 +2704,12 @@ class Api extends CI_Controller
                 $this->send_data($email, 'ok');
 
                 return;
+            } elseif ('upcoming_aws' === $args[1]) {
+                $monday = $args[2];
+                $email = awsEmailForMonday($monday);
+                $this->send_data($email, 'ok');
+
+                return;
             } elseif ('post' === $args[1]) {
                 $data = $_POST;
                 $res = sendHTMLEmail(
@@ -2814,11 +2858,8 @@ class Api extends CI_Controller
             return $this->__commontasks(...$args);
         } elseif ('event' === $args[0]) {
             return $this->__commontasks(...$args);
-        } else {
-            $this->send_data(['flash' => 'Unknown Request'], 'ok');
-
-            return;
         }
+        $this->send_data(['flash' => 'Unknown Request'], 'ok');
     }
 
     // Common admin tasks.
@@ -2832,9 +2873,7 @@ class Api extends CI_Controller
 
         $login = getLogin();
         $roles = getRoles($login);
-        if (!(in_array('ACAD_ADMIN', getRoles($login))
-            || in_array('BOOKMYVENUE_ADMIN', $roles))
-        ) {
+        if (!(in_array('ACAD_ADMIN', $roles) || in_array('BOOKMYVENUE_ADMIN', $roles) || in_array('ADMIN', $roles))) {
             $this->send_data([], 'Forbidden');
 
             return;
@@ -2920,6 +2959,28 @@ class Api extends CI_Controller
             return $this->__commontasks(...$args);
         } elseif ('table' === $args[0]) {
             return $this->__commontasks(...$args);
+        } elseif ('templates' === $args[0]) {
+            // templates.
+            if ('list' === $args[1]) {
+                $templates = getTableEntries('email_templates', 'id', "id>'0'");
+                $this->send_data($templates, 'ok');
+
+                return;
+            } elseif ('submit' === $args[1]) {
+                $toupdate = 'description,recipients,cc,when_to_send';
+                $res = insertOrUpdateTable('email_templates', 'id,' . $toupdate, $toupdate, $_POST);
+                $this->send_data(['success' => $res], 'ok');
+
+                return;
+            } elseif ('delete' === $args[1]) {
+                $res = deleteFromTable('email_templates', 'id', $_POST);
+                $this->send_data(['success' => $res], 'ok');
+
+                return;
+            }
+            $this->send_data(['Unknown endpoint: ' . json_encode($args)], 401);
+
+            return;
         } elseif ('holidays' === $args[0]) {
             if ('list' === $args[1]) {
                 $holidays = getHolidays();
@@ -2966,8 +3027,44 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
 
             return;
+        } elseif ('logins' === $args[0]) {
+            if ('all' === $args[1]) {
+                $logins = getTableEntries('logins', 'login');
+                $this->send_data($logins, 'ok');
+
+                return;
+            } elseif ('status' === $args[1]) {
+                $status = $args[2];
+                $logins = getTableEntries('logins', 'login', "status='$status'");
+                $this->send_data($logins, 'ok');
+
+                return;
+            } elseif ('title' === $args[1]) {
+                $title = $args[2];
+                $logins = getTableEntries('logins', 'login', "title='$title'");
+                $this->send_data($logins, 'ok');
+
+                return;
+            } elseif ('login' === $args[1]) {
+                $login = $args[2];
+                $data = getTableEntry('logins', 'login', ['login' => $login]);
+                $this->send_data($data, 'ok');
+
+                return;
+            } elseif ('update' === $args[1]) {
+                $editables = array_keys(getProfileEditables());
+                $res = updateTable('logins', 'login', $editables, $_POST);
+                if ($res) {
+                    $data['success'] = true;
+                } else {
+                    $data['msg'] .= 'Failed to update profile.';
+                }
+                $this->send_data($data, 'ok');
+
+                return;
+            }
         }
-        $this->send_data(['Unknown request: ', $args], 'ok');
+        $this->send_data(['Unknown request: ' . json_encode($args)], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
@@ -3208,6 +3305,7 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('update' === $args[1]) {
+                // Anyone can add/update speaker.
                 $name = splitNameIntoParts($_POST['name']);
                 $_POST = array_merge($_POST, $name);
                 $ret = addUpdateSpeaker($_POST);
@@ -3219,8 +3317,30 @@ class Api extends CI_Controller
 
                 return;
             }
+        } elseif ('faculty' === $args[0]) {
+            if ('list' === $args[1]) {
+                $facs = getFaculty();
+                $this->send_data($facs, 'ok');
+
+                return;
+            }
+            if ('update' === $args[1] || 'delete' === $args[1]) {
+                // Only admin can update this.
+                if (!hasRoles('ADMIN')) {
+                    $this->send_data(
+                        ['success' => false, 'msg' => "You don't have permission."], '401 Forbidden'
+                    );
+
+                    return;
+                }
+                $res = adminFacultyTask($_POST, $args[1]);
+                $this->send_data($res, 'ok');
+
+                return;
+            }
         }
-        $this->send_data(['Unknown request'], 'ok');
+
+        $this->send_data(['success' => false, 'msg' => 'Unknown endpoint: ' . json_encode($args)], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/

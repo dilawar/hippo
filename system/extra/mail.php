@@ -15,6 +15,78 @@ if (!is_dir($maildir)) {
     mkdir(trim($maildir), 0700, true);
 }
 
+function awsEmailForMonday($monday)
+{
+    $res = [];
+
+    // Collect all AWSs with full entry and non-completed entry. getUpcomingAWS
+    // collects all AWS entries which not filled by AWS. Ideally such is never
+    // be a  situation.
+    $upcomingAws = getTableEntries('annual_work_seminars', 'date', "date='$monday'");
+    $upcomingAws = array_merge($upcomingAws, getUpcomingAWSOnThisMonday($monday));
+
+    $html = '';
+
+    // if there is NO AWS this monday, notify users.
+    if (count($upcomingAws) < 1) {
+        $html .= '<p>Greetings,</p>';
+        $html .= '<p>I could not find any annual work seminar
+                scheduled on ' . humanReadableDate($monday) . '.</p>';
+
+        $holiday = getTableEntry('holidays', 'date', ['date' => dbDate($monday)]);
+
+        if ($holiday) {
+            $html .= '<p>It is most likely due to following event/holiday: ' .
+                        strtoupper($holiday['description']) . '.</p>';
+        }
+
+        $html .= '<br>';
+        $html .= "<p>That's all I know! </p>";
+
+        $html .= '<br>';
+        $html .= '<p>-- Hippo</p>';
+
+        return ['email_body' => $html, 'speakers' => null, 'pdffile' => null, 'subject' => "No AWS found for the next Monday ($monday)",
+        ];
+    }
+
+    $speakers = [];
+    $logins = [];
+    $outfile = getDataDir() . 'AWS_' . $monday . '_';
+
+    foreach ($upcomingAws as $aws) {
+        $html .= awsToHTML($aws);
+        $logins[] = $aws['speaker'];
+        $speakers[] = __ucwords__(loginToText($aws['speaker'], false));
+    }
+
+    $res['speakers'] = $speakers;
+
+    $firstAws = $upcomingAws[0];
+    $venue = venueToShortText($firstAws['venue']);
+
+    $chair = 'None assigned.';
+    if (__get__($firstAws, 'chair', '')) {
+        $chair = findAnyoneWithEmail($firstAws['chair']);
+        $chair = loginToText($chair);
+    }
+
+    $data = [
+        'CHAIR' => $chair
+        , 'VENUE' => $venue, 'EMAIL_BODY' => $html
+        , 'DATE' => humanReadableDate($monday)
+        , 'TIME' => humanReadableTime($firstAws['time']),
+    ];
+    $templ = emailFromTemplate('aws_template', $data);
+
+    if (strtotime($monday) == strtotime('this monday')) {
+        $templ['subject'] = 'Next week Annual Work Seminar ('
+            . humanReadableDate($monday) . ') by ' . implode(', ', $speakers);
+    } else {
+        $templ['subject'] = 'Annual Work Seminar on ' . humanReadableDate($monday) . ' by ' . implode(', ', $speakers);
+    }
+    return $templ;
+}
 function generateAWSEmail($monday)
 {
     $res = [];
@@ -66,17 +138,14 @@ function generateAWSEmail($monday)
     $firstAws = $upcomingAws[0];
     $venue = venueToShortText($firstAws['venue']);
 
-    $chair = 'Not assigned.';
-    if(__get__($aws, 'chair', '')) {
+    $chair = 'None';
+    if (__get__($aws, 'chair', '')) {
         $chair = loginToText(findAnyoneWithLoginOrEmail($aws['chair']));
     }
 
     $data = [
-        'CHAIR' => $chair, 
-        'VENUE' => $venue,
-        'EMAIL_BODY' => $html, 
-        'DATE' => humanReadableDate($monday), 
-        'TIME' => humanReadableTime($firstAws['time']),
+        'CHAIR' => $chair,
+         'VENUE' => $venue, 'EMAIL_BODY' => $html, 'DATE' => humanReadableDate($monday), 'TIME' => humanReadableTime($firstAws['time']),
     ];
 
 

@@ -211,8 +211,8 @@ function admin_faculty_task($data): array
         $data['modified_on'] = date('Y-m-d H:i:s', strtotime('now'));
         $res = insertIntoTable(
             'faculty',
-            'email,first_name,middle_name,last_name,status' .
-',modified_on,url,specialization,affiliation,institute',
+            'email,first_name,middle_name,last_name,status'
+                . ',modified_on,url,specialization,affiliation,institute',
             $data
         );
 

@@ -3,7 +3,7 @@
 include_once BASEPATH. 'extra/methods.php';
 include_once BASEPATH. 'database.php';
 
-function findGroup( $laboffice )
+function labofficeToName( $laboffice )
 {
     if( strcasecmp( $laboffice, "faculty" ) == 0 )
         return "FACULTY";
@@ -44,8 +44,31 @@ function connectToLDAP($ldap_ip)
     return $ds;
 }
 
-function getUserInfoFromLdap($query, $ldap_ip="ldap.ncbs.res.in") : array
+function getGroupWithLaboffice($laboffice, $prune=true) 
 {
+    $ldap_ip="ldap.ncbs.res.in";
+    $ds = connectToLDAP($ldap_ip);
+
+    if(! $ds)
+        return [];
+
+    $base_dn = "dc=ncbs,dc=res,dc=in";
+    $sr = @ldap_search($ds, $base_dn , "(profilelaboffice=$laboffice)");
+    $info = @ldap_get_entries($ds, $sr);
+    $result = [];
+
+    for( $s=0; $s < $info['count']; $s++) {
+        $i = $info[$s];
+        $p = pruneLDAPResponsse($i);
+        if(strtolower($p['is_active']) === 'true')
+            $result[] = $p;
+    }
+    return $result;
+}
+
+function getUserInfoFromLdap($query, $prune=true) : array
+{
+    $ldap_ip = 'ldap.ncbs.res.in';
     $ds = connectToLDAP($ldap_ip);
     if(! $ds)
         return [];
@@ -59,7 +82,10 @@ function getUserInfoFromLdap($query, $ldap_ip="ldap.ncbs.res.in") : array
     for( $s=0; $s < $info['count']; $s++)
     {
         $i = $info[$s];
-        $result[ ] = pruneLDAPResponsse($i);
+        if($prune)
+            $result[ ] = pruneLDAPResponsse($i);
+        else
+            $result[] = $i;
     }
 
     // Return just one.
@@ -188,4 +214,3 @@ function ldapAlive( $server )
     return false;
 }
 
-?>

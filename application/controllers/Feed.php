@@ -126,4 +126,11 @@ class Feed extends CI_Controller
         $this->output->set_output($feed);
         //$this->load->view( 'rss', array( 'feed' => $feed ), true );
     }
+
+    function holidays()
+    {
+        $holidays = getTableEntries('holidays', 'date', "YEAR(date)=YEAR(NOW())");
+        $this->output->set_content_type('application/json');
+        $this->output->set_output(json_encode($holidays));
+    }
 }
