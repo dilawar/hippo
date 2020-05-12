@@ -13,7 +13,7 @@ function searchInLogins(string $q, $where=''): array
     return executeQuery("SELECT 
         login,email,last_name,middle_name,first_name,pi_or_host,
         CONCAT_WS(' ',first_name,last_name) as name
-        FROM logins WHERE status='ACTIVE' 
+        FROM logins WHERE status!='EXPIRED' 
         AND login != ''
         AND first_name IS NOT NULL AND  first_name != ''
         $where

@@ -2193,10 +2193,8 @@ function updateTable($tablename, $wherekeys, $keys, array $data)
     $values = array( );
     $cols = array();
     foreach ($keys as $k) {
-        // If values for this key in $data is null then don't use it here.
-        if (null === $data[$k]) {
+        if (! $data[$k]) 
             continue;
-        }
 
         array_push($cols, $k);
         array_push($values, "$k=:$k");

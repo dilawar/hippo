@@ -63,7 +63,7 @@ function getHeader($key)
 function getLogin()
 {
     if (isset($_POST)) {
-        return __get__($_POST, 'login', getHeader('login'));
+        return __get__($_POST, 'HIPPO-LOGIN', __get__($_POST, 'login', getHeader('login')));
     }
     return whoAmI();
 }
