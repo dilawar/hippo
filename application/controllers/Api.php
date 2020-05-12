@@ -48,6 +48,20 @@ function getKey()
     return __get__($_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
 }
 
+function hasRoles($whichRoles): bool
+{
+    $roles = getRoles(getLogin());
+    foreach (explode(',', $whichRoles) as $r1) {
+        foreach ($roles as $r2) {
+            if ($r1 === $r2) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 class Api extends CI_Controller
 {
     // To enable CORS just for this API. DO NOT CHANGE THEM IN apache2.conf or
@@ -1081,7 +1095,7 @@ class Api extends CI_Controller
 
         // Delete given request of events.
         if ('delete' === $args[0]) {
-            $login = $_POST['login'];
+            $login = getLogin();
             if ('request' === $args[1]) {
                 $data = explode('.', $args[2]);
                 $gid = $data[0];
@@ -3291,6 +3305,7 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('update' === $args[1]) {
+                // Anyone can add/update speaker.
                 $name = splitNameIntoParts($_POST['name']);
                 $_POST = array_merge($_POST, $name);
                 $ret = addUpdateSpeaker($_POST);
@@ -3302,16 +3317,30 @@ class Api extends CI_Controller
 
                 return;
             }
-        }
-        elseif('faculty' === $args[0]) {
-            if('list' === $args[1]) {
-                $data = getFaculty();
-                $this->send_data($data, 'ok');
+        } elseif ('faculty' === $args[0]) {
+            if ('list' === $args[1]) {
+                $facs = getFaculty();
+                $this->send_data($facs, 'ok');
+
+                return;
+            }
+            if ('update' === $args[1] || 'delete' === $args[1]) {
+                // Only admin can update this.
+                if (!hasRoles('ADMIN')) {
+                    $this->send_data(
+                        ['success' => false, 'msg' => "You don't have permission."], '401 Forbidden'
+                    );
+
+                    return;
+                }
+                $res = adminFacultyTask($_POST, $args[1]);
+                $this->send_data($res, 'ok');
+
                 return;
             }
         }
 
-        $this->send_data(['Unknown endpoing: ' . json_encode($args)], 'ok');
+        $this->send_data(['success' => false, 'msg' => 'Unknown endpoint: ' . json_encode($args)], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/

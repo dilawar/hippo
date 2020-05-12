@@ -59,7 +59,9 @@ function getGroupWithLaboffice($laboffice, $prune=true)
 
     for( $s=0; $s < $info['count']; $s++) {
         $i = $info[$s];
-        $result[ ] = pruneLDAPResponsse($i);
+        $p = pruneLDAPResponsse($i);
+        if(strtolower($p['is_active']) === 'true')
+            $result[] = $p;
     }
     return $result;
 }

@@ -309,6 +309,7 @@ class BMVPDO extends PDO
                 )"
         );
 
+        // These are not faculty on the campus.
         $res = $this->query(
             "
             create TABLE IF NOT EXISTS supervisors (
@@ -979,6 +980,6 @@ class BMVPDO extends PDO
 $hippoDB = new BMVPDO("localhost");
 
 // DO not initialize in production code.
-//$hippoDB->initialize();
+// $hippoDB->initialize();
 
 ?>
