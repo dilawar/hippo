@@ -632,4 +632,34 @@ function addOrUpdateRunningCourse(array $data, string $response) : array
     }
 }
 
+function updateAWSWeekInfo($data) : array 
+{
+    $date = __get__($data, 'date', '');
+    if(! $date) {
+        return ['success'=>false, 'msg'=>'Invalid date'];
+    }
+
+    $newchair = false;
+
+    $awsRepr = getTableEntry('upcoming_aws', 'id', "date='$date'");
+
+    if($awsRepr['chair'] !== $data['chair']) {
+        $data['has_chair_confirmed'] = 'NO';
+        $newchair = true;
+    }
+    else
+        $data['has_chair_confirmed'] = $awsRe['has_chair_confirmed'];
+
+    // If new chair then send him/her an email.
+    if($data['chair'] and $newchair) {
+        $login = findAnyoneWithEmail($data['chair']);
+        // $clink = insertClickableQuery();
+        $macros = [ 'CHAIR' => arrayToName($login)
+            , "AWS_DATE"=>$data['date']
+            , 'CONFIRMATION_LINK' => $clink];
+        $temp = emailFromTemplate('NOTIFY_AWS_CHAIR', $macros);
+    }
+
+}
+
 ?>

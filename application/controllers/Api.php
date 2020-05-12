@@ -3112,13 +3112,11 @@ class Api extends CI_Controller
                 return;
             } elseif ('weekinfo' === $args[1]) {
                 if ('change' === $args[2]) {
-
+                    $res = updateAWSWeekInfo($_POST);
                     // Check if chair is different then reassign it and mark
                     // has_chair_confirmed to 'NO'.
-                    $res = updateTable('upcoming_aws', 'date', 'venue,vc_url,chair', $_POST);
-
-                    $this->send_data(['success' => $res, 'msg' => ''], 'ok');
-
+                    // $res = updateTable('upcoming_aws', 'date', 'venue,vc_url,chair', $_POST);
+                    $this->send_data($res, 'ok');
                     return;
                 }
             } elseif ('confirmchair' === $args[1]) {
