@@ -37,18 +37,17 @@ class HippoHooks
         // etc. Move this to home.
         if ($this->CI->session->AUTHENTICATED) {
             $page = basename($_SERVER['PHP_SELF']);
-            if ('index.php' == $page || 'welcome' == $page) {
+            if ('index.php' === $page || 'welcome' === $page) {
                 // Already authenticated. Send to user
                 redirect('user/home');
-            } elseif ('login' == $page) {
+            } elseif ('login' === $page) {
                 return;
             }
         } else {
             $page = basename($_SERVER['PHP_SELF']);
             $page = str_replace('.php', '', $page);
 
-            if (!('index' == $page || 'rss' == $page || 'welcome' == $page || 'login' == $page
-                || 'aws' == $page)) {
+            if(! in_array($page, ['index', 'rss', 'welcome', 'login', 'aws', 'confirm'])){
                 $this->CI->session->set_flashdata(
                     'error',
                     'You are not authenticated yet. Please login and try again'

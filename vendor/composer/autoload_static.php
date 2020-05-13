@@ -25,21 +25,97 @@ class ComposerStaticInitfe2ef56f9c08c33eb30e019c691add16
         'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
     );
 
-    public static $firstCharsPsr4 = array (
-        'p' => true,
-        'c' => true,
-        'W' => true,
-        'S' => true,
-        'R' => true,
-        'P' => true,
-        'M' => true,
-        'L' => true,
-        'G' => true,
-        'F' => true,
-        'E' => true,
-        'D' => true,
-        'C' => true,
-        'A' => true,
+    public static $prefixLengthsPsr4 = array (
+        'p' => 
+        array (
+            'phpseclib\\' => 10,
+            'phpDocumentor\\Reflection\\' => 25,
+        ),
+        'c' => 
+        array (
+            'chriskacerguis\\RestServer\\' => 26,
+        ),
+        'W' => 
+        array (
+            'Webmozart\\PathUtil\\' => 19,
+            'Webmozart\\Glob\\' => 15,
+            'Webmozart\\Assert\\' => 17,
+        ),
+        'S' => 
+        array (
+            'Symfony\\Polyfill\\Php73\\' => 23,
+            'Symfony\\Polyfill\\Php72\\' => 23,
+            'Symfony\\Polyfill\\Php70\\' => 23,
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
+            'Symfony\\Polyfill\\Intl\\Idn\\' => 26,
+            'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Symfony\\Contracts\\Service\\' => 26,
+            'Symfony\\Contracts\\EventDispatcher\\' => 34,
+            'Symfony\\Component\\Stopwatch\\' => 28,
+            'Symfony\\Component\\Process\\' => 26,
+            'Symfony\\Component\\OptionsResolver\\' => 34,
+            'Symfony\\Component\\Finder\\' => 25,
+            'Symfony\\Component\\Filesystem\\' => 29,
+            'Symfony\\Component\\EventDispatcher\\' => 34,
+            'Symfony\\Component\\Console\\' => 26,
+        ),
+        'R' => 
+        array (
+            'RenanBr\\BibTexParser\\' => 21,
+        ),
+        'P' => 
+        array (
+            'Psr\\Log\\' => 8,
+            'Psr\\Http\\Message\\' => 17,
+            'Psr\\EventDispatcher\\' => 20,
+            'Psr\\Container\\' => 14,
+            'Psr\\Cache\\' => 10,
+            'Psalm\\Plugin\\' => 13,
+            'Psalm\\' => 6,
+            'PhpParser\\' => 10,
+            'PhpCsFixer\\' => 11,
+            'PackageVersions\\' => 16,
+            'PHPMailer\\PHPMailer\\' => 20,
+        ),
+        'M' => 
+        array (
+            'Monolog\\' => 8,
+        ),
+        'L' => 
+        array (
+            'LanguageServerProtocol\\' => 23,
+        ),
+        'G' => 
+        array (
+            'GuzzleHttp\\Psr7\\' => 16,
+            'GuzzleHttp\\Promise\\' => 19,
+            'GuzzleHttp\\' => 11,
+            'Google\\Auth\\' => 12,
+        ),
+        'F' => 
+        array (
+            'Firebase\\JWT\\' => 13,
+        ),
+        'E' => 
+        array (
+            'Eluceo\\iCal\\' => 12,
+        ),
+        'D' => 
+        array (
+            'Doctrine\\Common\\Lexer\\' => 22,
+            'Doctrine\\Common\\Annotations\\' => 28,
+        ),
+        'C' => 
+        array (
+            'Composer\\XdebugHandler\\' => 23,
+            'Composer\\Semver\\' => 16,
+        ),
+        'A' => 
+        array (
+            'Amp\\ByteStream\\' => 15,
+            'Amp\\' => 4,
+            'AdvancedJsonRpc\\' => 16,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -349,7 +425,7 @@ class ComposerStaticInitfe2ef56f9c08c33eb30e019c691add16
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->firstCharsPsr4 = ComposerStaticInitfe2ef56f9c08c33eb30e019c691add16::$firstCharsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitfe2ef56f9c08c33eb30e019c691add16::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitfe2ef56f9c08c33eb30e019c691add16::$prefixDirsPsr4;
             $loader->prefixesPsr0 = ComposerStaticInitfe2ef56f9c08c33eb30e019c691add16::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitfe2ef56f9c08c33eb30e019c691add16::$classMap;

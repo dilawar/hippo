@@ -666,7 +666,7 @@ function updateAWSWeekInfo($data): array
         $newchair = true;
         $res['msg'] .= p('New chair ' . $data['chair']);
     } else {
-        $data['has_chair_confirmed'] = $awsRe['has_chair_confirmed'];
+        $data['has_chair_confirmed'] = $awsRepr['has_chair_confirmed'];
         $res['msg'] .= p('Chair has not changed.' . $data['chair']);
     }
 
