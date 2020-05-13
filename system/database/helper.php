@@ -2600,7 +2600,7 @@ function acceptScheduleOfAWS(string $speaker, string $date, string $venue=''): a
  * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function insertClickableQuery($who_can_execute, $external_id, $query)
+function insertClickableQuery($who_can_execute, $external_id, $query): array
 {
     $data =  array(
         'query' => $query
@@ -2613,20 +2613,18 @@ function insertClickableQuery($who_can_execute, $external_id, $query)
     $res = getTableEntry('queries', 'who_can_execute,query,external_id,status', $data);
     if ($res) {
         // printInfo("Clickable URL still unused.");
-        return $res['id'];
+        return ['id'=>$res['id'], 'hash'=>$res['hash']];
     }
 
     $data['id'] = getUniqueID('queries');
+    $data['hash'] = md5($query);
     $res = insertIntoTable(
         'queries',
-        'id,who_can_execute,external_id,query,last_modified_on,status',
+        'id,who_can_execute,external_id,hash,query,last_modified_on,status',
         $data
     );
 
-    // Now fetch the query and return its ID. It may not be the ID which we have
-    // generated above. The UNIQUE contraints may not allow creating a new
-    // entry.
-    return $data[ 'id' ];
+    return ['id'=>$data['id'], 'hash'=>$data['hash']];
 }
 
 

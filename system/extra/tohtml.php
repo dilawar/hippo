@@ -2846,6 +2846,14 @@ function queryToClickableURL( $qid, $msg = 'Click here' )
         href="' . $url . '" target="_blank">' . $url . '</a> </p>';
 }
 
+function queryHashToClickableURL($hash, $msg = "Click here")
+{
+    $url = site_url() . '/confirm/' . $hash;
+    return '<p>' . $msg . ': <a
+        style="border:1px solid;border-radius:5px;background-color:#cc0000;padding:10px 10px 10px 10px;"
+        href="' . $url . '" target="_blank">' . $url . '</a> </p>';
+}
+
 function addClickabelURLToMail( $html, $clickable )
 {
     $html .= ' <br />';

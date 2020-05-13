@@ -354,7 +354,7 @@ function appRootDir()
  */
 function appURL()
 {
-    return "https://ncbs.res.in/hippo/";
+    return "https://ncbs.res.in/hippo/v1/";
 }
 
 /* Go to a page relative to base dir. */

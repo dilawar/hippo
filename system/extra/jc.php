@@ -51,12 +51,12 @@ function fixJCSchedule(string $loginOrEmail, array $data):array
     $jcPresentation = getJCPresentation( $data['jc_id'],  $data[ 'presenter' ], $data[ 'date' ] );
     $id = $jcPresentation[ 'id' ];
     $clickableQ = "update jc_presentations SET acknowledged='YES' WHERE id='$id'";
-    $qid = insertClickableQuery( $login, "jc_presentation.$id", $clickableQ );
+    $q = insertClickableQuery( $login, "jc_presentation.$id", $clickableQ );
 
-    if( $qid )
+    if( $q['id'] )
         $msg .= printInfo( "Successfully inserted clickable query" );
 
-    $clickableURL = queryToClickableURL( $qid, 'Click Here To Acknowledge' );
+    $clickableURL = queryToClickableURL( $q['id'], 'Click Here To Acknowledge' );
     $mail = emailFromTemplate( 'NOTIFY_PRESENTER_JC_ASSIGNMENT', $macros );
 
     $to = getLoginEmail( $loginOrEmail );

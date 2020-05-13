@@ -6,36 +6,37 @@ require_once BASEPATH . '/extra/courses.php';
 /*
  * Assign AWS
  */
-function assignAWS(string $speaker, string $date, string $venue=""): array
+function assignAWS(string $speaker, string $date, string $venue = ''): array
 {
     // Remove whitespaces. It happens sometimes that input field contains
     // whitespace.
     $speaker = trim($speaker);
 
-    $res = [ 'success'=>false, 'msg'=>''];
+    $res = ['success' => false, 'msg' => ''];
 
-    if(! $venue) {
+    if (!$venue) {
         $venue = getDefaultAWSVenue($date);
     }
 
-    if($speaker && getLoginInfo($speaker) && strtotime($date) > strtotime('-7 day')) {
+    if ($speaker && getLoginInfo($speaker) && strtotime($date) > strtotime('-7 day')) {
         $aws = getUpcomingAWSOfSpeaker($speaker);
-        if($aws) {
+        if ($aws) {
             $res['msg'] = "$speaker already has AWS scheduled. Doing nothing.";
+
             return $res;
         }
 
         $r1 = acceptScheduleOfAWS($speaker, $date, $venue);
         $awsID = $r1['awsid'];
-        if($awsID > 0) {
+        if ($awsID > 0) {
             $res['success'] = true;
-            $res['msg'] = "Successfully assigned. ";
+            $res['msg'] = 'Successfully assigned. ';
 
             // Create a booking.
             $nAWS = getTotalUpcomingAWSOnThisMonday($date);
 
-            $aws = getTableEntry('upcoming_aws', 'id', ['id'=>$awsID]);
-            $aws['time'] = dbTime(strtotime($aws['time'])+($nAWS-1)*30*60);
+            $aws = getTableEntry('upcoming_aws', 'id', ['id' => $awsID]);
+            $aws['time'] = dbTime(strtotime($aws['time']) + ($nAWS - 1) * 30 * 60);
 
             $r2 = bookAVenueForThisAWS($aws, true);
             $res['msg'] .= p($r2['msg']);
@@ -45,21 +46,22 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
 
             // Send email to user.
             $st = notifyUserAboutUpcomingAWS($speaker, $date, $awsID);
-            if(! $st['success']) {
+            if (!$st['success']) {
                 $res['msg'] .= $st['msg'];
             }
+
             return $res;
         }
-        else
-        {
-            $res['success'] = false;
-            $res['msg'] .= $r1['msg'] . $r2['msg'];
-            return $res;
-        }
+
+        $res['success'] = false;
+        $res['msg'] .= $r1['msg'] . $r2['msg'];
+
+        return $res;
     }
     $res['success'] = false;
     $res['msg'] = "Invalid speaker '$speaker' or date '$date' is in past."
-        . " Could not assign AWS.";
+        . ' Could not assign AWS.';
+
     return $res;
 }
 
@@ -70,16 +72,16 @@ function assignAWS(string $speaker, string $date, string $venue=""): array
  * @Param $data array with required data.
  * @Param $bywhom Who has removed it.
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function cancelAWS(array $data, string $bywhom='HIPPO') : array
+function cancelAWS(array $data, string $bywhom = 'HIPPO'): array
 {
     // If ID is given then fetch the aws.
     $aws = [];
-    if(__get__($data, 'id', '')) {
+    if (__get__($data, 'id', '')) {
         $aws = getTableEntry('upcoming_aws', 'id', $data);
-    } else { 
+    } else {
         $aws = getTableEntry('upcoming_aws', 'speaker,date', $data);
     }
 
@@ -89,37 +91,39 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
 
     $res = clearUpcomingAWS($aws['speaker'], $aws['date']);
     $piOrHost = getPIOrHost($aws['speaker']);
-    $final = ['msg'=> $res['msg'], 'status'=>false];
+    $final = ['msg' => $res['msg'], 'status' => false];
 
-    if($res) {
+    if ($res) {
         $final['msg'] .= " Successfully cleared upcoming AWS of $speaker on $date.";
 
         // Notify the hippo list.
         $admin = whoAmI();
-        $msg = "<p>Hello " . loginToHTML($aws['speaker']) . "</p>";
+        $msg = '<p>Hello ' . loginToHTML($aws['speaker']) . '</p>';
         $msg .= "<p>
             Your upcoming AWS schedule has been removed by Hippo admin ($bywhom).
             If this is a  mistake, please write to acadoffice@ncbs.res.in
             immediately.";
 
-        $msg .= p("Following reason was given by admin.");
+        $msg .= p('Following reason was given by admin.');
         $msg .= p($reason);
-        $msg .= p("The AWS schedule which is removed is the following:");
+        $msg .= p('The AWS schedule which is removed is the following:');
         $msg .= arrayToVerticalTableHTML($aws, 'info');
-        $cclist = "acadoffice@ncbs.res.in,hippo@lists.ncbs.res.in";
-        if($piOrHost) {
+        $cclist = 'acadoffice@ncbs.res.in,hippo@lists.ncbs.res.in';
+        if ($piOrHost) {
             $cclist .= ",$piOrHost";
         }
 
         sendHTMLEmail(
             $msg,
             "Your ($speaker) upcoming AWS has been removed.",
-            $to = getLoginEmail($data[ 'speaker' ]),
+            $to = getLoginEmail($data['speaker']),
             $cclist
         );
         $final['status'] = true;
+
         return $final;
     }
+
     return $final;
 }
 
@@ -130,22 +134,21 @@ function cancelAWS(array $data, string $bywhom='HIPPO') : array
  * @Param $data
  * @Param $by
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function updateAWS(array $data, string $by='HIPPO') : array
+function updateAWS(array $data, string $by = 'HIPPO'): array
 {
     $res = updateTable(
         'upcoming_aws', 'id',
-        'abstract,title,is_presynopsis_seminar,supervisor_1', $_POST 
+        'abstract,title,is_presynopsis_seminar,supervisor_1', $_POST
     );
 
-    if($res) {
-        return ['success'=>true
-        , 'msg'=>"Successfully updated abstract of upcoming AWS entry"];
+    if ($res) {
+        return ['success' => true, 'msg' => 'Successfully updated abstract of upcoming AWS entry'];
     }
 
-    return ['msg'=>"I could not update title/abstract.", 'success'=>false];
+    return ['msg' => 'I could not update title/abstract.', 'success' => false];
 }
 
 /* --------------------------------------------------------------------------*/
@@ -154,7 +157,7 @@ function updateAWS(array $data, string $by='HIPPO') : array
  *
  * @Param array
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 function updateRegistration(arrray $data): array
@@ -164,7 +167,6 @@ function updateRegistration(arrray $data): array
         'type,status,grade',
         $data
     );
-
 }
 
 /* --------------------------------------------------------------------------*/
@@ -183,69 +185,64 @@ function updateRegistration(arrray $data): array
  * @Param $sendEmail
  *   Whether to send email to student.
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function handleCourseRegistration(array $course, array $data
-    , string $what
-    , string $student, string $bywhom, $sendEmail=true
-) : array {
+function handleCourseRegistration(array $course, array $data, string $what, string $student, string $bywhom, $sendEmail = true
+): array {
     $what = strtoupper($what);
 
     // if student is not a valid email id, then check that student is registered
     // on Hippo.
     $login = [];
-    if(! __substr__('@', $student)) {
+    if (!__substr__('@', $student)) {
         $login = getLoginInfo($student, true, true);
-        if(! $login) {
-            return ["success"=>false, "msg"=> "Unknown user $student"];
+        if (!$login) {
+            return ['success' => false, 'msg' => "Unknown user $student"];
         }
-    }
-    else {
+    } else {
         $to = $student;
     }
 
-    $ret = ['msg'=>'', 'success'=>true];
+    $ret = ['msg' => '', 'success' => true];
     $data['last_modified_on'] = dbDateTime('now');
 
     // If new registration, get the current timestamp else use old one.
-    $data['registered_on'] = __get__($data, "registered_on", dbDateTime('now'));
+    $data['registered_on'] = __get__($data, 'registered_on', dbDateTime('now'));
 
-    if($what === 'DROP') {
+    if ('DROP' === $what) {
         $data['status'] = 'DROPPED';
-    } else if($what === 'CREDIT') {
-        $data["type"] = 'CREDIT';
-        $data["status"] = 'VALID';
+    } elseif ('CREDIT' === $what) {
+        $data['type'] = 'CREDIT';
+        $data['status'] = 'VALID';
+    } elseif ('AUDIT' === $what) {
+        $data['type'] = 'AUDIT';
+        $data['status'] = 'VALID';
+    } else {
+        return ['success' => false, 'msg' => "Unknown course registration task $what"];
     }
-    else if($what === 'AUDIT') {
-        $data["type"] = 'AUDIT';
-        $data["status"] = 'VALID';
-    }
-    else {
-        return ["success"=>false, "msg"=> "Unknown course registration task $what"];
-    }
-
 
     $data['year'] = $course['year'];
     $data['semester'] = $course['semester'];
     $data['course_id'] = $course['course_id'];
-    assert($data['course_id']) or die("Invalid course id ".$course['course_id']);
+    assert($data['course_id']) or die('Invalid course id ' . $course['course_id']);
     $cid = $course['course_id'];
 
     // If user has asked for AUDIT but course does not allow auditing,
     // do not register and raise and error.
-    if($course['is_audit_allowed'] === 'NO' && $data['type'] === 'AUDIT' ) {
+    if ('NO' === $course['is_audit_allowed'] && 'AUDIT' === $data['type']) {
         $ret['success'] = false;
         $ret['msg'] = "Sorry but course $cid does not allow <tt>AUDIT</tt>.";
+
         return $ret;
     }
 
     // If number of students are over the number of allowed students
     // then add student to waiting list and raise a flag.
-    if($course['max_registration'] > 0) {
+    if ($course['max_registration'] > 0) {
         // FIXME: This can be improved by just getting the counts.
         $numEnrollments = count(getCourseRegistrations($cid, $course['year'], $course['semester']));
-        if(intval($numEnrollments) >= intval($course['max_registration']) ) {
+        if (intval($numEnrollments) >= intval($course['max_registration'])) {
             $data['status'] = 'WAITLIST';
             $ret['success'] = true;
             $ret['msg'] .= p(
@@ -259,14 +256,15 @@ function handleCourseRegistration(array $course, array $data
     }
 
     // ON AUDIT AND CREDIT
-    if($what !== 'DROP') {
+    if ('DROP' !== $what) {
         // Check if any course is colliding with existing registration.
         $myRegistrations = getMyCourses($data['semester'], $data['year'], $student);
         $collision = collisionWithMyRegistrations($course, $myRegistrations);
-        if($collision['collision']) {
+        if ($collision['collision']) {
             $ret['msg'] = 'Collision with the course: '
                 . getCourseName($collision['with']['course_id']);
             $ret['success'] = false;
+
             return $ret;
         }
     }
@@ -277,58 +275,58 @@ function handleCourseRegistration(array $course, array $data
         'course_registration',
         'student_id,semester,year,type,course_id,registered_on,last_modified_on',
         'type,last_modified_on,status',
-        $data 
+        $data
     );
 
-    if(! $r) {
+    if (!$r) {
         $ret['msg'] .= p("Failed to $what the course " . $data['course_id']);
         $ret['success'] = false;
+
         return $ret;
     }
 
     // Update waiting lists.
-    if(strtoupper($data['status']) === 'DROPPED') {
+    if ('DROPPED' === strtoupper($data['status'])) {
         updateCourseWaitlist($data['course_id'], $data['year'], $data['semester']);
         // Drop all feedback as well.
         withdrawCourseFeedback($data['student_id'], $data['course_id'], $data['semester'], $data['year']);
     }
 
     $ret['success'] = true;
-    $ret['msg'] .= "Successfully $what course ".$data['course_id'];
+    $ret['msg'] .= "Successfully $what course " . $data['course_id'];
 
-    if($sendEmail) {
+    if ($sendEmail) {
         // Send email to user.
-        if($login) {
-            $msg = p("Dear " . arrayToName($login, true));
+        if ($login) {
+            $msg = p('Dear ' . arrayToName($login, true));
             $to = $login['email'];
-        }
-        else {
+        } else {
             $msg = p("Dear $to");
         }
 
-        if($login !== $bywhom) {
+        if ($login !== $bywhom) {
             $msg .= p("Acad admin ($bywhom) has successfully updated your courses.");
         } else {
-            $msg .= p("You have successfully updated your courses.");
+            $msg .= p('You have successfully updated your courses.');
         }
 
         $sem = getCurrentSemester();
         $year = getCurrentYear();
 
         // User courses and slots.
-        $myCourses = getMyCourses($sem, $year, $user=$data['student_id']);
-        $msg .= p("Your courses this semester are following.");
-        if(count($myCourses)>0) {
-            foreach( $myCourses as $c ) {
+        $myCourses = getMyCourses($sem, $year, $user = $data['student_id']);
+        $msg .= p('Your courses this semester are following.');
+        if (count($myCourses) > 0) {
+            foreach ($myCourses as $c) {
                 $msg .= arrayToVerticalTableHTML($c, 'info', '', 'grade,grade_is_given_on');
             }
-        }
-        else {
-            $msg .= p("No course is found.");
+        } else {
+            $msg .= p('No course is found.');
         }
 
-        sendHTMLEmail($msg, "Successfully ".$what." ed the course $cid", $to);
+        sendHTMLEmail($msg, 'Successfully ' . $what . " ed the course $cid", $to);
     }
+
     return $ret;
 }
 
@@ -338,17 +336,17 @@ function handleCourseRegistration(array $course, array $data
  *
  * @Param $data
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function assignGrade(array $data, string $by = 'HIPPO') : array
+function assignGrade(array $data, string $by = 'HIPPO'): array
 {
     $login = $data['student_id'];
     $grade = $data['grade'];
 
     $data['grade_is_given_on'] = dbDateTime('now');
 
-    $ret = ['success'=>true, 'msg' => ''];
+    $ret = ['success' => true, 'msg' => ''];
     $st = updateTable(
         'course_registration',
         'student_id,semester,year,course_id',
@@ -358,20 +356,16 @@ function assignGrade(array $data, string $by = 'HIPPO') : array
 
     $ret['success'] = $st;
 
-    if($st) {
+    if ($st) {
         $ret['msg'] .= "Successfully assigned $grade for $login.";
 
         // Send email.
-        $subject = "Grade has been assigned to one of your course";
-        $body = p("Dear " . loginToText($data['student_id']));
+        $subject = 'Grade has been assigned to one of your course';
+        $body = p('Dear ' . loginToText($data['student_id']));
         $body .= p("Academic admin ($by) has just assigned grade to one of your courses.");
 
-        $infoData = [ 'course' => getCourseName($data['course_id'])
-            , 'year/semester' => $data['year'].'/'.$data['semester']
-            , 'grade' => $data['grade']
-            , 'assigned_on' => $data['grade_is_given_on']
-            , 'assigned_by' => $by
-        ]; 
+        $infoData = ['course' => getCourseName($data['course_id']), 'year/semester' => $data['year'] . '/' . $data['semester'], 'grade' => $data['grade'], 'assigned_on' => $data['grade_is_given_on'], 'assigned_by' => $by,
+        ];
         $body .= arrayToVerticalTableHTML($infoData, 'info');
 
         $body .= p(
@@ -380,24 +374,22 @@ function assignGrade(array $data, string $by = 'HIPPO') : array
         );
 
         $body .= p(
-            "If there is any mistake, please contact academic office.
+            'If there is any mistake, please contact academic office.
             <strong>Note that grades on HIPPO are not final official record.
             Your final grade is kept by Academic office. Hippo is a platform 
             to inform you about your grade. In case of discrepency, the record 
             at Academic Office shall be deemed correct.
-            </strong>"
+            </strong>'
         );
         sendHTMLEmail($body, $subject, getLoginEmail($login));
-    }
-    else {
+    } else {
         $ret['msg'] .= "Could not assign grade for $login. <br /> ";
     }
-
 
     return $ret;
 }
 
-function getExtraAWSInfo(string $login, array $speaker=[]) : array
+function getExtraAWSInfo(string $login, array $speaker = []): array
 {
     $upcomingAWS = getUpcomingAWSOfSpeaker($login);
     $pastAWSes = getAwsOfSpeaker($login);
@@ -405,29 +397,23 @@ function getExtraAWSInfo(string $login, array $speaker=[]) : array
     // Get PI/HOST and speaker specialization.
     $pi = getPIOrHost($login);
     $specialization = 'UNKNOWN';
-    if($pi) {
+    if ($pi) {
         $specialization = getSpecialization($login, $pi);
     }
 
     // This user may have not given any AWS in the past. We consider their
     // joining date as last AWS date.
-    if(count($pastAWSes) > 0) {
+    if (count($pastAWSes) > 0) {
         $lastAws = $pastAWSes[0];
         $lastAwsDate = $lastAws['date'];
-    }
-    else
-    {
-        if(! __get__($speaker, 'joined_on', '')) {
+    } else {
+        if (!__get__($speaker, 'joined_on', '')) {
             $speaker = getLoginInfo($login);
         }
         $lastAwsDate = $speaker['joined_on'];
     }
-    return ["specialization"=>$specialization
-        , "pi_or_host"=>$pi
-        , 'last_aws_date'=>$lastAwsDate
-        , 'days_since_last_aws'=>(strtotime('today')-strtotime($lastAwsDate))/3600/24
-        , 'upcoming_aws'=> __get__($upcomingAWS, 'date', '')
-        , 'num_aws' => count($pastAWSes)];
+
+    return ['specialization' => $specialization, 'pi_or_host' => $pi, 'last_aws_date' => $lastAwsDate, 'days_since_last_aws' => (strtotime('today') - strtotime($lastAwsDate)) / 3600 / 24, 'upcoming_aws' => __get__($upcomingAWS, 'date', ''), 'num_aws' => count($pastAWSes)];
 }
 
 /* --------------------------------------------------------------------------*/
@@ -437,12 +423,12 @@ function getExtraAWSInfo(string $login, array $speaker=[]) : array
  * @Param $numSlots Maximum number of dates to return. If -1 is given, 20
  * weeks are returned.
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function awsDatesAvailable(int $numSlots) : array
+function awsDatesAvailable(int $numSlots): array
 {
-    if($numSlots < 0) {
+    if ($numSlots < 0) {
         $numSlots = 20;
     }
 
@@ -450,142 +436,143 @@ function awsDatesAvailable(int $numSlots) : array
     $dates = [];
     // From next week + 3 weeks.
     $startDate = strtotime('next monday') + 3 * 7 * 86400;
-    for ($i = 0; $i < 10*$numSlots; $i++) {
-        $date = dbDate($startDate + $i*7*86400);
+    for ($i = 0; $i < 10 * $numSlots; ++$i) {
+        $date = dbDate($startDate + $i * 7 * 86400);
         // Check if a slot is available.
         $nAWS = getTotalUpcomingAWSOnThisMonday($date);
-        if($nAWS < maxAWSAllowed()) {
+        if ($nAWS < maxAWSAllowed()) {
             $dates[] = [$nAWS, $date];
         }
-        if(count($dates) >= $numSlots) {
+        if (count($dates) >= $numSlots) {
             break;
         }
     }
+
     return $dates;
 }
 
-function insertCourseMetadata(array $data) 
+function insertCourseMetadata(array $data)
 {
     $data['status'] = 'VALID';
-    $res = insertOrUpdateTable( 
+    $res = insertOrUpdateTable(
         'courses_metadata',
-        'id,name,credits,description,status' 
-        .  ',instructor_1,instructor_2,instructor_3'
+        'id,name,credits,description,status'
+        . ',instructor_1,instructor_2,instructor_3'
         . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment',
         'status',
-        $data 
+        $data
     );
+
     return $res;
 }
 
-function updateCourseMetadata(array $data) 
+function updateCourseMetadata(array $data)
 {
     $res = updateTable(
         'courses_metadata',
         'id',
-        'name,credits,description' 
-        .  ',instructor_1,instructor_2,instructor_3'
+        'name,credits,description'
+        . ',instructor_1,instructor_2,instructor_3'
         . ',instructor_4,instructor_5,instructor_6,instructor_extras,comment',
-        $data 
+        $data
     );
 
     return $res;
 }
 
-function getSlots():array
+function getSlots(): array
 {
     $tiles = getTableEntries('slots', 'groupid');
-    $result = array();
-    foreach($tiles as &$tile) {
+    $result = [];
+    foreach ($tiles as &$tile) {
         $result[$tile['groupid']][] = $tile;
     }
 
-    foreach($result as $slotGroup => &$vals)
-    {
+    foreach ($result as $slotGroup => &$vals) {
         $html = [];
-        foreach($vals as $val) {
+        foreach ($vals as $val) {
             $html[] = $val['day'];
         }
-        $html = implode('-', $html) . '; ' . $vals[0]['start_time'] 
+        $html = implode('-', $html) . '; ' . $vals[0]['start_time']
             . ' to ' . $vals[0]['end_time'];
         $result[$slotGroup]['html'] = $html;
     }
+
     return $result;
 }
 
-
 function deleteRunningCourse(array $data): array
 {
-    $ret = ['success'=>false, 'msg'=>''];
-    if(strlen($data['id']) > 0 ) {
+    $ret = ['success' => false, 'msg' => ''];
+    if (strlen($data['id']) > 0) {
         $msg = '';
         $res = deleteFromTable('courses', 'id', $data);
-        if($res) {
+        if ($res) {
             deleteBookings($data['id']);
-            $msg .= "Successfully deleted entry";
+            $msg .= 'Successfully deleted entry';
             // Remove all enrollments.
             $year = getCurrentYear();
             $sem = getCurrentSemester();
             $res = deleteFromTable(
                 'course_registration', 'semester,year,course_id',
-                ['year'=>$year, 'semester'=>$sem, 'course_id'=>$data['course_id']]
+                ['year' => $year, 'semester' => $sem, 'course_id' => $data['course_id']]
             );
 
-            if($res) {
-                $msg .= "Successfully removed  all enrollments. I have not notifiied the students.";
+            if ($res) {
+                $msg .= 'Successfully removed  all enrollments. I have not notifiied the students.';
                 $ret['success'] = true;
                 $ret['msg'] = $msg;
+
                 return $ret;
             }
         }
         $ret['success'] = false;
         $ret['msg'] = $msg;
+    } else {
+        $ret['msg'] = 'Invalid course ID.';
     }
-    else {
-        $ret['msg'] = "Invalid course ID.";
-    }
+
     return $ret;
 }
 
-function addRunningCourse(array $data, string $msg=''): array
+function addRunningCourse(array $data, string $msg = ''): array
 {
     $msg = '';
-    $updatable = 'semester,year,start_date,end_date,max_registration,' 
+    $updatable = 'semester,year,start_date,end_date,max_registration,'
         . 'allow_deregistration_until,is_audit_allowed,slot,venue,note'
         . ',url,ignore_tiles';
-    if(strlen($data['course_id']) > 0) {
-        $id = getCourseInstanceId($data[ 'course_id' ], $data['semester'], $data['year']);
-        $data[ 'id' ] = $id;
+    if (strlen($data['course_id']) > 0) {
+        $id = getCourseInstanceId($data['course_id'], $data['semester'], $data['year']);
+        $data['id'] = $id;
         $res = insertIntoTable('courses', "id,course_id,$updatable", $data);
-        if(! $res) {
-            $msg .= "Could not add course to list.";
-        } else
-        {
-            $res = addCourseBookings($data[ 'id' ]);
-            $msg .= "Successfully added course. Blocked venue as well.";
+        if (!$res) {
+            $msg .= 'Could not add course to list.';
+        } else {
+            $res = addCourseBookings($data['id']);
+            $msg .= 'Successfully added course. Blocked venue as well.';
         }
+    } else {
+        $msg .= 'Could ID can not be empty';
     }
-    else {
-        $msg .= "Could ID can not be empty";
-    }
-    return ['success' => true, 'msg' => $msg ];
+
+    return ['success' => true, 'msg' => $msg];
 }
 
-function updateRunningCourse(array $data, string $msg='') : array
+function updateRunningCourse(array $data, string $msg = ''): array
 {
-    $updatable = 'semester,year,start_date,end_date,max_registration,' 
+    $updatable = 'semester,year,start_date,end_date,max_registration,'
         . 'allow_deregistration_until,is_audit_allowed,slot,venue,note'
         . ',url,ignore_tiles';
     $res = updateTable('courses', 'id', $updatable, $data);
-    if($res ) {
-        $res = updateBookings($data[ 'id' ]);
+    if ($res) {
+        $res = updateBookings($data['id']);
         $msg .= 'Updated running course ' . $data['course_id'] . '.';
     }
-    return ['success'=>true, 'msg'=>$msg];
+
+    return ['success' => true, 'msg' => $msg];
 }
 
-
-function addOrUpdateRunningCourse(array $data, string $response) : array
+function addOrUpdateRunningCourse(array $data, string $response): array
 {
     // NOTE: the start date of course determines the semester and year
     // of a course. The end date can spill into next semester.
@@ -604,62 +591,88 @@ function addOrUpdateRunningCourse(array $data, string $response) : array
 
     $collisionCourses = array_filter(
         $coursesAtThisVenue,
-        function ( $c ) use ($data) { 
-            return $c['course_id'] != $data[ 'course_id' ]; 
+        function ($c) use ($data) {
+            return $c['course_id'] != $data['course_id'];
         }
     );
 
     $msg = '';
-    if(count($collisionCourses) > 0 ) {
-        foreach( $collisionCourses as $cc )
-        {
-            $msg .= "Following course is already assigned at this slot/venue";
+    if (count($collisionCourses) > 0) {
+        foreach ($collisionCourses as $cc) {
+            $msg .= 'Following course is already assigned at this slot/venue';
             $msg .= arrayToVerticalTableHTML($cc, 'info');
             $msg .= '<br>';
         }
-        return ['success' => false, 'msg' => $msg ];
+
+        return ['success' => false, 'msg' => $msg];
     }
 
     // No collision. Add or update now.
-    if ($response === 'add') {
+    if ('add' === $response) {
         return addRunningCourse($data, $msg);
-    } else if ($response === 'update' ) {
+    } elseif ('update' === $response) {
         return updateRunningCourse($data, $msg);
-    } else
-    {
+    } else {
         $msg .= "Unknown task '$response'";
-        return ['success'=>true, 'msg' =>$msg];
+
+        return ['success' => true, 'msg' => $msg];
     }
 }
 
-function updateAWSWeekInfo($data) : array 
+function assignAWSChair($chair, $date)
 {
+    $ret = ['success'=>true, 'msg'=>''];
+
+    $res = updateTable('upcoming_aws', 'date', 'chair', 
+        ['date'=>$date, 'chair'=>$chair]);
+
+    if(! $res ) {
+        $ret['success'] = false;
+        $ret['msg'] = p("Failed to assign chair on $date");
+        return $ret;
+    }
+
+    $login = findAnyoneWithEmail($chair);
+    $query = insertClickableQuery($chair, 'upcoming_aws.-1'
+        , "UPDATE TABLE upcoming_aws SET has_chair_confirmed='YES' WHERE date='$date'");
+
+    $macros = ['CHAIR' => arrayToName($login), 'AWS_DATE' => $date
+        , 'CONFIRMATION_LINK' => queryHashToClickableURL($query['hash'])];
+
+    $temp = emailFromTemplate('NOTIFY_AWS_CHAIR', $macros);
+    $res =  sendHTMLEmail($temp['email_body'], "You are assigned the AWS chair on $date"
+        , $chair);
+
+    if(! $res['success'])
+        $ret['msg'] .= p("Failed to notify chair") . $res['msg'];
+
+    return $ret;
+}
+
+function updateAWSWeekInfo($data): array
+{
+    $res = ['success' => true, 'msg' => ''];
     $date = __get__($data, 'date', '');
-    if(! $date) {
-        return ['success'=>false, 'msg'=>'Invalid date'];
+    if (!$date) {
+        return ['success' => false, 'msg' => 'Invalid date'];
     }
 
     $newchair = false;
 
-    $awsRepr = getTableEntry('upcoming_aws', 'id', "date='$date'");
+    $awsRepr = getTableEntry('upcoming_aws', 'date', ['date' => $date]);
 
-    if($awsRepr['chair'] !== $data['chair']) {
+    if ($awsRepr['chair'] !== $data['chair']) {
         $data['has_chair_confirmed'] = 'NO';
         $newchair = true;
-    }
-    else
+        $res['msg'] .= p('New chair ' . $data['chair']);
+    } else {
         $data['has_chair_confirmed'] = $awsRe['has_chair_confirmed'];
+        $res['msg'] .= p('Chair has not changed.' . $data['chair']);
+    }
 
     // If new chair then send him/her an email.
-    if($data['chair'] and $newchair) {
-        $login = findAnyoneWithEmail($data['chair']);
-        // $clink = insertClickableQuery();
-        $macros = [ 'CHAIR' => arrayToName($login)
-            , "AWS_DATE"=>$data['date']
-            , 'CONFIRMATION_LINK' => $clink];
-        $temp = emailFromTemplate('NOTIFY_AWS_CHAIR', $macros);
+    if ($data['chair'] and $newchair) {
+        $res = assignAWSChair($data['chair'], $data['date']);
     }
-
+    return $res;
 }
-
-?>

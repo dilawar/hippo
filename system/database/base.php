@@ -882,6 +882,7 @@ class BMVPDO extends PDO
                 , external_id VARCHAR(50) DEFAULT 'NONE.-1' -- associated table.id in some other table
                 , who_can_execute VARCHAR(100) NOT NULL -- which login can execute.
                 , query VARCHAR(300) NOT NULL -- query to execute.
+                , hash VARCHAR(50) -- if link has hash and execute without login.
                 , status ENUM( 'EXECUTED', 'INVALID', 'PENDING' ) DEFAULT 'PENDING'
                 , last_modified_on DATETIME
                 , edited_by VARCHAR(100) default 'HIPPO'
