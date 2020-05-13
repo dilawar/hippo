@@ -2617,7 +2617,7 @@ function insertClickableQuery($who_can_execute, $external_id, $query): array
     }
 
     $data['id'] = getUniqueID('queries');
-    $data['hash'] = md5($query);
+    $data['hash'] = md5($who_can_execute+$query);
     $res = insertIntoTable(
         'queries',
         'id,who_can_execute,external_id,hash,query,last_modified_on,status',
