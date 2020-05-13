@@ -2193,7 +2193,7 @@ function updateTable($tablename, $wherekeys, $keys, array $data)
     $values = array( );
     $cols = array();
     foreach ($keys as $k) {
-        if (! $data[$k]) 
+        if (__get__($data, $k, null) == null) 
             continue;
 
         array_push($cols, $k);

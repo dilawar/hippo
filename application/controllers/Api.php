@@ -309,6 +309,11 @@ class Api extends CI_Controller
             $this->send_data_helper($faculty);
 
             return;
+        } elseif ('supervisor' === $args[0]) {
+            $faculty = searchInFaculty($q);
+            $supers = searchSupervisors($q);
+            $this->send_data_helper(array_merge($faculty, $supers));
+            return;
         } elseif ('login' === $args[0]) {
             $logins = searchInLogins($q);
             $this->send_data_helper($logins);
@@ -1448,9 +1453,9 @@ class Api extends CI_Controller
      *   - /me/jc
      *   - /me/course
      *   - /me/roles
+     *   - /me/supervisor/add
      *   - /me/talk
      *             /register
-     *
      * @Returns
      */
     /* ----------------------------------------------------------------------------*/
@@ -1567,9 +1572,28 @@ class Api extends CI_Controller
             if ($upcoming) {
                 $data[] = $upcoming;
             }
+
             $this->send_data($data, 'ok');
 
             return;
+        } elseif ('upcomingaws' === $args[0]) {
+            if ('update' === $args[1]) {
+                $id = $_POST['id'];
+
+                // Remove previous TCM and supervisors.
+                executeQueryReadonly("UPDATE upcoming_aws 
+                    SET supervisor_1='', supervisor_2='', 
+                        tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
+                    WHERE id='$id'");
+
+                $res = updateTable('upcoming_aws', 'id',
+                    'supervisor_1,supervisor_2,' . 
+                    'tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4,' . 
+                    'title,abstract',
+                    $_POST);
+                $this->send_data(['success' => $res, 'msg' => ''], 'ok');
+                return;
+            }
         } elseif ('acknowledge_aws' === $args[0]) {
             $user = getLogin();
             $awsID = $args[1];
@@ -1614,6 +1638,13 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
 
             return;
+        } elseif ('supervisor' === $args[0]) {
+            if('add' === $args[1]) {
+                $update = 'first_name,middle_name,last_name,affiliation,url';
+                $res = insertOrUpdateTable('supervisors', 'email,'.$update, $update, $_POST);
+                $this->send_data(['success'=>true, 'msg'=>''], 'ok');
+                return;
+            }
         } elseif ('jc' === $args[0]) {
             $endpoint = __get__($args, 1, 'presentations');
             if ('presentations' === $endpoint) {
@@ -3114,6 +3145,18 @@ class Api extends CI_Controller
                 if ('change' === $args[2]) {
                     $res = updateAWSWeekInfo($_POST);
                     $this->send_data($res, 'ok');
+
+                    return;
+                } elseif ('removechair' === $args[2]) {
+                    $date = __get__($args, 3, '');
+                    if (!$date) {
+                        $this->send_data(['success' => false, 'msg' => "Invalid date $date"], 'ok');
+
+                        return;
+                    }
+                    $res = removeAWSChair($date);
+                    $this->send_data($res, 'ok');
+
                     return;
                 }
             } elseif ('confirmchair' === $args[1]) {

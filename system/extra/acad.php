@@ -634,7 +634,7 @@ function assignAWSChair($chair, $date)
 
     $login = findAnyoneWithEmail($chair);
     $query = insertClickableQuery($chair, 'upcoming_aws.-1'
-        , "UPDATE TABLE upcoming_aws SET has_chair_confirmed='YES' WHERE date='$date'");
+        , "UPDATE upcoming_aws SET has_chair_confirmed='YES' WHERE date='$date'");
 
     $macros = ['CHAIR' => arrayToName($login), 'AWS_DATE' => $date
         , 'CONFIRMATION_LINK' => queryHashToClickableURL($query['hash'])];
@@ -676,3 +676,25 @@ function updateAWSWeekInfo($data): array
     }
     return $res;
 }
+
+function removeAWSChair($date) : array 
+{
+    $ret = ['success'=>false, 'msg'=>''];
+    $aws = getTableEntry('upcoming_aws', 'date', ['date'=>$date]);
+
+    $oldchair = $aws['chair'];
+    if($oldchair) {
+        $mail = p("Academic Admin has removed you as the AWS chair on $date.");
+        $mail .= p("If this is a mistake, please let the Academic Office know.");
+        $res = sendHTMLEmail("You are no longer the  AWS chair on $date", $mail, $oldchair);
+        $ret['msg'] .= $res['msg'];
+    }
+
+    $r = updateTable('upcoming_aws', 'date', 'chair,has_chair_confirmed'
+        , ["date"=>$date, 'chair'=>'', "has_chair_confirmed"=>"NO"]
+    );
+    $ret['success'] = $r;
+    return $ret;
+}
+
+?>

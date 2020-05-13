@@ -378,7 +378,7 @@ function __get__(array $arr, $what, $default = null)
 
     if (array_key_exists($what, $arr)) {
         $val = $arr[$what];
-        if ($val) {
+        if ($val !== null ) {
             return $val;
         }
     }

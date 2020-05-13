@@ -59,6 +59,16 @@ function searchInFaculty($q): array
         ");
 }
 
+function searchSupervisors($q): array
+{
+    return executeQuery("SELECT *, 
+        CONCAT_WS(' ',`first_name`,`last_name`) as name
+        FROM supervisors WHERE 
+        first_name IS NOT NULL AND  first_name != ''
+        AND (email LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
+        ");
+}
+
 
 ?>
 
