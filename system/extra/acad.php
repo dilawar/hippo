@@ -667,13 +667,21 @@ function updateAWSWeekInfo($data): array
         $res['msg'] .= p('New chair ' . $data['chair']);
     } else {
         $data['has_chair_confirmed'] = $awsRepr['has_chair_confirmed'];
-        $res['msg'] .= p('Chair has not changed.' . $data['chair']);
     }
 
     // If new chair then send him/her an email.
     if ($data['chair'] and $newchair) {
         $res = assignAWSChair($data['chair'], $data['date']);
     }
+
+    // update rest of the entries for the week
+    $r1 = updateTable('upcoming_aws', 'date', 'venue,chair,has_chair_confirmed,vc_url', $data);
+    if(! $r1)
+    {
+        $res['success'] = false;
+        $res['msg'] .= p("Failed to update upcoming aws information.");
+    }
+
     return $res;
 }
 

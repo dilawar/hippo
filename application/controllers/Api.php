@@ -1436,7 +1436,10 @@ class Api extends CI_Controller
                 $phone = '+91 80 2366 ' . $ldap['extension'];
             }
             $data[] = [
-                'name' => implode(' ', [__get__($ldap, 'fname', ''), __get__($ldap, 'lname', '')]), 'email' => $ldap['email'], 'phone' => $phone, 'group' => $ldap['laboffice'], 'extension' => $ldap['extension'],
+                'name' => implode(' ', [__get__($ldap, 'fname', ''), 
+                __get__($ldap, 'lname', '')]), 'email' => $ldap['email'], 
+                'phone' => $phone, 'group' => $ldap['laboffice'], 
+                'extension' => $ldap['extension'],
             ];
         }
         $this->send_data($data, 'ok');

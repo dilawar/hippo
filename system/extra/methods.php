@@ -168,17 +168,14 @@ function authenticate($ldap, $pass)
     return $auth;
 }
 
-function venueToShortText($venue)
+function venueToShortText($venue, $url='') : string
 {
     if (is_string($venue)) 
         $venue = getVenueById($venue);
 
-    if($venue['id'] === "Remote VC") {
-        $aws_vc_url = getConfigValue('AWS_VC_URL');
-        $txt = 'Remote URL: <a href="'.$aws_vc_url .'">'. $aws_vc_url .'</a><br />';
-    }
-    else
-        $txt = $venue['name'];
+    $txt = $venue['name'];
+    if($url) 
+        $txt .= ' (url: <a href="'.$url .'">'. $url .'</a>)<br />';
     return $txt;
 }
 

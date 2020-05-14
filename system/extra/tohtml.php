@@ -1793,7 +1793,7 @@ function awsToHTML( $aws, $with_picture = false )
              </tr>
              <tr>
                  <td>Where/When</td>
-                 <td>'. venueToShortText($aws['venue']) . ', '
+                 <td>'. venueToShortText($aws['venue'], $aws['vc_url']) . ', '
                      . humanReadableDate($aws['date']) . ' '
                      . humanReadableTime($aws['time']) . '</td>
              </tr>

@@ -29,9 +29,8 @@ function awsEmailForMonday($monday)
 
     // if there is NO AWS this monday, notify users.
     if (count($upcomingAws) < 1) {
-        $html .= '<p>Greetings,</p>';
-        $html .= '<p>I could not find any annual work seminar
-                scheduled on ' . humanReadableDate($monday) . '.</p>';
+        $html .= p('Greetings,');
+        $html .= p('I could not find any annual work seminar scheduled on ' . humanReadableDate($monday) . '.');
 
         $holiday = getTableEntry('holidays', 'date', ['date' => dbDate($monday)]);
 
@@ -63,7 +62,7 @@ function awsEmailForMonday($monday)
     $res['speakers'] = $speakers;
 
     $firstAws = $upcomingAws[0];
-    $venue = venueToShortText($firstAws['venue']);
+    $venue = venueToShortText($firstAws['venue'], $firstAws['vc_url']);
 
     $chair = 'None assigned.';
     if (__get__($firstAws, 'chair', '')) {
@@ -72,10 +71,7 @@ function awsEmailForMonday($monday)
     }
 
     $data = [
-        'CHAIR' => $chair
-        , 'VENUE' => $venue, 'EMAIL_BODY' => $html
-        , 'DATE' => humanReadableDate($monday)
-        , 'TIME' => humanReadableTime($firstAws['time']),
+        'CHAIR' => $chair, 'VENUE' => $venue, 'EMAIL_BODY' => $html, 'DATE' => humanReadableDate($monday), 'TIME' => humanReadableTime($firstAws['time']),
     ];
     $templ = emailFromTemplate('aws_template', $data);
 
@@ -85,6 +81,7 @@ function awsEmailForMonday($monday)
     } else {
         $templ['subject'] = 'Annual Work Seminar on ' . humanReadableDate($monday) . ' by ' . implode(', ', $speakers);
     }
+
     return $templ;
 }
 function generateAWSEmail($monday)
@@ -147,7 +144,6 @@ function generateAWSEmail($monday)
         'CHAIR' => $chair,
          'VENUE' => $venue, 'EMAIL_BODY' => $html, 'DATE' => humanReadableDate($monday), 'TIME' => humanReadableTime($firstAws['time']),
     ];
-
 
     $mail = emailFromTemplate('aws_template', $data);
 
