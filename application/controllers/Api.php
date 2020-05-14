@@ -771,10 +771,16 @@ class Api extends CI_Controller
         }
         if ('id' === $args[0]) {
             $id = $args[1];
-            $results = getTableEntries(
-                'annual_work_seminars', 'date',
-                "id >= '$id'"
-            );
+            $data = getTableEntry('annual_work_seminars', 'id', ["id" => $id]);
+            $this->send_data($data, 'ok');
+
+            return;
+        } elseif ('upcomingid' === $args[0]) {
+            $id = $args[1];
+            $data = getTableEntry('upcoming_aws', 'id', ['id'=>$id]);
+            $this->send_data($data, 'ok');
+
+            return;
         } elseif ('latest' === $args[0]) {
             $numEvents = __get__($args, 1, 6);
             $from = dbDate('today');
@@ -3130,6 +3136,13 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
 
                 return;
+            } elseif ('get' === $args[1]) {
+                $awsid = $args[2];
+                $data = getTableEntry('upcoming_aws', 'id', ['id'=>$awsid]);
+                $this->send_data($data, 'ok');
+
+                return;
+
             } elseif ('assign' === $args[1]) {
                 $_POST['venue'] = __get__($_POST, 'venue', getDefaultAWSVenue($_POST['date']));
                 $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
