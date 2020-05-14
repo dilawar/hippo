@@ -30,7 +30,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    *
    * @param string $name The name (project, location, cluster id) of the cluster
    * to complete IP rotation. Specified in the format
-   * 'projects/locations/clusters'.
+   * `projects/locations/clusters`.
    * @param Google_Service_Container_CompleteIPRotationRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -57,7 +57,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * CIDR range the cluster is using. (clusters.create)
    *
    * @param string $parent The parent (project and location) where the cluster
-   * will be created. Specified in the format 'projects/locations'.
+   * will be created. Specified in the format `projects/locations`.
    * @param Google_Service_Container_CreateClusterRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -79,9 +79,11 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * the cluster was initially created. (clusters.delete)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * delete. Specified in the format 'projects/locations/clusters'.
+   * delete. Specified in the format `projects/locations/clusters`.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string clusterId Deprecated. The name of the cluster to delete.
+   * This field has been deprecated and replaced by the name field.
    * @opt_param string projectId Deprecated. The Google Developers Console
    * [project ID or project
    * number](https://support.google.com/cloud/answer/6158840). This field has been
@@ -90,8 +92,6 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * [zone](https://cloud.google.com/compute/docs/zones#available) in which the
    * cluster resides. This field has been deprecated and replaced by the name
    * field.
-   * @opt_param string clusterId Deprecated. The name of the cluster to delete.
-   * This field has been deprecated and replaced by the name field.
    * @return Google_Service_Container_Operation
    */
   public function delete($name, $optParams = array())
@@ -104,7 +104,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * Gets the details of a specific cluster. (clusters.get)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * retrieve. Specified in the format 'projects/locations/clusters'.
+   * retrieve. Specified in the format `projects/locations/clusters`.
    * @param array $optParams Optional parameters.
    *
    * @opt_param string projectId Deprecated. The Google Developers Console
@@ -131,7 +131,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * clusters. (clusters.getJwks)
    *
    * @param string $parent The cluster (project, location, cluster id) to get keys
-   * for. Specified in the format 'projects/locations/clusters'.
+   * for. Specified in the format `projects/locations/clusters`.
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_GetJSONWebKeysResponse
    */
@@ -146,7 +146,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * zones. (clusters.listProjectsLocationsClusters)
    *
    * @param string $parent The parent (project and location) where the clusters
-   * will be listed. Specified in the format 'projects/locations'. Location "-"
+   * will be listed. Specified in the format `projects/locations`. Location "-"
    * matches all zones and all regions.
    * @param array $optParams Optional parameters.
    *
@@ -170,7 +170,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * Sets the addons for a specific cluster. (clusters.setAddons)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * set addons. Specified in the format 'projects/locations/clusters'.
+   * set addons. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_SetAddonsConfigRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -186,7 +186,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * (clusters.setLegacyAbac)
    *
    * @param string $name The name (project, location, cluster id) of the cluster
-   * to set legacy abac. Specified in the format 'projects/locations/clusters'.
+   * to set legacy abac. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_SetLegacyAbacRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -204,7 +204,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * (clusters.setLocations)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * set locations. Specified in the format 'projects/locations/clusters'.
+   * set locations. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_SetLocationsRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -219,7 +219,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * Sets the logging service for a specific cluster. (clusters.setLogging)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * set logging. Specified in the format 'projects/locations/clusters'.
+   * set logging. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_SetLoggingServiceRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -235,7 +235,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    *
    * @param string $name The name (project, location, cluster id) of the cluster
    * to set maintenance policy. Specified in the format
-   * 'projects/locations/clusters'.
+   * `projects/locations/clusters`.
    * @param Google_Service_Container_SetMaintenancePolicyRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -252,7 +252,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * password. (clusters.setMasterAuth)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * set auth. Specified in the format 'projects/locations/clusters'.
+   * set auth. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_SetMasterAuthRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -267,7 +267,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * Sets the monitoring service for a specific cluster. (clusters.setMonitoring)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * set monitoring. Specified in the format 'projects/locations/clusters'.
+   * set monitoring. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_SetMonitoringServiceRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -283,7 +283,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    *
    * @param string $name The name (project, location, cluster id) of the cluster
    * to set networking policy. Specified in the format
-   * 'projects/locations/clusters'.
+   * `projects/locations/clusters`.
    * @param Google_Service_Container_SetNetworkPolicyRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -298,7 +298,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * Sets labels on a cluster. (clusters.setResourceLabels)
    *
    * @param string $name The name (project, location, cluster id) of the cluster
-   * to set labels. Specified in the format 'projects/locations/clusters'.
+   * to set labels. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_SetLabelsRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -313,7 +313,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * Starts master IP rotation. (clusters.startIpRotation)
    *
    * @param string $name The name (project, location, cluster id) of the cluster
-   * to start IP rotation. Specified in the format 'projects/locations/clusters'.
+   * to start IP rotation. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_StartIPRotationRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -328,7 +328,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * Updates the settings of a specific cluster. (clusters.update)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * update. Specified in the format 'projects/locations/clusters'.
+   * update. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_UpdateClusterRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -343,7 +343,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClusters extends Google
    * Updates the master for a specific cluster. (clusters.updateMaster)
    *
    * @param string $name The name (project, location, cluster) of the cluster to
-   * update. Specified in the format 'projects/locations/clusters'.
+   * update. Specified in the format `projects/locations/clusters`.
    * @param Google_Service_Container_UpdateMasterRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation

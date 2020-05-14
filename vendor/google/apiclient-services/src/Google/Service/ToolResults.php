@@ -57,7 +57,7 @@ class Google_Service_ToolResults extends Google_Service
     parent::__construct($client);
     $this->rootUrl = $rootUrl ?: 'https://www.googleapis.com/';
     $this->servicePath = '';
-    $this->batchPath = 'batch';
+    $this->batchPath = 'batch/toolresults/v1beta3';
     $this->version = 'v1beta3';
     $this->serviceName = 'toolresults';
 

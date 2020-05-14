@@ -82,11 +82,6 @@ class Google_Service_Monitoring_Resource_ProjectsGroups extends Google_Service_R
    * format is: projects/[PROJECT_ID_OR_NUMBER]
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string ancestorsOfGroup A group name. The format is:
-   * projects/[PROJECT_ID_OR_NUMBER]/groups/[GROUP_ID] Returns groups that are
-   * ancestors of the specified group. The groups are returned in order, starting
-   * with the immediate parent and ending with the most distant ancestor. If the
-   * specified group has no immediate parent, the results are empty.
    * @opt_param string childrenOfGroup A group name. The format is:
    * projects/[PROJECT_ID_OR_NUMBER]/groups/[GROUP_ID] Returns groups whose
    * parent_name field contains the group name. If no groups have this parent, the
@@ -101,6 +96,11 @@ class Google_Service_Monitoring_Resource_ProjectsGroups extends Google_Service_R
    * method call.
    * @opt_param int pageSize A positive number that is the maximum number of
    * results to return.
+   * @opt_param string ancestorsOfGroup A group name. The format is:
+   * projects/[PROJECT_ID_OR_NUMBER]/groups/[GROUP_ID] Returns groups that are
+   * ancestors of the specified group. The groups are returned in order, starting
+   * with the immediate parent and ending with the most distant ancestor. If the
+   * specified group has no immediate parent, the results are empty.
    * @return Google_Service_Monitoring_ListGroupsResponse
    */
   public function listProjectsGroups($name, $optParams = array())

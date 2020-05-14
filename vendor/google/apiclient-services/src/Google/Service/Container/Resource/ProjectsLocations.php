@@ -30,7 +30,7 @@ class Google_Service_Container_Resource_ProjectsLocations extends Google_Service
    * (locations.getServerConfig)
    *
    * @param string $name The name (project and location) of the server config to
-   * get, specified in the format 'projects/locations'.
+   * get, specified in the format `projects/locations`.
    * @param array $optParams Optional parameters.
    *
    * @opt_param string projectId Deprecated. The Google Developers Console
