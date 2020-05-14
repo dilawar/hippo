@@ -109,7 +109,7 @@ function whereWhenTable(string $venue, string $date, string $time = '', $url = '
         <tr><td><strong>When<strong></td> <td>$whenHTML</td></tr>";
 
     if($url) 
-        $table .= "<tr><td>URL</td><td>". anchor($url) . "</td></tr>";
+        $table .= "<tr><td>URL</td><td>". anchor($url</td></tr>";
 
     if (!$inothertable) {
         $table .= '</table>';
@@ -1755,29 +1755,30 @@ function awsToHTML($aws, $with_picture = false)
 {
     $speaker = __ucwords__(loginToText($aws['speaker'], false));
 
-    $supervisors = [
-        __ucwords__(loginToText(findAnyoneWithEmail($aws['supervisor_1']), false)),  __ucwords__(loginToText(findAnyoneWithEmail($aws['supervisor_2']), false)),
-    ];
+    $supervisors = [];
+
+    $supervisors[] = __ucwords__(loginToText(findAnyoneWithEmail($aws['supervisor_1']), false));
+    $supervisors[] =  __ucwords__(loginToText(findAnyoneWithEmail($aws['supervisor_2']), false));
     $supervisors = array_filter($supervisors);
 
     $tcm = [];
-    array_push($tcm, __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_1']), false)), __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_2']), false)), __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_3']), false)), __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_4']), false))
-    );
+    $tcm[] = __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_1']), false));
+    $tcm[] = __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_2']), false));
+    $tcm[] = __ucwords__(,oginToText(findAnyoneWithEmail($aws['tcm_member_3']), false));
+    $tcm[] = __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_4']), false));
+
     $tcm = array_filter($tcm);
 
     $title = $aws['title'];
-    if (0 == strlen($title)) {
+    if (0 == strlen($title))
         $title = 'Not disclosed yet.';
-    }
 
-    if ('YES' === __get__($aws, 'is_presynopsis_seminar', 'NO')) {
+    if ('YES' === __get__($aws, 'is_presynopsis_seminar', 'NO'))
         $title = '(Presynopsis Seminar)' . ' ' . $title;
-    }
 
     $abstract = $aws['abstract'];
-    if (0 == strlen($abstract)) {
+    if (0 == strlen($abstract))
         $abstract = 'Not disclosed yet!';
-    }
 
     // Adding css inline screw up the email view. Dont do it.
     $user = $aws['speaker'];
@@ -1785,9 +1786,8 @@ function awsToHTML($aws, $with_picture = false)
     // Add a table only if there is a picture. Adding TD when there is no picture
     // screws up the formatting of emails.
     $pic = '';
-    if ($with_picture) {
+    if ($with_picture)
         $pic = getUserPicture($user, 'hippo', '200px');
-    }
 
     $extra = '<table class="table table-sm table-info">
             <tr>
