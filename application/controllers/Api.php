@@ -1576,15 +1576,22 @@ class Api extends CI_Controller
 
             return;
         } elseif ('aws' === $args[0]) {
-            $data = getAwsOfSpeaker($user);
-            $upcoming = getUpcomingAWSOfSpeaker($user);
-            if ($upcoming) {
-                $data[] = $upcoming;
+            // by default 'get'
+            if('get' === __get__($args, 1, 'get')) {
+                $data = getAwsOfSpeaker($user);
+                $upcoming = getUpcomingAWSOfSpeaker($user);
+                if ($upcoming) {
+                    $data[] = $upcoming;
+                }
+
+                $this->send_data($data, 'ok');
+
+                return;
+            } elseif ( 'update' === $args[1]) {
+                $this->send_data(['success' => false
+                    , 'msg' => 'Only Admin can change old AWS'], 'ok');
+                return;
             }
-
-            $this->send_data($data, 'ok');
-
-            return;
         } elseif ('upcomingaws' === $args[0]) {
             if ('update' === $args[1]) {
                 $id = $_POST['id'];
