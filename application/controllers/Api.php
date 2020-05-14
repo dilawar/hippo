@@ -771,10 +771,16 @@ class Api extends CI_Controller
         }
         if ('id' === $args[0]) {
             $id = $args[1];
-            $results = getTableEntries(
-                'annual_work_seminars', 'date',
-                "id >= '$id'"
-            );
+            $data = getTableEntry('annual_work_seminars', 'id', ["id" => $id]);
+            $this->send_data($data, 'ok');
+
+            return;
+        } elseif ('upcomingid' === $args[0]) {
+            $id = $args[1];
+            $data = getTableEntry('upcoming_aws', 'id', ['id'=>$id]);
+            $this->send_data($data, 'ok');
+
+            return;
         } elseif ('latest' === $args[0]) {
             $numEvents = __get__($args, 1, 6);
             $from = dbDate('today');
@@ -3110,8 +3116,10 @@ class Api extends CI_Controller
         }
 
         $login = getLogin();
-        if (!in_array('ACAD_ADMIN', getRoles($login))) {
-            $this->send_data([], 'Forbidden');
+        $roles = getRoles($login);
+
+        if (!in_array('ACAD_ADMIN', $roles)) {
+            $this->send_data(['success'=>false, 'msg'=>[$login, $roles]], 'Forbidden');
 
             return;
         }
@@ -3128,6 +3136,13 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
 
                 return;
+            } elseif ('get' === $args[1]) {
+                $awsid = $args[2];
+                $data = getTableEntry('upcoming_aws', 'id', ['id'=>$awsid]);
+                $this->send_data($data, 'ok');
+
+                return;
+
             } elseif ('assign' === $args[1]) {
                 $_POST['venue'] = __get__($_POST, 'venue', getDefaultAWSVenue($_POST['date']));
                 $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
@@ -3188,7 +3203,7 @@ class Api extends CI_Controller
                 $data = [];
                 if (strlen($q) > 2) {
                     $data = executeQuery(
-                        "SELECT id,status,title,speaker,date,venue,supervisor_1 
+                        "SELECT id,title,speaker,date,venue,supervisor_1,status
                         FROM annual_work_seminars 
                         WHERE date LIKE '%$q%' OR speaker LIKE '%$q%' OR title LIKE '%$q%'
                         ORDER BY date DESC LIMIT 20"
@@ -3241,10 +3256,20 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('update' === $args[1]) {
-                $data = ['success' => false, 'msg' => 'Failed to update AWS.'];
+                $data = ['success' => false, 'msg' => ''];
+
+                // Remove previous TCM and supervisors.
+                // executeQueryReadonly("UPDATE upcoming_aws
+                    // SET supervisor_1='', supervisor_2='',
+                        // tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
+                    // WHERE id='$id'");
+
                 $res = updateTable(
                     'annual_work_seminars', 'id',
-                    'title,abstract,status,is_presynopsis_seminar', $_POST
+                    'title,abstract,status,is_presynopsis_seminar,chair,venue,vc_url'
+                    . ',supervisor_1,supervisor_2,tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4'
+                    , $_POST
+                    , false
                 );
 
                 if ($res) {
