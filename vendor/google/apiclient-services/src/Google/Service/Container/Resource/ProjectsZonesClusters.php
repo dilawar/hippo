@@ -124,7 +124,7 @@ class Google_Service_Container_Resource_ProjectsZonesClusters extends Google_Ser
    * @param array $optParams Optional parameters.
    *
    * @opt_param string name The name (project, location, cluster) of the cluster
-   * to delete. Specified in the format 'projects/locations/clusters'.
+   * to delete. Specified in the format `projects/locations/clusters`.
    * @return Google_Service_Container_Operation
    */
   public function delete($projectId, $zone, $clusterId, $optParams = array())
@@ -148,7 +148,7 @@ class Google_Service_Container_Resource_ProjectsZonesClusters extends Google_Ser
    * @param array $optParams Optional parameters.
    *
    * @opt_param string name The name (project, location, cluster) of the cluster
-   * to retrieve. Specified in the format 'projects/locations/clusters'.
+   * to retrieve. Specified in the format `projects/locations/clusters`.
    * @return Google_Service_Container_Cluster
    */
   public function get($projectId, $zone, $clusterId, $optParams = array())
@@ -194,7 +194,7 @@ class Google_Service_Container_Resource_ProjectsZonesClusters extends Google_Ser
    * @param array $optParams Optional parameters.
    *
    * @opt_param string parent The parent (project and location) where the clusters
-   * will be listed. Specified in the format 'projects/locations'. Location "-"
+   * will be listed. Specified in the format `projects/locations`. Location "-"
    * matches all zones and all regions.
    * @return Google_Service_Container_ListClustersResponse
    */

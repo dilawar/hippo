@@ -199,10 +199,6 @@ class Google_Service_CloudDebugger extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'stripResults' => array(
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ),
                 'waitToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -223,6 +219,10 @@ class Google_Service_CloudDebugger extends Google_Service
                   'location' => 'query',
                   'type' => 'boolean',
                 ),
+                'stripResults' => array(
+                  'location' => 'query',
+                  'type' => 'boolean',
+                ),
               ),
             ),'set' => array(
               'path' => 'v2/debugger/debuggees/{debuggeeId}/breakpoints/set',
@@ -233,11 +233,11 @@ class Google_Service_CloudDebugger extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'clientVersion' => array(
+                'canaryOption' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),
-                'canaryOption' => array(
+                'clientVersion' => array(
                   'location' => 'query',
                   'type' => 'string',
                 ),

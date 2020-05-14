@@ -97,12 +97,6 @@ class Google_Service_DLP_Resource_ProjectsJobTriggers extends Google_Service_Res
    * `projects/my-project-id`.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string pageToken Page token to continue retrieval. Comes from
-   * previous call to ListJobTriggers. `order_by` field must not change for
-   * subsequent calls.
-   * @opt_param string locationId The geographic location where job triggers will
-   * be retrieved from. Use `-` for all locations. Reserved for future extensions.
-   * @opt_param int pageSize Size of the page, can be limited by a server.
    * @opt_param string orderBy Comma separated list of triggeredJob fields to
    * order by, followed by `asc` or `desc` postfix. This list is case-insensitive,
    * default sorting order is ascending, redundant space characters are
@@ -117,6 +111,12 @@ class Google_Service_DLP_Resource_ProjectsJobTriggers extends Google_Service_Res
    * `last_run_time`: corresponds to the last time the JobTrigger ran. - `name`:
    * corresponds to JobTrigger's name. - `display_name`: corresponds to
    * JobTrigger's display name. - `status`: corresponds to JobTrigger's status.
+   * @opt_param string pageToken Page token to continue retrieval. Comes from
+   * previous call to ListJobTriggers. `order_by` field must not change for
+   * subsequent calls.
+   * @opt_param string locationId The geographic location where job triggers will
+   * be retrieved from. Use `-` for all locations. Reserved for future extensions.
+   * @opt_param int pageSize Size of the page, can be limited by a server.
    * @opt_param string filter Allows filtering.
    *
    * Supported syntax:

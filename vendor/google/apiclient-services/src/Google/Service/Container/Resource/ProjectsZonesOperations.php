@@ -62,7 +62,7 @@ class Google_Service_Container_Resource_ProjectsZonesOperations extends Google_S
    * @param array $optParams Optional parameters.
    *
    * @opt_param string name The name (project, location, operation id) of the
-   * operation to get. Specified in the format 'projects/locations/operations'.
+   * operation to get. Specified in the format `projects/locations/operations`.
    * @return Google_Service_Container_Operation
    */
   public function get($projectId, $zone, $operationId, $optParams = array())
@@ -85,7 +85,7 @@ class Google_Service_Container_Resource_ProjectsZonesOperations extends Google_S
    * @param array $optParams Optional parameters.
    *
    * @opt_param string parent The parent (project and location) where the
-   * operations will be listed. Specified in the format 'projects/locations'.
+   * operations will be listed. Specified in the format `projects/locations`.
    * Location "-" matches all zones and all regions.
    * @return Google_Service_Container_ListOperationsResponse
    */

@@ -27,7 +27,7 @@ final class Versions
   'eluceo/ical' => '0.16.0@97da0d94c9716e65c141066a2d96aa098379721b',
   'firebase/php-jwt' => 'v5.2.0@feb0e820b8436873675fd3aca04f3728eb2185cb',
   'google/apiclient' => 'v2.4.1@1fdfe942f9aaf3064e621834a5e3047fccb3a6da',
-  'google/apiclient-services' => 'v0.133@dd53c4a23a5c4d868e409585e30ab31da278b5d2',
+  'google/apiclient-services' => 'v0.134@4237f6725a48761701101e26e4575ddb053b5d80',
   'google/auth' => 'v1.8.0@c7b295feb248f138f462a1e6b7d635e4244204c5',
   'guzzlehttp/guzzle' => '6.5.3@aab4ebd862aa7d04f01a4b51849d657db56d882e',
   'guzzlehttp/promises' => 'v1.3.1@a59da6cf61d80060647ff4d3eb2c03a2bc694646',
@@ -41,7 +41,7 @@ final class Versions
   'ralouphie/getallheaders' => '3.0.3@120b605dfeb996808c31b6477290a714d356e822',
   'renanbr/bibtex-parser' => '2.0.2@dded1a67b559e4bd4cdc86e79cfe056e2bdc4d0d',
   'symfony/polyfill-intl-idn' => 'v1.15.0@47bd6aa45beb1cd7c6a16b7d1810133b728bdfcf',
-  'symfony/polyfill-mbstring' => 'v1.15.0@81ffd3a9c6d707be22e3012b827de1c9775fc5ac',
+  'symfony/polyfill-mbstring' => 'v1.16.0@a54881ec0ab3b2005c406aed0023c062879031e7',
   'symfony/polyfill-php72' => 'v1.15.0@37b0976c78b94856543260ce09b460a7bc852747',
   'amphp/amp' => 'v2.4.4@1e58d53e4af390efc7813e36cd215bd82cba4b06',
   'amphp/byte-stream' => 'v1.7.3@b867505edb79dda8f253ca3c3a2bbadae4b16592',
@@ -81,7 +81,11 @@ final class Versions
   'webmozart/assert' => '1.8.0@ab2cb0b3b559010b75981b1bdce728da3ee90ad6',
   'webmozart/glob' => '4.1.0@3cbf63d4973cf9d780b93d2da8eec7e4a9e63bbe',
   'webmozart/path-util' => '2.3.0@d939f7edc24c9a1bb9c0dee5cb05d8e859490725',
+<<<<<<< Updated upstream
   'codeigniter/framework' => 'dev-devel@7cd4a96af4f8ff2bf3ebd604f0aae32c32a094f6',
+=======
+  'codeigniter/framework' => 'dev-master@240b7b0aeb7e6b28d82f7a5f506b5ab6cfdd3b86',
+>>>>>>> Stashed changes
 );
 
     private function __construct()

@@ -48,8 +48,10 @@ class Google_Service_FirebaseManagement_Resource_Projects extends Google_Service
    * This method does not modify any billing account information on the underlying
    * GCP `Project`.
    *
-   * To call `AddFirebase`, a member must be an Editor or Owner for the existing
-   * GCP `Project`. Service accounts cannot call `AddFirebase`.
+   * To call `AddFirebase`, a project member or service account must have the
+   * following permissions (the IAM roles of Editor and Owner contain these
+   * permissions): `firebase.projects.update`, `resourcemanager.projects.get`,
+   * `serviceusage.services.enable`, and `serviceusage.services.get`.
    * (projects.addFirebase)
    *
    * @param string $project The resource name of the GCP `Project` to which
@@ -281,8 +283,6 @@ class Google_Service_FirebaseManagement_Resource_Projects extends Google_Service
    * format: projects/projectId
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string pageToken Token returned from a previous call to
-   * `SearchFirebaseApps` indicating where in the set of Apps to resume listing.
    * @opt_param int pageSize The maximum number of Apps to return in the response.
    *
    * The server may return fewer than this value at its discretion. If no value is
@@ -290,6 +290,8 @@ class Google_Service_FirebaseManagement_Resource_Projects extends Google_Service
    * its own limit.
    *
    * This value cannot be negative.
+   * @opt_param string pageToken Token returned from a previous call to
+   * `SearchFirebaseApps` indicating where in the set of Apps to resume listing.
    * @return Google_Service_FirebaseManagement_SearchFirebaseAppsResponse
    */
   public function searchApps($parent, $optParams = array())

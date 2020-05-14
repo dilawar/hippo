@@ -39,7 +39,7 @@ class Google_Service_Container_Resource_ProjectsZones extends Google_Service_Res
    * @param array $optParams Optional parameters.
    *
    * @opt_param string name The name (project and location) of the server config
-   * to get, specified in the format 'projects/locations'.
+   * to get, specified in the format `projects/locations`.
    * @return Google_Service_Container_ServerConfig
    */
   public function getServerconfig($projectId, $zone, $optParams = array())

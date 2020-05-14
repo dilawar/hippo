@@ -780,17 +780,17 @@
     },
     {
         "name": "google/apiclient-services",
-        "version": "v0.133",
-        "version_normalized": "0.133.0.0",
+        "version": "v0.134",
+        "version_normalized": "0.134.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/googleapis/google-api-php-client-services.git",
-            "reference": "dd53c4a23a5c4d868e409585e30ab31da278b5d2"
+            "reference": "4237f6725a48761701101e26e4575ddb053b5d80"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/dd53c4a23a5c4d868e409585e30ab31da278b5d2",
-            "reference": "dd53c4a23a5c4d868e409585e30ab31da278b5d2",
+            "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/4237f6725a48761701101e26e4575ddb053b5d80",
+            "reference": "4237f6725a48761701101e26e4575ddb053b5d80",
             "shasum": ""
         },
         "require": {
@@ -799,7 +799,7 @@
         "require-dev": {
             "phpunit/phpunit": "^4.8|^5"
         },
-        "time": "2020-05-03T00:24:28+00:00",
+        "time": "2020-05-10T00:25:08+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -2722,17 +2722,17 @@
     },
     {
         "name": "symfony/polyfill-mbstring",
-        "version": "v1.15.0",
-        "version_normalized": "1.15.0.0",
+        "version": "v1.16.0",
+        "version_normalized": "1.16.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/polyfill-mbstring.git",
-            "reference": "81ffd3a9c6d707be22e3012b827de1c9775fc5ac"
+            "reference": "a54881ec0ab3b2005c406aed0023c062879031e7"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/81ffd3a9c6d707be22e3012b827de1c9775fc5ac",
-            "reference": "81ffd3a9c6d707be22e3012b827de1c9775fc5ac",
+            "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/a54881ec0ab3b2005c406aed0023c062879031e7",
+            "reference": "a54881ec0ab3b2005c406aed0023c062879031e7",
             "shasum": ""
         },
         "require": {
@@ -2741,11 +2741,11 @@
         "suggest": {
             "ext-mbstring": "For best performance"
         },
-        "time": "2020-03-09T19:04:49+00:00",
+        "time": "2020-05-08T16:50:20+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "1.15-dev"
+                "dev-master": "1.16-dev"
             }
         },
         "installation-source": "dist",

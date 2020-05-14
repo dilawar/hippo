@@ -30,7 +30,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $parent The parent (project, location, cluster id) where the
    * node pool will be created. Specified in the format
-   * 'projects/locations/clusters'.
+   * `projects/locations/clusters`.
    * @param Google_Service_Container_CreateNodePoolRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -46,11 +46,9 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $name The name (project, location, cluster, node pool id) of
    * the node pool to delete. Specified in the format
-   * 'projects/locations/clusters/nodePools'.
+   * `projects/locations/clusters/nodePools`.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string nodePoolId Deprecated. The name of the node pool to delete.
-   * This field has been deprecated and replaced by the name field.
    * @opt_param string projectId Deprecated. The Google Developers Console
    * [project ID or project
    * number](https://developers.google.com/console/help/new/#projectnumber). This
@@ -61,6 +59,8 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    * field.
    * @opt_param string clusterId Deprecated. The name of the cluster. This field
    * has been deprecated and replaced by the name field.
+   * @opt_param string nodePoolId Deprecated. The name of the node pool to delete.
+   * This field has been deprecated and replaced by the name field.
    * @return Google_Service_Container_Operation
    */
   public function delete($name, $optParams = array())
@@ -74,7 +74,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $name The name (project, location, cluster, node pool id) of
    * the node pool to get. Specified in the format
-   * 'projects/locations/clusters/nodePools'.
+   * `projects/locations/clusters/nodePools`.
    * @param array $optParams Optional parameters.
    *
    * @opt_param string projectId Deprecated. The Google Developers Console
@@ -103,7 +103,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $parent The parent (project, location, cluster id) where the
    * node pools will be listed. Specified in the format
-   * 'projects/locations/clusters'.
+   * `projects/locations/clusters`.
    * @param array $optParams Optional parameters.
    *
    * @opt_param string projectId Deprecated. The Google Developers Console
@@ -130,7 +130,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $name The name (project, location, cluster, node pool id) of
    * the node poll to rollback upgrade. Specified in the format
-   * 'projects/locations/clusters/nodePools'.
+   * `projects/locations/clusters/nodePools`.
    * @param Google_Service_Container_RollbackNodePoolUpgradeRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -147,7 +147,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $name The name (project, location, cluster, node pool) of the
    * node pool to set autoscaler settings. Specified in the format
-   * 'projects/locations/clusters/nodePools'.
+   * `projects/locations/clusters/nodePools`.
    * @param Google_Service_Container_SetNodePoolAutoscalingRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -163,7 +163,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $name The name (project, location, cluster, node pool id) of
    * the node pool to set management properties. Specified in the format
-   * 'projects/locations/clusters/nodePools'.
+   * `projects/locations/clusters/nodePools`.
    * @param Google_Service_Container_SetNodePoolManagementRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -179,7 +179,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $name The name (project, location, cluster, node pool id) of
    * the node pool to set size. Specified in the format
-   * 'projects/locations/clusters/nodePools'.
+   * `projects/locations/clusters/nodePools`.
    * @param Google_Service_Container_SetNodePoolSizeRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation
@@ -196,7 +196,7 @@ class Google_Service_Container_Resource_ProjectsLocationsClustersNodePools exten
    *
    * @param string $name The name (project, location, cluster, node pool) of the
    * node pool to update. Specified in the format
-   * 'projects/locations/clusters/nodePools'.
+   * `projects/locations/clusters/nodePools`.
    * @param Google_Service_Container_UpdateNodePoolRequest $postBody
    * @param array $optParams Optional parameters.
    * @return Google_Service_Container_Operation

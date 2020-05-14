@@ -19,6 +19,7 @@ class Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdmi
 {
   protected $autoscaleType = 'Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdminV1alphaAutoscale';
   protected $autoscaleDataType = '';
+  public $channel;
   public $name;
   public $state;
   protected $workerConfigType = 'Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerConfig';
@@ -38,6 +39,14 @@ class Google_Service_RemoteBuildExecution_GoogleDevtoolsRemotebuildexecutionAdmi
   public function getAutoscale()
   {
     return $this->autoscale;
+  }
+  public function setChannel($channel)
+  {
+    $this->channel = $channel;
+  }
+  public function getChannel()
+  {
+    return $this->channel;
   }
   public function setName($name)
   {

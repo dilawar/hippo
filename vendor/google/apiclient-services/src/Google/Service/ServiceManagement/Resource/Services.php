@@ -153,13 +153,13 @@ class Google_Service_ServiceManagement_Resource_Services extends Google_Service_
    * example: `example.googleapis.com`.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string view Specifies which parts of the Service Config should be
+   * returned in the response.
    * @opt_param string configId Required. The id of the service configuration
    * resource.
    *
    * This field must be specified for the server to return all fields, including
    * `SourceInfo`.
-   * @opt_param string view Specifies which parts of the Service Config should be
-   * returned in the response.
    * @return Google_Service_ServiceManagement_Service
    */
   public function getConfig($serviceName, $optParams = array())
@@ -198,8 +198,6 @@ class Google_Service_ServiceManagement_Resource_Services extends Google_Service_
    *
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string producerProjectId Include services produced by the
-   * specified project.
    * @opt_param string consumerId Include services consumed by the specified
    * consumer.
    *
@@ -209,6 +207,8 @@ class Google_Service_ServiceManagement_Resource_Services extends Google_Service_
    * returned by a previous list call.
    * @opt_param int pageSize The max number of items to include in the response
    * list. Page size is 50 if not specified. Maximum value is 100.
+   * @opt_param string producerProjectId Include services produced by the
+   * specified project.
    * @return Google_Service_ServiceManagement_ListServicesResponse
    */
   public function listServices($optParams = array())
@@ -221,7 +221,7 @@ class Google_Service_ServiceManagement_Resource_Services extends Google_Service_
    * Sets the access control policy on the specified resource. Replaces any
    * existing policy.
    *
-   * Can return Public Errors: NOT_FOUND, INVALID_ARGUMENT and PERMISSION_DENIED
+   * Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
    * (services.setIamPolicy)
    *
    * @param string $resource REQUIRED: The resource for which the policy is being
@@ -240,7 +240,7 @@ class Google_Service_ServiceManagement_Resource_Services extends Google_Service_
   /**
    * Returns permissions that a caller has on the specified resource. If the
    * resource does not exist, this will return an empty set of permissions, not a
-   * NOT_FOUND error.
+   * `NOT_FOUND` error.
    *
    * Note: This operation is designed to be used for building permission-aware UIs
    * and command-line tools, not for authorization checking. This operation may
