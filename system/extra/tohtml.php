@@ -109,7 +109,7 @@ function whereWhenTable(string $venue, string $date, string $time = '', $url = '
         <tr><td><strong>When<strong></td> <td>$whenHTML</td></tr>";
 
     if($url) 
-        $table .= "<tr><td>URL</td><td>". anchor($url</td></tr>";
+        $table .= "<tr><td>URL</td><td>". anchor($url). "</td></tr>";
 
     if (!$inothertable) {
         $table .= '</table>';
@@ -1764,7 +1764,7 @@ function awsToHTML($aws, $with_picture = false)
     $tcm = [];
     $tcm[] = __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_1']), false));
     $tcm[] = __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_2']), false));
-    $tcm[] = __ucwords__(,oginToText(findAnyoneWithEmail($aws['tcm_member_3']), false));
+    $tcm[] = __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_3']), false));
     $tcm[] = __ucwords__(loginToText(findAnyoneWithEmail($aws['tcm_member_4']), false));
 
     $tcm = array_filter($tcm);

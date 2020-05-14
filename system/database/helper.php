@@ -2160,10 +2160,11 @@ function deleteFromTable($tablename, $keys, $data)
  * @param $wherekeys WHERE $wherekey=wherekeyval,... etc.
  * @param $keys      Keys to be updated.
  * @param $data      An array having all data.
+ * @param $ignoremissing Ignore missing values.
  *
  * @return
  */
-function updateTable($tablename, $wherekeys, $keys, array $data)
+function updateTable($tablename, $wherekeys, $keys, array $data, bool $ignoremissing=true)
 {
     if (! $data) {
         echo printWarning("Empty data.");
@@ -2175,25 +2176,22 @@ function updateTable($tablename, $wherekeys, $keys, array $data)
 
     $query = "UPDATE $tablename SET ";
 
-    if (is_string($wherekeys)) {
+    if (is_string($wherekeys))
         $wherekeys = explode(",", $wherekeys);
-    }
 
-    if (is_string($keys)) {
+    if (is_string($keys))
         $keys = explode(",", $keys);
-    }
 
     $whereclause = array( );
-    foreach ($wherekeys as $wkey) {
+    foreach ($wherekeys as $wkey)
         $whereclause[] = "$wkey=:$wkey";
-    }
 
     $whereclause = implode(" AND ", $whereclause);
 
     $values = array( );
     $cols = array();
     foreach ($keys as $k) {
-        if (__get__($data, $k, null) == null) 
+        if ($ignoremissing && __get__($data, $k, null) === null) 
             continue;
 
         array_push($cols, $k);
@@ -2208,7 +2206,6 @@ function updateTable($tablename, $wherekeys, $keys, array $data)
         if (is_array($value)) {
             $value = implode(',', $value);
         }
-
         $stmt->bindValue(":$k", $value);
     }
 

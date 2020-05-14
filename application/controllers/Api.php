@@ -3110,8 +3110,10 @@ class Api extends CI_Controller
         }
 
         $login = getLogin();
-        if (!in_array('ACAD_ADMIN', getRoles($login))) {
-            $this->send_data([], 'Forbidden');
+        $roles = getRoles($login);
+
+        if (!in_array('ACAD_ADMIN', $roles)) {
+            $this->send_data(['success'=>false, 'msg'=>[$login, $roles]], 'Forbidden');
 
             return;
         }
@@ -3188,7 +3190,7 @@ class Api extends CI_Controller
                 $data = [];
                 if (strlen($q) > 2) {
                     $data = executeQuery(
-                        "SELECT id,status,title,speaker,date,venue,supervisor_1 
+                        "SELECT id,title,speaker,date,venue,supervisor_1,status
                         FROM annual_work_seminars 
                         WHERE date LIKE '%$q%' OR speaker LIKE '%$q%' OR title LIKE '%$q%'
                         ORDER BY date DESC LIMIT 20"
@@ -3241,10 +3243,20 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('update' === $args[1]) {
-                $data = ['success' => false, 'msg' => 'Failed to update AWS.'];
+                $data = ['success' => false, 'msg' => ''];
+
+                // Remove previous TCM and supervisors.
+                // executeQueryReadonly("UPDATE upcoming_aws
+                    // SET supervisor_1='', supervisor_2='',
+                        // tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
+                    // WHERE id='$id'");
+
                 $res = updateTable(
                     'annual_work_seminars', 'id',
-                    'title,abstract,status,is_presynopsis_seminar', $_POST
+                    'title,abstract,status,is_presynopsis_seminar,chair,venue,vc_url'
+                    . ',supervisor_1,supervisor_2,tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4'
+                    , $_POST
+                    , false
                 );
 
                 if ($res) {
