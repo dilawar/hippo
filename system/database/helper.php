@@ -695,7 +695,6 @@ function getPublicEvents($from = 'today', $status = 'VALID', $ndays = 1)
 function getPublicEventsNum(string $from, int $limit=10, int $offset=0)
 {
     $hippoDB = initDB();
-    ;
     return getTableEntries(
         'events',
         'date,start_time',
@@ -2447,9 +2446,9 @@ function getUpcomingAWS($awsday = null)
     return $res;
 }
 
-function getUpcomingAWSOnThisMonday($awsdata)
+function getUpcomingAWSOnThisMonday($awsdate)
 {
-    $date = dbDate($awsdata);
+    $date = dbDate($awsdate);
     $res = executeQuery("SELECT * FROM upcoming_aws WHERE date='$date'");
     return $res;
 }

@@ -161,6 +161,8 @@ class Api extends CI_Controller
      *    - /info/news
      *    - /info/venues/available/[all|venueid]
      *    - /info/bmv/bookingclasses
+     *    - /info/slot/
+     *
      * @Returns
      */
     /* ----------------------------------------------------------------------------*/
@@ -189,6 +191,20 @@ class Api extends CI_Controller
                 $cards[] = ['title' => $item['title'], 'date' => $item['date'], 'time' => $item['start_time'], 'venue' => $item['venue'],
                 ];
             }
+
+            // AWS cards.
+            $awses = getUpcomingAWSOnThisMonday('this monday');
+            if ($awses) {
+                $faws = $awses[0];
+                $title = 'AWS by ';
+                foreach ($awses as $aws) {
+                    $speaker = getLoginInfo($aws['speaker']);
+                    $title .= arrayToName($speaker) . ', ';
+                }
+                $cards[] = ['title' => $title, 'date' => $faws['date'], 'time' => $faws['time'], 'venue' => venueToShortText($faws['venue'], $faws['vc_url']),
+                ];
+            }
+
             $this->send_data($cards, 'ok');
 
             return;
@@ -250,8 +266,58 @@ class Api extends CI_Controller
 
             return;
         } elseif ('slot' === $args[0]) {
-            $slot = getSlotInfo($args[1]);
-            $this->send_data($slot, 'ok');
+            $id = __get__($args, 1, 'all');
+            if ($id === 'all') {
+                $slot = getSlots();
+                $this->send_data($slot, 'ok');
+            } else {
+                $slot = getSlotInfo($id);
+                $this->send_data($slot, 'ok');
+            }
+
+            return;
+        } elseif ('talks' === $args[0]) {
+            // next 7 days.
+            $numDays = __get__($args, 1, 14);
+            $talks = getTalksWithEvent(dbDate('today'), dbDate("+$numDays days"));
+            $this->send_data($talks, 'ok');
+
+            return;
+        } elseif ('upcomingaws' === $args[0]) {
+            $awses = getUpcomingAWS('today');
+            $data = [];
+            foreach ($awses as &$aws) {
+                $logins = findAnyoneWithLoginOrEmail($aws['speaker']);
+                if ($logins) {
+                    $by = arrayToName($logins[0]);
+                } else {
+                    $by = $aws['speaker'];
+                }
+                $aws['by'] = $by;
+                $data[$aws['date']][] = $aws;
+            }
+            $this->send_data($data, 'ok');
+
+            return;
+        } elseif ('jcs' === $args[0]) {
+            $jcs = getUpcomingJCPresentations();
+            foreach ($jcs as &$jc) {
+                $login = findAnyoneWithEmail($jc['presenter']);
+                $by = arrayToName($login);
+                if (!$by) {
+                    $by = $jc['presenter'];
+                }
+                $jc['by'] = $by;
+            }
+            $this->send_data($jcs, 'ok');
+
+            return;
+        } elseif ('courses' === $args[0]) {
+            $courses = getRunningCourses();
+            foreach ($courses as &$course) {
+                $course['name'] = getCourseName($course['id']);
+            }
+            $this->send_data($courses, 'ok');
 
             return;
         }
@@ -313,6 +379,7 @@ class Api extends CI_Controller
             $faculty = searchInFaculty($q);
             $supers = searchSupervisors($q);
             $this->send_data_helper(array_merge($faculty, $supers));
+
             return;
         } elseif ('login' === $args[0]) {
             $logins = searchInLogins($q);
@@ -334,6 +401,7 @@ class Api extends CI_Controller
      *       Return questions for feedback.
      *    - /courses/feedback/submit
      *    - /courses/metadata
+     *    - /courses/registration
      *       Return metadata for all courses.
      *
      * @Returns
@@ -414,7 +482,7 @@ class Api extends CI_Controller
             return;
         } elseif ('registration' === $args[0]) {
             $crs = explode('-', base64_decode($args[1]));
-            $data = getCourseRegistrations($crs[0], intval($crs[2]), $crs[1]);
+            $data = getCourseRegistrationsLight($crs[0], intval($crs[2]), $crs[1]);
             $this->send_data($data, 'ok');
 
             return;
@@ -771,13 +839,13 @@ class Api extends CI_Controller
         }
         if ('id' === $args[0]) {
             $id = $args[1];
-            $data = getTableEntry('annual_work_seminars', 'id', ["id" => $id]);
+            $data = getTableEntry('annual_work_seminars', 'id', ['id' => $id]);
             $this->send_data($data, 'ok');
 
             return;
         } elseif ('upcomingid' === $args[0]) {
             $id = $args[1];
-            $data = getTableEntry('upcoming_aws', 'id', ['id'=>$id]);
+            $data = getTableEntry('upcoming_aws', 'id', ['id' => $id]);
             $this->send_data($data, 'ok');
 
             return;
@@ -1442,9 +1510,9 @@ class Api extends CI_Controller
                 $phone = '+91 80 2366 ' . $ldap['extension'];
             }
             $data[] = [
-                'name' => implode(' ', [__get__($ldap, 'fname', ''), 
-                __get__($ldap, 'lname', '')]), 'email' => $ldap['email'], 
-                'phone' => $phone, 'group' => $ldap['laboffice'], 
+                'name' => implode(' ', [__get__($ldap, 'fname', ''),
+                __get__($ldap, 'lname', ''), ]), 'email' => $ldap['email'],
+                'phone' => $phone, 'group' => $ldap['laboffice'],
                 'extension' => $ldap['extension'],
             ];
         }
@@ -1577,7 +1645,7 @@ class Api extends CI_Controller
             return;
         } elseif ('aws' === $args[0]) {
             // by default 'get'
-            if('get' === __get__($args, 1, 'get')) {
+            if ('get' === __get__($args, 1, 'get')) {
                 $data = getAwsOfSpeaker($user);
                 $upcoming = getUpcomingAWSOfSpeaker($user);
                 if ($upcoming) {
@@ -1587,9 +1655,9 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
 
                 return;
-            } elseif ( 'update' === $args[1]) {
-                $this->send_data(['success' => false
-                    , 'msg' => 'Only Admin can change old AWS'], 'ok');
+            } elseif ('update' === $args[1]) {
+                $this->send_data(['success' => false, 'msg' => 'Only Admin can change old AWS'], 'ok');
+
                 return;
             }
         } elseif ('upcomingaws' === $args[0]) {
@@ -1603,11 +1671,12 @@ class Api extends CI_Controller
                     WHERE id='$id'");
 
                 $res = updateTable('upcoming_aws', 'id',
-                    'supervisor_1,supervisor_2,' . 
-                    'tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4,' . 
+                    'supervisor_1,supervisor_2,' .
+                    'tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4,' .
                     'title,abstract',
                     $_POST);
                 $this->send_data(['success' => $res, 'msg' => ''], 'ok');
+
                 return;
             }
         } elseif ('acknowledge_aws' === $args[0]) {
@@ -1655,10 +1724,11 @@ class Api extends CI_Controller
 
             return;
         } elseif ('supervisor' === $args[0]) {
-            if('add' === $args[1]) {
+            if ('add' === $args[1]) {
                 $update = 'first_name,middle_name,last_name,affiliation,url';
-                $res = insertOrUpdateTable('supervisors', 'email,'.$update, $update, $_POST);
-                $this->send_data(['success'=>true, 'msg'=>''], 'ok');
+                $res = insertOrUpdateTable('supervisors', 'email,' . $update, $update, $_POST);
+                $this->send_data(['success' => true, 'msg' => ''], 'ok');
+
                 return;
             }
         } elseif ('jc' === $args[0]) {
@@ -3126,7 +3196,7 @@ class Api extends CI_Controller
         $roles = getRoles($login);
 
         if (!in_array('ACAD_ADMIN', $roles)) {
-            $this->send_data(['success'=>false, 'msg'=>[$login, $roles]], 'Forbidden');
+            $this->send_data(['success' => false, 'msg' => [$login, $roles]], 'Forbidden');
 
             return;
         }
@@ -3145,11 +3215,10 @@ class Api extends CI_Controller
                 return;
             } elseif ('get' === $args[1]) {
                 $awsid = $args[2];
-                $data = getTableEntry('upcoming_aws', 'id', ['id'=>$awsid]);
+                $data = getTableEntry('upcoming_aws', 'id', ['id' => $awsid]);
                 $this->send_data($data, 'ok');
 
                 return;
-
             } elseif ('assign' === $args[1]) {
                 $_POST['venue'] = __get__($_POST, 'venue', getDefaultAWSVenue($_POST['date']));
                 $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
@@ -3267,16 +3336,14 @@ class Api extends CI_Controller
 
                 // Remove previous TCM and supervisors.
                 // executeQueryReadonly("UPDATE upcoming_aws
-                    // SET supervisor_1='', supervisor_2='',
-                        // tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
-                    // WHERE id='$id'");
+                // SET supervisor_1='', supervisor_2='',
+                // tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
+                // WHERE id='$id'");
 
                 $res = updateTable(
                     'annual_work_seminars', 'id',
                     'title,abstract,status,is_presynopsis_seminar,chair,venue,vc_url'
-                    . ',supervisor_1,supervisor_2,tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4'
-                    , $_POST
-                    , false
+                    . ',supervisor_1,supervisor_2,tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4', $_POST, false
                 );
 
                 if ($res) {

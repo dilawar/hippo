@@ -37,7 +37,6 @@ if (!isset($date)) {
 
 $day = nameOfTheDay($date);
 $events = getEvents($date);
-$dbDate = dbDate($date);
 
 // Generate options here.
 $venue = __get__($_POST, 'venue', '');
