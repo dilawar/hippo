@@ -693,8 +693,11 @@ class Api extends CI_Controller
                     'journal_clubs', 'id,status',
                     ['id' => $jcID, 'status' => 'ACTIVE']
                 );
+                $data['admins'] = getJCAdmins($jcID);
             } else {
-                $data = getTableEntries('journal_clubs', 'id', "status='ACTIVE'");
+                $data = getTableEntries('journal_clubs', 'id', "status!='INVALID'");
+                foreach($data as &$jc)
+                    $jc['admins'] = getJCAdmins($jc['id']);
             }
             $this->send_data($data, 'ok');
 
@@ -931,10 +934,13 @@ class Api extends CI_Controller
                 $types = 'LECTURE HALL,AUDITORIUM, REMOTE VC';
             } elseif ('aws' === $types) {
                 $types = 'LECTURE HALL,AUDITORIUM,REMOTE VC';
+            } elseif ('jc' === $types) {
+                $types = 'LECTURE HALL,MEETING ROOM,AUDITORIUM,REMOTE VC';
             }
             $data = [];
             foreach (explode(',', $types) as $type) {
-                $type = urldecode($type);
+                // if(urlencode(urldecode($type)) !== $type)
+                //     $type = urldecode($type);
                 $data = array_merge($data, getVenuesByType($type));
             }
             $this->send_data($data, 'ok');
@@ -3261,7 +3267,9 @@ class Api extends CI_Controller
 
                     return;
                 }
-                $res = updateTable('upcoming_aws', 'date', 'has_chair_confirmed', ['date' => $date, 'has_chair_confirmed' => 'YES']
+                $res = updateTable('upcoming_aws', 'date'
+                    , 'has_chair_confirmed'
+                    , ['date' => $date, 'has_chair_confirmed' => 'YES']
                 );
 
                 $this->send_data(['success' => $res, 'msg' => ''], 'ok');
@@ -3427,6 +3435,31 @@ class Api extends CI_Controller
             $this->send_data(['Unknown request'], 'ok');
 
             return;
+        } elseif ('jc' === $args[0] ) {
+            if($args[1] === 'update') {
+                $res = updateTable('journal_clubs', 'id'
+                    , 'title,day,status,time,venue,description,send_email_on_days,scheduling_method'
+                    , $_POST);
+                $ret = ['success'=>$res, 'msg'=>''];
+                $this->send_data($ret, 'ok');
+                return;
+            } elseif ($args[1] === 'add') {
+                $res = insertIntoTable('journal_clubs'
+                    , 'id,title,day,status,time,venue,description,send_email_on_days,scheduling_method'
+                    , $_POST
+                );
+                $ret = ['success'=>$res, 'msg'=>''];
+                $this->send_data($ret, 'ok');
+                return;
+            } elseif($args[1] === 'removeadmin') {
+                $res = removeJCAdmin($_POST, getLogin());
+                $this->send_data($res, 'ok');
+                return;
+            } elseif($args[1] === 'addadmin') {
+                $res = addJCAdmin($_POST, getLogin());
+                $this->send_data($res, 'ok');
+                return;
+            }
         } elseif ('reschedule' === $args[0]) {
             rescheduleAWS();
             $this->send_data(['success' => true, 'msg' => 'Reschedule OK.'], 'ok');

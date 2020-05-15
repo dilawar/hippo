@@ -705,4 +705,41 @@ function removeAWSChair($date) : array
     return $ret;
 }
 
+function removeJCAdmin($data, $who) 
+{
+    $ret = ['success'=>true, 'msg'=>''];
+    $data['subscription_type'] = 'NORMAL';
+    $r = updateTable('jc_subscriptions', 'jc_id,login', 'subscription_type', $data);
+    if($r) {
+        $email = getLoginEmail($data['login']);
+        $body = p("Hi " . getLoginHTML($data['login']));
+        $body .= p("You have been made admin by $who. If this is a mistake 
+            please write to Adademic Office.");
+
+        $r1 = sendHTMLEmail("You have been made admin of " . $data['jc_id'] , $body , $email);
+        if(! $r1)
+            $ret['msg'] .= p("Failed to send email");
+    }
+    $ret['success'] = $r;
+    return $ret;
+}
+
+function addJCAdmin($data, $who) 
+{
+    $ret = ['success'=>true, 'msg'=>''];
+    $data['subscription_type'] = 'ADMIN';
+    $r = updateTable('jc_subscriptions', 'jc_id,login', 'subscription_type', $data);
+    if($r) {
+        $email = getLoginEmail($data['login']);
+        $body = p("Hi " . getLoginHTML($data['login']));
+        $body .= p("You are no longer admin of " . $data['jc_id'] . ". If this
+            is a mistake please write to Adademic Office.");
+        $r1 = sendHTMLEmail("You are no longer admin of " . $data['jc_id'], $body, $email);
+        if(! $r1)
+            $ret['msg'] .= p("Failed to send email");
+    }
+    $ret['success'] = $r;
+    return $ret;
+}
+
 ?>
