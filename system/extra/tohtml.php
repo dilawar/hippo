@@ -256,6 +256,9 @@ function coursesToHTMLTable(array $courses, array $runningCourses = null, bool $
         // TODO: Don't show grades unless student has given feedback.
         $tofilter = 'student_id,registered_on,last_modified_on';
 
+        // Show form. Form is inside another table.
+        $feedRes = feedbackForm($year, $sem, $cid);
+
         // Show grade if it is available and user has given feedback.
         if ('X' != __get__($c, 'grade', 'X')) {
             $numUnanswered = $feedRes['num_unanswered'];
@@ -268,8 +271,6 @@ function coursesToHTMLTable(array $courses, array $runningCourses = null, bool $
 
         $table = '<table>';
         if ($withFeedbackForm) {
-            // Show form. Form is inside another table.
-            $feedRes = feedbackForm($year, $sem, $cid);
             $table .= '<table><tr><td>';
             $table .= '<form method="post" action="' . site_url("user/manage_course/$action") . '">';
             $table .= dbTableToHTMLTable('course_registration', $c, '', $action, $tofilter);
