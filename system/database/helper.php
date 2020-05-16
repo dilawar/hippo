@@ -4143,12 +4143,18 @@ function getCourseFeedback(string $year, string $semester, string $cid, string $
 
     // Don't allow feedback once it is fully submitted or 6 months have passed.
     $editable = [true, ''];
-    if(strtotime('now') > strtotime($course['end_date']) + 6*30*86400)
-        $editable = [false, "6 months have passed since course completion"];
-    else if(strtotime('now') < strtotime($course['end_date']))
-        $editable = [false, "Course is yet to complete."];
-    else if($numUnanswered == 0)
+
+    //// Fixme: Enable after testing.
+    //if(strtotime('now') > strtotime($course['end_date']) + 6*30*86400)
+    //    $editable = [false, "6 months have passed since course completion"];
+    //else if(strtotime('now') < strtotime($course['end_date']))
+    //    $editable = [false, "Course is yet to complete."];
+     if($numUnanswered == 0)
         $editable = [false, "You have completed the form."];
+    //elseif(strtotime('now') > strtotime($course['end_date']) + 6*30*86400)
+    //    $editable = [false, "6 months have passed since course completion"];
+    //else if(strtotime('now') < strtotime($course['end_date']))
+    //    $editable = [false, "Course is yet to complete."];
 
     return ["responses" => $entries, "unanswered"=>$numUnanswered, 'editable'=>$editable];
 }
