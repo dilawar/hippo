@@ -1,15 +1,24 @@
 <?php
 
-function getCourseName( string $cexpr ) : string
+$OPTIONS = ['Strongly Agree'=>2, 'Agree'=>1, 'Neutral'=>0, 'Disagree'=>-1, 'Strongly Disagree'=>-2];
+
+function mean($arr) 
+{
+    return array_sum($arr)/count($arr);
+}
+
+function getCourseName(string $cexpr): string
 {
     $cid = explode('-', $cexpr)[0];
     $cid = urldecode($cid);
 
-    $c =  getTableEntry('courses_metadata', 'id', array( 'id' => $cid ));
-    if(! $c ) {
+    $c = getTableEntry('courses_metadata', 'id', ['id' => $cid]);
+    if (!$c) {
         flashMessage("No course information found for '$cexpr': CID='$cid'");
+
         return '';
     }
+
     return $c['name'];
 }
 
@@ -22,7 +31,7 @@ function getCourseName( string $cexpr ) : string
  * @Returns List of courses.
  */
 /* ----------------------------------------------------------------------------*/
-function getRunningCoursesAtThisDay($date) 
+function getRunningCoursesAtThisDay($date)
 {
     $date = dbDate($date);
     $hippoDB = initDB();
@@ -30,13 +39,14 @@ function getRunningCoursesAtThisDay($date)
 
     $courses = [];
     $slots = getTableEntries('slots', 'day', "LOWER(day)='$thisDay'");
-    foreach($slots as $slot) {
-        foreach(getRunningCoursesOnTheseSlotTiles($date, $slot['id']) as $c) {
+    foreach ($slots as $slot) {
+        foreach (getRunningCoursesOnTheseSlotTiles($date, $slot['id']) as $c) {
             $name = getCourseName($c['id']);
             $c['name'] = $name;
             $courses[] = $c;
         }
     }
+
     return $courses;
 }
 
@@ -46,26 +56,34 @@ function getSemesterCourses($year, $sem)
     $eDate = dbDate(strtotime("$year-08-31"));
     $sem = strtoupper($sem);
 
-    if($sem === 'AUTUMN') {
+    if ('AUTUMN' === $sem) {
         // This can spill over to next year but start date must have current
         // year.
-        $nextYear = intval($year)+1;
+        $nextYear = intval($year) + 1;
         $sDate = dbDate(strtotime("$year-07-01"));
         $eDate = dbDate(strtotime("$nextYear-01-31"));
     }
 
-    $hippoDB = initDB();;
-    $res = $hippoDB->query(
-        "SELECT * FROM courses WHERE
-        start_date>='$sDate' AND end_date<='$eDate' AND YEAR(start_date)=$year
-        "
-    );
+    $courses = executeQuery("SELECT * FROM courses WHERE
+        start_date>='$sDate' AND end_date<='$eDate' AND YEAR(start_date)=$year");
 
-    $courses = fetchEntries($res);
-    foreach($courses as &$course) {
+    foreach ($courses as &$course) {
+        $cid = $course['course_id'];
+        $semester = $course['semester'];
+        $year = $course['year'];
+
+        $nf = executeQuery("SELECT COUNT(*) AS total FROM course_feedback_responses WHERE
+            course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID'", true);
+
+        if (count($nf) > 0) {
+            $nf = $nf[0];
+        }
+
         $course['name'] = getCourseName($course['course_id']);
         $course['instructors'] = getCourseInstructorsList($course['course_id']);
+        $course['numfeedback'] = __get__($nf, 'total', -1);
     }
+
     return $courses;
 }
 
@@ -74,28 +92,31 @@ function getSemesterCourses($year, $sem)
  *
  * @return
  */
-function getRunningCourses( )
+function getRunningCourses()
 {
     $year = getCurrentYear();
     $sem = getCurrentSemester();
+
     return getSemesterCourses($year, $sem);
 }
 
-function deleteBookings( $course )
+function deleteBookings($course)
 {
     $bookedby = $course;
 
     // Make them invalid.
     $res = updateTable(
         'events', 'created_by', 'status',
-        array( 'created_by' => $course, 'status' => 'INVALID' )
+        ['created_by' => $course, 'status' => 'INVALID']
     );
+
     return $res;
 }
 
 function getCourseOfThisRegistration(array $reg)
 {
     $course = getTableEntry('courses', 'course_id,year,semester', $reg);
+
     return $course;
 }
 
@@ -110,39 +131,40 @@ function getCourseOfThisRegistration(array $reg)
  * @Returns An array with 'success' and 'collision_with' field.
  */
 /* ----------------------------------------------------------------------------*/
-function collisionWithMyRegistrations($thisCourse, $myRegistrations) : array
+function collisionWithMyRegistrations($thisCourse, $myRegistrations): array
 {
-    $ret = ['collision'=>false, 'with'=>null];
+    $ret = ['collision' => false, 'with' => null];
     $cname = getCourseName($thisCourse['course_id']);
-    foreach($myRegistrations as $mReg) {
-        if(! $mReg) {
+    foreach ($myRegistrations as $mReg) {
+        if (!$mReg) {
             continue;
         }
         $c = getCourseOfThisRegistration($mReg);
 
         // Same course.
-        if($c['id'] === $thisCourse['id']) {
+        if ($c['id'] === $thisCourse['id']) {
             $ret['collision'] = true;
             $ret['with'] = $c;
+
             return $ret;
         }
 
         //  Slots are the same. But dates may not overlap.
-        if($c['slot'] === $thisCourse['slot']) {
-            if(strtotime($c['start_date']) > strtotime($thisCourse['end_date'])
+        if ($c['slot'] === $thisCourse['slot']) {
+            if (strtotime($c['start_date']) > strtotime($thisCourse['end_date'])
                 || strtotime($c['end_date']) < strtotime($thisCourse['start_date'])
             ) {
                 // clear. allow registration even if slot are colliding.
                 continue;
             }
-            else
-            {
-                $ret['collision'] = true;
-                $ret['with'] = $c;
-                return $ret;
-            }
+
+            $ret['collision'] = true;
+            $ret['with'] = $c;
+
+            return $ret;
         }
     }
+
     return $ret;
 }
 
@@ -155,14 +177,14 @@ function collisionWithMyRegistrations($thisCourse, $myRegistrations) : array
  * @Returns Array containing registrations.
  */
 /* ----------------------------------------------------------------------------*/
-function getCourseRegistrations( string $cid, int $year, string $semester ) : array
+function getCourseRegistrations(string $cid, int $year, string $semester): array
 {
     $registrations = getTableEntries(
         'course_registration',
         'student_id',
         "status='VALID' AND type != 'DROPPED' AND course_id='$cid' AND year='$year' AND semester='$semester'"
     );
-    foreach($registrations as &$reg) {
+    foreach ($registrations as &$reg) {
         $reg['login'] = getLoginInfo($reg['student_id'], true);
         $reg['name'] = arrayToName($reg['login']);
     }
@@ -170,7 +192,7 @@ function getCourseRegistrations( string $cid, int $year, string $semester ) : ar
     return $registrations;
 }
 
-function getCourseRegistrationsLight( string $cid, int $year, string $semester ) : array
+function getCourseRegistrationsLight(string $cid, int $year, string $semester): array
 {
     $registrations = getTableEntries(
         'course_registration',
@@ -178,7 +200,7 @@ function getCourseRegistrationsLight( string $cid, int $year, string $semester )
         "status='VALID' AND type != 'DROPPED' AND course_id='$cid' AND year='$year' AND semester='$semester'"
     );
 
-    foreach($registrations as &$reg) {
+    foreach ($registrations as &$reg) {
         $login = getLoginInfo($reg['student_id'], true);
         $reg['name'] = arrayToName($login);
         $reg['email'] = $login['email'];
@@ -186,7 +208,6 @@ function getCourseRegistrationsLight( string $cid, int $year, string $semester )
 
     return $registrations;
 }
-
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -207,19 +228,89 @@ function getNumCourseRegistration(string $cid, string $year, string $semester): 
         AND year='$year' AND semester='$semester'",
         true
     );
+
     return intval($num[0]['total']);
 }
 
 function withdrawCourseFeedback($login, $course_id, $semester, $year): array
 {
-    $res = ['status'=>false, 'msg' => ''];
+    $res = ['status' => false, 'msg' => ''];
     $res['status'] = updateTable(
         'course_feedback_responses',
         'login,course_id,semester,year', 'status',
-        ['login'=>$login, 'course_id'=>$course_id, 'semester'=>$semester
-            , 'year'=> $year, 'status'=>'WITHDRAWN']
-    ); 
+        ['login' => $login, 'course_id' => $course_id, 'semester' => $semester, 'year' => $year, 'status' => 'WITHDRAWN']
+    );
+
     return $res;
 }
 
-?>
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis API function. No formatting of data.
+ *
+ * @Param $year
+ * @Param $semester
+ * @Param $cid
+ *
+ * @Returns
+ */
+/* ----------------------------------------------------------------------------*/
+function getCourseFeedbackApi(string $year, string $semester, string $cid, $login = ''): array
+{
+    global $OPTIONS;
+
+    $where = "course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID' ";
+    if ($login) {
+        $where .= " AND login='$login' ";
+    }
+
+    $ques = getTableEntries('course_feedback_questions', 'id', "status='VALID'", 'id,type,question,choices');
+
+    $data = [];
+    $questions = [];
+    $responses = [];
+
+    $points = [];
+    $summary = [];
+
+    foreach ($ques as &$q) {
+        $qid = $q['id'];
+        if(trim($q['choices']))
+            $q['choices'] = explode(',', trim($q['choices']));
+        else
+            $q['choices'] = [];
+
+        $questions[$q['id']] = $q;
+
+        $w = $where . " AND question_id='$qid'";
+        $response = [];
+
+        // choices
+        foreach($q['choices'] as $ch) 
+            $response['choice'][$ch] = 0;
+
+        // Get reponses for this questions.
+        $fields = 'question_id,instructor_email,response';
+        $entries = getTableEntries('course_feedback_responses', 'question_id', $w, $fields);
+        foreach($entries as &$en) {
+            $data[] = $en;
+            if(in_array($en['response'], $q['choices'])) {
+                $r = $en['response'];
+                $response['choice'][$r] += 1;
+                $points[] = __get__($OPTIONS, $r, 0);
+                $summary[$r] = __get__($summary, $r, 0) + 1;
+            }
+            else
+                $response['text'][] = $en['response'];
+        }
+        $responses[$qid] = $response;
+    }
+
+    return ['responses' => $responses
+        , 'questions' => $questions
+        , 'summary' => $summary
+        , 'points' => $points
+        , 'data' => $data
+        , 'score' => 5/2*mean($points) + 5
+    ];
+}
