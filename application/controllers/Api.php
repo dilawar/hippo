@@ -674,7 +674,7 @@ class Api extends CI_Controller
         if ('update' === $args[0]) {
             $res = updateTable(
                 'jc_presentations', 'id',
-                'title,description,url,presentation_url', $_POST
+                'title,description,url,presentation_url,vc_url', $_POST
             );
             $this->send_data([$res ? 'Success' : 'Failed'], 'ok');
 

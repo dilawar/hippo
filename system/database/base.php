@@ -725,6 +725,7 @@ class BMVPDO extends PDO
                 , venue VARCHAR(30) NOT NULL -- usually the default venue from journal_clubs
                 , status ENUM( 'VALID', 'INVALID', 'CANCELLED' ) default 'VALID'
                 , url VARCHAR(500) -- URL of paper
+                , vc_url VARCHAR(500) -- VC URL
                 , presentation_url VARCHAR(500) -- URL of presentation
                 , acknowledged  ENUM('YES','NO') default 'NO' -- acknowledged
                 , UNIQUE KEY(presenter,jc_id,date)
