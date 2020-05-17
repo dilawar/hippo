@@ -81,11 +81,7 @@ final class Versions
   'webmozart/assert' => '1.8.0@ab2cb0b3b559010b75981b1bdce728da3ee90ad6',
   'webmozart/glob' => '4.1.0@3cbf63d4973cf9d780b93d2da8eec7e4a9e63bbe',
   'webmozart/path-util' => '2.3.0@d939f7edc24c9a1bb9c0dee5cb05d8e859490725',
-<<<<<<< Updated upstream
-  'codeigniter/framework' => 'dev-devel@7cd4a96af4f8ff2bf3ebd604f0aae32c32a094f6',
-=======
-  'codeigniter/framework' => 'dev-master@240b7b0aeb7e6b28d82f7a5f506b5ab6cfdd3b86',
->>>>>>> Stashed changes
+  'codeigniter/framework' => 'dev-master@b29e79ecc77f7d841a3785b8f4cd36aec3301423',
 );
 
     private function __construct()
