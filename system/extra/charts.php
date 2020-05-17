@@ -180,7 +180,7 @@ function getCharts() : array
     $charts['Course ratings (Max 10)'] = getChartCourseRatings();
     $charts['AWS per year'] = getChartAWS();
     $charts['Thesis Seminar per year'] = getChartThesisSeminar();
-    $charts['Research area size'] = getChartResearchGroupSize();
+    // $charts['Research area size'] = getChartResearchGroupSize();
     return $charts;
 }
 
