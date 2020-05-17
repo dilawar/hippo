@@ -3400,8 +3400,8 @@ class Api extends CI_Controller
             elseif('feedback' === $args[1]) {
                 $fs = explode('-', base64_decode($args[2]));
                 assert(3 == count($fs));
-
-                $data = getCourseFeedbackApi($fs[2], $fs[1], $fs[0]);
+                $data = getCourseFeedbackApi($fs[2], $fs[1], trim($fs[0]));
+                $data['payload'] = base64_decode($args[2]);   // debug.
                 $this->send_data($data, 'ok');
                 return;
             }

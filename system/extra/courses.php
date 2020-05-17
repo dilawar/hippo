@@ -1,9 +1,11 @@
 <?php
 
-$OPTIONS = ['Strongly Agree'=>2, 'Agree'=>1, 'Neutral'=>0, 'Disagree'=>-1, 'Strongly Disagree'=>-2];
+$OPTIONS = ['Strongly Agree'=>2, 'Agree'=>1, 'Neutral'=>0, 'Disagree'=>-1.5, 'Strongly Disagree'=>-3];
 
 function mean($arr) 
 {
+    if(! $arr)
+        return 0.0;
     return array_sum($arr)/count($arr);
 }
 
@@ -255,16 +257,21 @@ function withdrawCourseFeedback($login, $course_id, $semester, $year): array
  * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function getCourseFeedbackApi(string $year, string $semester, string $cid, $login = ''): array
+function getCourseFeedbackApi(string $year='', string $semester='', string $cid='', $login = ''): array
 {
     global $OPTIONS;
-
-    $where = "course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID' ";
-    if ($login) {
+    $where = "status='VALID'";
+    if($year)
+        $where .= " AND year='$year'";
+    if($semester)
+       $where .= " AND semester='$semester'";
+    if(strlen($cid) > 0)
+        $where .= " AND course_id='$cid'";
+    if ($login)
         $where .= " AND login='$login' ";
-    }
 
-    $ques = getTableEntries('course_feedback_questions', 'id', "status='VALID'", 'id,type,question,choices');
+    $ques = getTableEntries('course_feedback_questions', 'id', "status='VALID'"
+        , 'id,type,question,choices');
 
     $data = [];
     $questions = [];
@@ -290,14 +297,15 @@ function getCourseFeedbackApi(string $year, string $semester, string $cid, $logi
             $response['choice'][$ch] = 0;
 
         // Get reponses for this questions.
-        $fields = 'question_id,instructor_email,response';
+        $fields = 'question_id,course_id,year,semester,instructor_email,response';
         $entries = getTableEntries('course_feedback_responses', 'question_id', $w, $fields);
         foreach($entries as &$en) {
+            $en['question'] = strip_tags($questions[$qid]['question']);
             $data[] = $en;
             if(in_array($en['response'], $q['choices'])) {
                 $r = $en['response'];
                 $response['choice'][$r] += 1;
-                $points[] = __get__($OPTIONS, $r, 0);
+                $points[$en['course_id']][] = __get__($OPTIONS, $r, 0);
                 $summary[$r] = __get__($summary, $r, 0) + 1;
             }
             else
@@ -306,11 +314,15 @@ function getCourseFeedbackApi(string $year, string $semester, string $cid, $logi
         $responses[$qid] = $response;
     }
 
+    $score = [];
+    foreach($points as $c => $pts)
+        $score[$c] = 5/2*mean($pts) + 5;
+
     return ['responses' => $responses
         , 'questions' => $questions
         , 'summary' => $summary
         , 'points' => $points
         , 'data' => $data
-        , 'score' => 5/2*mean($points) + 5
+        , 'score' => $score
     ];
 }
