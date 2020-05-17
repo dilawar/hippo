@@ -117,7 +117,7 @@ function getChartResearchGroupSize(): array
         $awsSpeakers[ $spec ] = __get__($awsSpeakers, $spec, 0) + 1;
     }
 
-    return ['type' => 'column',
+    return ['type' => 'pie',
         'title' => 'Size of reseach groups (by AWS)',
         // 'ylabel' => 'Research area',
         'data'=> $awsSpeakers,
@@ -164,10 +164,20 @@ function getChartAWS()
 
 }
 
+function getChartCourseRatings(): array
+{
+    $all = getCourseFeedbackApi();
+    return ['type' => 'column',
+        'title' => 'Courses ratings (Max 10)',
+        'data'=> $all['score'],
+    ];
+}
+
 function getCharts() : array
 {
     $charts = [];
     $charts['Publications'] = getChartsPublications();
+    $charts['Course ratings (Max 10)'] = getChartCourseRatings();
     $charts['AWS per year'] = getChartAWS();
     $charts['Thesis Seminar per year'] = getChartThesisSeminar();
     $charts['Research area size'] = getChartResearchGroupSize();

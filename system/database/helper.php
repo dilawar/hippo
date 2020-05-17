@@ -4101,10 +4101,12 @@ function getCourseSpecificFeedback(string $year, string $semester, string $cid, 
  * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-function getCourseFeedback(string $year, string $semester, string $cid, string $login) : array
+function getCourseFeedback(string $year, string $semester, string $cid, string $login='') : array
 {
     $where = "course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID' ";
-    $where .= " AND login='$login' ";
+
+    if($login)
+        $where .= " AND login='$login' ";
 
     $questions = [];
 
@@ -4143,12 +4145,12 @@ function getCourseFeedback(string $year, string $semester, string $cid, string $
 
     // Don't allow feedback once it is fully submitted or 6 months have passed.
     $editable = [true, ''];
-    if(strtotime('now') > strtotime($course['end_date']) + 6*30*86400)
-        $editable = [false, "6 months have passed since course completion"];
-    else if(strtotime('now') < strtotime($course['end_date']))
-        $editable = [false, "Course is yet to complete."];
-    else if($numUnanswered == 0)
+    if($numUnanswered == 0)
         $editable = [false, "You have completed the form."];
+    // else if(strtotime('now') > strtotime($course['end_date']) + 6*30*86400)
+    //     $editable = [false, "6 months have passed since course completion"];
+    // else if(strtotime('now') < strtotime($course['end_date']))
+    //     $editable = [false, "Course is yet to complete."];
 
     return ["responses" => $entries, "unanswered"=>$numUnanswered, 'editable'=>$editable];
 }

@@ -395,7 +395,7 @@ class Api extends CI_Controller
     /**
      * @Synopsis Course related API.
      *
-     *    - /courses/running
+     *    - /courses/running|list
      *    - /courses/register/course_id/[CREDIT,AUDIT,DROP]
      *    - /courses/feedback/questions
      *       Return questions for feedback.
@@ -417,11 +417,10 @@ class Api extends CI_Controller
         }
 
         $args = func_get_args();
-        if (0 == count($args)) {
-            $args[] = 'running';
-        }
+        if (0 == count($args))
+            $args[] = 'list';
 
-        if ('running' === $args[0]) {
+        if ('running' === $args[0] || 'list' === $args[0]) {
             $year = __get__($args, 1, getCurrentYear());
             $semester = __get__($args, 2, getCurrentSemester());
             $data = getSemesterCourses($year, $semester);
@@ -674,7 +673,7 @@ class Api extends CI_Controller
         if ('update' === $args[0]) {
             $res = updateTable(
                 'jc_presentations', 'id',
-                'title,description,url,presentation_url', $_POST
+                'title,description,url,presentation_url,vc_url', $_POST
             );
             $this->send_data([$res ? 'Success' : 'Failed'], 'ok');
 
@@ -3396,6 +3395,14 @@ class Api extends CI_Controller
                 $res = assignGrade($_POST, getLogin());
                 $this->send_data($res, 'ok');
 
+                return;
+            }
+            elseif('feedback' === $args[1]) {
+                $fs = explode('-', base64_decode($args[2]));
+                assert(3 == count($fs));
+                $data = getCourseFeedbackApi($fs[2], $fs[1], trim($fs[0]));
+                $data['payload'] = base64_decode($args[2]);   // debug.
+                $this->send_data($data, 'ok');
                 return;
             }
         } elseif ('awsroster' === $args[0]) {
