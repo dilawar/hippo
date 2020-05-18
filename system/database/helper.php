@@ -3710,7 +3710,6 @@ function getUserJCs($login)
     if (! $login) {
         return array( );
     }
-
     return getTableEntries('jc_subscriptions', 'login', "login='$login' AND status='VALID' ");
 }
 
@@ -3819,6 +3818,20 @@ function isJCAdmin($user)
     }
     return false;
 }
+
+function isThisJCAdmin($user, $jcid)
+{
+    $res = getTableEntry('jc_subscriptions'
+        , 'status,login,subscription_type,jc_id'
+        , ['login' => $user
+            , 'subscription_type'=>'ADMIN'
+            , 'status'=>'VALID'
+            , 'jc_id'=>$jcid]);
+    if ($res)
+        return true;
+    return false;
+}
+
 
 function getJCForWhichUserIsAdmin($user)
 {

@@ -94,11 +94,13 @@ function talkToEmail(string $talkid)
 /* ----------------------------------------------------------------------------*/
 function whereWhenTable(string $venue, string $date, string $time = '', $url = '', $inothertable = false)
 {
-    $whereHTML = venueToText($venue, false);
+    $whereHTML = venueToShortText($venue, false);
     $whenHTML = humanReadableDate($date);
-    if ($time) {
+    if($time)
         $whenHTML .= ' ' . humanReadableTime($time);
-    }
+
+    if($url)
+        $whereHTML .= " (" . anchor($url) . ")";
 
     $table = '';
     if (!$inothertable) {
@@ -107,9 +109,6 @@ function whereWhenTable(string $venue, string $date, string $time = '', $url = '
 
     $table .= "<tr><td><strong>Where</strong></td><td>$whereHTML </td></tr>
         <tr><td><strong>When<strong></td> <td>$whenHTML</td></tr>";
-
-    if($url) 
-        $table .= "<tr><td>URL</td><td>". anchor($url). "</td></tr>";
 
     if (!$inothertable) {
         $table .= '</table>';
@@ -2787,7 +2786,7 @@ function getJCPresenters(array $jc): string
 function jcToHTML($jc, $sticker = false)
 {
     $jcInfo = getJCInfo($jc['jc_id']);
-    $whereWhen = whereWhenTable($jc['venue'], $jc['date'], $jc['time']);
+    $whereWhen = whereWhenTable($jc['venue'], $jc['date'], $jc['time'], $jc['vc_url']);
     $pName = getJCPresenters($jc);
 
     if (!$sticker) {
