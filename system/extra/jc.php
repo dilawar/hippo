@@ -159,5 +159,30 @@ function subscribeJC(array $data): array
     return [ 'msg' => "Successfully subscribed '$login'. No email was sent." , 'success' => $res];
 }
 
+function jcPresentationEmail($presentationID) : array
+{
+    $presentation = getTableEntry('jc_presentations', 'id', ['id'=>$presentationID]);
+    if(! $presentation) {
+        return ['subject' => 'Error', 'email_body' => "No presentation found $presentationID"];
+    }
+
+    $jcID = $presentation['jc_id'];
+
+    $listOfAdmins = array_values(getAllAdminsOfJC($jcID));
+    $presenters = getJCPresenters($presentation);
+    $tableOfJCCoords = arraysToTable($listOfAdmins);
+
+    $jcInfo = getJCInfo($jcID);
+    $title = getPresentationTitle($presentation);
+
+    $macro = [
+        'BODY' => jcToHTML($presentation), 'TABLE_OF_JC_COORDINATORS' => $tableOfJCCoords,
+    ];
+
+    $mail = emailFromTemplate('NOTIFY_ACADEMIC_UPCOMING_JC', $macro);
+    $subject = "$jcID (Today) | '$title' by $presenters";
+    $mail['subject'] = $subject;
+    return $mail;
+}
 
 ?>

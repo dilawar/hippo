@@ -188,9 +188,7 @@ class Api extends CI_Controller
             $data = array_merge($tom, $data);
             $cards = [];
             foreach ($data as $item) {
-                $cards[] = ['title' => $item['title'], 'date' => $item['date']
-                    , 'time' => $item['start_time']
-                    , 'venue' => venueToShortText($item['venue'], __get__($item, 'vc_url', '')),
+                $cards[] = ['title' => $item['title'], 'date' => $item['date'], 'time' => $item['start_time'], 'venue' => venueToShortText($item['venue'], __get__($item, 'vc_url', '')),
                 ];
             }
 
@@ -269,7 +267,7 @@ class Api extends CI_Controller
             return;
         } elseif ('slot' === $args[0]) {
             $id = __get__($args, 1, 'all');
-            if ($id === 'all') {
+            if ('all' === $id) {
                 $slot = getSlots();
                 $this->send_data($slot, 'ok');
             } else {
@@ -419,8 +417,9 @@ class Api extends CI_Controller
         }
 
         $args = func_get_args();
-        if (0 == count($args))
+        if (0 == count($args)) {
             $args[] = 'list';
+        }
 
         if ('running' === $args[0] || 'list' === $args[0]) {
             $year = __get__($args, 1, getCurrentYear());
@@ -673,11 +672,20 @@ class Api extends CI_Controller
 
         $args = func_get_args();
         if ('update' === $args[0]) {
-            $res = updateTable(
-                'jc_presentations', 'id',
-                'title,description,url,presentation_url,vc_url', $_POST
-            );
-            $this->send_data([$res ? 'Success' : 'Failed'], 'ok');
+            $login = getLogin();
+            $presenter = $_POST['presenter'];
+            if ($login === explode('@', $presenter)[0] || isThisJCAdmin($login, $_POST['jc_id'])) {
+                $res = updateTable(
+                    'jc_presentations', 'id',
+                    'title,description,url,presentation_url,vc_url', $_POST
+                );
+                $this->send_data(['success' => $res ? 'Success' : 'Failed', 'msg' => ''], 'ok');
+
+                return;
+            }
+            $this->send_data(['success' => false, 'msg' => "You don't have permission to edit this JC"], 'ok');
+
+            return;
 
             return;
         } elseif ('acknowledge' === $args[0]) {
@@ -697,8 +705,9 @@ class Api extends CI_Controller
                 $data['admins'] = getJCAdmins($jcID);
             } else {
                 $data = getTableEntries('journal_clubs', 'id', "status!='INVALID'");
-                foreach($data as &$jc)
+                foreach ($data as &$jc) {
                     $jc['admins'] = getJCAdmins($jc['id']);
+                }
             }
             $this->send_data($data, 'ok');
 
@@ -753,7 +762,14 @@ class Api extends CI_Controller
         } elseif ('assign' === $args[0]) {
             $_POST['date'] = dbDate($_POST['date']);
             $_POST['time'] = dbTime($_POST['time']);
-            $res = assignJCPresentationToLogin($_POST['presenter'], $_POST);
+            $speaker = __get__($_POST, 'presenter', '');
+            if (!$speaker) {
+                $this->send_data(['status' => false,  'msg' => 'Not valid presenter' . $speaker], 'ok');
+
+                return;
+            }
+
+            $res = assignJCPresentationToLogin($speaker, $_POST);
             $this->send_data($res, 'ok');
 
             return;
@@ -1739,6 +1755,7 @@ class Api extends CI_Controller
                 return;
             }
         } elseif ('jc' === $args[0]) {
+            // endpoint me/jc
             $endpoint = __get__($args, 1, 'presentations');
             if ('presentations' === $endpoint) {
                 $data = getUpcomingJCPresentations();
@@ -2827,6 +2844,12 @@ class Api extends CI_Controller
                 $this->send_data($email, 'ok');
 
                 return;
+            } elseif ('jc' === $args[1]) {
+                $presentationID = $args[2];
+                $email = jcPresentationEmail($presentationID);
+                $this->send_data($email, 'ok');
+
+                return;
             } elseif ('post' === $args[1]) {
                 $data = $_POST;
                 $res = sendHTMLEmail(
@@ -3268,9 +3291,7 @@ class Api extends CI_Controller
 
                     return;
                 }
-                $res = updateTable('upcoming_aws', 'date'
-                    , 'has_chair_confirmed'
-                    , ['date' => $date, 'has_chair_confirmed' => 'YES']
+                $res = updateTable('upcoming_aws', 'date', 'has_chair_confirmed', ['date' => $date, 'has_chair_confirmed' => 'YES']
                 );
 
                 $this->send_data(['success' => $res, 'msg' => ''], 'ok');
@@ -3398,13 +3419,13 @@ class Api extends CI_Controller
                 $this->send_data($res, 'ok');
 
                 return;
-            }
-            elseif('feedback' === $args[1]) {
+            } elseif ('feedback' === $args[1]) {
                 $fs = explode('-', base64_decode($args[2]));
                 assert(3 == count($fs));
                 $data = getCourseFeedbackApi($fs[2], $fs[1], trim($fs[0]));
                 $data['payload'] = base64_decode($args[2]);   // debug.
                 $this->send_data($data, 'ok');
+
                 return;
             }
         } elseif ('awsroster' === $args[0]) {
@@ -3444,29 +3465,29 @@ class Api extends CI_Controller
             $this->send_data(['Unknown request'], 'ok');
 
             return;
-        } elseif ('jc' === $args[0] ) {
-            if($args[1] === 'update') {
-                $res = updateTable('journal_clubs', 'id'
-                    , 'title,day,status,time,venue,description,send_email_on_days,scheduling_method'
-                    , $_POST);
-                $ret = ['success'=>$res, 'msg'=>''];
+        } elseif ('jc' === $args[0]) {
+            if ('update' === $args[1]) {
+                $res = updateTable('journal_clubs', 'id', 'title,day,status,time,venue,description,send_email_on_days,scheduling_method', $_POST);
+                $ret = ['success' => $res, 'msg' => ''];
                 $this->send_data($ret, 'ok');
+
                 return;
-            } elseif ($args[1] === 'add') {
-                $res = insertIntoTable('journal_clubs'
-                    , 'id,title,day,status,time,venue,description,send_email_on_days,scheduling_method'
-                    , $_POST
+            } elseif ('add' === $args[1]) {
+                $res = insertIntoTable('journal_clubs', 'id,title,day,status,time,venue,description,send_email_on_days,scheduling_method', $_POST
                 );
-                $ret = ['success'=>$res, 'msg'=>''];
+                $ret = ['success' => $res, 'msg' => ''];
                 $this->send_data($ret, 'ok');
+
                 return;
-            } elseif($args[1] === 'removeadmin') {
+            } elseif ('removeadmin' === $args[1]) {
                 $res = removeJCAdmin($_POST, getLogin());
                 $this->send_data($res, 'ok');
+
                 return;
-            } elseif($args[1] === 'addadmin') {
+            } elseif ('addadmin' === $args[1]) {
                 $res = addJCAdmin($_POST, getLogin());
                 $this->send_data($res, 'ok');
+
                 return;
             }
         } elseif ('reschedule' === $args[0]) {
