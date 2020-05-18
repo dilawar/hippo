@@ -17,7 +17,7 @@ function aws_friday_notification_cron()
         $cclist .= ',multimedia@ncbs.res.in,hospitality@ncbs.res.in';
         $to = 'academic@lists.ncbs.res.in';
 
-        $res = generateAWSEmail($nextMonday);
+        $res = awsEmailForMonday($nextMonday);
 
         if ($res['speakers']) {
             $subject = 'Next week Annual Work Seminar (' . humanReadableDate($nextMonday) . ') by ';

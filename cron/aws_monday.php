@@ -6,7 +6,7 @@ function aws_monday_morning_cron()
     echo printInfo('Today is Monday. Send out emails for AWS');
     $thisMonday = dbDate(strtotime('this monday'));
     $subject = 'Today\'s AWS (' . humanReadableDate($thisMonday) . ') by ';
-    $res = generateAWSEmail($thisMonday);
+    $res = awsEmailForMonday($thisMonday);
     $to = 'academic@lists.ncbs.res.in';
 
     if ($res['speakers']) {
