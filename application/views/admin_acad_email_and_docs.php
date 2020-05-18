@@ -67,20 +67,29 @@ if ('This week AWS' === $default['task'])
             $emailHtml .= awsToHTML($aws, false);
         }
 
-        echo $emailHtml;
+        //echo $emailHtml;
+
 
         $chair = __get__($awses[0], 'chair', '');
-        if($chair)
-            $chair = loginToText(findAnyoneWithLoginOrEmail($chair));
+
+        if($chair) {
+            $ch = findAnyoneWithLoginOrEmail($chair);
+            if($ch)
+                $chair = loginToText($ch[0]);
+        }
         else
             $chair = 'None assigned.';
 
         $subject = ' Annual Work Seminars on ' . humanReadableDate($aws['date']);
-        $macros = [
-            'CHAIR' => $chair,
-            'DATE' => humanReadableDate($awses[0]['date']), 'TIME' => humanReadableTime(strtotime('4:00 pm')), 'VENUE' => venueToShortText($awses[0]['venue']),  'EMAIL_BODY' => $emailHtml, ];
+        $macros = [ 'CHAIR' => $chair
+            , 'DATE' => humanReadableDate($awses[0]['date'])
+            , 'TIME' => humanReadableTime(strtotime('4:00 pm'))
+            , 'VENUE' => venueToShortText($awses[0]['venue'])
+            ,  'EMAIL_BODY' => $emailHtml
+        ];
 
         $templ = emailFromTemplate('aws_template', $macros);
+
         $templ = htmlspecialchars(json_encode($templ));
         echo '<form method="post" action="' . site_url("$ref/send_email") . '">
             <button class="btn btn-primary">Send email</button>
