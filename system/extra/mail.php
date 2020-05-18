@@ -136,36 +136,23 @@ function generateAWSEmail($monday)
     $venue = venueToShortText($firstAws['venue']);
 
     $chair = 'None';
+
     if (__get__($aws, 'chair', '')) {
-        $chair = loginToText(findAnyoneWithLoginOrEmail($aws['chair']));
+        $ch = findAnyoneWithLoginOrEmail($aws['chair']);
+        if($ch)
+            $chair = loginToHTML($ch['login']);
+        else
+            $chair = $aws['chair'];
     }
 
     $data = [
-        'CHAIR' => $chair,
-         'VENUE' => $venue, 'EMAIL_BODY' => $html, 'DATE' => humanReadableDate($monday), 'TIME' => humanReadableTime($firstAws['time']),
+        'CHAIR' => $chair
+        , 'VENUE' => $venue, 'EMAIL_BODY' => $html
+        , 'DATE' => humanReadableDate($monday)
+        , 'TIME' => humanReadableTime($firstAws['time']),
     ];
 
     $mail = emailFromTemplate('aws_template', $data);
-
-    //    try {
-    //        echo "Generating pdf";
-    //        $script = FCPATH . '/scripts/generate_pdf_aws.php';
-    //        $cmd = "php -q -f $script date=$monday";
-    //        echo "Executing <pre> $cmd </pre>";
-    //        ob_flush( );
-    //        $ret = `$cmd`;
-    //    } catch (Exception $e) {
-    //        echo printWarning( "Failed to generat pdf " . $e->getMessages( ) );
-    //    }
-    //
-    //
-    //    if( ! file_exists( $pdffile ) )
-    //    {
-    //        echo printWarning( "Could not generate PDF $pdffile." );
-    //        $pdffile = '';
-    //    }
-    //
-    // $res[ 'pdffile' ] = $pdffile;
     $res['email'] = $mail['email_body'];
     $res['mail'] = $mail;
 
