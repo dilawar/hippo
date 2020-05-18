@@ -104,8 +104,8 @@ function getBookingRequestOfTalkId($talkId)
 function getTalkIDs($start_date, $end_date)
 {
     return executeQuery(
-        "SELECT external_id, date, start_time, end_time, venue FROM events WHERE
-            status='VALID' AND date>'$start_date' AND date<'$end_date'
+        "SELECT external_id, date, start_time, end_time, venue, vc_url FROM events WHERE
+            status='VALID' AND date>='$start_date' AND date<='$end_date'
             AND external_id LIKE 'talks.%'
         "
     );
@@ -149,6 +149,7 @@ function getTalksWithEvent($start_date, $end_date)
         $row['date'] = $tev['date'];
         $row['start_time'] = $tev['start_time'];
         $row['venue'] = $tev['venue'];
+        $row['vc_url'] = $tev['vc_url'];
         $results[] = $row;
     }
     return $results;
