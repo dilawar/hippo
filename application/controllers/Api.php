@@ -188,7 +188,9 @@ class Api extends CI_Controller
             $data = array_merge($tom, $data);
             $cards = [];
             foreach ($data as $item) {
-                $cards[] = ['title' => $item['title'], 'date' => $item['date'], 'time' => $item['start_time'], 'venue' => $item['venue'],
+                $cards[] = ['title' => $item['title'], 'date' => $item['date']
+                    , 'time' => $item['start_time']
+                    , 'venue' => venueToShortText($item['venue'], __get__($item, 'vc_url', '')),
                 ];
             }
 
