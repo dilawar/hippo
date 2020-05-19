@@ -320,6 +320,18 @@ class Api extends CI_Controller
             $this->send_data($courses, 'ok');
 
             return;
+        } elseif ('table' === $args[0]) {
+            if ('fieldinfo' === $args[1]) {
+                $data = getTableFieldInfo($args[2]);
+                $this->send_data($data, 'ok');
+
+                return;
+            } elseif ('types' === $args[1]) {
+                $ctypes = getTableColumnTypes($args[2], $args[3]);
+                $this->send_data($ctypes, 'ok');
+
+                return;
+            }
         }
         $this->send_data(['Unknown request'], 'ok');
     }
@@ -1554,6 +1566,7 @@ class Api extends CI_Controller
      *   - /me/course
      *   - /me/roles
      *   - /me/supervisor/add
+     *   - /me/speaker/new
      *   - /me/talk
      *             /register
      * @Returns
@@ -1616,6 +1629,8 @@ class Api extends CI_Controller
             $this->send_data($data[0], 'ok');
 
             return;
+        } elseif ('speaker' === $args[0]) {
+            return $this->__commontasks(...$args);
         } elseif ('photo' === $args[0]) {
             $login = $args[1] ?? getLogin();
             if ($login !== getLogin()) {
@@ -2869,10 +2884,8 @@ class Api extends CI_Controller
                 // Fetch speaker.
                 $speakerId = intval($args[2]);
                 if ($speakerId < 0) {
-                    $this->send_data(
-                        ['success' => false, 'msg' => 'Invalid speaker ID' . $speakerId],
-                        'ok'
-                    );
+                    $this->send_data(['success' => false, 'msg' => 'Invalid speaker ID' . $speakerId],
+                        'ok');
 
                     return;
                 }
@@ -2897,6 +2910,15 @@ class Api extends CI_Controller
                 return;
             }
             if ('delete' === $args[1]) {
+                if( ! hasRoles('ACAD_ADMIN,BOOKMYVENUE_ADMIN')) {
+                    $this->send_data([
+                        'success' => false
+                        , 'msg' => "You don't have permission to delete a spaeker"
+                    ], 401);
+
+                    return;
+                }
+
                 // Delete speakers only if there is no valid talks associated
                 // with it.
                 $speakerID = intval(__get__($args, 2, '-1'));
