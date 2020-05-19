@@ -69,6 +69,13 @@ function searchSupervisors($q): array
         ");
 }
 
+function searchInTalks($q): array 
+{
+    return executeQuery("SELECT * FROM talks WHERE 
+        id IS NOT NULL AND  status = 'VALID'
+        AND (host LIKE '%$q%' OR speaker LIKE '%$q%' OR title LIKE '%$q%')
+        ");
+}
 
 ?>
 

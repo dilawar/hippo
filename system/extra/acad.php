@@ -211,6 +211,7 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
     $data['registered_on'] = __get__($data, 'registered_on', dbDateTime('now'));
 
     if ('DROP' === $what) {
+        $data['type'] = 'AUDIT';
         $data['status'] = 'DROPPED';
     } elseif ('CREDIT' === $what) {
         $data['type'] = 'CREDIT';
@@ -255,7 +256,11 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
         }
     }
 
+    $data['student_id'] = $student;
+
     // ON AUDIT AND CREDIT
+    $wherekeys = 'student_id,semester,year,type,course_id,registered_on,last_modified_on';
+    $updatekeys = 'type,last_modified_on,status';
     if ('DROP' !== $what) {
         // Check if any course is colliding with existing registration.
         $myRegistrations = getMyCourses($data['semester'], $data['year'], $student);
@@ -268,18 +273,23 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
             return $ret;
         }
     }
+    else {
+        // ON drop, we don't care about the type.
+        $wherekeys = 'student_id,semester,year,course_id,registered_on,last_modified_on';
+        $upadtekeys = 'last_modified_on,status';
+    }
 
-    // If already registered then update the type else register new.
-    $data['student_id'] = $student;
-    $r = insertOrUpdateTable(
-        'course_registration',
-        'student_id,semester,year,type,course_id,registered_on,last_modified_on',
-        'type,last_modified_on,status',
-        $data
-    );
+    $r = false;
+    $warning = '';
+    try {
+        $r = insertOrUpdateTable('course_registration', $wherekeys, $updatekeys, $data);
+    } catch (Exception $e) {
+        $warning .= $e->getMessage();
+    }
 
     if (!$r) {
-        $ret['msg'] .= p("Failed to $what the course " . $data['course_id']);
+        $ret['msg'] .= p("Failed to $what the course " . $data['course_id']) . p($warning);
+        $ret['msg'] .= json_encode($data);
         $ret['success'] = false;
 
         return $ret;
