@@ -74,7 +74,7 @@ function getSemesterCourses($year, $sem)
         $semester = $course['semester'];
         $year = $course['year'];
 
-        $nf = executeQuery("SELECT COUNT(*) AS total FROM course_feedback_responses WHERE
+        $nf = executeQuery("SELECT COUNT(DISTINCT login) AS total FROM course_feedback_responses WHERE
             course_id='$cid' AND year='$year' AND semester='$semester' AND status='VALID'", true);
 
         if (count($nf) > 0) {
