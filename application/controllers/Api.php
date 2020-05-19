@@ -3113,7 +3113,7 @@ class Api extends CI_Controller
                 $this->send_data($talk, 'ok');
 
                 return;
-            } elseif ('delete' === $endpoint) {
+            } elseif ('update' === $endpoint || 'delete' === $endpoint) {
                 $res = updateThisTalk($_POST);
                 $this->send_data($res, 'ok');
 
@@ -3126,7 +3126,7 @@ class Api extends CI_Controller
                 return;
             }
 
-            $this->send_data(['Unknown request'], 'ok');
+            $this->send_data(['success'=>false, 'msg'=>'Unknown request'], 'ok');
 
             return;
         } elseif ('event' === $args[0]) {

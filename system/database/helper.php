@@ -2730,11 +2730,11 @@ function getEmailTemplates()
     return fetchEntries($stmt);
 }
 
-function getEmailTemplateById($id) : array
+function getEmailTemplateById($id) 
 {
     $hippoDB = initDB();
     $stmt = $hippoDB->query("SELECT * FROM email_templates where id='$id'");
-    return $stmt->fetch(PDO::FETCH_ASSOC) || [];
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 function getEmailsByStatus($status = 'PENDING')
