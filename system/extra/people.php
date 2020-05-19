@@ -5,73 +5,76 @@ require_once __DIR__ . '/methods.php';
 function addUpdateSpeaker(array $data): array
 {
     $ret = ['msg' => '', 'success' => true];
+
     if (!__get__($data, 'first_name', '')) {
         return ['msg' => 'Could not parse speaker.', 'success' => false,  'data' => []];
     }
 
     // If there is not speaker id, then  create a new speaker.
-    $sid = __get__($data, 'id', -1);
-    $res = null;
-    $warning = '';
+    $sid = intval(__get__($data, 'id', -1));
+    $res = false;
+    $warning = " sid $sid";
     $speaker = null;
 
-    if ($sid < 0) {  // Insert a new enetry.
+    if ($sid <= 0) {  
         // Insert a new entry.
         $data['id'] = getUniqueFieldValue('speakers', 'id');
         $data['email'] = trim($data['email']);
         $sid = $data['id'];
-        $res = insertIntoTable('speakers', 'id,honorific,email,first_name,middle_name,last_name,' .
-            'designation,department,homepage,institute', $data
-        );
-        $speaker = getTableEntry('speakers', 'id', $data);
-    } else { // Update the speaker.
-        if (__get__($data, 'id', 0) > 0) {
-            $whereKey = 'id';
-        } else {
-            $whereKey = 'first_name,middle_name,last_name';
+        try {
+            $r1 = insertIntoTable('speakers'
+                , 'id,honorific,email,first_name,middle_name,last_name,' .
+                        'designation,department,homepage,institute'
+                , $data);
+            if(!$r1)
+                $warning .= p("Failed to insert new speaker"); 
+            $speaker = getTableEntry('speakers', 'id', $data); 
+        } 
+        catch (Exception $e) {
+            $warning .= $e->getMessage();
         }
+    } else { 
+        // Update the speaker.
+        $whereKey = 'id';
 
         $speaker = getTableEntry('speakers', $whereKey, $data);
         if ($speaker) {
-            // Update the entry
-            $res = updateTable('speakers', $whereKey, 'honorific,email,first_name,middle_name,last_name,' .
-                'designation,department,homepage,institute', $data
-            );
+            try {
+                $res = updateTable('speakers', $whereKey, 'honorific,email,first_name,middle_name,last_name,' .
+                    'designation,department,homepage,institute', $data
+                );
+            } catch (Exception $e) {
+                $warning .= $e->getMessage();
+            }
 
             // Update all talks related to  this speaker..
             try {
                 $sname = speakerName($sid);
-                $res = updateTable('talks', 'speaker_id', 'speaker', ['speaker_id' => $sid, 'speaker' => $sname]
-                );
+                updateTable('talks', 'speaker_id', 'speaker', ['speaker_id' => $sid, 'speaker' => $sname]);
             } catch (Exception $e) {
-                $ret['msg'] .= 'Failed to update some talks by this speaker:' . $e->getMessage();
-            }
-
-            if ($res) {
-                $ret['msg'] .= ' .. updated related talks as well.';
+                $warning .= p('Failed to update some talks by this speaker:' . $e->getMessage());
             }
         }
+        else
+            $warning .= p("No speaker found to update");
     }
 
     // After inserting new speaker, upload his/her image.
     if (array_key_exists('picture', $_FILES) && $_FILES['picture']['name']) {
         $imgpath = getSpeakerPicturePathById($sid);
         $ret['msg'] .= printInfo("Uploading speaker image to $imgpath .. ");
-        $res = uploadImage($_FILES['picture'], $imgpath);
-        if (!$res) {
-            $ret['msg'] .= minionEmbarrassed("Could not upload speaker image to $imgpath");
-        }
+        $r1 = uploadImage($_FILES['picture'], $imgpath);
+        if (!$r1) 
+            $warning .= p("Could not upload speaker image to $imgpath");
     }
 
-    if ($res) {
-        $ret['msg'] .= 'Updated/Inserted speaker. <br />' . $warning;
-    } else {
-        $ret['success'] = false;
-        $ret['msg'] .= printInfo('Failed to update/insert speaker');
-    }
+    $ret['success'] = $res;
+    if($res)
+        $ret['msg'] .= "Success";
+    else
+        $ret['msg'] .= "Warning: $warning";
 
-    // Send back speaker as well.
-    $ret['data'] = $speaker;
+    $ret['speaker'] = $speaker;
 
     return $ret;
 }
