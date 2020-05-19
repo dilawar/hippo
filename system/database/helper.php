@@ -568,7 +568,6 @@ function changeRequestStatus($gid, $rid, string $status)
 function changeStatusOfRequests($gid, $status)
 {
     $hippoDB = initDB();
-    ;
     $stmt = $hippoDB->prepare("UPDATE bookmyvenue_requests SET status=:status WHERE gid=:gid");
     $stmt->bindValue(':status', $status);
     $stmt->bindValue(':gid', $gid);
@@ -2733,12 +2732,11 @@ function getEmailTemplates()
     return fetchEntries($stmt);
 }
 
-function getEmailTemplateById($id)
+function getEmailTemplateById($id) : array
 {
     $hippoDB = initDB();
-    ;
     $stmt = $hippoDB->query("SELECT * FROM email_templates where id='$id'");
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    return $stmt->fetch(PDO::FETCH_ASSOC) || [];
 }
 
 function getEmailsByStatus($status = 'PENDING')

@@ -1214,30 +1214,38 @@ class Api extends CI_Controller
                 $rid = __get__($data, 1, '');
                 if ($rid) {
                     $res = changeRequestStatus($gid, $rid, 'CANCELLED');
-                    $this->send_data(['success' => $res, 'msg' => "Request $gid.$rid is deleted"], 'ok');
+                    $this->send_data(['success' => $res
+                        , 'msg' => "Request $gid.$rid is deleted"]
+                        , 'ok');
 
                     return;
                 }
 
                 // delete the whole group.
-                $res = changeStatusOfRequests($gid, 'CANCELLED');
-                $this->send_data(
-                        ['success' => $res, 'msg' => "Request group $gid is deleted"],
-                        'ok'
-                    );
+                $res = false;
+                $warning = '';
+                try {
+                    $res = changeStatusOfRequests($gid, 'CANCELLED');
+                } catch (Exception $e) {
+                    $warning .= $e->getMessage();
+                }
+                $this->send_data(['success' => $res, 'msg' => $warning], 'ok');
 
                 return;
             } elseif ('event' == $args[1]) {
                 $data = explode('.', $args[2]);
                 $gid = $data[0];
-                $login = $_POST['login'];
+                $login = getLogin();
                 $eid = __get__($data, 1, '');
                 if ($eid) {
-                    $res = changeStatusOfEvent($gid, $eid, $login, 'CANCELLED');
-                    $this->send_data(
-                        ['success' => $res,
-                        'msg' => "Event $gid.$eid is cancelled", ], 'ok'
-                    );
+                    $res = false;
+                    $msg = "Event $gid.$eid is cancelled";
+                    try {
+                        $res = changeStatusOfEvent($gid, $eid, 'CANCELLED');
+                    } catch (Exception $e) {
+                        $msg = $e->getMessage();
+                    }
+                    $this->send_data(['success' => $res, 'msg' => $msg], 'ok');
 
                     return;
                 }
