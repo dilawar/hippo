@@ -633,8 +633,10 @@ function assignAWSChair($chair, $date)
 {
     $ret = ['success'=>true, 'msg'=>''];
 
-    $res = updateTable('upcoming_aws', 'date', 'chair', 
-        ['date'=>$date, 'chair'=>$chair]);
+    $res = updateTable(
+        'upcoming_aws', 'date', 'chair', 
+        ['date'=>$date, 'chair'=>$chair]
+    );
 
     if(! $res ) {
         $ret['success'] = false;
@@ -643,18 +645,24 @@ function assignAWSChair($chair, $date)
     }
 
     $login = findAnyoneWithEmail($chair);
-    $query = insertClickableQuery($chair, 'upcoming_aws.-1'
-        , "UPDATE upcoming_aws SET has_chair_confirmed='YES' WHERE date='$date'");
+    $query = insertClickableQuery(
+        $chair, 'upcoming_aws.-1',
+        "UPDATE upcoming_aws SET has_chair_confirmed='YES' WHERE date='$date'"
+    );
 
     $macros = ['CHAIR' => arrayToName($login), 'AWS_DATE' => $date
         , 'CONFIRMATION_LINK' => queryHashToClickableURL($query['hash'])];
 
     $temp = emailFromTemplate('NOTIFY_AWS_CHAIR', $macros);
-    $res =  sendHTMLEmail($temp['email_body'], "You are assigned the AWS chair on $date"
-        , $chair);
+    $res =  sendHTMLEmail(
+        $temp['email_body'],
+        "You are assigned the AWS chair on $date",
+        $chair, $temp['cc']
+    );
 
-    if(! $res['success'])
+    if(! $res['success']) {
         $ret['msg'] .= p("Failed to notify chair") . $res['msg'];
+    }
 
     return $ret;
 }
@@ -662,13 +670,12 @@ function assignAWSChair($chair, $date)
 function updateAWSWeekInfo($data): array
 {
     $res = ['success' => true, 'msg' => ''];
+
     $date = __get__($data, 'date', '');
-    if (!$date) {
+    if (!$date)
         return ['success' => false, 'msg' => 'Invalid date'];
-    }
 
     $newchair = false;
-
     $awsRepr = getTableEntry('upcoming_aws', 'date', ['date' => $date]);
 
     if ($awsRepr['chair'] !== $data['chair']) {
@@ -686,8 +693,7 @@ function updateAWSWeekInfo($data): array
 
     // update rest of the entries for the week
     $r1 = updateTable('upcoming_aws', 'date', 'venue,chair,has_chair_confirmed,vc_url', $data);
-    if(! $r1)
-    {
+    if(! $r1) {
         $res['success'] = false;
         $res['msg'] .= p("Failed to update upcoming aws information.");
     }
@@ -708,8 +714,9 @@ function removeAWSChair($date) : array
         $ret['msg'] .= $res['msg'];
     }
 
-    $r = updateTable('upcoming_aws', 'date', 'chair,has_chair_confirmed'
-        , ["date"=>$date, 'chair'=>'', "has_chair_confirmed"=>"NO"]
+    $r = updateTable(
+        'upcoming_aws', 'date', 'chair,has_chair_confirmed',
+        ["date"=>$date, 'chair'=>'', "has_chair_confirmed"=>"NO"]
     );
     $ret['success'] = $r;
     return $ret;
@@ -723,12 +730,15 @@ function removeJCAdmin($data, $who)
     if($r) {
         $email = getLoginEmail($data['login']);
         $body = p("Hi " . getLoginHTML($data['login']));
-        $body .= p("You have been made admin by $who. If this is a mistake 
-            please write to Adademic Office.");
+        $body .= p(
+            "You have been made admin by $who. If this is a mistake 
+            please write to Adademic Office."
+        );
 
-        $r1 = sendHTMLEmail("You have been made admin of " . $data['jc_id'] , $body , $email);
-        if(! $r1)
+        $r1 = sendHTMLEmail("You have been made admin of " . $data['jc_id'], $body, $email);
+        if(! $r1) {
             $ret['msg'] .= p("Failed to send email");
+        }
     }
     $ret['success'] = $r;
     return $ret;
@@ -742,11 +752,14 @@ function addJCAdmin($data, $who)
     if($r) {
         $email = getLoginEmail($data['login']);
         $body = p("Hi " . getLoginHTML($data['login']));
-        $body .= p("You are no longer admin of " . $data['jc_id'] . ". If this
-            is a mistake please write to Adademic Office.");
+        $body .= p(
+            "You are no longer admin of " . $data['jc_id'] . ". If this
+            is a mistake please write to Adademic Office."
+        );
         $r1 = sendHTMLEmail("You are no longer admin of " . $data['jc_id'], $body, $email);
-        if(! $r1)
+        if(! $r1) {
             $ret['msg'] .= p("Failed to send email");
+        }
     }
     $ret['success'] = $r;
     return $ret;

@@ -2206,14 +2206,18 @@ function arrayToMultiCheckbox(string $name, string $values, string $default = ''
 function emailFromTemplate(string $templateName, array $options): array
 {
     $templ = getEmailTemplateById($templateName);
-    $desc = $templ['description'];
+    if(! $templ) {
+        $msg = alertUser("No template found with id: $templateName. I won't
+                        be able to generate email");
+        throw $msg;
+    }
+
+    $desc = __get__($templ, 'description', '');
 
     if (!$desc) {
-        echo alertUser("No template found with id: aws_template. I won't
-                        be able to generate email"
-                      );
-
-        return null;
+        $msg = alertUser("No template found with id: $templateName. I won't
+                        be able to generate email");
+        throw $msg;
     }
 
     foreach ($options as $key => $value) {
