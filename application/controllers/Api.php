@@ -2869,7 +2869,7 @@ class Api extends CI_Controller
                 $data = $_POST;
                 $res = sendHTMLEmail(
                     $data['email_body'], $data['subject'],
-                    $data['recipient'], $data['cc'], $data['attachments']
+                    $data['recipients'], $data['cc'], $data['attachments']
                 );
                 $this->send_data($res, 'ok');
 
