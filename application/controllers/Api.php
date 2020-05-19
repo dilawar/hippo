@@ -398,6 +398,11 @@ class Api extends CI_Controller
             $this->send_data_helper($logins);
 
             return;
+        } elseif ('talks' === $args[0]) {
+            $talks = searchInTalks($q);
+            $this->send_data_helper($talks);
+
+            return;
         }
 
         $this->send_data(['Unsupported query']);
