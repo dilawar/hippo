@@ -1290,9 +1290,7 @@ function actOnRequest(
     }
 
     if ($notify && $success) {
-        if (! $request) {
-            $request = getRequestById($gid, $rid);
-        }
+        $req = getRequestById($gid, $rid);
         $title = $req['title'];
         $subject = "Your booking request '$title' has been $status.";
         $msg  = '<p>The current status of your booking request is following.</p>';
@@ -1300,7 +1298,7 @@ function actOnRequest(
         $msg .= "<p>If there is any mistake, please contact Dean's Office. 
             This request was acted upon by '$byWhom'</p>";
 
-        $userEmail = getLoginEmail($request['created_by']);
+        $userEmail = getLoginEmail($req['created_by']);
         if (! $userEmail) {
             $userEmail = 'hippo@lists.ncbs.res.in';
             $msg .=  p("Alert! Could not find any email for " . $req['created_by']);

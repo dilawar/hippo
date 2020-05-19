@@ -3011,15 +3011,16 @@ class Api extends CI_Controller
                 );
                 $data['clashes'] = $jcOrLab;
             } elseif ('approve' === $subtask) {
+
                 // Mark is a public event, if admin says so.
                 if ('YES' === $_POST['is_public_event']) {
                     updateTable('bookmyvenue_requests', 'gid,rid', 'is_public_event', $_POST);
                 }
 
-                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
+                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST, getLogin());
                 $data['msg'] = 'APPROVED';
             } elseif ('reject' === $subtask) {
-                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST);
+                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST, getLogin());
                 $data['msg'] = 'REJECTED';
             } else {
                 $data = ['flash' => 'Unknown request'];
@@ -3192,7 +3193,7 @@ class Api extends CI_Controller
                 return;
             } elseif ('approve' === $args[1]) {
                 // make sure that it is a PUBLIC EVENT.
-                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST);
+                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST, getLogin());
                 $this->send_data($ret, 'ok');
 
                 return;
