@@ -2879,7 +2879,7 @@ function queryToClickableURL($qid, $msg = 'Click here')
 
 function queryHashToClickableURL($hash, $msg = 'Click here')
 {
-    $url = site_url() . '/confirm/' . $hash;
+    $url = site_url() . '/confirm/hash/' . $hash;
 
     return '<p>' . $msg . ': <a
         style="border:1px solid;border-radius:5px;background-color:#cc0000;padding:10px 10px 10px 10px;"

@@ -17,9 +17,10 @@ class Confirm extends CI_Controller
         }
 
         try {
-            $r1 = executeQuery($query['query']);
+            $r1 = executeQueryReadonly($query['query']);
         } catch (Exception $e) {
             echo p("Failed to execute. <br> Technical note: <br>" . $e->getMessage());
+            echo p($query['query']);
             return;
         }
 
