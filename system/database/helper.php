@@ -568,7 +568,6 @@ function changeRequestStatus($gid, $rid, string $status)
 function changeStatusOfRequests($gid, $status)
 {
     $hippoDB = initDB();
-    ;
     $stmt = $hippoDB->prepare("UPDATE bookmyvenue_requests SET status=:status WHERE gid=:gid");
     $stmt->bindValue(':status', $status);
     $stmt->bindValue(':gid', $gid);
