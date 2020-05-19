@@ -656,7 +656,7 @@ function assignAWSChair($chair, $date)
     $temp = emailFromTemplate('NOTIFY_AWS_CHAIR', $macros);
     $res =  sendHTMLEmail(
         $temp['email_body'],
-        "You are assigned the AWS chair on $date",
+        "You have been assigned the AWS chair on $date",
         $chair, $temp['cc']
     );
 
