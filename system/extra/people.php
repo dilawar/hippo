@@ -13,7 +13,7 @@ function addUpdateSpeaker(array $data): array
     // If there is not speaker id, then  create a new speaker.
     $sid = intval(__get__($data, 'id', -1));
     $res = false;
-    $warning = " sid $sid";
+    $warning = '';
     $speaker = null;
 
     if ($sid <= 0) {  
@@ -22,7 +22,7 @@ function addUpdateSpeaker(array $data): array
         $data['email'] = trim($data['email']);
         $sid = $data['id'];
         try {
-            $r1 = insertIntoTable('speakers'
+            $res = insertIntoTable('speakers'
                 , 'id,honorific,email,first_name,middle_name,last_name,' .
                         'designation,department,homepage,institute'
                 , $data);
