@@ -2895,8 +2895,8 @@ class Api extends CI_Controller
         } elseif ('speaker' === $args[0]) {
             if ('fetch' === $args[1]) {
                 // Fetch speaker.
-                $speakerId = intval($args[2]);
-                if ($speakerId < 0) {
+                $speakerId = intval(__get__($args, 2, -1));
+                if ($speakerId <= 0) {
                     $this->send_data(['success' => false, 'msg' => 'Invalid speaker ID' . $speakerId],
                         'ok');
 

@@ -26,7 +26,7 @@ function addUpdateSpeaker(array $data): array
                 , 'id,honorific,email,first_name,middle_name,last_name,' .
                         'designation,department,homepage,institute'
                 , $data);
-            if(!$r1)
+            if(!$res)
                 $warning .= p("Failed to insert new speaker"); 
             $speaker = getTableEntry('speakers', 'id', $data); 
         } 
