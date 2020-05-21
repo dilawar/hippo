@@ -3613,7 +3613,7 @@ class Api extends CI_Controller
             }
 
             // Unusual function: three tasks are handled here.
-            if ('update' === $args[1] || 'delete' === $args[1] || 'add' === $args[1]) {
+            if(in_array($args[1], ['update', 'delete', 'add'])) {
                 // Only admin can update this.
                 if (!hasRoles('ADMIN')) {
                     $this->send_data(
