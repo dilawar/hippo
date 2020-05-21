@@ -83,7 +83,7 @@ function addUpdateSpeaker(array $data): array
 function adminFacultyTask($data, $what): array
 {
     $ret = ['success' => true, 'msg' => ''];
-    if ('update' == $what) {
+    if ('update' === $what) {
         $data['modified_on'] = date('Y-m-d H:i:s', strtotime('now'));
         $res = updateTable(
             'faculty',
@@ -100,7 +100,7 @@ function adminFacultyTask($data, $what): array
         }
         $ret['success'] = false;
         $ret['msg'] .= 'I could not update faculty';
-    } elseif ('add' == $what) {
+    } elseif ('add' === $what) {
         if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $ret['success'] = false;
             $ret['msg'] .= 'Not a valid email';

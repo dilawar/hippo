@@ -3611,7 +3611,9 @@ class Api extends CI_Controller
 
                 return;
             }
-            if ('update' === $args[1] || 'delete' === $args[1]) {
+
+            // Unusual function: three tasks are handled here.
+            if ('update' === $args[1] || 'delete' === $args[1] || 'add' === $args[1]) {
                 // Only admin can update this.
                 if (!hasRoles('ADMIN')) {
                     $this->send_data(
