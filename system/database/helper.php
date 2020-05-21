@@ -3428,6 +3428,18 @@ function getTableFieldInfo($tableName) : array
     foreach ($schema as $row) {
         $type = $row['Type'];
         $fname = strtolower($row['Field']);
+
+        // if fname is found in global config then use those values.
+        $dbVal = getConfigValue("$tableName.$fname");
+        if($dbVal) {
+            $vals = json_decode($dbVal);
+            if(! $vals) {
+                // Simple csv
+                $vals = explode(',', $dbVal);
+            }
+            $res[$fname] = ['select', $vals];
+            continue;
+        }
         if (preg_match("/^(enum|set)\((.*)\)$/", $type, $match)) {
             $fs = [];
             foreach (explode(",", $match[2]) as &$v) {
