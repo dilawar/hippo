@@ -75,6 +75,7 @@ class BMVPDO extends PDO
                 id VARCHAR(100) PRIMARY KEY
                 , value VARCHAR(1000) NOT NULL
                 , comment TEXT
+                , status enum('VALID', 'INVALID', 'DELETED') default 'VALID'
             )
             "
         );

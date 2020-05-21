@@ -1667,7 +1667,7 @@ class Api extends CI_Controller
             $res = updateTable(
                 'bookmyvenue_requests',
                 $where,
-                'title,description,is_public_event,class',
+                'title,description,is_public_event,vc_url,url,class',
                 $_POST
             );
             $this->send_data(['success' => $res, 'msg' => 'Success'], 'ok');
@@ -2895,10 +2895,9 @@ class Api extends CI_Controller
         } elseif ('speaker' === $args[0]) {
             if ('fetch' === $args[1]) {
                 // Fetch speaker.
-                $speakerId = intval($args[2]);
-                if ($speakerId < 0) {
-                    $this->send_data(['success' => false, 'msg' => 'Invalid speaker ID' . $speakerId],
-                        'ok');
+                $speakerId = intval(__get__($args, 2, -1));
+                if ($speakerId <= 0) {
+                    $this->send_data([], '404 Not Found');
 
                     return;
                 }
@@ -3092,7 +3091,8 @@ class Api extends CI_Controller
                 $tid = intval(__get__($args, 2, '-1'));
 
                 if ($tid < 0) {
-                    $this->send_data(["Invalid talk id $tid."], 'ok');
+                    $this->send_data(['success'=>false,
+                        'msg'=>"Invalid talk id $tid."], 401);
 
                     return;
                 }
@@ -3238,9 +3238,41 @@ class Api extends CI_Controller
                 $this->send_data($data, 'ok');
 
                 return;
+            } 
+        } 
+        elseif ('config' === $args[0]) {
+            if('list' === $args[1]) {
+                $data = executeQuery("SELECT * FROM config WHERE status!='DELETED'");
+                $this->send_data($data, 'ok');
+                return;
+            } elseif('update' === $args[1] || 'add' === $args[1]) {
+                $data = ['success'=>true, 'msg'=>''];
+                try {
+                    $_POST['status'] = 'VALID';
+                    $res = insertOrUpdateTable("config", 'id,value,comment'
+                        , "value,comment,status", $_POST);
+                    $data['success'] = true;
+                } catch (Exception $e) {
+                    $data['success'] = false;
+                    $data['msg'] .= $e->getMessage();
+                }
+                $this->send_data($data, 'ok');
+                return;
+            } elseif('delete' === $args[1] ) {
+                $data = ['success'=>true, 'msg'=>''];
+                try {
+                    $_POST['status'] = 'DELETED';
+                    $res = updateTable("config", 'id', "status",$_POST);
+                    $data['success'] = true;
+                } catch (Exception $e) {
+                    $data['success'] = false;
+                    $data['msg'] .= $e->getMessage();
+                }
+                $this->send_data($data, 'ok');
+                return;
             }
         }
-        $this->send_data(['Unknown request: ' . json_encode($args)], 'ok');
+        $this->send_data(['success'=>false, 'msg'=>'Unknown request: ' . json_encode($args)], 404);
     }
 
     /* --------------------------------------------------------------------------*/

@@ -110,6 +110,7 @@ $dbChoices = [
         ',SEMINAR,PRESYNOPSIS THESIS SEMINAR,THESIS SEMINAR,SIMONS SEMINAR,ANNUAL WORK SEMINAR' .
         ',LECTURE,PUBLIC LECTURE,CLASS,TUTORIAL' .
         ',INTERVIEW,SPORT EVENT,CULTURAL EVENT,WORKSHOP,OTHER',
+    // Faculty specialization.
     ];
 
 $symbUpdate = '<i class="fa fa-check fa-1x"></i>';
