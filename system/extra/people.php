@@ -84,10 +84,8 @@ function adminFacultyTask($data, $what): array
 {
     $ret = ['success' => true, 'msg' => ''];
     if ('update' === $what) {
-        $data['modified_on'] = date('Y-m-d H:i:s', strtotime('now'));
-        $res = updateTable(
-            'faculty',
-            'email',
+        $data['modified_on'] = dbDateTime('now');
+        $res = updateTable('faculty', 'email',
             'first_name,middle_name,last_name,status,modified_on,url,specialization,affiliation,institute,willing_to_chair_aws',
             $data
         );
@@ -118,7 +116,7 @@ function adminFacultyTask($data, $what): array
         $res = insertIntoTable(
             'faculty',
             'email,first_name,middle_name,last_name,status,willing_to_chair_aws'
-                . ',modified_on,url,specialization,affiliation,willing_to_chair_aws,institute',
+                . ',modified_on,url,specialization,affiliation,institute',
             $data
         );
 
