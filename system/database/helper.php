@@ -2424,7 +2424,6 @@ function numberOfAWSGivenBySpeaker($speaker): int
 function getTentativeAWSSchedule($awsday = null)
 {
     $hippoDB = initDB();
-    ;
     $whereExpr = '';
     if ($awsday) {
         $date = dbDate($awsday);
@@ -2725,7 +2724,12 @@ function getHolidays($from = null)
         $from = date('Y-m-d', strtotime('today'));
     }
     $stmt = $hippoDB->query("SELECT * FROM holidays WHERE date >= '$from' ORDER BY date");
-    return fetchEntries($stmt);
+    $data = [];
+    foreach(fetchEntries($stmt) as $h) {
+        $data[$h['date']] = $h;
+    }
+    
+    return $data;
 }
 
 /**
@@ -4272,12 +4276,14 @@ function getSchedulingRequests(string $user) : array
 
 function isAWSHoliday($date) : bool
 {
-    $h = getTableEntry('holidays', 'date,schedule_talk_or_aws', [ 'date' => $date, 'schedule_talk_or_aws' => 'YES' ]);
+    $h = getTableEntry('holidays', 'date,schedule_talk_or_aws', [ 'date' => $date, 'schedule_talk_or_aws' => 'NO' ]);
 
-    if ($h) {
-        return true;
+    if ($h)  {
+        if($h['is_public_holiday'] === 'YES')
+            return true;
+        if($h['schedule_talk_or_aws'] === 'NO')
+            return true;
     }
-
     return false;
 }
 

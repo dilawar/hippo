@@ -78,7 +78,7 @@ class Api extends CI_Controller
     {
         $json = json_encode(
             $data,
-            JSON_ERROR_SYNTAX | JSON_NUMERIC_CHECK
+            JSON_THROW_ON_ERROR | JSON_ERROR_SYNTAX | JSON_NUMERIC_CHECK
             | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );
         $this->output->set_content_type('application/json', 'utf-8');
@@ -296,6 +296,15 @@ class Api extends CI_Controller
                 $aws['by'] = $by;
                 $data[$aws['date']][] = $aws;
             }
+
+            $dates = array_keys($data);
+            for($k = strtotime($dates[0]); $k <= strtotime($dates[array_key_last($dates)]); $k += 7*86400) {
+                $awsDay = dbDate($k);
+                // On these dates, no AWS. possibly holiday.
+                if(! in_array($awsDay, $dates))
+                    $data[$awsDay] = [[]];
+            }
+
             $this->send_data($data, 'ok');
 
             return;
@@ -332,8 +341,15 @@ class Api extends CI_Controller
 
                 return;
             }
+        } elseif( 'holiday' === $args[0] || 'holidays' === $args[0]){
+            if ('list' === $args[1]) {
+                $holidays = getHolidays();
+                $this->send_data($holidays, 'ok');
+
+                return;
+            }
         }
-        $this->send_data(['Unknown request'], 'ok');
+        $this->send_data(['success'=>false, 'msg'=>'Unknown request ' . json_encode($args)], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
@@ -1064,10 +1080,26 @@ class Api extends CI_Controller
 
         if ((!$venueId) || ($startDateTime >= $endDateTime)) {
             $data = ['msg' => "Could not book for: venue=$venue, startDateTime=$startDateTime
-                and endTime=$endTime"];
+            and endTime=$endTime", 'success' => false];
             $this->send_data($data, 'error');
 
             return;
+        }
+
+        $bookingDate = dbDate($startDateTime);
+        if(isAWSHoliday($bookingDate)) {
+            $notAllowed = ['THESIS SEMINAR', 'ANNUAL WORK SEMINAR'
+                , 'PRESYNOPSIS SEMINAR'];
+            $holiday = getTableEntry('holidays', 'date', ['date'=>$bookingDate]); 
+            if(in_array($data['class'], $notAllowed)) {
+                $data = ['msg' => $data['class'] . 
+                    " is not allowed on $bookingDate." .  
+                    __get__($holiday, 'description', '')
+                    , 'success' => false];
+                $this->send_data($data, 'error');
+
+                return;
+            }
         }
 
         // Who is creating.
@@ -2792,7 +2824,7 @@ class Api extends CI_Controller
             $subtask = $args[1];
             if ('upcoming' === $subtask) {
                 $from = intval(__get__($args, 2, 0));
-                $to = intval(__get__($args, 3, 30));
+                $to = intval(__get__($args, 3, 100));
                 $limit = $to - $from; // these many groups
                 $data = getEventsGID('today', 'VALID', $limit, $from);
                 $this->send_data($data, 'ok');
@@ -3303,12 +3335,7 @@ class Api extends CI_Controller
         $data = [];
         if ('upcomingaws' === $args[0]) {
             if ('upcoming' === $args[1]) {
-                $awses = getUpcomingAWS();
-                foreach ($awses as &$aws) {
-                    $aws['by'] = loginToHTML($aws['speaker']);
-                    $data[$aws['date']][] = $aws;
-                }
-                $this->send_data($data, 'ok');
+                return $this->info("upcomingaws");
 
                 return;
             } elseif ('get' === $args[1]) {
@@ -3319,7 +3346,15 @@ class Api extends CI_Controller
                 return;
             } elseif ('assign' === $args[1]) {
                 $_POST['venue'] = __get__($_POST, 'venue', getDefaultAWSVenue($_POST['date']));
-                $data = assignAWS($_POST['speaker'], $_POST['date'], $_POST['venue']);
+
+                // If date is a holiday on which AWS are not suppose to be
+                // assigned raise error.
+                $date = $_POST['date'];
+                if(isAWSHoliday($date)) 
+                    $data = ['sucess'=>false, 'msg'=> "Can't assign on holiday"];
+                else
+                    $data = assignAWS($_POST['speaker'], $_POST['date'],
+                    $_POST['venue']);
                 $this->send_data($data, 'ok');
 
                 return;
