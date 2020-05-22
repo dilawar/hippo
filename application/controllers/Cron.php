@@ -154,6 +154,8 @@ class Cron extends CI_Controller
     public function jc()
     {
         jc_cron();
+        if(trueOnGivenDayAndTime('today', '8:00'))
+            remind_presenter();
     }
 
     public function lablist_every_two_months()

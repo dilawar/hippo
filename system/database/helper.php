@@ -3760,6 +3760,20 @@ function getUpcomingJCPresentations($jcID = '', $date = 'today')
     return $jcs;
 }
 
+function getUpcomingJCPresentationsOnThisDay($date = 'today', $jcID='')
+{
+    $date = dbDate($date);
+    $whereExpr = "date='$date' AND status='VALID'";
+    if (trim($jcID)) {
+        $whereExpr .= " AND jc_id='$jcID'";
+    }
+
+    $whereExpr .= " AND CHAR_LENGTH(presenter) > 1";
+    $jcs = getTableEntries('jc_presentations', 'date', $whereExpr);
+    return $jcs;
+}
+
+
 function getUpcomingJCPresentationsOfUser($presenter, $jcID, $date = 'today')
 {
     $date = dbDate($date);
