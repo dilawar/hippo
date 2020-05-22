@@ -343,7 +343,7 @@ class Api extends CI_Controller
             }
         } elseif( 'holiday' === $args[0] || 'holidays' === $args[0]){
             if ('list' === $args[1]) {
-                $holidays = getHolidays();
+                $holidays = getHolidaysOfYear();
                 $this->send_data($holidays, 'ok');
 
                 return;
@@ -3196,7 +3196,10 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('submit' === $args[1]) {
-                $res = insertOrUpdateTable('holidays', 'date,description,is_public_holiday,schedule_talk_or_aws,comment', 'description,is_public_holiday,schedule_talk_or_aws,comment', $_POST);
+                $res = insertOrUpdateTable('holidays'
+                    , 'date,description,is_public_holiday,schedule_talk_or_aws,comment'
+                    , 'description,is_public_holiday,schedule_talk_or_aws,comment'
+                    , $_POST);
                 $this->send_data(['success' => $res, 'msg' => 'success'], 'ok');
 
                 return;
