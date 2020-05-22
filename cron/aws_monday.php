@@ -1,5 +1,7 @@
 <?php
 
+require_once FCPATH . '/system/extra/acad.php';
+
 function aws_monday_morning_cron()
 {
     error_log('Monday 10amm. Notify about AWS');
@@ -28,13 +30,13 @@ function aws_monday_morning_cron()
     }
 }
 
-function notifyAcadOfficeUnassignedSlot()
+function notifyAcadOfficeUnassignedSlotOrMissingChair()
 {
     $thisMonday = dbDate('this monday');
     // Check for next 6 weeks.
     $table = '<table>';
-    $table .= '<caption>Unassigned slots</caption>';
-    $table .= '<tr><th>Date</th><th>Number of unassigned slots</th></tr>';
+    $table .= '<caption>Unassigned slots or missing chairs</caption>';
+    $table .= '<tr><th>Date</th><th>Number of unassigned slots</th><th>Missing/Unconfirmed Chair</th></tr>';
 
     $totalMissing = 0;
     for ($i = 1; $i <= 8; ++$i) {
@@ -45,13 +47,18 @@ function notifyAcadOfficeUnassignedSlot()
 
         echo " | This week is $weekDate <br /> ";
         $awses = getUpcomingAWSOnThisMonday($weekDate);
+        $chair = count($awses) > 0?$awses[0]['chair']:'';
+        $chairConfirmed = count($awses) > 0?$awses[0]['has_chair_confirmed']:'';
         $nMissing = 3 - count($awses);
-        if ($nMissing > 0) {
-            $table .= "<tr><td> $weekDate </td><td> $nMissing </td></tr>";
+        if (($nMissing > 0) || (! $chair) || ($chair && $chairConfirmed==='NO')) {
+            $table .= "<tr><td> $weekDate </td><td> $nMissing </td>";
+            $table .= "<td>$chair (Chair confirmed: $chairConfirmed)</td>";
+            $table .= "</tr>";
             $totalMissing += $nMissing;
         }
     }
     $table .= '</table>';
+    echo "$table";
 
     if (0 == $totalMissing) {
         return;
@@ -66,7 +73,7 @@ function notifyAcadOfficeUnassignedSlot()
 
     sendHTMLEmail(
         $email['email_body'],
-        'Some AWS slots are still not assgined',
+        'Some AWS slots and chairs are still not assgined',
         $email['recipients'],
         $email['cc']
     );
@@ -74,7 +81,7 @@ function notifyAcadOfficeUnassignedSlot()
 
 /* --------------------------------------------------------------------------*/
 /**
- * @Synopsis  Book venue for upcoming aws.
+ * @Synopsis Book venue for upcoming aws.
  *
  * @Returns
  */
@@ -108,4 +115,53 @@ function bookVenueForAWS()
             echo arrayToTableHTML($collision, 'info');
         }
     }
+}
+
+function assignChair()
+{
+    // Assign chair 4 weeks in advance.
+    $monday = strtotime('this monday') + 4*7*86400; // this monday + 4 weeks.
+    $monDate = dbDate($monday);
+    echo "Assigning chair $monDate";
+
+    $awses = getTableEntries('upcoming_aws', 'date', "date='$monDate'");
+    if(count($awses) == 0) {
+        echo printInfo("No AWS on this day");
+        return;
+    }
+
+    $alreadyAssigned = [];
+    foreach(getTableEntries('upcoming_aws', 'date', "status='VALID'", 'chair') as $ch) {
+        if($ch['chair']) {
+            $alreadyAssigned[] = $ch['chair'];
+        }
+    }
+
+    $chair = $awses[0]['chair'];
+    if(! $chair) {
+        $potentialChairs = getTableEntries(
+            'faculty', 'email',
+            "willing_to_chair_aws='YES'", 'email'
+        );
+
+        $chairs = [];
+        foreach($potentialChairs as $ch) {
+            $email = $ch['email'];
+            $chairs[] = $email;
+        }
+
+        $potentialChairs = array_diff($chairs, $alreadyAssigned);
+        shuffle($potentialChairs);
+        if(count($potentialChairs) > 0) {
+            $chair = $potentialChairs[0];
+            assignAWSChair($chair, $monDate);
+            echo printInfo(" ... Assigned $chair on $monDate");
+        } else {
+            echo printInfo("No one is found to be chair on $monDate");
+        }
+    }
+    else {
+        echo printInfo("Already a chair $chair on $monDate");
+    }
+
 }
