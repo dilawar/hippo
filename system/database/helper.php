@@ -321,6 +321,17 @@ function getPendingRequestsOnThisDay($date)
     return $requests;
 }
 
+function getNumPendingRequestsOnThisDay($date): int
+{
+    $date = dbDate($date);
+    $res = executeQuery("SELECT COUNT(*) AS total FROM 
+        bookmyvenue_requests WHERE date='$date' AND status='PENDING'"
+    , true);
+    if($res)
+        return $res[0]['total'];
+    return 0;
+}
+
 // Get all requests which are pending for review.
 function getPendingRequestsGroupedByGID()
 {
