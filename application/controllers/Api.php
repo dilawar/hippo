@@ -3191,8 +3191,7 @@ class Api extends CI_Controller
             return;
         } elseif ('holidays' === $args[0]) {
             if ('list' === $args[1]) {
-                $holidays = getHolidays();
-                $this->send_data($holidays, 'ok');
+                $this->info("holidays", 'list');
 
                 return;
             } elseif ('submit' === $args[1]) {
