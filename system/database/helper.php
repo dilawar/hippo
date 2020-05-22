@@ -2732,6 +2732,18 @@ function getHolidays($from = null)
     return $data;
 }
 
+function getHolidaysOfYear($year='')
+{
+    if(! $year)
+        $year = getCurrentYear();
+    $data = [];
+    foreach(getTableEntries('holidays', 'date', "YEAR(date)='$year'") as $h) {
+        $data[$h['date']] = $h;
+    }
+    
+    return $data;
+}
+
 /**
  * @brief Fetch all existing email templates.
  *
