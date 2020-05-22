@@ -21,8 +21,19 @@ class Cron extends CI_Controller
     public function run()
     {
         // Execute all scripts in ./views/controller/cron folder.
-        $tasks = [
-             'update_database', 'aws_annoy', 'aws_friday_notification', 'aws_friday_notify_faculty', 'aws_monday', 'aws_schedule_fac_student', 'booking_expiring_notice', 'events_everyday_morning', 'events_weekly_summary', 'jc_assign_n_weeks_in_advance', 'jc', 'lablist_every_two_months', 'sync_calendar',
+        $tasks = ['update_database'
+            , 'aws_annoy'
+            , 'aws_friday_notification'
+            , 'aws_friday_notify_faculty'
+            , 'aws_monday'
+            , 'aws_schedule_fac_student'
+            , 'booking_expiring_notice'
+            , 'events_everyday_morning'
+            , 'events_weekly_summary'
+            , 'jc_assign_n_weeks_in_advance'
+            , 'jc'
+            , 'lablist_every_two_months'
+            , 'sync_calendar',
         ];
 
         foreach ($tasks as $i => $t) {
@@ -72,12 +83,17 @@ class Cron extends CI_Controller
         }
 
         if (trueOnGivenDayAndTime('this monday', '11:00')) {
-            notifyAcadOfficeUnassignedSlot();
+            notifyAcadOfficeUnassignedSlotOrMissingChair();
         }
 
         // Try at 6pm.
         if (trueOnGivenDayAndTime('this monday', '18:00')) {
             bookVenueForAWS();
+        }
+
+        // Try at 10pm.
+        if (trueOnGivenDayAndTime('this monday', '8:00')) {
+            assignChair();
         }
     }
 

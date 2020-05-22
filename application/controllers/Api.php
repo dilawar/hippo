@@ -3665,7 +3665,7 @@ class Api extends CI_Controller
 
             return;
         }
-        $this->send_data(['msg' => 'Unknown request', 'status' => false], 'ok');
+        $this->send_data(['msg'=>'Unknown request', 'status'=>false], 'ok');
     }
 
     // Emails.
