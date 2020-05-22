@@ -171,12 +171,15 @@ function getUserPhotoB64(string $user): string
     return '';
 }
 
-function getProfileEditables( ): array
+function getProfileEditables($admin=false): array
 { 
     $schema = getTableSchema('logins');
     $fs = 'title:select,first_name:text,honorific:select,last_name:text,'
         .  'alternative_email:email,institute:text' 
-        .  ',valid_until:date,joined_on:date,pi_or_host:select,specialization:select';
+        .  ',joined_on:date,pi_or_host:select,specialization:select';
+
+    if($admin)
+        $fs .= ",roles:select,status:select";
 
     $res = [];
 

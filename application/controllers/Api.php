@@ -3260,14 +3260,7 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('update' === $args[1]) {
-                $editables = array_keys(getProfileEditables());
-                $res = updateTable('logins', 'login', $editables, $_POST);
-                if ($res) {
-                    $data['success'] = true;
-                } else {
-                    $data['msg'] .= 'Failed to update profile.';
-                }
-                $this->send_data($data, 'ok');
+                $this->people('profile', 'update', $_POST['login']);
 
                 return;
             } 
@@ -3651,9 +3644,7 @@ class Api extends CI_Controller
             if(in_array($args[1], ['update', 'delete', 'add'])) {
                 // Only admin can update this.
                 if (!hasRoles('ADMIN')) {
-                    $this->send_data(
-                        ['success' => false, 'msg' => "You don't have permission."], '401 Forbidden'
-                    );
+                    $this->send_data(['success' => false, 'msg' => "You don't have permission."], 'Forbidden');
 
                     return;
                 }
@@ -3663,8 +3654,58 @@ class Api extends CI_Controller
                 return;
             }
         }
+       
 
-        $this->send_data(['success' => false, 'msg' => 'Unknown endpoint: ' . json_encode($args)], 'ok');
+        // These are admin functions.
+        if (!hasRoles('ADMIN')) {
+            $this->send_data(['success' => false, 'msg' => "You don't have permission."], 'Forbidden');
+            return;
+        }
+       
+       if ('profile' === $args[0]) {
+            $endpoint = __get__($args, 1, 'get');
+            if ('get' === $endpoint) {
+                // If no userid is given, use current user.
+                $user = $args[2];
+                $ldap = getUserInfo($user, true);
+
+                $remove = ['fname', 'lname', 'mname'];
+                $data = array_diff_key($ldap, array_flip($remove));
+                $this->send_data($data, 'ok');
+
+                return;
+            } elseif ('update' === $endpoint) {
+                $data = ['success' => false, 'msg' => ''];
+                $user = $args[2];
+                $editables = array_keys(getProfileEditables(true));
+                $_POST['login'] = $user;
+                $res = updateTable('logins', 'login', $editables, $_POST);
+                if ($res) {
+                    $data['success'] = true;
+                } else {
+                    $data['msg'] .= 'Failed to update profile.';
+                }
+                $this->send_data($data, 'ok');
+
+                return;
+            } elseif ('editables' === $endpoint) {
+                $this->send_data(getProfileEditables(), 'ok');
+                return;
+            } elseif ('photo' === $endpoint) {
+                $this->me('photo', $args[2]);
+                return;
+            } elseif ('roles' === $endpoint) {
+                $user = $args[2];
+                $roles = getRoles($user);
+                $allroles = getTableColumnTypes('logins', 'roles');
+                $this->send_data(['roles'=>$roles, 'allroles'=>$allroles], 'ok');
+
+                return;
+            }
+        }
+
+        $this->send_data(['success' => false
+            , 'msg' => 'Unknown endpoint: ' . json_encode($args)], 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
