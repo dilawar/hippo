@@ -3576,7 +3576,6 @@ function getCoursesAtThisVenueSlotBetweenDates($venue, $slot, $start, $end)
 function getAllSpecialization() : array
 {
     $hippoDB = initDB();
-    ;
     $res = $hippoDB->query('SELECT DISTINCT(specialization) FROM faculty');
     return fetchEntries($res);
 }
