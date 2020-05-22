@@ -82,6 +82,7 @@ function awsEmailForMonday($monday)
         $templ['subject'] = 'Annual Work Seminar on ' . humanReadableDate($monday) . ' by ' . implode(', ', $speakers);
     }
 
+    $templ['speakers'] = $speakers;
     return $templ;
 }
 
