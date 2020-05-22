@@ -321,6 +321,17 @@ function getPendingRequestsOnThisDay($date)
     return $requests;
 }
 
+function getNumPendingRequestsOnThisDay($date): int
+{
+    $date = dbDate($date);
+    $res = executeQuery("SELECT COUNT(*) AS total FROM 
+        bookmyvenue_requests WHERE date='$date' AND status='PENDING'"
+    , true);
+    if($res)
+        return $res[0]['total'];
+    return 0;
+}
+
 // Get all requests which are pending for review.
 function getPendingRequestsGroupedByGID()
 {
@@ -3748,6 +3759,20 @@ function getUpcomingJCPresentations($jcID = '', $date = 'today')
     $jcs = getTableEntries('jc_presentations', 'date', $whereExpr);
     return $jcs;
 }
+
+function getUpcomingJCPresentationsOnThisDay($date = 'today', $jcID='')
+{
+    $date = dbDate($date);
+    $whereExpr = "date='$date' AND status='VALID'";
+    if (trim($jcID)) {
+        $whereExpr .= " AND jc_id='$jcID'";
+    }
+
+    $whereExpr .= " AND CHAR_LENGTH(presenter) > 1";
+    $jcs = getTableEntries('jc_presentations', 'date', $whereExpr);
+    return $jcs;
+}
+
 
 function getUpcomingJCPresentationsOfUser($presenter, $jcID, $date = 'today')
 {

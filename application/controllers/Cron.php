@@ -8,7 +8,7 @@ require_once FCPATH . './cron/aws_friday_notify_faculty.php';
 require_once FCPATH . './cron/aws_monday.php';
 require_once FCPATH . './cron/aws_schedule_fac_student.php';
 require_once FCPATH . './cron/booking_expiring_notice.php';
-require_once FCPATH . './cron/events_everyday_morning.php';
+require_once FCPATH . './cron/everyday_morning.php';
 require_once FCPATH . './cron/events_weekly_summary.php';
 require_once FCPATH . './cron/jc_assign_n_weeks_in_advance.php';
 require_once FCPATH . './cron/jc.php';
@@ -28,7 +28,7 @@ class Cron extends CI_Controller
             , 'aws_monday'
             , 'aws_schedule_fac_student'
             , 'booking_expiring_notice'
-            , 'events_everyday_morning'
+            , 'everyday_morning'
             , 'events_weekly_summary'
             , 'jc_assign_n_weeks_in_advance'
             , 'jc'
@@ -57,8 +57,18 @@ class Cron extends CI_Controller
 
     public function update_database()
     {
-        update_database_cron();
-        update_publishing_database();
+        if (trueOnGivenDayAndTime('this sunday', '8:00')) {
+            update_database_cron();
+        }
+
+        if (trueOnGivenDayAndTime('this sunday', '11:00')) {
+            update_publishing_database();
+        }
+
+        // Every day monring.
+        if (trueOnGivenDayAndTime('today', '6:00')) {
+            cleanupOrphanedEvents();
+        }
     }
 
     public function aws_annoy()
@@ -107,9 +117,21 @@ class Cron extends CI_Controller
         booking_expiring_notice_cron();
     }
 
-    public function events_everyday_morning()
+    public function everyday_morning()
     {
-        events_everyday_morning_cron();
+        if (trueOnGivenDayAndTime('today', '8:00')) {
+            events_everyday_morning_cron();
+        }
+
+        if (trueOnGivenDayAndTime('today', '7:00')) {
+            // Today's JC
+            jc_every_morning();
+        }
+
+        if (trueOnGivenDayAndTime('today', '7:00')) {
+            // pending requests to deans office.
+            pending_requests();
+        }
     }
 
     public function events_weekly_summary()
@@ -132,6 +154,8 @@ class Cron extends CI_Controller
     public function jc()
     {
         jc_cron();
+        if(trueOnGivenDayAndTime('today', '8:00'))
+            remind_presenter();
     }
 
     public function lablist_every_two_months()
