@@ -195,7 +195,7 @@ function doAWSHouseKeeping()
 function getVenues($sortby = 'total_events DESC, id')
 {
     // Sort according to total_events hosted by venue
-    $res = executeQuery("SELECT * FROM venues ORDER BY $sortby");
+    $res = executeQuery("SELECT * FROM venues WHERE status='ACTIVE' ORDER BY $sortby");
     return $res;
 }
 
@@ -253,9 +253,9 @@ function executeURlQueries($query)
 
 function getVenuesByType($type)
 {
-    $where = "type='$type'";
+    $where = "type='$type' AND status='ACTIVE'";
     if ($type === 'all') {
-        $where = '';
+        $where = "status='ACTIVE'";
     }
     $venues = getTableEntries('venues', 'id', $where);
     $res = [];

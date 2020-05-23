@@ -130,11 +130,13 @@ function admin_venue_actions(array $data, string &$msg): bool
     $editables = 'name,institute,building_name,floor,location,type,strength,'
         . 'latitude,longitude,'
         . 'has_projector,suitable_for_conference,quota,has_skype'
-        . ',allow_booking_on_hippo,note_to_user';
+        . ',allow_booking_on_hippo,note_to_user,status';
 
     $data['floor'] = intval(__get__($data, 'floor', '-1'));
+    $data['latitude'] = __get__($data, 'latitude', -1.0);
+    $data['longitude'] = __get__($data, 'longitude', -1.0);
 
-    if ('update' == $response) {
+    if ('update' === $response) {
         $res = updateTable('venues', 'id', $editables, $data);
         if ($res) {
             $msg = 'Venue ' . $data['id'] . ' is updated successful';
@@ -144,7 +146,7 @@ function admin_venue_actions(array $data, string &$msg): bool
         $msg = 'Failed to update venue ' . $data['id '];
 
         return false;
-    } elseif ('add new' == $response) {
+    } elseif ('add new' === $response || 'add' === $response) {
         if (strlen(__get__($data, 'id', '')) < 2) {
             $msg = 'The venue id is too short to be legal.';
 
@@ -159,7 +161,7 @@ function admin_venue_actions(array $data, string &$msg): bool
         $msg = 'Failed to add venue ' . $data['id '];
 
         return false;
-    } elseif ('delete' == $response) {
+    } elseif ('delete' === $response) {
         $res = deleteFromTable('venues', 'id', $data);
         if ($res) {
             $msg = 'Venue ' . $data['id'] . ' is successfully deleted.';
@@ -175,9 +177,6 @@ function admin_venue_actions(array $data, string &$msg): bool
         return false;
     }
     $msg = "Unknown command from user $response.";
-
-    return false;
-
     return false;
 }
 
