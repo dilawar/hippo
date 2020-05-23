@@ -3067,8 +3067,44 @@ class Api extends CI_Controller
             return $this->__commontasks(...$args);
         } elseif ('event' === $args[0]) {
             return $this->__commontasks(...$args);
+        } elseif ('venue' === $args[0]) {
+            if($args[1] === 'list') {
+                // Its different than /venues/list (here we return all
+                // entries which are not marked deleted).
+                $venues = getTableEntries('venues', 'id', "status != 'DELETED'");
+                $this->send_data($venues, 'ok');
+                return;
+            } elseif($args[1] === 'delete') {
+                $id = $args[1];
+                $res = false; 
+                $error = '';
+                try {
+                    $res = updateTable('venues', 'id'
+                        , 'status', ['id'=>$id, 'status'=>'DELETED']);
+                } catch (Exception $e) {
+                    $error = $e->getMessage();
+                }
+                $this->send_data(['success'=>$res, 'msg'=>$error], 'ok');
+
+                return;
+            } elseif($args[1] === 'update' || $args[1] === 'add') {
+                $msg = '';
+                $_POST['response'] = $args[1];
+                $res = false;
+                $_POST['longitude'] = __get__($_POST, 'longitude', 0.0);
+                $_POST['latitude'] = __get__($_POST, 'latitude', 0.0);
+
+                try {
+                    $res = admin_venue_actions($_POST, $msg);
+                } catch( Exception $e) {
+                    $msg .= $e->getMessage();
+                }
+                $this->send_data(['success'=>$res, 'msg'=>$msg], 'ok');
+                return;
+            }
         }
-        $this->send_data(['flash' => 'Unknown Request'], 'ok');
+        $this->send_data(['success'=>false, 
+            'msg'=>'bmvadmin: Unknown Request: '.json_encode($args)], 'ok');
     }
 
     // Common admin tasks.

@@ -396,9 +396,8 @@ function __get__(array $arr, $what, $default = null)
     // Empty string is a valid value.
     if (array_key_exists($what, $arr)) {
         $val = $arr[$what];
-        if (null !== $val) {
+        if($val)
             return $val;
-        }
     }
 
     return $default;
