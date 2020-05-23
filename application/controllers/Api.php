@@ -349,7 +349,9 @@ class Api extends CI_Controller
                 return;
             }
         }
-        $this->send_data(['success'=>false, 'msg'=>'Unknown request ' . json_encode($args)], 'ok');
+        $this->send_data(['success'=>false
+            , 'msg'=>'Unknown request /info/' . json_encode($args)]
+            , 'ok');
     }
 
     /* --------------------------------------------------------------------------*/
@@ -3191,8 +3193,7 @@ class Api extends CI_Controller
             return;
         } elseif ('holidays' === $args[0]) {
             if ('list' === $args[1]) {
-                $holidays = getHolidays();
-                $this->send_data($holidays, 'ok');
+                $this->info("holiday", "list");
 
                 return;
             } elseif ('submit' === $args[1]) {
