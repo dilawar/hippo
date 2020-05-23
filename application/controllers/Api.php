@@ -3075,7 +3075,7 @@ class Api extends CI_Controller
                 $this->send_data($venues, 'ok');
                 return;
             } elseif($args[1] === 'delete') {
-                $id = $args[1];
+                $id = $args[2];
                 $res = false; 
                 $error = '';
                 try {
