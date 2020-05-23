@@ -1382,7 +1382,13 @@ class Api extends CI_Controller
         $routes = executeQuery(
             "SELECT DISTINCT pickup_point,drop_point,url FROM transport WHERE status='VALID'"
         );
-        $res = ['timetable' => $timetableMap, 'routes' => $routes];
+        $lastUpdateOn = executeQuery("SELECT MAX(last_modified_on) AS
+            last_modified_on FROM transport WHERE status!='INVALID'");
+        if($lastUpdateOn)
+            $lastUpdateOn = $lastUpdateOn[0]['last_modified_on'];
+
+        $res = ['timetable'=>$timetableMap, 'routes'=>$routes
+            , 'last_updated_on'=>$lastUpdateOn];
         $this->send_data($res, 'ok');
     }
 
