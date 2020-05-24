@@ -1453,25 +1453,51 @@ class Api extends CI_Controller
 
             return;
         } elseif ('vehicle' === $endpoint) {
+            /*
+             * We don't have a dedicated table for vehicle. It is unlikely to
+             * be very useful. We just need to store the name of vehicle such
+             * as shuttle/Buggy/E-Rickshaw etc. We use config table to store
+             * these names under the key 'transport.vehicle'.
+             */
             if ('list' === $args[1]) {
-                $res = executeQuery("SELECT DISTINCT vehicle FROM transport WHERE status='VALID'");
-                $this->send_data(
-                    array_map(
-                        function ($x) {
-                            return $x['vehicle'];
-                        }, $res
-                    ), 'ok'
-                );
+                $vehicles = getVehiclesInAvailableTransport();
+                $vehs = json_decode(getConfigValue('transport.vehicle'), true);
+                if($vehs)
+                    $vehicles = array_unique(array_merge($vehicles, $vehs));
 
+                insertOrUpdateTable('config', 'id,value,status', 'value,status'
+                    , ['id'=>'transport.vehicle', 'value'=>json_encode($vehicles)
+                    , 'status'=>'VALID']);
+
+                $this->send_data($vehicles, 'ok');
                 return;
             } elseif ('add' === $args[1]) {
-                $res = ["Unsupported endpoint $endpoint/" . $args[1]];
-                $this->send_data($res, 'ok');
+                $veh = $args[2];
+                $vehicles = json_decode(getConfigValue('transport.vehicle'), true);
+                $vehicles[] = $veh;
+                $vehicles = array_unique($vehicles);
+                $res = updateTable('config', 'id', 'value'
+                    , ['id'=>'transport.vehicle', 'value' => json_encode($vehicles)]);
+                $this->send_data(['success'=>$res, 'msg'=>''], 'ok');
 
                 return;
-            } elseif ('remove' === $args[1]) {
-                $res = ["Unsupported endpoint $endpoint/" . $args[1]];
-                $this->send_data($res, 'ok');
+            } elseif ('remove' === $args[1] || 'delete' === $args[1]) {
+                // Dont remove if there is a tranport entry with this vehicle.
+                $veh = $args[2];
+                $available = getVehiclesInAvailableTransport();
+                if(in_array($veh, $available)) {
+                    $this->send_data(['success'=>false,
+                        'msg' => "First delete this vehicle's entries in "
+                        . "transportation schedule."
+                    ]);
+                    return;
+                }
+
+                $vehicles = json_decode(getConfigValue('transport.vehicle'));
+                $vehicles = array_diff($vehicles, [$veh]);  // delete
+                $res = updateTable('config', 'id,value'
+                    , ['id'=>'transport.vehicle', 'value' => json_encode($vehicles)]);
+                $this->send_data(['success'=>$res, 'msg'=>''], 'ok');
 
                 return;
             } elseif ('update' === $args[1]) {

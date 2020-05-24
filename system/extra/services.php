@@ -32,4 +32,11 @@ function addNewTransportationSchedule(array $data): array
     return $ret;
 }
 
+function getVehiclesInAvailableTransport() : array
+{
+    $res = executeQuery("SELECT DISTINCT vehicle FROM transport WHERE status='VALID'");
+    $available = array_map(function ($x) { return $x['vehicle'];}, $res);
+    return $available;
+}
+
 ?>
