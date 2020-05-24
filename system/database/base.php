@@ -823,6 +823,7 @@ class BMVPDO extends PDO
                 , vehicle VARCHAR(50) NOT NULL
                 , pickup_point VARCHAR(50) NOT NULL
                 , drop_point VARCHAR(50) NOT NULL
+                , via VARCHAR(50)
                 , day ENUM('Sun','Mon','Tue','Wed','Thu','Fri','Sat') NOT NULL
                 , trip_start_time TIME NOT NULL
                 , trip_end_time TIME 
@@ -833,7 +834,7 @@ class BMVPDO extends PDO
                 , last_modified_on DATETIME ON UPDATE CURRENT_TIMESTAMP
                 , edited_by VARCHAR(100) default 'HIPPO'
                 , comment VARCHAR(200)
-                , UNIQUE KEY(vehicle,day,pickup_point,drop_point,trip_start_time,status)
+                , UNIQUE KEY(vehicle,day,pickup_point,via,drop_point,trip_start_time,status)
                 )"
         );
 
