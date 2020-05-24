@@ -1562,17 +1562,26 @@ class Api extends CI_Controller
             return;
         } elseif ('route' === $endpoint) {
             if ('list' === $args[1]) {
-                $routes = executeQuery(
-                    "SELECT DISTINCT pickup_point,drop_point,url FROM transport WHERE status='VALID'"
-                );
+                $routes = getRoutes();
                 $this->send_data($routes, 'ok');
             } elseif ('add' === $args[1]) {
-                $res = ["unknown endpoint $endpoint/" . $args[1]];
+                $res = addRoute($_POST);
                 $this->send_data($res, 'ok');
 
                 return;
-            } elseif ('remove' === $args[1]) {
-                $res = ["unknown endpoint $endpoint/" . $args[1]];
+            } elseif (in_array($args[1], ['remove', 'delete'])) {
+                $from = $_POST['pickup_point'];
+                $to = $_POST['drop_point'];
+
+                // If there is any entry in transportantion, refuse to delete.
+                $res = getTableEntry('transport', 'pickup_point,drop_point', $_POST);
+                if($res) {
+                    $this->send_data(['success'=>false
+                        , 'msg'=> "Please delete all transport entries for this route: $from --> $to"]
+                        , "ok");
+                    return;
+                }
+                $res = deleteRoute($_POST);
                 $this->send_data($res, 'ok');
 
                 return;
