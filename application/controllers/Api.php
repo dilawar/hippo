@@ -796,6 +796,13 @@ class Api extends CI_Controller
             return;
         } elseif ('assign' === $args[0]) {
             $_POST['date'] = dbDate($_POST['date']);
+            if(strtotime($_POST['date']) < strtotime('now')) {
+                $this->send_data(['status' => false
+                    ,  'msg' => "Can't assign JC in the past: " 
+                    . $_POST['date']], 'ok');
+
+                return;
+            }
             $_POST['time'] = dbTime($_POST['time']);
             $speaker = __get__($_POST, 'presenter', '');
             if (!$speaker) {

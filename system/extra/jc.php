@@ -16,7 +16,7 @@ function fixJCSchedule(string $loginOrEmail, array $data):array
     $login = explode( '@', $loginOrEmail)[0];
     $data[ 'status' ] = 'VALID';
     $data[ 'presenter' ] = $loginOrEmail;
-    $msg = json_encode( $data );
+    $msg = '';
 
     if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
     {
@@ -76,7 +76,7 @@ function fixJCSchedule(string $loginOrEmail, array $data):array
             $msg .= p("Could not sent email." );
     }
 
-    return array( 'success' => true, 'message' => $msg);
+    return array( 'success' => true, 'msg' => $msg);
 }
 
 function assignJCPresentationToLogin( string $loginOrEmail, array $data ) : array
