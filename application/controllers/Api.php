@@ -154,6 +154,21 @@ class Api extends CI_Controller
         }
     }
 
+    public function pub()
+    {
+        $args = func_get_args();
+
+        if( 'holiday' === $args[0] || 'holidays' === $args[0]){
+            $what = __get__($args, 1, 'all');
+            if ('all' === $what) {
+                $holidays = getHolidaysOfYear();
+                $this->send_data($holidays, 'ok');
+
+                return;
+            }
+        }
+    }
+
     /* --------------------------------------------------------------------------*/
     /**
      * @Synopsis Get various info.
@@ -169,6 +184,7 @@ class Api extends CI_Controller
     public function info()
     {
         $args = func_get_args();
+
         // Only need api key
         if (!authenticateAPI(getKey())) {
             $this->send_data([], 'Not authenticated');
