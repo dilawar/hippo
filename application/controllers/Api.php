@@ -159,11 +159,18 @@ class Api extends CI_Controller
         $args = func_get_args();
 
         if( 'holiday' === $args[0] || 'holidays' === $args[0]){
-            $what = __get__($args, 1, 'all');
-            if ('all' === $what) {
-                $holidays = getHolidaysOfYear();
-                $this->send_data($holidays, 'ok');
+            $holidays = array_values(getHolidaysOfYear());
+            $what = __get__($args, 1, 'json');
+            if ('json' === $what) {
+                $this->send_data_helper($holidays);
 
+                return;
+            }
+            if ('html' === $what) {
+                $html = arraysToCombinedTableHTML($holidays, 'table'
+                    , 'is_public_holiday,schedule_talk_or_aws');
+                $this->output->set_content_type('text/html', 'utf-8');
+                $this->output->set_output($html);
                 return;
             }
         }
