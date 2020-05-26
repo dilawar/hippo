@@ -167,7 +167,7 @@ class Api extends CI_Controller
                 return;
             }
             if ('html' === $what) {
-                $html = arraysToCombinedTableHTML($holidays, 'table'
+                $html = arraysToCombinedTableHTML($holidays, 'table ncbs-holiday'
                     , 'is_public_holiday,schedule_talk_or_aws');
                 $this->output->set_content_type('text/html', 'utf-8');
                 $this->output->set_output($html);
