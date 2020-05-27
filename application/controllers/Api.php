@@ -158,8 +158,26 @@ class Api extends CI_Controller
     {
         $args = func_get_args();
 
-        if( 'holiday' === $args[0] || 'holidays' === $args[0]){
-            $holidays = array_values(getHolidaysOfYear(getCurrentYear(), true));
+        if( 'holidays_' === $args[0] || 'holidays' === $args[0]){
+            $holidays = getHolidaysOfYear(getCurrentYear(), true);
+            if($args[0] === 'holidays') {
+                $data = array_values($holidays);
+            }
+            else {
+                $footnotes = [];
+                foreach($holidays as &$holiday) {
+                    $comment = trim($holiday['comment']);
+                    if($comment) {
+                        if(! in_array($comment, $footnotes))
+                            $footnotes[] = $comment;
+                        $holiday['description'] = $holiday['description'] 
+                            . '<sup>' . count($footnotes) . '</sup>';
+                    }
+                }
+                $data = [ 'holidays'=>array_values($holidays)
+                    , 'footnotes'=>$footnotes];
+            }
+
             $what = __get__($args, 1, 'json');
             if ('json' === $what) {
                 $this->send_data_helper($holidays);
