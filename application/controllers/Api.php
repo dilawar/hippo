@@ -160,18 +160,18 @@ class Api extends CI_Controller
 
         if( 'holidays_' === $args[0] || 'holidays' === $args[0]){
             $holidays = getHolidaysOfYear(getCurrentYear(), true);
-            if($args[0] === 'holidays') {
-                $data = array_values($holidays);
-            }
-            else {
-                $footnotes = [];
+            $data = array_values($holidays);
+            $footnotes = [];
+
+            if('holidays_' === $args[0])
+            {
                 foreach($holidays as &$holiday) {
                     $comment = trim($holiday['comment']);
                     if($comment) {
                         if(! in_array($comment, $footnotes))
                             $footnotes[] = $comment;
                         $holiday['description'] = $holiday['description'] 
-                            . '<sup>' . count($footnotes) . '</sup>';
+                            . '<sup>' . (count($footnotes)) . '</sup>';
                     }
                 }
                 $data = [ 'holidays'=>array_values($holidays)
@@ -180,13 +180,36 @@ class Api extends CI_Controller
 
             $what = __get__($args, 1, 'json');
             if ('json' === $what) {
-                $this->send_data_helper($holidays);
+                $this->send_data_helper($data);
 
                 return;
             }
             if ('html' === $what) {
-                $html = arraysToCombinedTableHTML($holidays, 'table ncbs-holiday'
-                    , 'is_public_holiday,schedule_talk_or_aws');
+                $class = 'table ncbs-holiday';
+                $hide = 'is_public_holiday,schedule_talk_or_aws,comment';
+                if('holidays_' === $args[0]) {
+                    $holidays = $data['holidays'];
+                    $html = "<table class='$class'>";
+                    $html .= "<tr><th>Holiday</th><th>Date</th><th>Day of the week</th></tr>";
+                    foreach ($holidays as $holiday) {
+                        $desc = $holiday['description'];
+                        $date = date('F j, Y', strtotime($holiday['date']));
+                        $day = date('D', strtotime($date));
+                        $row = "<tr><td>$desc</td><td>$date</td><td>$day</td></tr>";
+                        $html .= $row;
+                    }
+                    $html .= '<tfoot>';
+                    foreach($footnotes as $i => $foot) {
+                        $html .= "<tr><td colspan=4><sup>" . ($i+1) . "</sup>$foot</td></tr>";
+                    }
+                    $html .= '</tfoot>';
+                    $html .= '</table>';
+                }
+                else
+                {
+                    $html = arraysToCombinedTableHTML($data, 'table ncbs-holiday'
+                        , 'is_public_holiday,schedule_talk_or_aws');
+                }
                 $this->output->set_content_type('text/html', 'utf-8');
                 $this->output->set_output($html);
                 return;
