@@ -159,7 +159,7 @@ class Api extends CI_Controller
         $args = func_get_args();
 
         if( 'holiday' === $args[0] || 'holidays' === $args[0]){
-            $holidays = array_values(getHolidaysOfYear());
+            $holidays = array_values(getHolidaysOfYear(getCurrentYear(), true));
             $what = __get__($args, 1, 'json');
             if ('json' === $what) {
                 $this->send_data_helper($holidays);

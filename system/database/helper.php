@@ -2732,14 +2732,17 @@ function getHolidays($from = null)
     return $data;
 }
 
-function getHolidaysOfYear($year='')
+function getHolidaysOfYear($year='', $only_public=false)
 {
     if(! $year)
         $year = getCurrentYear();
     $data = [];
-    foreach(getTableEntries('holidays', 'date', "YEAR(date)='$year'") as $h) {
+    $where = "YEAR(date) = '$year'";
+    if($only_public)
+        $where .= " AND is_public_holiday='YES'";
+
+    foreach(getTableEntries('holidays', 'date', $where) as $h)
         $data[$h['date']] = $h;
-    }
     
     return $data;
 }
