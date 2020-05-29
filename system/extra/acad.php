@@ -141,7 +141,9 @@ function updateAWS(array $data, string $by = 'HIPPO'): array
 {
     $res = updateTable(
         'upcoming_aws', 'id',
-        'abstract,title,is_presynopsis_seminar,supervisor_1', $data
+        'abstract,title,is_presynopsis_seminar,supervisor_1,supervisor_2'
+            . ',tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4'
+        , $data
     );
 
     if ($res) {
