@@ -127,6 +127,10 @@ class Api extends CI_Controller
             $events = getNumBookings($numEvents, $startFrom);
         } elseif ('class' === $args[0]) {
             $this->send_data('ok', $dbChoices['events.class']);
+        } elseif ('get' === $args[0]) {
+            $gid = $args[1];
+            $eid = __get__($args, 2, '');
+            $events = $eid ? getEventsById($gid, $eid) : getEventsByGroupId($gid);
         } else {
             $status = 'error';
             $events['msg'] = 'Unknow request: ' . $args[0];
@@ -2990,9 +2994,13 @@ class Api extends CI_Controller
 
             if ('update' === $subtask) {
                 $res = updateEvent($_POST['gid'], $_POST['eid'], $_POST);
-                $data['flash'] = 'successfully updated';
+                $data['flash'] = 'successfully updated'; // old api.
+                $data['status'] = false;
+                $data['msg'] = 'successfully updated';
             } else {
-                $data['flash'] = 'Unknown request ' . $subtask;
+                $data['flash'] = 'Unknown request ' . $subtask; // old api.
+                $data['msg'] = 'Unknown request ' . $subtask; 
+                $data['status'] = false;
             }
             $this->send_data($data, 'ok');
 

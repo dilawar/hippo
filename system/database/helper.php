@@ -1477,7 +1477,6 @@ function updateEventGroup($gid, $options)
 function updateEvent($gid, $eid, $options)
 {
     $hippoDB = initDB();
-    ;
     $editable = array( "title", "description", "is_public_event"
         , "status", "class" );
     $fields = array( );
