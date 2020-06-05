@@ -2995,7 +2995,7 @@ class Api extends CI_Controller
             if ('update' === $subtask) {
                 $res = updateEvent($_POST['gid'], $_POST['eid'], $_POST);
                 $data['flash'] = 'successfully updated'; // old api.
-                $data['status'] = false;
+                $data['status'] = true;
                 $data['msg'] = 'successfully updated';
             } else {
                 $data['flash'] = 'Unknown request ' . $subtask; // old api.
