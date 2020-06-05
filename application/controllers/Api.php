@@ -3349,7 +3349,7 @@ class Api extends CI_Controller
             return;
         } elseif ('holidays' === $args[0]) {
             if ('list' === $args[1]) {
-                $this->info("holiday", "list");
+                $this->info("holidays", 'list');
 
                 return;
             } elseif ('submit' === $args[1]) {
