@@ -14,12 +14,14 @@ function aws_monday_morning_cron()
     if ($res['speakers']) {
         echo printInfo("Sending mail about today's AWS");
         $subject .= implode(', ', $res['speakers']);
-        $mail = $res['email'];
-        $cclist = $res['mail']['cc'];
-        $to = $res['mail']['recipients'];
+
+        $mail = $res['email_body'];
+        $cclist = $res['cc'];
+        $to = $res['recipients'];
 
         error_log("Sending to $to, $cclist with subject $subject");
         echo "Sending to $to, $cclist with subject $subject";
+
         $ret = sendHTMLEmail($mail, $subject, $to, $cclist);
     } else {
         // There is no AWS this monday.
