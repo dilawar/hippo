@@ -16,6 +16,8 @@ require_once FCPATH . './cron/lablist_every_two_months.php';
 require_once FCPATH . './cron/sync_calendar.php';
 require_once FCPATH . './cron/remove_old_aws_schedule.php';
 
+require_once FCPATH . './system/extra/covid19.php';
+
 class Cron extends CI_Controller
 {
     public function run()
@@ -33,7 +35,9 @@ class Cron extends CI_Controller
             , 'jc_assign_n_weeks_in_advance'
             , 'jc'
             , 'lablist_every_two_months'
-            , 'sync_calendar',
+            , 'sync_calendar'
+            , 'update_covid_datebase'
+            , 'notify_covid'
         ];
 
         foreach ($tasks as $i => $t) {
@@ -53,6 +57,16 @@ class Cron extends CI_Controller
                 );
             }
         }
+    }
+
+    public function update_covid_datebase()
+    {
+        return updateCovidData();
+    }
+
+    public function notify_covid()
+    {
+        return notifyCovid();
     }
 
     public function update_database()

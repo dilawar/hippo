@@ -976,6 +976,37 @@ class BMVPDO extends PDO
                 ) DEFAULT CHARSET=utf8;"
         );
 
+        // COVID19
+        $res = $this->query(
+            "
+            CREATE TABLE IF NOT EXISTS covid19 (
+                id INT(11) PRIMARY KEY 
+                , pid VARCHAR(8) NOT NULL
+                , latitude DECIMAL(10,8) NOT NULL
+                , longitude DECIMAL(10,8) NOT NULL
+                , address VARCHAR(200)
+                , timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP()
+                , date_of_identification DATE
+                , status ENUM('VALID', 'INVALID') default 'VALID' -- success,  warning, error etc.
+                , comment VARCHAR(500)
+                , json MEDIUMTEXT
+                , UNIQUE KEY ( pid )
+                )"
+        );
+
+        // alerts.
+        $res = $this->query(
+            "
+            CREATE TABLE IF NOT EXISTS covid19_alerts (
+                id INT(6) PRIMARY KEY AUTO_INCREMENT
+                , login varchar(30) NOT NULL
+                , latitude DECIMAL(10,8) NOT NULL
+                , longitude DECIMAL(10,8) NOT NULL
+                , status ENUM('VALID', 'INVALID') default 'VALID'
+                , UNIQUE KEY (login, latitude, longitude)
+                )"
+        );
+
         return $res;
     }
 }
