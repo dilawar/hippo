@@ -3928,6 +3928,11 @@ class Api extends CI_Controller
             return;
         }
     
+        if($args[0] === 'update') {
+            updateCovidData();
+            return;
+        }
+
         // Now we need to authenticate.
         if (!authenticateAPI(getKey())) {
             $this->send_data([], 'Not authenticated');
@@ -3935,10 +3940,6 @@ class Api extends CI_Controller
             return;
         }
 
-        if($args[0] === 'update') {
-            updateCovidData();
-            return;
-        }
 
         // alerts can also go to /me
         else if($args[0] === 'alert') {
