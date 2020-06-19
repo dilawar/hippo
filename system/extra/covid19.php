@@ -6,7 +6,7 @@ function updateCovidData()
     $raw = json_decode($raw, true);
     $features = __get__($raw, 'features', []);
 
-    $fs = 'pid,longitude,latitude,address,date_of_identification';
+    $fs = 'pid,longitude,latitude,pstatus,address,date_of_identification';
     foreach($features as $feature) {
         $row = [];
         $attr = $feature['attributes'];
@@ -18,6 +18,7 @@ function updateCovidData()
         $date = dbDateTime($attr['date_of_identification']/1000);
         $row['date_of_identification'] = $date;
         $row['address'] = $attr['address'];
+        $row['pstatus'] = $attr['status'];
         insertOrUpdateTable('covid19', "id,$fs", $fs, $row);
     }
     return;

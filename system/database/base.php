@@ -985,6 +985,7 @@ class BMVPDO extends PDO
                 , latitude DECIMAL(10,8) NOT NULL
                 , longitude DECIMAL(10,8) NOT NULL
                 , address VARCHAR(200)
+                , pstatus VARCHAR(30) DEFAULT 'UNKNOWN' -- patient status
                 , timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP()
                 , date_of_identification DATE
                 , status ENUM('VALID', 'INVALID') default 'VALID' -- success,  warning, error etc.
