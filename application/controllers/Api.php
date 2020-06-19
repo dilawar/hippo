@@ -15,6 +15,7 @@ require_once BASEPATH . '/extra/acad.php';
 require_once BASEPATH . '/extra/services.php';
 require_once BASEPATH . '/extra/me.php';
 require_once BASEPATH . '/extra/charts.php';
+require_once BASEPATH . '/extra/covid19.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -3915,5 +3916,59 @@ class Api extends CI_Controller
         $args = func_get_args();
 
         return $this->__commontasks('email', ...$args);
+    }
+
+
+    public function covid19() 
+    {
+        $args = func_get_args();
+        if($args[0] === 'data') {
+            $data = getTableEntries('covid19', 'id', "status='VALID'");
+            $this->send_data($data, 'ok');
+            return;
+        }
+    
+        // Now we need to authenticate.
+        if (!authenticateAPI(getKey())) {
+            $this->send_data([], 'Not authenticated');
+
+            return;
+        }
+
+        if($args[0] === 'update') {
+            updateCovidData();
+            return;
+        }
+
+        // alerts can also go to /me
+        else if($args[0] === 'alert') {
+            if($args[1] === 'add') {
+                $res = insertIntoTable('covid19_alerts'
+                    , "login,latitude,longitude", $_POST);
+                $this->send_data(['success'=>$res, 'msg'=>''], 'ok');
+                return;
+            }
+            if($args[1] === 'remove' || $args[1] === 'delete') {
+                if($_POST['login'] === getLogin()) {
+                    $res = deleteFromTable('covid19_alerts'
+                        , "id,login", $_POST);
+                    $this->send_data(['success'=>$res, 'msg'=>''], 'ok');
+                    return;
+                }
+                $this->send_data(['success'=>false, 'msg'=>'Permission denied.'], 'ok');
+                return;
+            }
+            else if($args[1] === 'mylist') {
+                $login = getLogin();
+                $res = getTableEntries('covid19_alerts', "login", "login='$login'");
+                $this->send_data($res, 'ok');
+                return;
+            }
+        }
+
+        $data = ['success'=>false
+            , 'msg' => 'Unknown endpoint:' . json_encode($args)];
+        $this->send_data($data, 'ok');
+        return;
     }
 }
