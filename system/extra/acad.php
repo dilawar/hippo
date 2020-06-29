@@ -139,6 +139,12 @@ function cancelAWS(array $data, string $bywhom = 'HIPPO'): array
 /* ----------------------------------------------------------------------------*/
 function updateAWS(array $data, string $by = 'HIPPO'): array
 {
+    $id = $data['id'];
+    executeQueryReadonly("UPDATE upcoming_aws 
+        SET supervisor_1='', supervisor_2='', 
+        tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
+        WHERE id='$id'");
+
     $res = updateTable(
         'upcoming_aws', 'id',
         'abstract,title,is_presynopsis_seminar,supervisor_1,supervisor_2'
@@ -147,10 +153,10 @@ function updateAWS(array $data, string $by = 'HIPPO'): array
     );
 
     if ($res) {
-        return ['success' => true, 'msg' => 'Successfully updated abstract of upcoming AWS entry'];
+        return ['success' => true, 'msg' => 'Successfully updated upcoming AWS entry'];
     }
 
-    return ['msg' => 'I could not update title/abstract.', 'success' => false];
+    return ['msg' => 'I could not update the entry.', 'success' => false];
 }
 
 /* --------------------------------------------------------------------------*/

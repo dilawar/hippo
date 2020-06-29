@@ -1864,21 +1864,8 @@ class Api extends CI_Controller
             }
         } elseif ('upcomingaws' === $args[0]) {
             if ('update' === $args[1]) {
-                $id = $_POST['id'];
-
-                // Remove previous TCM and supervisors.
-                executeQueryReadonly("UPDATE upcoming_aws 
-                    SET supervisor_1='', supervisor_2='', 
-                        tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
-                    WHERE id='$id'");
-
-                $res = updateTable('upcoming_aws', 'id',
-                    'supervisor_1,supervisor_2,' .
-                    'tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4,' .
-                    'title,abstract',
-                    $_POST);
-                $this->send_data(['success' => $res, 'msg' => ''], 'ok');
-
+                $data = updateAWS($_POST, getLogin());
+                $this->send_data($data, 'ok');
                 return;
             }
         } elseif ('acknowledge_aws' === $args[0]) {
@@ -2810,6 +2797,8 @@ class Api extends CI_Controller
         if ('get' === $args[0]) {
             $limit = __get__($args, 1, 10);
             $notifications = User::getNotifications($this, $login, $limit);
+            if(! $notifications)
+                $notifications = [];
             $this->send_data($notifications, 'ok');
 
             return;
