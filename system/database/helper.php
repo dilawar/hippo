@@ -171,13 +171,17 @@ function doAWSHouseKeeping()
             continue;
         }
 
-        $res1 = insertIntoTable(
-            'annual_work_seminars',
-            'speaker,date,time,supervisor_1,supervisor_2' .
-                ',tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4' .
-                ',title,abstract,is_presynopsis_seminar',
-            $aws
-        );
+	$res1 = null;
+	try {
+		$res1 = insertIntoTable(
+			'annual_work_seminars',
+			'speaker,date,time,supervisor_1,supervisor_2' 
+			.  ',tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4' 
+			.  ',title,abstract,is_presynopsis_seminar', $aws);
+	} catch(Exception $e) {
+		echo "Failed " . $e->getMessage();
+	}
+
 
         if ($res1) {
             $res2 = deleteFromTable('upcoming_aws', 'id', $aws);
