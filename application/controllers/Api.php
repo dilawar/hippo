@@ -2022,6 +2022,7 @@ class Api extends CI_Controller
             $_POST['status'] = 'AVAILABLE';
             $_POST['created_by'] = getLogin();
             $_POST['created_on'] = dbDateTime('now');
+            $_POST['address'] = __get__($_POST, 'address', 'Not provided.');
 
             $res = insertIntoTable(
                 'accomodation',
