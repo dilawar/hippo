@@ -32,7 +32,6 @@ function fetch_resources_bbmp($url, $type='GET', $token='')
         'Referer: https://analysis.bbmpgov.in/'
         , 'Origin: https://analysis.bbmpgov.in'
         , 'Accept: application/json, text/plain, */*'
-        , 'Content-type: application/json'
         , 'Connection: keep-alive'
         , 'Accept-Language: en-US;en;q=0.5'
         , 'DNT: 1'
@@ -42,15 +41,16 @@ function fetch_resources_bbmp($url, $type='GET', $token='')
     if($token)
         $headers[] = "Authorization: Bearer $token";
 
-    //curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
     //curl_setopt($ch, CURLOPT_VERBOSE, true);
-    if('POST'===$type)
+    if('POST'===$type) {
         curl_setopt($ch, CURLOPT_POST, true);
+    }
     else
         curl_setopt($ch, CURLOPT_POST, false);
 
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 2);
     
     curl_setopt($ch, CURLOPT_POSTREDIR, 3);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
