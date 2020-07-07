@@ -101,7 +101,8 @@ function updateCovidData()
         $existing = getTableEntry('covid19', 'longitude,latitude', $row);
         if($existing) {
             // If this SI already exists then update.
-            updateTable('covid19', 'id', $fs, $row);
+            // Don't use id here.
+            updateTable('covid19', 'latitude,longitude', $fs, $row);
             continue;
         } else {
             $row['date_of_identification'] = dbDateTime('now');
@@ -131,6 +132,5 @@ function test_function()
     var_dump($data);
 }
 
-//test_function();
 
 ?>
