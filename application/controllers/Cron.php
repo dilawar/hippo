@@ -15,7 +15,6 @@ require_once FCPATH . './cron/jc.php';
 require_once FCPATH . './cron/lablist_every_two_months.php';
 require_once FCPATH . './cron/sync_calendar.php';
 require_once FCPATH . './cron/remove_old_aws_schedule.php';
-
 require_once FCPATH . './system/extra/covid19.php';
 
 class Cron extends CI_Controller
@@ -61,6 +60,7 @@ class Cron extends CI_Controller
 
     public function update_covid_datebase()
     {
+        echo "Updating covid database. <br>";
         return updateCovidData();
     }
 
