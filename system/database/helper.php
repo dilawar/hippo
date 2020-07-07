@@ -1952,7 +1952,6 @@ function getTableEntry(string $tablename, $whereKeys, array $data) : array
             return $res;
         }
     } catch (Exception $e) {
-        echo printWarning("Failed to fetch. Error was " . $e->getMessage());
         return array();
     }
     return array();
