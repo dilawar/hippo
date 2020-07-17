@@ -75,7 +75,6 @@ function updateCovidData()
 
     $data = fetch_resources_bbmp($url, 'POST', $token);
     if(! $data) {
-        echo "Data not found on $url";
         return;
     }
 
@@ -101,8 +100,7 @@ function updateCovidData()
         $existing = getTableEntry('covid19', 'longitude,latitude', $row);
         if($existing) {
             // If this SI already exists then update.
-            // Don't use id here.
-            updateTable('covid19', 'latitude,longitude', $fs, $row);
+            updateTable('covid19', 'id', $fs, $row);
             continue;
         } else {
             $row['date_of_identification'] = dbDateTime('now');
@@ -126,11 +124,8 @@ function test_function()
 
     $data = fetch_resources_bbmp($url, 'POST', $token);
     if(! $data) {
-        echo "Data not found on $url";
         return;
     }
-    var_dump($data);
 }
-
 
 ?>
