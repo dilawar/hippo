@@ -3154,6 +3154,9 @@ class Api extends CI_Controller
                 $data['clashes'] = $jcOrLab;
             } elseif ('approve' === $subtask) {
 
+                // JUST to be sure.
+                if('YES'===$_POST['is_public_event'])
+                    $ret = updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST, getLogin());
                 $data['msg'] = 'APPROVED';
             } elseif ('reject' === $subtask) {
