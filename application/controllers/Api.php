@@ -1039,7 +1039,6 @@ class Api extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public function venue()
     {
-        // This require authentication.
         $data = [];
         $args = func_get_args();
         if (0 == count($args)) {
@@ -1047,12 +1046,7 @@ class Api extends CI_Controller
 
             return;
         }
-        $this->process_venue_request($args);
-    }
 
-    // Show documentation of venue().
-    private function process_venue_request($args)
-    {
         // List of venues are available to all even without authentication.
         // Required for MAP to work.
         if ('list' === $args[0]) {
@@ -1081,7 +1075,9 @@ class Api extends CI_Controller
             $this->send_data([], 'Not authenticated');
 
             return;
-        } elseif ('info' === $args[0]) {
+        } 
+        
+        if ('info' === $args[0]) {
             $id = __get__($args, 1, 0);
             $data = getVenueById($id);
             $this->send_data($data, 'ok');
@@ -1157,8 +1153,10 @@ class Api extends CI_Controller
         $endDateTime = is_numeric($endDateTime) ? $endDateTime : intval($endDateTime);
 
         if ((!$venueId) || ($startDateTime >= $endDateTime)) {
-            $data = ['msg' => "Could not book for: venue=$venue, startDateTime=$startDateTime
-            and endTime=$endTime", 'success' => false];
+            $data = ['msg' => "Could not book for: venue=$venueId, start datetime " 
+                . dbDateTime($startDateTime) . " and end datetime . ". dbDateTime($endDateTime)
+                . ". Either venue is invalid or the end time is less that start time!"
+            , 'success' => false];
             $this->send_data($data, 'error');
 
             return;
@@ -2022,7 +2020,7 @@ class Api extends CI_Controller
             $_POST['status'] = 'AVAILABLE';
             $_POST['created_by'] = getLogin();
             $_POST['created_on'] = dbDateTime('now');
-            $_POST['address'] = __get__($_POST, 'address', 'Not provided.');
+            $_POST['address'] = __get__($_POST, 'address', 'NA');
 
             $res = insertIntoTable(
                 'accomodation',
@@ -3156,16 +3154,14 @@ class Api extends CI_Controller
                 $data['clashes'] = $jcOrLab;
             } elseif ('approve' === $subtask) {
 
-                // Mark is a public event, if admin says so.
-                if ('YES' === $_POST['is_public_event']) {
-                    updateTable('bookmyvenue_requests', 'gid,rid', 'is_public_event', $_POST);
-                }
-
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST, getLogin());
                 $data['msg'] = 'APPROVED';
             } elseif ('reject' === $subtask) {
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST, getLogin());
                 $data['msg'] = 'REJECTED';
+            } elseif ('update' === $subtask) {
+                $ret = updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
+                $data['msg'] = 'UPDATED';
             } else {
                 $data = ['flash' => 'Unknown request'];
             }
@@ -3362,7 +3358,7 @@ class Api extends CI_Controller
 
             return;
         }
-        // NOTE: Usually admin can not approve requests; he can do so for some
+        // NOTE: Usually acad admin can not approve requests; he can do so for some
         // requests associated with talks.
         elseif ('request' === $args[0]) {
             if ('cancel' === $args[1] || 'delete' === $args[1]) {

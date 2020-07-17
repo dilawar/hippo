@@ -71,12 +71,10 @@ function updateCovidData()
     $tokenUrl = "https://covid19.quantela.com/qpa/1.0.0/public/token/bbmp.com/6a4d20c0-87dd-556b-9319-ab7147e388d9";
     $res = fetch_resources_bbmp($tokenUrl, 'GET');
     $token = $res["result"]["access_token"];
-    echo "Token is $token \n";;
     $url = 'https://covid19.quantela.com/qpa/1.0.0/public/dashboard/getData/bbmp.com/7WGKgnEBHZrt-aeeDTHg/TmpE-XEBiNslxwBhF2EA';
 
     $data = fetch_resources_bbmp($url, 'POST', $token);
     if(! $data) {
-        echo "Data not found on $url";
         return;
     }
 
@@ -102,13 +100,11 @@ function updateCovidData()
         $existing = getTableEntry('covid19', 'longitude,latitude', $row);
         if($existing) {
             // If this SI already exists then update.
-            echo "Already exists";
             updateTable('covid19', 'id', $fs, $row);
             continue;
         } else {
             $row['date_of_identification'] = dbDateTime('now');
             $row['timestamp'] = dbDateTime('now');
-            echo "Adding new entry";
             insertIntoTable('covid19', "id,$fs,date_of_identification", $row);
         }
     }
@@ -124,17 +120,12 @@ function test_function()
     $tokenUrl = "https://covid19.quantela.com/qpa/1.0.0/public/token/bbmp.com/6a4d20c0-87dd-556b-9319-ab7147e388d9";
     $res = fetch_resources_bbmp($tokenUrl, 'GET');
     $token = $res["result"]["access_token"];
-    echo "Token is $token \n";;
     $url = 'https://covid19.quantela.com/qpa/1.0.0/public/dashboard/getData/bbmp.com/7WGKgnEBHZrt-aeeDTHg/TmpE-XEBiNslxwBhF2EA';
 
     $data = fetch_resources_bbmp($url, 'POST', $token);
     if(! $data) {
-        echo "Data not found on $url";
         return;
     }
-    var_dump($data);
 }
-
-test_function();
 
 ?>
