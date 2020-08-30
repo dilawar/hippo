@@ -296,7 +296,7 @@ function getCourseFeedbackApi(string $year='', string $semester='', string $cid=
         foreach($q['choices'] as $ch) 
             $response['choice'][$ch] = 0;
 
-        // Get reponses for this questions.
+        // Get responses for this questions.
         $fields = 'question_id,course_id,year,semester,instructor_email,response';
         $entries = getTableEntries('course_feedback_responses', 'question_id', $w, $fields);
         foreach($entries as &$en) {
@@ -310,6 +310,82 @@ function getCourseFeedbackApi(string $year='', string $semester='', string $cid=
             }
             else
                 $response['text'][] = $en['response'];
+        }
+        $responses[$qid] = $response;
+    }
+
+    $score = [];
+    foreach($points as $c => $pts)
+        $score[$c] = 5/2*mean($pts) + 5;
+
+    return ['responses' => $responses
+        , 'questions' => $questions
+        , 'summary' => $summary
+        , 'points' => $points
+        , 'data' => $data
+        , 'score' => $score
+    ];
+}
+
+function getCourseFeedback2Api(string $year='', string $semester='', string $cid='', $login = ''): array
+{
+    global $OPTIONS;
+    $where = "status='VALID'";
+    if($year)
+        $where .= " AND year='$year'";
+    if($semester)
+       $where .= " AND semester='$semester'";
+    if(strlen($cid) > 0)
+        $where .= " AND course_id='$cid'";
+    if ($login)
+        $where .= " AND login='$login' ";
+
+    $ques = getTableEntries('course_feedback_questions', 'id', "status='VALID'"
+        , 'id,type,question,choices');
+
+    $data = [];
+    $questions = [];
+    $responses = [];
+
+    $points = [];
+    $summary = [];
+
+    foreach ($ques as &$q) {
+        $qid = $q['id'];
+        if(trim($q['choices']))
+            $q['choices'] = explode(',', trim($q['choices']));
+        else
+            $q['choices'] = [];
+
+        $questions[$q['id']] = $q;
+
+        $w = $where . " AND question_id='$qid'";
+        $response = [];
+
+        // Get responses for this questions.
+        $fields = 'question_id,course_id,year,semester,instructor_email,response';
+        $entries = getTableEntries('course_feedback_responses', 'question_id', $w, $fields);
+        foreach($entries as &$en) {
+            $en['question'] = strip_tags($questions[$qid]['question']);
+            $data[] = $en;
+
+            $who = __get__($en, 'instructor_email', $en['course_id']);
+            if(null === __get__($response, $who, null))
+                $response[$who] = [];
+
+            if(in_array($en['response'], $q['choices'])) {
+                $r = $en['response'];
+
+                if(null === __get__($response[$who], $r, null))
+                    $response[$who]['choice'][$r] = 0;
+
+                $response[$who]['choice'][$r] += 1;
+
+                $points[$en['course_id']][] = __get__($OPTIONS, $r, 0);
+                $summary[$r] = __get__($summary, $r, 0) + 1;
+            }
+            else
+                $response[$who]['text'][] = $en['response'];
         }
         $responses[$qid] = $response;
     }
