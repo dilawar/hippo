@@ -23,6 +23,7 @@ class BMVPDO extends PDO
         }
 
         $options = array ( PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION );
+
         $host = $conf['mysql']['host'];
         $port = $conf['mysql']['port'];
 

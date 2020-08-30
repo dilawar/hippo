@@ -3264,7 +3264,7 @@ class Api extends CI_Controller
                     }
                     $data[] = $talk;
                 }
-                $this->send_data($talks, 'ok');
+                $this->send_data($data, 'ok');
 
                 return;
             } elseif ('get' === $endpoint) {
