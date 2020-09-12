@@ -3916,19 +3916,43 @@ class Api extends CI_Controller
         return $this->__commontasks('email', ...$args);
     }
 
+    // Photography club
     public function photographyclub()
     {
         $args = func_get_args();
 
-        if($args[0] === 'status') {
-            $data = getTableEntries('covid19', 'id', "status='VALID'");
+        if($args[0] === 'list') {
+            $data = getTableEntries('photography_club_competition');
             $this->send_data($data, 'ok');
             return;
         }
 
+        if($args[0] === 'event') {
+            if($args[1] === 'new') {
+                $keys = 'id,theme,description,start_date,end_date,voting_start_date,voting_end_date,note,status';
+                $_POST['id'] = getUniqueID('photography_club_competition');
+                $_POST['status'] = 'VALID';
+                $res = ['success'=>false, 'msg'=> ''];
+                try {
+                    $r = insertIntoTable('photography_club_competition', $keys, $_POST);
+                    $res['success'] = $r;
+                } catch (Exception $e) {
+                    $res['msg'] .= $e->getMessage();
+                }
+                $this->send_data($res, 'ok');
+                return;
+            }
+        }
+
+        $data = ['success'=>false
+            , 'msg' => 'Unknown endpoint:' . json_encode($args)];
+        $this->send_data($data, 'ok');
+        return;
+
     }
 
 
+    // Covid 
     public function covid19() 
     {
         $args = func_get_args();

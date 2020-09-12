@@ -985,8 +985,12 @@ class BMVPDO extends PDO
         , description MEDIUMTEXT 
         , start_date DATE NOT NULL
         , end_date DATE NOT NULL
+        , voting_start_date DATE NOT NULL
+        , voting_end_date DATE NOT NULL
+        , status ENUM('VALID', 'INVALID', 'CANCELLED') DEFAULT 'VALID'
+        , note VARCHAR(256)
         , comment MEDIUMTEXT
-        , UNIQUE KEY ( id, theme )
+        , UNIQUE KEY (theme, start_date)
         )"
         );
 
@@ -996,6 +1000,8 @@ class BMVPDO extends PDO
         , login VARCHAR(50) NOT NULL
         , competition_id INT NOT NULL
         , filepath VARCHAR(1024) NOT NULL
+        , status ENUM('VALID', 'INVALID', 'REMOVED', 'CENSORED') default 'VALID'
+        , note MEDIUMTEXT
         , caption MEDIUMTEXT
         , hash VARCHAR(80)
         , comment TEXT
@@ -1008,6 +1014,8 @@ class BMVPDO extends PDO
         , login VARCHAR(50) NOT NULL
         , competition_id INT NOT NULL
         , entry_id INT NOT NULL
+        , status ENUM('VALID', 'INVALID') DEFAULT 'VALID'
+        , note VARCHAR(512) 
         , rate SMALLINT NOT NULL
         , comment VARCHAR(200)
         )"
