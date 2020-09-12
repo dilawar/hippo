@@ -977,6 +977,43 @@ class BMVPDO extends PDO
                 ) DEFAULT CHARSET=utf8;"
         );
 
+        // Photography club
+        $res = $this->query("
+        CREATE TABLE IF NOT EXISTS photography_club_competition (
+        id INT(11) PRIMARY KEY 
+        , theme VARCHAR(256) NOT NULL
+        , description MEDIUMTEXT 
+        , start_date DATE NOT NULL
+        , end_date DATE NOT NULL
+        , comment MEDIUMTEXT
+        , UNIQUE KEY ( id, theme )
+        )"
+        );
+
+        $res = $this->query("
+        CREATE TABLE IF NOT EXISTS photography_club_entry (
+        id INT(11) PRIMARY KEY 
+        , login VARCHAR(50) NOT NULL
+        , competition_id INT NOT NULL
+        , filepath VARCHAR(1024) NOT NULL
+        , caption MEDIUMTEXT
+        , hash VARCHAR(80)
+        , comment TEXT
+        )"
+        );
+
+        $res = $this->query("
+        CREATE TABLE IF NOT EXISTS photography_club_rating (
+        id INT(11) PRIMARY KEY 
+        , login VARCHAR(50) NOT NULL
+        , competition_id INT NOT NULL
+        , entry_id INT NOT NULL
+        , rate SMALLINT NOT NULL
+        , comment VARCHAR(200)
+        )"
+        );
+
+
         // COVID19
         $res = $this->query(
             "

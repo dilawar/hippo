@@ -16,6 +16,7 @@ require_once BASEPATH . '/extra/services.php';
 require_once BASEPATH . '/extra/me.php';
 require_once BASEPATH . '/extra/charts.php';
 require_once BASEPATH . '/extra/covid19.php';
+require_once BASEPATH . '/extra/photography.php';
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -3913,6 +3914,18 @@ class Api extends CI_Controller
         $args = func_get_args();
 
         return $this->__commontasks('email', ...$args);
+    }
+
+    public function photographyclub()
+    {
+        $args = func_get_args();
+
+        if($args[0] === 'status') {
+            $data = getTableEntries('covid19', 'id', "status='VALID'");
+            $this->send_data($data, 'ok');
+            return;
+        }
+
     }
 
 
