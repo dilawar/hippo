@@ -3921,20 +3921,52 @@ class Api extends CI_Controller
     {
         $args = func_get_args();
 
-        if($args[0] === 'list') {
-            $data = getTableEntries('photography_club_competition');
-            $this->send_data($data, 'ok');
-            return;
-        }
 
         if($args[0] === 'event') {
-            if($args[1] === 'new') {
+
+            if($args[0] === 'list') {
+                $data = getTableEntries('photography_club_competition'
+                    , 'start_date'
+                    , ['status'=>'VALID']);
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'new' || $args[1] === 'add') {
                 $keys = 'id,theme,description,start_date,end_date,voting_start_date,voting_end_date,note,status';
                 $_POST['id'] = getUniqueID('photography_club_competition');
                 $_POST['status'] = 'VALID';
                 $res = ['success'=>false, 'msg'=> ''];
                 try {
                     $r = insertIntoTable('photography_club_competition', $keys, $_POST);
+                    $res['success'] = $r;
+                } catch (Exception $e) {
+                    $res['msg'] .= $e->getMessage();
+                }
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else if($args[1] === 'update') {
+                $keys = 'theme,description,start_date,end_date,voting_start_date,voting_end_date,note,status';
+                $res = ['success'=>false, 'msg'=> ''];
+                try {
+                    $r = updateTable('photography_club_competition', 'id', $keys, $_POST);
+                    $res['success'] = $r;
+                } catch (Exception $e) {
+                    $res['msg'] .= $e->getMessage();
+                }
+                $this->send_data($res, 'ok');
+                return;
+            }
+            else if($args[1] === 'delete') {
+                $_POST['status'] = 'INVALID';
+                $res = ['success'=>false, 'msg'=> ''];
+                if(! (whoAmI() === 'photography' || hasRoles('ADMIN'))) {
+                    $res = ['success'=>false, 'msg'=> 'You do not have permission to delete this entry.'];
+                    $this->send_data($res, 'ok');
+                    return;
+                }
+                try {
+                    $r = updateTable('photography_club_competition', 'id', 'stauts', $_POST);
                     $res['success'] = $r;
                 } catch (Exception $e) {
                     $res['msg'] .= $e->getMessage();
