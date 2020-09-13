@@ -13,10 +13,23 @@ class Info extends CI_Controller
         $this->template->load($view, $data);
     }
 
+    // no need for authentication (see HippoHooks.php)
     public function photography_club()
     {
         // Return a random image.
         $filename = random_jpeg('temp/_backgrounds/');
+        return $this->servepath($filename);
+    }
+
+    // no need for authentication (see HippoHooks.php)
+    public function photographyclub_image($name) {
+        $filename = getUploadDir() . '/' . $name;
+        return $this->servepath($filename);
+    }
+
+    public function servepath($filename)
+    {
+        // Return a random image.
         if (file_exists($filename)) {
             $mime = mime_content_type($filename); //<-- detect file type
             header('Content-Length: ' . filesize($filename)); //<-- sends filesize header
@@ -27,6 +40,7 @@ class Info extends CI_Controller
             exit; //and exit
         }
     }
+
 
     public function courses()
     {

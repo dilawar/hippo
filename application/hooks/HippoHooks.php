@@ -18,7 +18,7 @@ class HippoHooks
         if ('info' === $class) {
             $page = basename($_SERVER['PHP_SELF']);
             $page = str_replace('.php', '', $page);
-            if ('photography_club' === $page) {
+            if ('photography_club' === $page || 'photographyclub_image') {
                 return;
             }
 

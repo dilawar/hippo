@@ -1005,6 +1005,7 @@ class BMVPDO extends PDO
         , caption MEDIUMTEXT
         , hash VARCHAR(80)
         , comment TEXT
+        , last_modified_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )"
         );
 

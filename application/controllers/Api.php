@@ -76,7 +76,7 @@ class Api extends CI_Controller
         parent::__construct();
     }
 
-    private function send_data_helper(array $data)
+    private function send_data_helper(array $data, int $status=200)
     {
         $json = json_encode(
             $data,
@@ -84,6 +84,7 @@ class Api extends CI_Controller
             | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );
         $this->output->set_content_type('application/json', 'utf-8');
+        $this->output->set_status_header($status);
         $this->output->set_output($json);
     }
 
@@ -92,9 +93,9 @@ class Api extends CI_Controller
         $this->send_data($what);
     }
 
-    private function send_data(array $data, string $status = 'ok')
+    private function send_data(array $data, string $status = 'ok', int $code=200)
     {
-        $this->send_data_helper(['status' => $status, 'data' => $data]);
+        $this->send_data_helper(['status' => $status, 'data' => $data], $code);
     }
 
     /* --------------------------------------------------------------------------*/
@@ -738,7 +739,7 @@ class Api extends CI_Controller
                 return;
             }
 
-            $this->send_data(["Unknown endpoint slot/$endpoint"], 'error');
+            $this->send_data(["Unknown endpoint slot/$endpoint"], 'error', 404);
 
             return;
         }
@@ -2458,14 +2459,28 @@ class Api extends CI_Controller
     /* ----------------------------------------------------------------------------*/
     public function images()
     {
+        ob_flush();
         $args = func_get_args();
         if (0 == count($args)) {
             $args[] = 'get';
         }
 
+        if ('byname' === $args[0]) {
+            $filepath = getUploadDir() . '/' . $args[1];
+            if (!file_exists($filepath)) {
+                $data = [];
+                $this->send_data($data, 'ok', 404);
+                return;
+            }
+            $this->output->set_content_type(get_mime_by_extension($filepath));
+            $this->output->set_output(file_get_contents($filepath));
+            return;
+        }
+
+
+        // Authenticate.
         if (!authenticateAPI(getKey())) {
             $this->send_data([], 'Not authenticated');
-
             return;
         }
 
@@ -2494,7 +2509,8 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
 
             return;
-        }
+        }         
+        
         if ('delete' === $args[0]) {
             $ids = $args[1];
             $data = ['args' => $ids, 'msg' => ''];
@@ -2613,14 +2629,56 @@ class Api extends CI_Controller
                 $this->send_data($res, 'ok');
 
                 return;
+            } elseif ('photographyclub' === $endpoint) {
+
+                $compt_id = intval($_POST['event_id']);
+                $caption = $_POST['caption'];
+
+                $user = getLogin();
+                $hash = md5($user.'-'.$caption);
+                $targetFile = getUploadDir() . "/photography-$compt_id-$hash.jpg";
+
+                $img = $_FILES['file'];
+                $ext = explode('/', $img['type'])[1];
+                saveImageAsJPEGLarge($img['tmp_name'], $ext, $targetFile);
+                if(! file_exists($targetFile) ) {
+                    $res['success'] = false;
+                    $res['msg'] = "Failed to save on the server. Please contact the admin.";
+                    $this->send_data($res, 'ok');
+                    return;
+                }
+
+                // Execute a query
+                $data = [
+                    'id' => getUniqueID('photography_club_entry')
+                    , 'login' => getLogin()
+                    , 'competition_id' => $compt_id
+                    , 'filepath' => $targetFile
+                    , 'note' => __get__($_POST, 'note', '')
+                    , 'caption' => $caption
+                    , 'hash' => md5_file($targetFile)
+                    , 'comment' => __get__($_POST, 'comment', '')
+                ];
+
+                $keys = array_keys($data);
+                try {
+                    $r = insertIntoTable('photography_club_entry', $keys, $data);
+                    $res['success'] = $r ? true : false;
+                } catch (Exception $e) {
+                    $res['success'] = false;
+                    $res['msg'] = $e->getMessage() . '<br>' . json_encode($data);
+                }
+                $res['stored'] = $targetFile;
+                $this->send_data($res, 'ok');
+                return;
             }
 
-            $this->send_data(['Unknow request: ' + $endpoint], 'ok');
-
+            $this->send_data(['success'=>false, 'msg'=>"Unknown request: $endpoint"], 'ok', 404);
             return;
-
-            $this->send_data($res, 'error');
-        }
+        } 
+        // This should be an error.
+        $this->send_data_helper(['success'=>false, 'msg'=>"Unknown endpoint:" . json_encode($args)], 404);
+        return;
     }
 
     /* --------------------------------------------------------------------------*/
@@ -3921,18 +3979,38 @@ class Api extends CI_Controller
     {
         $args = func_get_args();
 
-
         if($args[0] === 'event') {
 
-            if($args[0] === 'list') {
+            if($args[1] === 'list') {
                 $data = getTableEntries('photography_club_competition'
-                    , 'start_date'
-                    , ['status'=>'VALID']);
+                    , 'start_date', "status='VALID'");
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'active') {
+                $data = getTableEntries('photography_club_competition'
+                    , 'start_date', "status='VALID' AND start_date <= CURDATE() 
+                    AND voting_end_date >= CURDATE()");
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'upcoming') {
+                $data = getTableEntries('photography_club_competition'
+                    , 'start_date', "status='VALID' AND start_date > CURDATE() 
+                    ");
+                $this->send_data($data, 'ok');
+                return;
+            }
+            else if($args[1] === 'completed') {
+                $data = getTableEntries('photography_club_competition'
+                    , 'start_date', "status='VALID' AND voting_end_date < CURDATE() 
+                    ");
                 $this->send_data($data, 'ok');
                 return;
             }
             else if($args[1] === 'new' || $args[1] === 'add') {
-                $keys = 'id,theme,description,start_date,end_date,voting_start_date,voting_end_date,note,status';
+                $keys = 'id,theme,description,start_date,end_date," . 
+                    "voting_start_date,voting_end_date,note,status';
                 $_POST['id'] = getUniqueID('photography_club_competition');
                 $_POST['status'] = 'VALID';
                 $res = ['success'=>false, 'msg'=> ''];
@@ -3950,7 +4028,7 @@ class Api extends CI_Controller
                 $res = ['success'=>false, 'msg'=> ''];
                 try {
                     $r = updateTable('photography_club_competition', 'id', $keys, $_POST);
-                    $res['success'] = $r;
+                    $res['success'] = $r ? true : false;
                 } catch (Exception $e) {
                     $res['msg'] .= $e->getMessage();
                 }
@@ -3960,7 +4038,7 @@ class Api extends CI_Controller
             else if($args[1] === 'delete') {
                 $_POST['status'] = 'INVALID';
                 $res = ['success'=>false, 'msg'=> ''];
-                if(! (whoAmI() === 'photography' || hasRoles('ADMIN'))) {
+                if(! (getLogin() === 'photography' || hasRoles('ADMIN'))) {
                     $res = ['success'=>false, 'msg'=> 'You do not have permission to delete this entry.'];
                     $this->send_data($res, 'ok');
                     return;
@@ -3974,10 +4052,23 @@ class Api extends CI_Controller
                 $this->send_data($res, 'ok');
                 return;
             }
+        } elseif('entry' === $args[0]) {
+            if( $args[1] === 'getall') {
+                $where = "status='VALID'";
+
+                if(__get__($args, 2, 0))
+                    $where .= " AND competition_id='".$args[2]."'";
+
+                $entries = getTableEntries('photography_club_entry', 'id', $where);
+                
+                foreach($entries as &$entry)
+                    $entry['url'] = site_url() . '/info/photographyclub_image/' . basename($entry['filepath']);
+                $this->send_data($entries, 'ok');
+                return;
+            }
         }
 
-        $data = ['success'=>false
-            , 'msg' => 'Unknown endpoint:' . json_encode($args)];
+        $data = ['success'=>false, 'msg'=>'Unknown endpoint:' . json_encode($args)];
         $this->send_data($data, 'ok');
         return;
 
