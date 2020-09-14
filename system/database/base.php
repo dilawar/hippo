@@ -1014,6 +1014,7 @@ class BMVPDO extends PDO
         id INT(11) PRIMARY KEY 
         , login VARCHAR(50) NOT NULL
         , entry_id INT NOT NULL
+        , competition_id INT NOT NULL
         , star DECIMAL(4,2) NOT NULL
         , status ENUM('VALID', 'INVALID') DEFAULT 'VALID'
         , note VARCHAR(512) 

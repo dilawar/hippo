@@ -4035,6 +4035,8 @@ class Api extends CI_Controller
                     'start_date', "status='VALID' AND start_date <= CURDATE() 
                     AND voting_end_date >= CURDATE()"
                 );
+                if(count($data) > 0)
+                    $data = $data[0];
                 $this->send_data($data, 'ok');
                 return;
             }
@@ -4057,10 +4059,12 @@ class Api extends CI_Controller
                 return;
             }
             else if($args[1] === 'new' || $args[1] === 'add') {
-                $keys = 'id,theme,description,start_date,end_date," . 
-                    "voting_start_date,voting_end_date,note,status';
+                $keys = 'id,theme,description,start_date' . 
+                    ',end_date,voting_start_date,voting_end_date,note,status';
+
                 $_POST['id'] = getUniqueID('photography_club_competition');
                 $_POST['status'] = 'VALID';
+
                 $res = ['success'=>false, 'msg'=> ''];
                 try {
                     $r = insertIntoTable('photography_club_competition', $keys, $_POST);
@@ -4084,7 +4088,7 @@ class Api extends CI_Controller
                 return;
             }
             else if($args[1] === 'delete') {
-                $_POST['status'] = 'INVALID';
+                $data = ['status' => 'INVALID', 'id' => $args[2]];
                 $res = ['success'=>false, 'msg'=> ''];
                 if(! (getLogin() === 'photography' || hasRoles('ADMIN'))) {
                     $res = ['success'=>false, 'msg'=> 'You do not have permission to delete this entry.'];
@@ -4092,7 +4096,7 @@ class Api extends CI_Controller
                     return;
                 }
                 try {
-                    $r = updateTable('photography_club_competition', 'id', 'stauts', $_POST);
+                    $r = updateTable('photography_club_competition', 'id', 'stauts', $data);
                     $res['success'] = $r;
                 } catch (Exception $e) {
                     $res['msg'] .= $e->getMessage();
@@ -4160,12 +4164,47 @@ class Api extends CI_Controller
             if($args[1] == 'add') {
                 $_POST['login'] = getLogin();
                 $_POST['entry_id'] = $_POST['id'];
-                $_POST['id'] = getUnique('photography_club_rating');
+                $_POST['id'] = getUniqueID('photography_club_rating');
                 $r = insertOrUpdateTable('photography_club_rating'
-                    , 'id,login,entry_id,star,note'
+                    , 'id,login,entry_id,competition_id,star,note'
                     , 'star,note'
                     , $_POST);
+                $success = $r ? true : false;
+                $msg = '';
                 $this->send_data(['success'=>$success, 'msg'=>$msg], 'ok');
+                return;
+            }
+            elseif($args[1] == 'getone') {
+                $entry_id = $args[2];
+                $ratings = getTableEntries('photography_club_rating'
+                    , 'login'
+                    , "status='VALID' AND entry_id='$entry_id'");
+                $this->send_data($ratings, 'ok');
+                return;
+            }
+            elseif($args[1] == 'getall') {
+                $comptid = $args[2];
+                $ratings = getTableEntries('photography_club_rating'
+                    , 'login'
+                    , "status='VALID' AND competition_id='$comptid'");
+                $data = [];
+                foreach($ratings as $r) {
+                    $data[$r['login']][$r['entry_id']] = $r['star'];
+                    $data[$r['entry_id']][] = $r['star'];
+                }
+                $this->send_data($data, 'ok');
+                return;
+            }
+            elseif($args[1] == 'myratings') {
+                $login = getLogin();
+                $where = "status='VALID' AND login='$login'";
+                $entry_id = __get__($args, 2, '');
+                if($entry_id)
+                    $where .= " AND entry_id='$entry_id'";
+
+                $ratings = getTableEntries('photography_club_rating', 'entry_id'
+                    , $where);
+                $this->send_data($ratings, 'ok');
                 return;
             }
         }
