@@ -977,6 +977,53 @@ class BMVPDO extends PDO
                 ) DEFAULT CHARSET=utf8;"
         );
 
+        // Photography club
+        $res = $this->query("
+        CREATE TABLE IF NOT EXISTS photography_club_competition (
+        id INT(11) PRIMARY KEY 
+        , theme VARCHAR(256) NOT NULL
+        , description MEDIUMTEXT 
+        , start_date DATE NOT NULL
+        , end_date DATE NOT NULL
+        , voting_start_date DATE NOT NULL
+        , voting_end_date DATE NOT NULL
+        , status ENUM('VALID', 'INVALID', 'CANCELLED') DEFAULT 'VALID'
+        , note VARCHAR(256)
+        , comment MEDIUMTEXT
+        , UNIQUE KEY (theme, start_date)
+        )"
+        );
+
+        $res = $this->query("
+        CREATE TABLE IF NOT EXISTS photography_club_entry (
+        id INT(11) PRIMARY KEY 
+        , login VARCHAR(50) NOT NULL
+        , competition_id INT NOT NULL
+        , filepath VARCHAR(1024) NOT NULL
+        , status ENUM('VALID', 'INVALID', 'REMOVED', 'CENSORED') default 'VALID'
+        , note MEDIUMTEXT
+        , caption MEDIUMTEXT
+        , hash VARCHAR(80)
+        , comment TEXT
+        , last_modified_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )"
+        );
+
+        $res = $this->query("
+        CREATE TABLE IF NOT EXISTS photography_club_rating (
+        id INT(11) PRIMARY KEY 
+        , login VARCHAR(50) NOT NULL
+        , entry_id INT NOT NULL
+        , competition_id INT NOT NULL
+        , star DECIMAL(4,2) NOT NULL
+        , status ENUM('VALID', 'INVALID') DEFAULT 'VALID'
+        , note VARCHAR(512) 
+        , last_modified_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        , UNIQUE KEY(login, entry_id)
+        )"
+        );
+
+
         // COVID19
         $res = $this->query(
             "

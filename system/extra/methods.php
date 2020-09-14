@@ -848,6 +848,29 @@ function saveImageAsJPEG($originalImage, $ext, $outputImage, $quality = 90)
     return false;
 }
 
+function saveImageAsJPEGLarge($originalImage, $ext, $outputImage, $quality = 90)
+{
+    // Keep the scaling factor of original image. User ImageMagick.
+    $img = new Imagick($originalImage);
+    $w = $img->getImageWidth();
+    $h = $img->getImageHeight();
+    // Remove the old one.
+    if (file_exists($outputImage)) {
+        unlink($outputImage);
+    }
+
+    $img->writeImage($outputImage);
+    if (file_exists($outputImage)) {
+        $img->clear();
+        $img->destroy();
+
+        return true;
+    }
+
+    return false;
+}
+
+
 /**
  * @brief Get a low resolution image of pdf files.
  *
