@@ -1013,12 +1013,12 @@ class BMVPDO extends PDO
         CREATE TABLE IF NOT EXISTS photography_club_rating (
         id INT(11) PRIMARY KEY 
         , login VARCHAR(50) NOT NULL
-        , competition_id INT NOT NULL
         , entry_id INT NOT NULL
+        , star DECIMAL(4,2) NOT NULL
         , status ENUM('VALID', 'INVALID') DEFAULT 'VALID'
         , note VARCHAR(512) 
-        , rate SMALLINT NOT NULL
-        , comment VARCHAR(200)
+        , last_modified_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        , UNIQUE KEY(login, entry_id)
         )"
         );
 
