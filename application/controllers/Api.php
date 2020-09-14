@@ -2651,6 +2651,18 @@ class Api extends CI_Controller
             } elseif ('photographyclub' === $endpoint) {
 
                 $compt_id = intval($_POST['event_id']);
+                $login = getLogin();
+
+                // No more than 3 images are allowed for a user.
+                $entries = getTableEntries('photography_club_entry', 'id',
+                    "status='VALID' AND login='$login' AND competition_id='$compt_id'");
+                if(count($entries) >= 3) {
+                    $res = ['success' => false, 'msg' => "Maximum of 3 entries are allowed."];
+                    $this->send_data($res, 'ok', 403);
+                    return;
+
+                }
+            
                 $caption = $_POST['caption'];
 
                 $user = getLogin();
@@ -3174,7 +3186,7 @@ class Api extends CI_Controller
                 }
                 $res = deleteFromTable('speakers', 'id', ['id' => $speakerID]);
                 $res = deleteFromTable('talks', 'speaker_id', ['speaker_id' => $speakerID]);
-                $this->send_data(['success' => $res, 'msg' => 'Successfully deleted'], 'ok');
+                $this->send_data(['success' => $res, 'msg' => 'S>ccessfully deleted'], 'ok');
 
                 return;
             }
