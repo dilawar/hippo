@@ -33,7 +33,7 @@ class Pub extends CI_Controller
         }
     }
 
-    // Download the data.
+    // Download the data of photographyclub.
     public function photographyclub_data(int $id = 0)
     {
         $where = "status='VALID'";
@@ -46,8 +46,14 @@ if($id)
             , "competition_id,login"
             , $where);
 
-        foreach($entries as &$entry) 
+        foreach($entries as &$entry) {
+            $eid = $entry['id'];
+            $entry['votes'] = getTableEntries('photography_club_rating', 'id'
+                , "status='VALID' AND entry_id='$eid'", "star");
             $entry['url'] = site_url() . '/pub/photographyclub_image/' . basename($entry['filepath']);
+
+
+        }
 
         header("Content-Type: application/json"); //<-- send mime-type header
         echo json_encode(["competitions"=>$competitions, "entries"=>$entries]);
