@@ -822,7 +822,7 @@ function saveImageAsPNG($originalImage, $ext, $outputImage, $quality = 9)
     return true;
 }
 
-function saveImageAsJPEG($originalImage, $ext, $outputImage, $quality = 90)
+function saveImageAsJPEG($originalImage, $outputImage, $quality = 90)
 {
     // Keep the scaling factor of original image. User ImageMagick.
     $img = new Imagick($originalImage);
@@ -848,7 +848,7 @@ function saveImageAsJPEG($originalImage, $ext, $outputImage, $quality = 90)
     return false;
 }
 
-function saveImageAsJPEGLarge($originalImage, $ext, $outputImage, $quality = 90)
+function saveImageAsJPEGLarge($originalImage, $outputImage, $quality = 90)
 {
     // Keep the scaling factor of original image. User ImageMagick.
     $img = new Imagick($originalImage);
@@ -1097,7 +1097,6 @@ function uploadImage($pic, $filename)
     }
 
     $type = explode('/', $pic['type']);
-    $ext = $type[1];
 
     if (strlen($tmpfile) < 1) {
         return false;
@@ -1111,7 +1110,7 @@ function uploadImage($pic, $filename)
         $picPath = $conf['data']['user_imagedir'] . '/' . $filename;
     }
 
-    return saveImageAsJPEG($tmpfile, $ext, $picPath);
+    return saveImageAsJPEG($tmpfile, $picPath);
 }
 
 /**
