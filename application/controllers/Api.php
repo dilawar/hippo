@@ -68,7 +68,7 @@ function hasRoles($whichRoles, $login=''): bool
 
 function isPhotoClubAdmin($login) : bool
 {
-    return ($login === 'photography') or hasRoles('ADMIN');
+    return hasRoles('PHOTOGRAPHY_CLUB_ADMIN,ADMIN');
 }
 
 class Api extends CI_Controller
@@ -4103,14 +4103,14 @@ class Api extends CI_Controller
             else if($args[1] === 'delete') {
                 $data = ['status' => 'INVALID', 'id' => $args[2]];
                 $res = ['success'=>false, 'msg'=> ''];
-                if(! (getLogin() === 'photography' || hasRoles('ADMIN'))) {
+                if(! hasRoles('ADMIN,PHOTOGRAPHY_CLUB_ADMIN')) {
                     $res = ['success'=>false, 'msg'=> 'You do not have permission to delete this entry.'];
                     $this->send_data($res, 'ok');
                     return;
                 }
                 try {
                     $r = updateTable('photography_club_competition', 'id', 'status', $data);
-                    $res['success'] = $r;
+                    $res['success'] = $r ? true : false;
                 } catch (Exception $e) {
                     $res['msg'] .= $e->getMessage();
                 }
