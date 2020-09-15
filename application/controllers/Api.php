@@ -2631,7 +2631,7 @@ class Api extends CI_Controller
                 $tempFile = $img['tmp_name'];
                 $conf = getConf();
                 $targetFile = $conf['data']['user_imagedir'] . '/' . getLogin() . '.jpg';
-                saveImageAsJPEG($tempFile, $ext, $targetFile);
+                saveImageAsJPEG($tempFile, $targetFile);
                 $res['stored'] = $targetFile;
                 $this->send_data($res, 'ok');
 
@@ -2643,7 +2643,7 @@ class Api extends CI_Controller
                 $tempFile = $img['tmp_name'];
                 $conf = getConf();
                 $targetFile = $conf['data']['user_imagedir'] . "/$id.jpg";
-                saveImageAsJPEG($tempFile, $ext, $targetFile);
+                saveImageAsJPEG($tempFile, $targetFile);
                 $res['stored'] = $targetFile;
                 $this->send_data($res, 'ok');
 
@@ -2670,8 +2670,9 @@ class Api extends CI_Controller
                 $targetFile = getUploadDir() . "/photography-$compt_id-$hash.jpg";
 
                 $img = $_FILES['file'];
-                $ext = explode('/', $img['type'])[1];
-                saveImageAsJPEGLarge($img['tmp_name'], $ext, $targetFile);
+
+                saveImageAsJPEGLarge($img['tmp_name'], $targetFile);
+
                 if(! file_exists($targetFile) ) {
                     $res['success'] = false;
                     $res['msg'] = "Failed to save on the server. Please contact the admin.";

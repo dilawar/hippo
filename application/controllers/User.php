@@ -158,7 +158,6 @@ class User extends CI_Controller
                     echo minionEmbarrassed('This file could not be uploaded', $img['error']);
                 }
 
-                $ext = explode('/', $img['type'])[1];
                 $tmppath = $img['tmp_name'];
 
                 if ($img['size'] > 1024 * 1024) {
@@ -166,7 +165,7 @@ class User extends CI_Controller
                 } else {
                     // Convert to png file and tave to $picPath
                     try {
-                        $res = saveImageAsJPEG($tmppath, $ext, $picPath);
+                        $res = saveImageAsJPEG($tmppath, $picPath);
                         if (!$res) {
                             echo minionEmbarrassed(
                                 'I could not upload your image (allowed formats: png, jpg, bmp)!'
