@@ -12,7 +12,7 @@ class HippoHooks
     public function PreController()
     {
         $class = $this->CI->router->fetch_class();
-        if ('api' === $class) {
+        if ('api' === $class || 'pub' === $class) {
             return;
         }
         if ('info' === $class) {
