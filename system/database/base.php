@@ -110,7 +110,7 @@ class BMVPDO extends PDO
                 , first_name VARCHAR(200)
                 , middle_name VARCHAR(50)
                 , last_name VARCHAR(100)
-                , roles SET('USER','ADMIN','MEETINGS','ACAD_ADMIN','BOOKMYVENUE_ADMIN','JC_ADMIN','SERVICES_ADMIN') DEFAULT 'USER'
+                , roles SET('USER','ADMIN','MEETINGS' ,'ACAD_ADMIN','BOOKMYVENUE_ADMIN','JC_ADMIN' , 'PHOTOGRAPHY_CLUB_ADMIN', 'SERVICES_ADMIN') DEFAULT 'USER'
                 , designation VARCHAR(40) DEFAULT 'UNKNOWN'
                 , last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 , created_on DATETIME
