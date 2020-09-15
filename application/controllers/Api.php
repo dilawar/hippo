@@ -4109,7 +4109,7 @@ class Api extends CI_Controller
                     return;
                 }
                 try {
-                    $r = updateTable('photography_club_competition', 'id', 'stauts', $data);
+                    $r = updateTable('photography_club_competition', 'id', 'status', $data);
                     $res['success'] = $r;
                 } catch (Exception $e) {
                     $res['msg'] .= $e->getMessage();
