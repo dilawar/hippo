@@ -2662,6 +2662,19 @@ class Api extends CI_Controller
                     return;
 
                 }
+
+                // Check for the allowed dates.
+                $today = strtotime('today');
+                if(($today < strtotime($_POST['start_date'])) || (
+                    $today > strtotime($_POST['end_date']))) {
+
+                    $res = ['success' => false, 
+                        'msg' => "Uploading is not allowed. Allowed window: " 
+                        . $_POST['start_date'] . ' to ' 
+                        .  $_POST['end_date'] ];
+                    $this->send_data($res, 'ok', 403);
+                    return;
+                }
             
                 $caption = $_POST['caption'];
 
