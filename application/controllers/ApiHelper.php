@@ -133,7 +133,8 @@ function submitBookingRequest(array $request, string $login): array
         }
 
         $request['timestamp'] = dbDateTime('now');
-        $res = insertIntoTable('bookmyvenue_requests', 'gid,rid,external_id,created_by,venue,title,vc_url,description' .
+        $res = insertIntoTable('bookmyvenue_requests'
+            , 'gid,rid,external_id,created_by,venue,title,vc_url,vc_extra,description' .
                 ',date,start_time,end_time,timestamp,is_public_event,class', $request
         );
 

@@ -268,8 +268,16 @@ class Api extends CI_Controller
             $data = array_merge($tom, $data);
             $cards = [];
             foreach ($data as $item) {
-                $cards[] = ['title' => $item['title'], 'date' => $item['date'], 'time' => $item['start_time'], 'venue' => venueToShortText($item['venue'], __get__($item, 'vc_url', '')),
-                ];
+                $venueHtml = venueToShortText($item['venue']
+                    , __get__($item, 'vc_url', ''), $item['vc_extra']);
+
+                if($item['vc_extra'])
+                    $venueHtml .= " (" . $item['vc_extra'] . ")";
+
+                $cards[] = ['title' => $item['title']
+                    , 'date' => $item['date']
+                    , 'time' => $item['start_time']
+                    , 'venue' => $venueHtml];
             }
 
             // AWS cards.
@@ -281,7 +289,7 @@ class Api extends CI_Controller
                     $speaker = getLoginInfo($aws['speaker']);
                     $title .= arrayToName($speaker) . ', ';
                 }
-                $cards[] = ['title' => $title, 'date' => $faws['date'], 'time' => $faws['time'], 'venue' => venueToShortText($faws['venue'], $faws['vc_url']),
+                $cards[] = ['title' => $title, 'date' => $faws['date'], 'time' => $faws['time'], 'venue' => venueToShortText($faws['venue'], $faws['vc_url'], $faws['vc_extra']),
                 ];
             }
 
@@ -795,7 +803,7 @@ class Api extends CI_Controller
             if ($login === explode('@', $presenter)[0] || isThisJCAdmin($login, $_POST['jc_id'])) {
                 $res = updateTable(
                     'jc_presentations', 'id',
-                    'title,description,url,presentation_url,vc_url', $_POST
+                    'title,description,url,presentation_url,vc_url,vc_extra', $_POST
                 );
                 $this->send_data(['success' => $res ? 'Success' : 'Failed', 'msg' => ''], 'ok');
 
@@ -954,8 +962,6 @@ class Api extends CI_Controller
      *     - /aws/latest/6
      *     - /aws/date/2019-03-01               // Find AWS in this week.
      *     - /aws/date/2019-03-01/2019-04-01    // Find AWS between these  dates.
-     *     - /aws/vc_url/get                     // AWS remote url
-     *     - /aws/vc_url/set                     // AWS remote url, set
      *     - /aws/venue/change                  // Change AWS venue.
      * @Returns
      */
@@ -1006,11 +1012,7 @@ class Api extends CI_Controller
             );
         } elseif ('venue' === $args[0]) {
             if ('change' === $args[1]) {
-                $res = updateTable('upcoming_aws', 'date', 'venue,vc_url', $_POST);
-                // Also change in global config (deprecated)
-                $res = insertOrUpdateTable(
-                    'config', 'id,value', 'value', ['id' => 'AWS_VC_URL', 'value' => $_POST['vc_url']]
-                );
+                $res = updateTable('upcoming_aws', 'date', 'venue,vc_url,vc_extra', $_POST);
                 $this->send_data(['success' => $res], 'ok');
 
                 return;
@@ -1028,7 +1030,7 @@ class Api extends CI_Controller
 
                 return $this->send_data($res, 'ok');
             } elseif ('set' === $args[1]) {
-                // set AWS VC url globally.
+                // DEPREACED: set AWS VC url globally.
                 $res = ['success' => insertOrUpdateTable('config', 'id,value', 'id,value', ['id' => 'AWS_VC_URL', 'value' => $_POST['AWS_VC_URL']]), 'status' => 'ok'];
                 $this->send_data($res, $status);
             }
@@ -1850,7 +1852,7 @@ class Api extends CI_Controller
             $res = updateTable(
                 'bookmyvenue_requests',
                 $where,
-                'title,description,is_public_event,vc_url,url,class',
+                'title,description,is_public_event,vc_url,vc_extra,url,class',
                 $_POST
             );
             $this->send_data(['success' => $res, 'msg' => 'Success'], 'ok');
@@ -1865,7 +1867,7 @@ class Api extends CI_Controller
             $res = updateTable(
                 'events',
                 $where,
-                'title,description,is_public_event,class,vc_url,url',
+                'title,description,is_public_event,class,vc_url,vc_extra,url',
                 $_POST
             );
             $this->send_data(['success' => $res, 'msg' => 'Success'], 'ok');
@@ -2653,6 +2655,15 @@ class Api extends CI_Controller
                 $compt_id = intval($_POST['event_id']);
                 $login = getLogin();
 
+                $entry = getTableEntry('photography_club_competition', 'id'
+                    , ['id'=>$compt_id]);
+                if(! $entry) {
+                    $res = ['success' => false
+                        , 'msg' => "No valid competition found with id " . $compt_id];
+                    $this->send_data($res, 'ok', 403);
+                    return;
+                }
+
                 // No more than 3 images are allowed for a user.
                 $entries = getTableEntries('photography_club_entry', 'id',
                     "status='VALID' AND login='$login' AND competition_id='$compt_id'");
@@ -2661,6 +2672,19 @@ class Api extends CI_Controller
                     $this->send_data($res, 'ok', 403);
                     return;
 
+                }
+
+                // Check for the allowed dates.
+                $today = strtotime('today');
+                if(($today < strtotime($entry['start_date'])) || 
+                    ($today > strtotime($entry['end_date']))) {
+
+                    $res = ['success' => false, 
+                        'msg' => "Uploading is not allowed. Allowed window: " 
+                        . $entry['start_date'] . ' to ' . $entry['end_date']
+                    ];
+                    $this->send_data($res, 'ok', 403);
+                    return;
                 }
             
                 $caption = $_POST['caption'];
@@ -3725,11 +3749,13 @@ class Api extends CI_Controller
                 // tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
                 // WHERE id='$id'");
 
-                $res = updateTable(
-                    'annual_work_seminars', 'id',
-                    'title,abstract,status,is_presynopsis_seminar,chair,venue,vc_url'
-                    . ',supervisor_1,supervisor_2,tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4', $_POST, false
-                );
+                $res = updateTable('annual_work_seminars'
+                    , 'id'
+                    , 'title,abstract,status,is_presynopsis_seminar' 
+                        .  ',chair,venue,vc_url,vc_extra'
+                        . ',supervisor_1,supervisor_2' 
+                        . ',tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4'
+                    , $_POST, false);
 
                 if ($res) {
                     $data['success'] = true;

@@ -222,6 +222,7 @@ class BMVPDO extends PDO
                 , description TEXT
                 , venue VARCHAR(80) NOT NULL
                 , vc_url VARCHAR(200) -- url of jitsi zoom etc.
+                , vc_extra VARCHAR(50) -- passcode etc.
                 , date DATE NOT NULL
                 , start_time TIME NOT NULL
                 , end_time TIME NOT NULL
@@ -297,6 +298,7 @@ class BMVPDO extends PDO
                 , date DATE NOT NULL
                 , venue VARCHAR(80) NOT NULL
                 , vc_url VARCHAR(200) -- zoom/jitsi etc. url.
+                , vc_extra VARCHAR(50) -- passcode etc.
                 , created_by VARCHAR( 50 ) NOT NULL
                 , start_time TIME NOT NULL
                 , end_time TIME NOT NULL
@@ -359,6 +361,8 @@ class BMVPDO extends PDO
                 , abstract MEDIUMTEXT
                 , is_presynopsis_seminar ENUM( 'YES', 'NO' ) default 'NO'
                 , venue VARCHAR(50) NOT NULL
+                , vc_url VARCHAR(200) -- zoom
+                , vc_extra VARCHAR(50) -- passcode
                 , chair VARCHAR(100) 
                 , status ENUM( 'VALID', 'INVALID', 'CANCELLED', 'DELETED', 'NOT_PRESENTED') DEFAULT 'VALID'
                 , FOREIGN KEY (speaker) REFERENCES logins(login)
@@ -728,6 +732,7 @@ class BMVPDO extends PDO
                 , status ENUM( 'VALID', 'INVALID', 'CANCELLED' ) default 'VALID'
                 , url VARCHAR(500) -- URL of paper
                 , vc_url VARCHAR(500) -- VC URL
+                , vc_extra VARCHAR(50) -- passcode etc.
                 , presentation_url VARCHAR(500) -- URL of presentation
                 , acknowledged  ENUM('YES','NO') default 'NO' -- acknowledged
                 , UNIQUE KEY(presenter,jc_id,date)

@@ -179,7 +179,7 @@ function authenticate($ldap, $pass)
     return $auth;
 }
 
-function venueToShortText($venue, $url = ''): string
+function venueToShortText($venue, string $url = '', string $extra=''): string
 {
     if (is_string($venue)) {
         $venue = getVenueById($venue);
@@ -187,7 +187,12 @@ function venueToShortText($venue, $url = ''): string
 
     $txt = $venue['name'];
     if ($url) {
-        $txt .= ' (url: <a external target="_system" href="' . $url . '">' . $url . '</a>)';
+        $urlText = $url;
+        if($extra) {
+            $urlText .= " ($extra)";
+            $txt .= ' (url: <a external target="_system" href="' . $url . '">' 
+                . $urlText . '</a>)';
+        }
     }
 
     return $txt;
