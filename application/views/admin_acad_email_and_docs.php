@@ -63,12 +63,12 @@ if ('This week AWS' === $default['task'])
     if (count($awses) < 1) {
         echo printInfo('No AWS is found for selected day.', true);
     } else {
+
         foreach ($awses as $aws) {
             $emailHtml .= awsToHTML($aws, false);
         }
 
         //echo $emailHtml;
-
 
         $chair = __get__($awses[0], 'chair', '');
 
@@ -84,7 +84,7 @@ if ('This week AWS' === $default['task'])
         $macros = [ 'CHAIR' => $chair
             , 'DATE' => humanReadableDate($awses[0]['date'])
             , 'TIME' => humanReadableTime(strtotime('4:00 pm'))
-            , 'VENUE' => venueToShortText($awses[0]['venue'])
+            , 'VENUE' => venueToShortText($awses[0]['venue'], $awses[0]['vc_url'], $awses[0]['vc_extra'])
             ,  'EMAIL_BODY' => $emailHtml
         ];
 
