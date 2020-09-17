@@ -2009,8 +2009,11 @@ function talkToHTML($talk, $with_picture = false)
     $event = getEventsOfTalkId($talk['id']);
 
     $where = venueSummary($event['venue']);
+
     if (__get__($event, 'vc_url', '')) {
         $where .= '<br />' . anchor($event['vc_url'], $event['vc_url']);
+        if(__get__($event, 'vc_extra', ''))
+            $where .= " (" . $event['vc_extra'] . ")";
     }
 
     $when = humanReadableDate($event['date']) . ', ' .

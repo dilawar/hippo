@@ -62,7 +62,9 @@ function awsEmailForMonday($monday)
     $res['speakers'] = $speakers;
 
     $firstAws = $upcomingAws[0];
-    $venue = venueToShortText($firstAws['venue'], $firstAws['vc_url']);
+    $venue = venueToShortText($firstAws['venue']
+        , $firstAws['vc_url']
+        , $firstAws['vc_extra']);
 
     $chair = 'None assigned.';
     if (__get__($firstAws, 'chair', '')) {
