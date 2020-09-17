@@ -700,7 +700,10 @@ function updateAWSWeekInfo($data): array
     }
 
     // update rest of the entries for the week
-    $r1 = updateTable('upcoming_aws', 'date', 'venue,chair,has_chair_confirmed,vc_url', $data);
+    $r1 = updateTable('upcoming_aws', 'date'
+        , 'venue,chair,has_chair_confirmed,vc_url,vc_extra'
+        , $data);
+
     if(! $r1) {
         $res['success'] = false;
         $res['msg'] .= p("Failed to update upcoming aws information.");
