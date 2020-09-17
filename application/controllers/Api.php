@@ -2653,6 +2653,15 @@ class Api extends CI_Controller
                 $compt_id = intval($_POST['event_id']);
                 $login = getLogin();
 
+                $entry = getTableEntry('photography_club_competition', 'id'
+                    , ['id'=>$compt_id]);
+                if(! $entry) {
+                    $res = ['success' => false
+                        , 'msg' => "No valid competition found with id " . $compt_id];
+                    $this->send_data($res, 'ok', 403);
+                    return;
+                }
+
                 // No more than 3 images are allowed for a user.
                 $entries = getTableEntries('photography_club_entry', 'id',
                     "status='VALID' AND login='$login' AND competition_id='$compt_id'");
@@ -2665,13 +2674,13 @@ class Api extends CI_Controller
 
                 // Check for the allowed dates.
                 $today = strtotime('today');
-                if(($today < strtotime($_POST['start_date'])) || (
-                    $today > strtotime($_POST['end_date']))) {
+                if(($today < strtotime($entry['start_date'])) || 
+                    ($today > strtotime($entry['end_date']))) {
 
                     $res = ['success' => false, 
                         'msg' => "Uploading is not allowed. Allowed window: " 
-                        . $_POST['start_date'] . ' to ' 
-                        .  $_POST['end_date'] ];
+                        . $entry['start_date'] . ' to ' . $entry['end_date']
+                    ];
                     $this->send_data($res, 'ok', 403);
                     return;
                 }
