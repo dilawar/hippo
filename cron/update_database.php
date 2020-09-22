@@ -48,13 +48,13 @@ function update_database_cron()
     echo printInfo('Monday, removing students who have given PRE_SYNOPSIS SEMINAR and thesis SEMINAR');
 
     // In last year.
-    $cutoff = dbDate(strtotime('today') - 365 * 24 * 86400);
+    $cutoff = dbDate(strtotime('today') - 365 * 86400);
     $presynAWS = getTableEntries('annual_work_seminars', 'date', "IS_PRESYNOPSIS_SEMINAR='YES' AND date > '$cutoff'");
 
     foreach ($presynAWS as $aws) {
         $speaker = $aws['speaker'];
         if (isEligibleForAWS($speaker)) {
-            echo printInfo("Removing $speaker.");
+            echo printInfo("Removing $speaker from AWS list");
             removeAWSSpeakerFromList($speaker);
         }
     }
@@ -70,7 +70,7 @@ function update_database_cron()
         if (__get__($login, 'login', '')) {
             $login = $login['login'];
             if (isEligibleForAWS($login)) {
-                echo printInfo("Removing $speaker.");
+                echo printInfo("Removing $speaker from AWS roster");
                 removeAWSSpeakerFromList($login);
             }
         }
@@ -83,7 +83,7 @@ function update_database_cron()
     echo printInfo('Total ' . count($badLogins) . ' are found');
     foreach ($badLogins as $l) {
         $login = __get__($l, 'login', '');
-        if (!$login) {
+        if ((! $login) || (strpos($login, 'office') !== false)) {
             continue;
         }
 
@@ -93,7 +93,6 @@ function update_database_cron()
             $ldap['login'] = $login;
             $res = updateTable('logins', 'login', 'first_name,last_name,email', $ldap);
             if ($res) {
-                var_dump($ldap);
                 echo printInfo(" ... $login is fixed");
             }
         }
