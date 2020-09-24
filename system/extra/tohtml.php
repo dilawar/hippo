@@ -2612,7 +2612,7 @@ function courseToHTMLRow(array $c, string $slot, string $sem, string $year, arra
     $cr = $c['credits'];
 
     $note = '';
-    if ($c['note']) {
+    if (trim($c['note'])) {
         $note = colored('* ' . $c['note'], 'brown');
     }
 
