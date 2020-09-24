@@ -1945,7 +1945,7 @@ function removeAWSSpeakerFromList(string $speaker, string $reason = ''): array
         );
 
         $to = getLoginEmail($speaker);
-        $emailRes = sendHTMLEmail($msg, $subject, $to);
+        $emailRes = sendHTMLEmail($msg, $subject, $to, 'acaoffice@ncbs.res.in');
         if (!$emailRes) {
             $ret['msg'] .= p('Could not notify user');
         }
