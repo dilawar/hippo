@@ -625,6 +625,9 @@ function addOrUpdateRunningCourse(array $data, string $response): array
         return ['success' => false, 'msg' => $msg];
     }
 
+    // hack: null, '', and 0 are messed up in the app.
+    $data['note'] = $data['note'] ? $data['note']: ' ';
+
     // No collision. Add or update now.
     if ('add' === $response) {
         return addRunningCourse($data, $msg);
