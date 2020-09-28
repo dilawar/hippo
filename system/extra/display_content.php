@@ -35,7 +35,7 @@ function flashMessage( $msg, $category = 'success' )
 function printInfo( $msg )
 {
     error_log( $msg );
-    log_message("debug", $msg );
+    log_message("info", $msg );
     $info ="<div class=\"alert alert-info\">".$msg."</div>";
     return $info;
 }
