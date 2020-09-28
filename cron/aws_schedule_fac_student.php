@@ -18,10 +18,10 @@ function aws_schedule_fac_student_cron()
 
         // Get scheduled AWS on this week.
         $awses = getTentativeAWSSchedule($afterNWeeks);
-        if(! $awses && ($nAlreadyAWSes < 3)) {
+        if(count($awses) === 0 && ($nAlreadyAWSes < 3)) {
             echo("No temp schedule on $afterNWeeks.");
-            sendHTMLEmail("Could not assign AWS for $afterNWeeks"
-                , "Error! Could not schdule AWS"
+            sendHTMLEmail( "Could not assign AWSs for $afterNWeeks. May be it is a holiday. If not, this is a system failure!"
+                , "Warning! Could not schdule AWS for $afterNWeeks"
                 , "acadoffice@ncbs.res.in", "hippo@lists.ncbs.res.in"
             );
         }
