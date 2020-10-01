@@ -8,7 +8,7 @@ function showAlertTable()
     <div class="row">
         <div class="col">
             <i class="fa fa-flag-o"></i>
-            To enroll, visit <a class="btn btn-link" href="user_manages_courses.php">
+            To enroll, visit <a class="btn btn-link" href="' . site_url('user/courses') . '">
                 My Courses</a> link in your home page after login.
         </div>
         <div class="col">
