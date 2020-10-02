@@ -71,7 +71,7 @@ class Cron extends CI_Controller
 
     public function update_database()
     {
-        if (trueOnGivenDayAndTime('this sunday', '14:00')) {
+        if (trueOnGivenDayAndTime('this saturday', '00:00')) {
             echo("Cleaning up database.");
             update_database_cron();
         }
@@ -80,7 +80,7 @@ class Cron extends CI_Controller
             update_publishing_database();
         }
 
-        // Every day monring.
+        // Every day monring.  
         if (trueOnGivenDayAndTime('today', '6:00')) {
             cleanupOrphanedEvents();
         }

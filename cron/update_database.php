@@ -53,6 +53,7 @@ function update_database_cron()
 
     foreach ($presynAWS as $aws) {
         $speaker = $aws['speaker'];
+        echo printInfo("Checking if $speaker is done...");
         if (isEligibleForAWS($speaker)) {
             echo printInfo("Removing $speaker from AWS list");
             removeAWSSpeakerFromList($speaker);
@@ -66,18 +67,29 @@ function update_database_cron()
 
     foreach ($thesisSeminars as $talk) {
         $speaker = getSpeakerByID($talk['speaker_id']) or getSpeakerByName($talk['speaker']);
-        $login = findAnyoneWithEmail(__get__($speaker, 'email', ''));
+
+        if(! __get__($speaker, 'email', ''))
+            continue;
+
+        echo printInfo("Checking if  " . $speaker['email'] . ' is done.');
+        $login = findStudentWithEmail($speaker['email']);
+        if( ! $login)
+            continue;
+
+        // echo printInfo("    login is " . $login['login']);
+
         if (__get__($login, 'login', '')) {
             $login = $login['login'];
             if (isEligibleForAWS($login)) {
-                echo printInfo("Removing $speaker from AWS roster");
+                echo printInfo("Removing $login from AWS roster");
                 removeAWSSpeakerFromList($login);
             }
         }
     }
 
     echo printInfo('Cleanup login');
-    $badLogins = getTableEntries('logins', 'login', "(first_name IS NULL OR first_name='') OR first_name=last_name AND status='ACTIVE'"
+    $badLogins = getTableEntries('logins', 'login'
+        , "(first_name IS NULL OR first_name='') OR first_name=last_name AND status='ACTIVE'"
     );
 
     echo printInfo('Total ' . count($badLogins) . ' are found');

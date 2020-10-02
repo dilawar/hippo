@@ -1859,6 +1859,14 @@ function findAnyoneWithEmailOrLogin($emailOrLogin)
     return $res;
 }
 
+function findStudentWithEmail($email)
+{
+    $res = getTableEntries('logins', 'email', "email='$email' OR alternative_email='$email'");
+    if(count($res) > 0)
+        return $res[0];
+    return null;
+}
+
 
 /**
  * @brief Generate a where expression.
