@@ -992,6 +992,7 @@ class BMVPDO extends PDO
         , end_date DATE NOT NULL
         , voting_start_date DATE NOT NULL
         , voting_end_date DATE NOT NULL
+        , judge_voting_end_date DATE 
         , status ENUM('VALID', 'INVALID', 'CANCELLED') DEFAULT 'VALID'
         , note VARCHAR(256)
         , comment MEDIUMTEXT
