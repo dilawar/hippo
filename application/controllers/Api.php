@@ -4072,7 +4072,7 @@ class Api extends CI_Controller
                 $data = getTableEntries(
                     'photography_club_competition',
                     'start_date', "status='VALID' AND start_date <= CURDATE() 
-                    AND voting_end_date >= CURDATE()"
+                    AND (voting_end_date >= CURDATE() OR judge_voting_end_date >= CURDATE()"
                 );
                 if(count($data) > 0)
                     $data = $data[0];
@@ -4091,15 +4091,16 @@ class Api extends CI_Controller
             else if($args[1] === 'completed') {
                 $data = getTableEntries(
                     'photography_club_competition',
-                    'start_date', "status='VALID' AND voting_end_date < CURDATE() 
-                    "
+                    'start_date', "status='VALID' AND 
+                    AND (voting_end_date >= CURDATE() OR judge_voting_end_date >= CURDATE()"
+                    
                 );
                 $this->send_data($data, 'ok');
                 return;
             }
             else if($args[1] === 'new' || $args[1] === 'add') {
                 $keys = 'id,theme,description,start_date' . 
-                    ',end_date,voting_start_date,voting_end_date,note,status';
+                    ',end_date,voting_start_date,voting_end_date,judge_voting_end_date,note,status';
 
                 $_POST['id'] = getUniqueID('photography_club_competition');
                 $_POST['status'] = 'VALID';
@@ -4115,7 +4116,7 @@ class Api extends CI_Controller
                 return;
             }
             else if($args[1] === 'update') {
-                $keys = 'theme,description,start_date,end_date,voting_start_date,voting_end_date,note,status';
+                $keys = 'theme,description,start_date,end_date,voting_start_date,voting_end_date,judge_voting_end_date,note,status';
                 $res = ['success'=>false, 'msg'=> ''];
                 try {
                     $r = updateTable('photography_club_competition', 'id', $keys, $_POST);
