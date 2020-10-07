@@ -4072,7 +4072,7 @@ class Api extends CI_Controller
                 $data = getTableEntries(
                     'photography_club_competition',
                     'start_date', "status='VALID' AND start_date <= CURDATE() 
-                    AND (voting_end_date >= CURDATE() OR judge_voting_end_date >= CURDATE())"
+                    AND GREATEST(voting_end_date, judge_voting_end_date) >= CURDATE()"
                 );
                 if(count($data) > 0)
                     $data = $data[0];
@@ -4090,7 +4090,8 @@ class Api extends CI_Controller
             else if($args[1] === 'completed') {
                 $data = getTableEntries(
                     'photography_club_competition',
-                    'start_date', "status='VALID' AND voting_end_date <= CURDATE()"
+                    'start_date'
+                    , "status='VALID' AND GREATEST(judge_voting_end_date,voting_end_date) <= CURDATE()"
                 );
                 $this->send_data($data, 'ok');
                 return;
