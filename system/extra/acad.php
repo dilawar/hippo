@@ -240,7 +240,8 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
 
     // If user has asked for AUDIT but course does not allow auditing,
     // do not register and raise and error.
-    if ('NO' === $course['is_audit_allowed'] && 'AUDIT' === $data['type']) {
+    if ('NO' === $course['is_audit_allowed'] && 
+        'AUDIT' === __get__($data, 'type', 'CREDIT')) {
         $ret['success'] = false;
         $ret['msg'] = " The course $cid does not allow <tt>AUDIT</tt>.";
 
@@ -283,7 +284,7 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
     }
     else {
         // ON drop, we don't care about the type.
-        $wherekeys = 'student_id,semester,year,course_id,registered_on,last_modified_on';
+        $wherekeys = 'student_id,semester,year,type,course_id,registered_on';
         $upadtekeys = 'last_modified_on,status';
     }
 
