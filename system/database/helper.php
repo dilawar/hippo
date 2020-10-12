@@ -2069,7 +2069,7 @@ function insertOrUpdateTable($tablename, $keys, $updatekeys, $data)
         $updateExpr .= ' ON DUPLICATE KEY UPDATE ';
         foreach ($updatekeys as $k) {
             // Update only if the new value is not empty.
-            if (strlen($data[ $k ]) > 0) {
+            if (strlen(__get__($data, $k, '')) > 0) {
                 $updateExpr .= "$k=:$k,";
                 array_push($cols, $k);
             }

@@ -184,7 +184,7 @@ function getCourseRegistrations(string $cid, int $year, string $semester): array
     $registrations = getTableEntries(
         'course_registration',
         'student_id',
-        "status='VALID' AND type != 'DROPPED' AND course_id='$cid' AND year='$year' AND semester='$semester'"
+        "status!='INVALID' AND course_id='$cid' AND year='$year' AND semester='$semester'"
     );
     foreach ($registrations as &$reg) {
         $reg['login'] = getLoginInfo($reg['student_id'], true);
@@ -198,8 +198,8 @@ function getCourseRegistrationsLight(string $cid, int $year, string $semester): 
 {
     $registrations = getTableEntries(
         'course_registration',
-        'student_id',
-        "status='VALID' AND type != 'DROPPED' AND course_id='$cid' AND year='$year' AND semester='$semester'"
+        'status,type,student_id',
+        "status!='INVALID' AND course_id='$cid' AND year='$year' AND semester='$semester'"
     );
 
     foreach ($registrations as &$reg) {

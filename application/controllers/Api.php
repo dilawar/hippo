@@ -558,7 +558,7 @@ class Api extends CI_Controller
 
             return;
         } elseif ('register' === $args[0]) {
-            $data = ['type' => strtoupper($args[2])];
+            $data = ['what' => strtoupper($args[2])];
             $data['student_id'] = getLogin();
             assert($args[1]);
 
@@ -575,7 +575,7 @@ class Api extends CI_Controller
             }
 
             // Do not send email when using APP.
-            $res = handleCourseRegistration($course, $data, $data['type'], getLogin(), getLogin());
+            $res = handleCourseRegistration($course, $data, $data['what'], getLogin(), getLogin());
 
             if ($res['success']) {
                 $this->send_data($res, 'ok');

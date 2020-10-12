@@ -219,7 +219,8 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
     $data['registered_on'] = __get__($data, 'registered_on', dbDateTime('now'));
 
     if ('DROP' === $what) {
-        $data['type'] = 'AUDIT';
+        // a course may not allow AUDIT
+        // $data['type'] = $course['is_audit_allowed'] === 'YES' ? 'AUDIT' : 'CREDIT';
         $data['status'] = 'DROPPED';
     } elseif ('CREDIT' === $what) {
         $data['type'] = 'CREDIT';
@@ -239,24 +240,24 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
 
     // If user has asked for AUDIT but course does not allow auditing,
     // do not register and raise and error.
-    if ('NO' === $course['is_audit_allowed'] && 'AUDIT' === $data['type']) {
+    if ('NO' === $course['is_audit_allowed'] && 
+        'AUDIT' === __get__($data, 'type', 'CREDIT')) {
         $ret['success'] = false;
-        $ret['msg'] = "Sorry but course $cid does not allow <tt>AUDIT</tt>.";
+        $ret['msg'] = " The course $cid does not allow <tt>AUDIT</tt>.";
 
         return $ret;
     }
 
     // If number of students are over the number of allowed students
     // then add student to waiting list and raise a flag.
-    if ($course['max_registration'] > 0) {
+    if (intval($course['max_registration']) > 0 && $what !== 'DROP') {
         // FIXME: This can be improved by just getting the counts.
         $numEnrollments = count(getCourseRegistrations($cid, $course['year'], $course['semester']));
         if (intval($numEnrollments) >= intval($course['max_registration'])) {
             $data['status'] = 'WAITLIST';
             $ret['success'] = true;
-            $ret['msg'] .= p(
-                "<i class=\"fa fa-flag fa-2x\"></i>
-                Number of registrations have reached the limit. I've added you to 
+            $ret['msg'] .= p("
+                Number of registrations have reached its limit. I've added you to 
                 <tt>WAITLIST</tt>. Please contact academic office or your instructor about 
                 the policy on <tt>WAITLIST</tt>. By default, <tt>WAITLIST</tt> means 
                 <tt>NO REGISTRATION</tt>."
@@ -274,7 +275,7 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
         $myRegistrations = getMyCourses($data['semester'], $data['year'], $student);
         $collision = collisionWithMyRegistrations($course, $myRegistrations);
         if ($collision['collision']) {
-            $ret['msg'] = 'Collision with the course: '
+            $ret['msg'] .= ' Collision with the course: '
                 . getCourseName($collision['with']['course_id']);
             $ret['success'] = false;
 
@@ -283,7 +284,7 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
     }
     else {
         // ON drop, we don't care about the type.
-        $wherekeys = 'student_id,semester,year,course_id,registered_on,last_modified_on';
+        $wherekeys = 'student_id,semester,year,type,course_id,registered_on';
         $upadtekeys = 'last_modified_on,status';
     }
 
@@ -343,6 +344,7 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
         }
 
         sendHTMLEmail($msg, 'Successfully ' . $what . " ed the course $cid", $to);
+        $ret['msg'] .= " Email is sent to the student.";
     }
 
     return $ret;
