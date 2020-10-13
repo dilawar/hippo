@@ -350,6 +350,20 @@ function handleCourseRegistration(array $course, array $data, string $what, stri
     return $ret;
 }
 
+function handleCourseRegistrationExtrnal(array $course, array $data, string $what, string $bywhom, $sendEmail = true
+): array {
+
+    // create a dummy login.
+    $data['login'] = $data['email'];
+    $data = array_merge($data, splitName($data['name']));
+    $data['type'] = 'VISITOR';
+    $keys = 'email,first_name,midlde_name,last_name,institute,title';
+    $r = insertOrUpdateTable('logins', "login,$keys", $keys, $data);
+    if(! $r) 
+        return ['success'=>false, 'msg'=> "Failed to create account." . json_encode($r)];
+    return handleCourseRegistration($course, $data, $what, $data['login'], $bywhom, true);
+}
+
 /* --------------------------------------------------------------------------*/
 /**
  * @Synopsis Admin acad.

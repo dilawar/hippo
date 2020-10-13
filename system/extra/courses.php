@@ -205,7 +205,7 @@ function getCourseRegistrationsLight(string $cid, int $year, string $semester): 
     foreach ($registrations as &$reg) {
         $login = getLoginInfo($reg['student_id'], true);
         $reg['name'] = arrayToName($login);
-        $reg['email'] = $login['email'];
+        $reg['email'] = __get__($login, 'email', '');
     }
 
     return $registrations;

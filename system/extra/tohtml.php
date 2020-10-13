@@ -2944,7 +2944,7 @@ function getEnrollmentTableAndEmails($cid, $enrollments, $table_class = 'info')
             continue;
         }
 
-        $info = getUserInfo(explode('@', $studentId)[0], true);
+        $info = getUserInfo($studentId, true);
         if (!__get__($info, 'email', '')) {
             $info['email'] = 'Email not found.'
                 . '<br/>'
@@ -2959,7 +2959,7 @@ function getEnrollmentTableAndEmails($cid, $enrollments, $table_class = 'info')
         if ($info) {
             $row = '';
             $row .= '<td>' . loginToText($info, false) . '</td>';
-            $row .= '<td><tt>' . mailto($info['email']) . '</tt></td>';
+            $row .= '<td>' . mailto($info['email']) . '</td>';
             $row .= '<td>' . $r['type'] . '</td>';
             $row .= '<td>' . $r['registered_on'] . '</td>';
             $rows[$info['first_name']] = $row;

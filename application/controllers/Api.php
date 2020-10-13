@@ -52,8 +52,9 @@ function getKey()
 
 function hasRoles($whichRoles, $login=''): bool
 {
-    if(! $login)
+    if(! $login) {
         $login = getLogin();
+    }
     $roles = getRoles($login);
     foreach (explode(',', $whichRoles) as $r1) {
         foreach ($roles as $r2) {
@@ -268,11 +269,14 @@ class Api extends CI_Controller
             $data = array_merge($tom, $data);
             $cards = [];
             foreach ($data as $item) {
-                $venueHtml = venueToShortText($item['venue']
-                    , __get__($item, 'vc_url', ''), $item['vc_extra']);
+                $venueHtml = venueToShortText(
+                    $item['venue'],
+                    __get__($item, 'vc_url', ''), $item['vc_extra']
+                );
 
-                if($item['vc_extra'])
+                if($item['vc_extra']) {
                     $venueHtml .= " (" . $item['vc_extra'] . ")";
+                }
 
                 $cards[] = ['title' => $item['title']
                     , 'date' => $item['date']
@@ -608,7 +612,7 @@ class Api extends CI_Controller
             return;
         } elseif ('registration' === $args[0]) {
             $crs = explode('-', base64_decode($args[1]));
-            $data = getCourseRegistrationsLight($crs[0], intval($crs[2]), $crs[1]);
+            $data = @getCourseRegistrationsLight($crs[0], intval($crs[2]), $crs[1]);
             $this->send_data($data, 'ok');
 
             return;
@@ -2655,8 +2659,10 @@ class Api extends CI_Controller
                 $compt_id = intval($_POST['event_id']);
                 $login = getLogin();
 
-                $entry = getTableEntry('photography_club_competition', 'id'
-                    , ['id'=>$compt_id]);
+                $entry = getTableEntry(
+                    'photography_club_competition', 'id',
+                    ['id'=>$compt_id]
+                );
                 if(! $entry) {
                     $res = ['success' => false
                         , 'msg' => "No valid competition found with id " . $compt_id];
@@ -2665,8 +2671,10 @@ class Api extends CI_Controller
                 }
 
                 // No more than 3 images are allowed for a user.
-                $entries = getTableEntries('photography_club_entry', 'id',
-                    "status='VALID' AND login='$login' AND competition_id='$compt_id'");
+                $entries = getTableEntries(
+                    'photography_club_entry', 'id',
+                    "status='VALID' AND login='$login' AND competition_id='$compt_id'"
+                );
                 if(count($entries) >= 3) {
                     $res = ['success' => false, 'msg' => "Maximum of 3 entries are allowed."];
                     $this->send_data($res, 'ok', 403);
@@ -2676,8 +2684,9 @@ class Api extends CI_Controller
 
                 // Check for the allowed dates.
                 $today = strtotime('today');
-                if(($today < strtotime($entry['start_date'])) || 
-                    ($today > strtotime($entry['end_date']))) {
+                if(($today < strtotime($entry['start_date']))  
+                    || ($today > strtotime($entry['end_date']))
+                ) {
 
                     $res = ['success' => false, 
                         'msg' => "Uploading is not allowed. Allowed window: " 
@@ -3749,13 +3758,15 @@ class Api extends CI_Controller
                 // tcm_member_1='' , tcm_member_2='', tcm_member_3='', tcm_member_4=''
                 // WHERE id='$id'");
 
-                $res = updateTable('annual_work_seminars'
-                    , 'id'
-                    , 'title,abstract,status,is_presynopsis_seminar' 
+                $res = updateTable(
+                    'annual_work_seminars',
+                    'id',
+                    'title,abstract,status,is_presynopsis_seminar' 
                         .  ',chair,venue,vc_url,vc_extra'
                         . ',supervisor_1,supervisor_2' 
-                        . ',tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4'
-                    , $_POST, false);
+                        . ',tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4',
+                    $_POST, false
+                );
 
                 if ($res) {
                     $data['success'] = true;
@@ -3783,10 +3794,14 @@ class Api extends CI_Controller
                 assert(__get__($args, 2, '')) or die('Empty TYPE ');
 
                 // Do not send email when using APP.
-                $res = handleCourseRegistration(
-                    $course, $data, $args[2],
-                    $data['student_id'], getLogin()
-                );
+                if(! __get__($data, 'is_external', false)) {
+                    $res = @handleCourseRegistration(
+                        $course, $data, $args[2],
+                        $data['student_id'], getLogin()
+                    );
+                } else { 
+                    $res = @handleCourseRegistrationExtrnal($course, $data, $args[2], getLogin());
+                }
 
                 $this->send_data($res, 'ok');
 
@@ -4074,8 +4089,9 @@ class Api extends CI_Controller
                     'start_date', "status='VALID' AND start_date <= CURDATE() 
                     AND GREATEST(voting_end_date, judge_voting_end_date) >= CURDATE()"
                 );
-                if(count($data) > 0)
+                if(count($data) > 0) {
                     $data = $data[0];
+                }
                 $this->send_data($data, 'ok');
                 return;
             }
@@ -4090,8 +4106,8 @@ class Api extends CI_Controller
             else if($args[1] === 'completed') {
                 $data = getTableEntries(
                     'photography_club_competition',
-                    'start_date'
-                    , "status='VALID' AND GREATEST(judge_voting_end_date,voting_end_date) <= CURDATE()"
+                    'start_date',
+                    "status='VALID' AND GREATEST(judge_voting_end_date,voting_end_date) <= CURDATE()"
                 );
                 $this->send_data($data, 'ok');
                 return;
@@ -4145,8 +4161,7 @@ class Api extends CI_Controller
         } 
         
         // Entries (photos) 
-        elseif('entry' === $args[0])
-        {
+        elseif('entry' === $args[0]) {
             if($args[1] === 'getall') {
                 $where = "status='VALID'";
 
@@ -4161,7 +4176,7 @@ class Api extends CI_Controller
                 }
                 $this->send_data($entries, 'ok');
                 return;
-            } elseif( $args[1] === 'remove' || $args[1] === 'update') {
+            } elseif($args[1] === 'remove' || $args[1] === 'update') {
 
                 // remove or update metadata.
                 $msg = '';
@@ -4173,12 +4188,12 @@ class Api extends CI_Controller
                 // make sure that either the user own this image or is admin.
                 $pic = getTableEntry('photography_club_entry', 'id', $_POST);
                 // must be owener if not admin.
-                if(! $pic )  {
+                if(! $pic ) {
                     $success = false;
                     $msg .= "No such image.";
                 }
-                if( ! isPhotoClubAdmin(getLogin()) )  {
-                    if( $pic['login'] != getLogin()) {
+                if(! isPhotoClubAdmin(getLogin()) ) {
+                    if($pic['login'] != getLogin()) {
                         $success = false;
                         $msg .= "You don't have permission to ". $what . " this image.";
                     }
@@ -4189,8 +4204,9 @@ class Api extends CI_Controller
                     $_POST['status'] = 'REMOVED';
                     $keys = 'status,note';
                 }
-                else 
+                else { 
                     $keys = 'caption,comment,note';
+                }
 
                 $r = updateTable('photography_club_entry', $where, $keys, $_POST);
                 $success = $success or $r;
@@ -4203,10 +4219,12 @@ class Api extends CI_Controller
                 $_POST['login'] = getLogin();
                 $_POST['entry_id'] = $_POST['id'];
                 $_POST['id'] = getUniqueID('photography_club_rating');
-                $r = insertOrUpdateTable('photography_club_rating'
-                    , 'id,login,entry_id,competition_id,star,note'
-                    , 'star,note'
-                    , $_POST);
+                $r = insertOrUpdateTable(
+                    'photography_club_rating',
+                    'id,login,entry_id,competition_id,star,note',
+                    'star,note',
+                    $_POST
+                );
                 $success = $r ? true : false;
                 $msg = '';
                 $this->send_data(['success'=>$success, 'msg'=>$msg], 'ok');
@@ -4214,17 +4232,21 @@ class Api extends CI_Controller
             }
             elseif($args[1] == 'getone') {
                 $entry_id = $args[2];
-                $ratings = getTableEntries('photography_club_rating'
-                    , 'login'
-                    , "status='VALID' AND entry_id='$entry_id'");
+                $ratings = getTableEntries(
+                    'photography_club_rating',
+                    'login',
+                    "status='VALID' AND entry_id='$entry_id'"
+                );
                 $this->send_data($ratings, 'ok');
                 return;
             }
             elseif($args[1] == 'getall') {
                 $comptid = $args[2];
-                $ratings = getTableEntries('photography_club_rating'
-                    , 'login'
-                    , "status='VALID' AND competition_id='$comptid'");
+                $ratings = getTableEntries(
+                    'photography_club_rating',
+                    'login',
+                    "status='VALID' AND competition_id='$comptid'"
+                );
                 $data = [];
                 foreach($ratings as $r) {
                     $data[$r['login']][$r['entry_id']] = $r['star'];
@@ -4237,11 +4259,14 @@ class Api extends CI_Controller
                 $login = getLogin();
                 $where = "status='VALID' AND login='$login'";
                 $entry_id = __get__($args, 2, '');
-                if($entry_id)
+                if($entry_id) {
                     $where .= " AND entry_id='$entry_id'";
+                }
 
-                $ratings = getTableEntries('photography_club_rating', 'entry_id'
-                    , $where);
+                $ratings = getTableEntries(
+                    'photography_club_rating', 'entry_id',
+                    $where
+                );
                 $this->send_data($ratings, 'ok');
                 return;
             }
