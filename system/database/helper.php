@@ -1597,7 +1597,10 @@ function getLoginIds()
 function getUserInfo(string $user, bool $query_ldap = false, bool $search_everywhere = false) : array
 {
     $login = explode('@', $user)[0];
-    $res = getTableEntry('logins', 'login', array( 'login' => $login));
+    if($login === $user)
+        $res = getTableEntry('logins', 'login', ['login' => $login]);
+    else
+        $res = getTableEntry('logins', 'email', ['email' => $user]);
     $title = '';
     if ($res) {
         $title = __get__($res, 'title', '');
@@ -1645,10 +1648,6 @@ function extractLoginName(string $emailOrLogin) : string
 
 function getLoginInfo(string $login_name, bool $query_ldap = false, bool $search_everywhere = false) : array
 {
-    // Otherwise we may not be find by email.
-    if (! $search_everywhere) {
-        $login_name = extractLoginName($login_name);
-    }
     return getUserInfo($login_name, $query_ldap, $search_everywhere);
 }
 

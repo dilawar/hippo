@@ -98,7 +98,8 @@ if ('AUTUMN' == $sem) {
 $form = selectYearSemesterForm($year, $sem);
 
 $showEnrollText = 'Show Enrollement';
-// Go over courses and populate the entrollment array.
+
+// Go over courses and populate the enrollment array.
 $header = '<tr><th>Course/Instructors</th><th>Schedule</th><th>Slot/Venue</th><th>URL</th></tr>';
 $enrollments = [];
 $html = '';
