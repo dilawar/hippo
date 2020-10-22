@@ -1906,7 +1906,7 @@ function talkToHTMLLarge($talk, $with_picture = true, string $header = ''): stri
     $where = venueSummary($event['venue']);
 
     if (__get__($event, 'vc_url', '')) {
-        $where .= anchor($event['vc_url'], 'Remote URL');
+        $where .= auto_link($event['vc_url'], 'url', True); // 'Remote URL');
     }
 
     $when = humanReadableDate($event['date']) . ', ' .
@@ -1947,7 +1947,8 @@ function talkToHTMLLarge($talk, $with_picture = true, string $header = ''): stri
             <tr><td>When</td><td>' . $when . '</td></tr>
             <tr><td>Where</td><td> ' . $where . '</td></tr>';
     if (__get__($event, 'vc_url', '')) {
-        $right .= '<tr><td>VC Link</td><td> ' . anchor_popup($event['vc_url']) . '</td></tr>';
+        $right .= '<tr><td>VC Link</td><td> ' . 
+            auto_link($event['vc_url'], 'url', True) . '</td></tr>';
     }
 
     $right .= '<tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) . '</td></tr>';
@@ -2029,6 +2030,7 @@ function talkToHTML($talk, $with_picture = false)
 
     // Hack: If talk is a THESIS SEMINAR then host is thesis advisor.
     $host = '<td>Host</td><td>' . loginToHTML($talk['host'], true);
+
     if (__get__($talk, 'host_extra', '')) {
         $host .= ' and ' . loginToHTML($talk['host_extra'], true);
     }
