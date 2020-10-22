@@ -492,7 +492,8 @@ class Api extends CI_Controller
         } elseif ('host' === $args[0]) {
             $speakers = searchInSpeakers($q);
             $faculty = searchInFaculty($q);
-            $this->send_data_helper(array_merge($speakers, $faculty));
+            $logins = searchInLogins($q);
+            $this->send_data_helper(array_merge($speakers, $faculty, $logins));
 
             return;
         } elseif ('faculty' === $args[0]) {
