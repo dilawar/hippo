@@ -100,7 +100,7 @@ function whereWhenTable(string $venue, string $date, string $time = '', $url = '
         $whenHTML .= ' ' . humanReadableTime($time);
 
     if($url)
-        $whereHTML .= " (" . anchor($url) . ")";
+        $whereHTML .= " (" . auto_link($url, 'url', TRUE) . ")";
 
     $table = '';
     if (!$inothertable) {
@@ -2012,7 +2012,7 @@ function talkToHTML($talk, $with_picture = false)
     $where = venueSummary($event['venue']);
 
     if (__get__($event, 'vc_url', '')) {
-        $where .= '<br />' . anchor($event['vc_url'], $event['vc_url']);
+        $where .= '<br />' . auto_link($event['vc_url'], 'url', TRUE);
         if(__get__($event, 'vc_extra', ''))
             $where .= " (" . $event['vc_extra'] . ")";
     }
