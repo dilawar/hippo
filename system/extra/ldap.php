@@ -162,15 +162,19 @@ function getUserInfoFromLdapRelaxed($q, $ldap_ip="ldap.ncbs.res.in") : array
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function authenticateUsingLDAP( string $user, string $pass ) : bool
+function authenticateUsingLDAP( string $user, string $pass, string $which = '') : bool
 {
     if( strlen( trim($user) ) < 1 )
         return false;
 
     $auth = false;
-    $ports = array( "ncbs" => 389, "ext" => 27206, "instem" => 18288, "ccamp" => 19554 );
+    $ports = [ "ncbs" => 389, "ext" => 27206, "instem" => 18288, "ccamp" => 19554  ];
     foreach(  $ports as $dc => $port )
     {
+        // if $which is specified then use that particular port.
+        if($which && $which !== $dc)
+            continue;
+
         $res = ldap_connect( "ldap.ncbs.res.in", $port );
         if($dc === 'ext')
             $dc = 'ext,dc=ncbs';
