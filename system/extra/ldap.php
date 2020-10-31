@@ -168,17 +168,18 @@ function authenticateUsingLDAPPort(string $user, string $pass, int $port): bool
     else
         $dc = 'ncbs';
 
-    $res = ldap_connect( "ldap.ncbs.res.in", $port );
+    $ds = ldap_connect( "ldap.ncbs.res.in", $port );
     $ldapQuery = "uid=$user,ou=People,dc=$dc,dc=res,dc=in";
-    if( $res )
+    if( $ds )
     {
-        $bind = ldap_bind( $res, $ldapQuery, $pass );
+        $bind = ldap_bind( $ds, $ldapQuery, $pass );
         if( $bind )
         {
             $auth = true;
-            ldap_unbind( $res );
+            ldap_unbind( $ds );
         }
-        ldap_close( $res );
+        if($ds)
+            ldap_close( $ds );
     }
     return $auth;
 }
@@ -198,13 +199,13 @@ function authenticateUsingLDAP( string $user, string $pass) : array
     global $LDAP_PORTS;
     $res = ['success' => false, 'msg' => ''];
 
-    if( strlen( trim($user) ) < 1 )
-        return false;
+    if( strlen( trim($user) ) < 1 ) {
+        $res['msg'] = "Username is too short '$user'";
+        return $res;
+    }
 
     $auth = false;
     $port = 389;
-
-    $ports = [ "ncbs" => 389, "ext" => 27206, "instem" => 18288, "ccamp" => 19554  ];
 
     $whichSection = '*'; // by default try all.
     if(filter_var($user, FILTER_VALIDATE_EMAIL)) {
@@ -221,14 +222,25 @@ function authenticateUsingLDAP( string $user, string $pass) : array
     if($whichSection === '*') {
         foreach(  $LDAP_PORTS as $dc => $port )
         {
-            $auth = authenticateUsingLDAPPort($user, $pass, $port);
-            if($auth)
-                return ['success' => true, 'msg' => 'Success'];
+            $auth = @authenticateUsingLDAPPort($user, $pass, $port);
+            if($auth) {
+                $res['success'] = true;
+                $res['msg'] .= " Success with port $port.";
+                return $res;
+            }
+        }
+        $res['msg'] .= " Tried all LDAP ports";
+    }
+    else {
+        $auth = @authenticateUsingLDAPPort($user, $pass, $port);
+        if(! $auth) 
+            $res['msg'] .= " Could not login using LDAP port $port";
+        else {
+            $res['success'] = $auth;
+            $res['msg'] .= " Success with LDAP port $port.";
         }
     }
-    else
-        $auth = authenticateUsingLDAPPort($user, $pass, $port);
-    return ['status' => $auth, 'msg' => ''];
+    return $res;
 }
 
 /* --------------------------------------------------------------------------*/

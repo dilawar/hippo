@@ -69,7 +69,7 @@ function getLogin()
         if (!$login) {
             $login = getHeader('hippo-login');
         }
-
+        $login = explode('@', $login)[0];
         return $login;
     }
 
@@ -91,12 +91,15 @@ function extract_emails_from($text)
     return $res;
 }
 
-function authenticateUser(string $ldap, string $pass)
+function authenticateUser(string $ldap, string $pass) : array
 {
-    $auth = authenticateUsingLDAP($ldap, $pass);
-    if (!$auth['success']) {
-        $auth = authenticateUsingIMAP($ldap, $pass);
+    $auth = @authenticateUsingLDAP($ldap, $pass);
+    if (! $auth['success']) {
+        $auth = @authenticateUsingIMAP($ldap, $pass);
+        $auth['msg'] .= " Used EMAIL.";
     }
+    else
+        $auth['msg'] .= " Used LDAP.";
 
     return $auth;
 }

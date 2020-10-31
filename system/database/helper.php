@@ -1698,12 +1698,8 @@ function getLoginEmail(string $login)
 function getRoles(string $user) : array
 {
     // Turn email to username.
-    $hippoDB = initDB();
-    $stmt = $hippoDB->prepare('SELECT roles FROM logins WHERE login=:login OR email=:email');
-    $stmt->bindValue(':login', $user);
-    $stmt->bindValue(':email', $user);
-    $stmt->execute();
-    $res = $stmt->fetch(PDO::FETCH_ASSOC);
+    $res = executeQuery("SELECT roles FROM logins WHERE 
+        (login='$user' OR email='$user')", true)[0];
     if (! $res) {
         return ['USER'];
     }

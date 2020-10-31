@@ -34,7 +34,6 @@ function authenticateAPI($apikey, $user = '')
     if ($user) {
         $where .= ',login';
     }
-
     $res = getTableEntry('apikeys', $where, ['apikey' => $apikey, 'login' => $user]);
     if ($res) {
         return true;
@@ -82,6 +81,7 @@ class Api extends CI_Controller
         header('Access-Control-Allow-Headers: cache-control,hippo-login,login,hippo-api-key,x-requested-with,Content-Type');
         header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
         parent::__construct();
+        error_reporting(0);
     }
 
     private function send_data_helper(array $data, int $status=200)
@@ -1221,13 +1221,13 @@ class Api extends CI_Controller
         $user = __get__($_POST, 'login', 'NA');
         $password = __get__($_POST, 'password', 'NA');
         $pass = base64_decode($password);
-        $res = @authenticateUser($user, $pass);
+        $res = authenticateUser($user, $pass);
         $token = '';
         $gmapkey = '';
 
         // If $res is true then return a token. User can use this token to login
         // as many time as she likes.
-        if ($res) {
+        if ($res['success']) {
             $token = __get__(getUserKey($user), 'apikey', '');
             if (!$token) {
                 $token = genererateNewKey($user);
@@ -1236,7 +1236,9 @@ class Api extends CI_Controller
         }
 
         $this->send_data(
-            ['apikey' => $token, 'gmapapikey' => $gmapkey, 'authenticated' => $res ? true : false], $token ? 'ok' : 'erorr'
+            ['apikey' => $token, 'gmapapikey' => $gmapkey
+            , 'authenticated' => $res['success']
+            , 'data' => $res], $token ? 'ok' : 'erorr'
         );
     }
 
@@ -1828,8 +1830,9 @@ class Api extends CI_Controller
 
             return;
         } elseif ('roles' === $args[0]) {
-            $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
-            $this->send_data($data[0], 'ok');
+            // $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
+            $data = getRoles($user);
+            $this->send_data($data, 'ok');
 
             return;
         } elseif ('speaker' === $args[0]) {
