@@ -153,6 +153,8 @@ function getUserInfoFromLdapRelaxed($q, $ldap_ip="ldap.ncbs.res.in") : array
 
 function authenticateUsingLDAPPort(string $user, string $pass, int $port): bool
 {
+    global $LDAP_PORTS;
+
     $auth = false;
     if($port == 27206)   // 'ext'
         $dc = 'ext,dc=ncbs';
@@ -192,29 +194,35 @@ function authenticateUsingLDAPPort(string $user, string $pass, int $port): bool
 /* ----------------------------------------------------------------------------*/
 function authenticateUsingLDAP( string $user, string $pass) : bool
 {
+    global $LDAP_PORTS;
+
     if( strlen( trim($user) ) < 1 )
         return false;
 
     $auth = false;
+    $port = 389;
+
     $ports = [ "ncbs" => 389, "ext" => 27206, "instem" => 18288, "ccamp" => 19554  ];
-    foreach(  $ports as $dc => $port )
-    {
-        $res = ldap_connect( "ldap.ncbs.res.in", $port );
-        if($dc === 'ext')
-            $dc = 'ext,dc=ncbs';
-        $ldapQuery = "uid=$user,ou=People,dc=$dc,dc=res,dc=in";
-        if( $res )
+
+    $whichSection = '*'; // by default try all.
+    if(filter_var($user, FILTER_VALIDATE_EMAIL)) {
+        // user passed email.
+        $user = explode('@', $user)[0];
+        $domain = explode('@', $user)[1];  // @ncbs.res.in etc.
+        $whichSection = explode('.', $domain)[0]; // ncbs, instem, ext etc.
+        $port = $LDAP_PORTS[$whichSection];
+    }
+
+    if($whichSection === '*') {
+        foreach(  $LDAP_PORTS as $dc => $port )
         {
-            $bind = ldap_bind( $res, $ldapQuery, $pass );
-            if( $bind )
-            {
-                $auth = true;
-                ldap_unbind( $res );
-                break;
-            }
-            ldap_close( $res );
+            $auth = authenticateUsingLDAPPort($user, $pass, $port);
+            if($auth)
+                return $auth;
         }
     }
+    else
+        $auth = authenticateUsingLDAPPort($user, $pass, $port);
     return $auth;
 }
 
