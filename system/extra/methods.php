@@ -69,7 +69,7 @@ function getLogin()
         if (!$login) {
             $login = getHeader('hippo-login');
         }
-        $login = explode('@', $login)[0];
+        // $login = explode('@', $login)[0];
         return $login;
     }
 
