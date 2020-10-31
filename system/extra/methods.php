@@ -94,7 +94,7 @@ function extract_emails_from($text)
 function authenticateUser(string $ldap, string $pass)
 {
     $auth = authenticateUsingLDAP($ldap, $pass);
-    if (!$auth) {
+    if (!$auth['success']) {
         $auth = authenticateUsingIMAP($ldap, $pass);
     }
 
@@ -165,16 +165,12 @@ function hippo_shell_exec($cmd, &$stdout = null, &$stderr = null)
 
 function authenticate($ldap, $pass)
 {
-    $auth = null;
-    if (ldapAlive('ldap.ncbs.res.in')) {
+    $auth = ['success' => false, 'msg' => ''];
+    if (ldapAlive('ldap.ncbs.res.in')) 
         $auth = @authenticateUsingLDAP($ldap, $pass);
-    } else {
+    else
         // Try login using IMAP.
         $auth = @authenticateUsingIMAP($ldap, $pass);
-        if (!$auth) {
-            $auth = null;
-        }
-    }
 
     return $auth;
 }

@@ -402,7 +402,7 @@ class User extends CI_Controller
         $pass = $_POST['password'];
         $id = $_POST['id'];
         $auth = authenticate($login, $pass);
-        if (!$auth) {
+        if (!$auth['success']) {
             echo flashMessage('Authentication failed. Try again.');
             $this->load_user_view('execute', $_POST);
 

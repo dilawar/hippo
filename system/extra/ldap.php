@@ -155,6 +155,7 @@ function authenticateUsingLDAPPort(string $user, string $pass, int $port): bool
 {
     global $LDAP_PORTS;
 
+    // bit ad-hoc but what isn't 
     $auth = false;
     if($port == 27206)   // 'ext'
         $dc = 'ext,dc=ncbs';
@@ -192,9 +193,10 @@ function authenticateUsingLDAPPort(string $user, string $pass, int $port): bool
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function authenticateUsingLDAP( string $user, string $pass) : bool
+function authenticateUsingLDAP( string $user, string $pass) : array
 {
     global $LDAP_PORTS;
+    $res = ['success' => false, 'msg' => ''];
 
     if( strlen( trim($user) ) < 1 )
         return false;
@@ -207,10 +209,13 @@ function authenticateUsingLDAP( string $user, string $pass) : bool
     $whichSection = '*'; // by default try all.
     if(filter_var($user, FILTER_VALIDATE_EMAIL)) {
         // user passed email.
-        $user = explode('@', $user)[0];
-        $domain = explode('@', $user)[1];  // @ncbs.res.in etc.
+        $split = explode('@', $user);
+        $user = $split[0];
+        $domain = $split[1];  // @ncbs.res.in etc.
         $whichSection = explode('.', $domain)[0]; // ncbs, instem, ext etc.
         $port = $LDAP_PORTS[$whichSection];
+        if(! $port)
+            return ['sucess' => false, 'msg' => "Could not determine LDAP $port"];
     }
 
     if($whichSection === '*') {
@@ -218,12 +223,12 @@ function authenticateUsingLDAP( string $user, string $pass) : bool
         {
             $auth = authenticateUsingLDAPPort($user, $pass, $port);
             if($auth)
-                return $auth;
+                return ['success' => true, 'msg' => 'Success'];
         }
     }
     else
         $auth = authenticateUsingLDAPPort($user, $pass, $port);
-    return $auth;
+    return ['status' => $auth, 'msg' => ''];
 }
 
 /* --------------------------------------------------------------------------*/
