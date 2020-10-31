@@ -4117,7 +4117,7 @@ class Api extends CI_Controller
             }
             else if($args[1] === 'new' || $args[1] === 'add') {
                 $keys = 'id,theme,description,start_date' . 
-                    ',end_date,voting_start_date,voting_end_date,judge_voting_end_date,note,status';
+                    ',end_date,voting_start_date,voting_end_date,judge_voting_end_date,note,status,comment';
 
                 $_POST['id'] = getUniqueID('photography_club_competition');
                 $_POST['status'] = 'VALID';
@@ -4133,7 +4133,7 @@ class Api extends CI_Controller
                 return;
             }
             else if($args[1] === 'update') {
-                $keys = 'theme,description,start_date,end_date,voting_start_date,voting_end_date,judge_voting_end_date,note,status';
+                $keys = 'theme,description,start_date,end_date,voting_start_date,voting_end_date,judge_voting_end_date,note,status,comment';
                 $res = ['success'=>false, 'msg'=> ''];
                 try {
                     $r = updateTable('photography_club_competition', 'id', $keys, $_POST);
