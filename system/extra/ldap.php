@@ -151,6 +151,34 @@ function getUserInfoFromLdapRelaxed($q, $ldap_ip="ldap.ncbs.res.in") : array
     return $result;
 }
 
+function authenticateUsingLDAPPort(string $user, string $pass, int $port): bool
+{
+    $auth = false;
+    if($port == 27206)   // 'ext'
+        $dc = 'ext,dc=ncbs';
+    else if($port == 389)
+        $dc = 'ncbs';
+    else if($port == 18288)
+        $dc = 'instem';
+    else if($port == 19554)
+        $dc = 'ccamp';
+    else
+        $dc = 'ncbs';
+
+    $res = ldap_connect( "ldap.ncbs.res.in", $port );
+    $ldapQuery = "uid=$user,ou=People,dc=$dc,dc=res,dc=in";
+    if( $res )
+    {
+        $bind = ldap_bind( $res, $ldapQuery, $pass );
+        if( $bind )
+        {
+            $auth = true;
+            ldap_unbind( $res );
+        }
+        ldap_close( $res );
+    }
+    return $auth;
+}
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -162,7 +190,7 @@ function getUserInfoFromLdapRelaxed($q, $ldap_ip="ldap.ncbs.res.in") : array
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function authenticateUsingLDAP( string $user, string $pass, string $which = '') : bool
+function authenticateUsingLDAP( string $user, string $pass) : bool
 {
     if( strlen( trim($user) ) < 1 )
         return false;
@@ -171,10 +199,6 @@ function authenticateUsingLDAP( string $user, string $pass, string $which = '') 
     $ports = [ "ncbs" => 389, "ext" => 27206, "instem" => 18288, "ccamp" => 19554  ];
     foreach(  $ports as $dc => $port )
     {
-        // if $which is specified then use that particular port.
-        if($which && $which !== $dc)
-            continue;
-
         $res = ldap_connect( "ldap.ncbs.res.in", $port );
         if($dc === 'ext')
             $dc = 'ext,dc=ncbs';
