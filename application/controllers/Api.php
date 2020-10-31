@@ -1830,7 +1830,6 @@ class Api extends CI_Controller
 
             return;
         } elseif ('roles' === $args[0]) {
-            // $data = executeQuery("SELECT roles FROM logins WHERE login='$user'");
             $data = getRoles($user);
             $this->send_data($data, 'ok');
 
