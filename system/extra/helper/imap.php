@@ -16,7 +16,8 @@ function authenticateUsingIMAP( $ldap, $pass )
             , $ldap, $pass, OP_HALFOPEN 
         );
 
-    return $conn;
+    // FIXME: Can I handle ccamp and ext here?
+    return ['success'=>$conn, 'msg' => ''];
 }
 
 ?>

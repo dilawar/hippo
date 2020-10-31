@@ -128,3 +128,6 @@ $symbAccept = ' <i class="fa fa-check"></i>';
 $proxy = 'http://proxy.ncbs.res.in:3128';
 
 $GLOBAL_AwsDay = 'monday';
+ 
+$LDAP_PORTS = [ "ncbs" => 389, "ext" => 27206, "instem" => 18288, "ccamp" => 19554  ];
+ 
