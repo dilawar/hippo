@@ -58,7 +58,7 @@ function updateThisTalk(array $data): array
 {
     $msg = '';
     $res = updateTable( 'talks', 'id'
-        , 'class,host,coordinator,title,description'
+        , 'class,host,host_extra,coordinator,title,description'
         , $data 
     );
 
