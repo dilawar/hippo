@@ -1,4 +1,5 @@
 <?php
+require_once BASEPATH . '/extra/talk.php';
 
 /** 
  * This does not require authentication. See HippoHooks.php
