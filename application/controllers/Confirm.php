@@ -1,5 +1,5 @@
 <?php
-require_once BASEPATH . '/extra/talk.php';
+// require_once BASEPATH . '/extra/talk.php';
 
 /** 
  * This does not require authentication. See HippoHooks.php
@@ -27,7 +27,7 @@ class Confirm extends CI_Controller
 
         if($r1) {
             $query['status'] = 'EXECUTED';
-            $r2 = updateThisTalk('queries', 'id', 'status', $query);
+            $r2 = updateTable('queries', 'id', 'status', $query);
             if($r2) {
                 echo p("Success");
             }
