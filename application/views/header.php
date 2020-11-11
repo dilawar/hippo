@@ -2,14 +2,6 @@
 <script type="text/javascript" href="<?= base_url(); ?>/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="<?= base_url(); ?>/node_modules/bootstrap/dist/css/bootstrap.min.css"></link>
 
-
-<!--
-<script type="text/javascript" 
-    href="<?= base_url(); ?> ./node_modules/bootstrap-material-design/dist/js/bootstrap-material-design.min.js"></script>
-<link rel="stylesheet" href="<?= base_url(); ?>/node_modules/bootstrap-material-design/dist/css/bootstrap-material-design.min.css"></link>
--->
-
-
 <!--  REQUIRED -->
 <script src="<?= base_url(); ?>/node_modules/jquery/dist/jquery.js"></script>
 <script src="<?= base_url(); ?>/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
@@ -40,6 +32,17 @@
 <script src="<?= base_url(); ?>/node_modules/sorttable/sorttable.js"></script>
 <script type="text/javascript" charset="utf-8">
     $(".sortable").sortable( );
+</script>
+
+<!-- gtag -->
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RLF9RVR5T6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-RLF9RVR5T6');
 </script>
 
 <script>
