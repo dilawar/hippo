@@ -116,10 +116,16 @@ class Cron extends CI_Controller
             bookVenueForAWS();
         }
 
-        // Try at 10pm.
+        // Try at 8pm.
         if (trueOnGivenDayAndTime('this monday', '8:00')) {
             assignChair();
         }
+
+        // At 3 pm. Reminder!
+        if (trueOnGivenDayAndTime('this monday', '15:00')) {
+            remindAboutAWS(); // because faculty can't use calendar!
+        }
+
     }
 
     public function aws_schedule_fac_student()

@@ -2,9 +2,42 @@
 
 require_once FCPATH . '/system/extra/acad.php';
 
+// Send this email at 3pm every monday.
+function remindAboutAWS()
+{
+    $thisMonday = dbDate(strtotime('this monday'));
+    $subject = 'Reminder | Today\'s AWS (' . humanReadableDate($thisMonday) . ') by ';
+    $res = awsEmailForMonday($thisMonday);
+    $to = 'academic@lists.ncbs.res.in';
+
+    if ($res['speakers']) {
+        echo printInfo("Sending mail about today's AWS");
+        $subject .= implode(', ', $res['speakers']);
+
+        $mail = $res['email_body'];
+        $cclist = $res['cc'];
+        $to = $res['recipients'];
+
+        error_log("Sending to $to, $cclist with subject $subject");
+        echo "Sending to $to, $cclist with subject $subject";
+
+        $ret = sendHTMLEmail($mail, $subject, $to, $cclist);
+    } 
+
+    // Also reminder chair.
+    $awses = getUpcomingAWSOnThisMonday($thisMonday);
+    if(count($awses) > 0) {
+        $chair = $awses[0];
+        if($chair) {
+            $subject = "Reminder | You are the Chair of today's AWS session";
+            $body = p("Hi, <br/> Academic Dean has instructed me to remind you about it.");
+            $ret = sendHTMLEmail($body, $subject, $chair, 'hippo@lists.ncbs.res.in');
+        }
+    }
+}
+
 function aws_monday_morning_cron()
 {
-    error_log('Monday 10amm. Notify about AWS');
     echo printInfo('Today is Monday. Send out emails for AWS');
     $thisMonday = dbDate(strtotime('this monday'));
     $subject = 'Today\'s AWS (' . humanReadableDate($thisMonday) . ') by ';
