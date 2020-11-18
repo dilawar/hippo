@@ -2706,12 +2706,19 @@ class Api extends CI_Controller
                 $targetFile = getUploadDir() . "/photography-$compt_id-$hash.jpg";
 
                 $img = $_FILES['file'];
+                $err = '';
 
-                saveImageAsJPEGLarge($img['tmp_name'], $targetFile);
+                try {
+                    saveImageAsJPEGLarge($img['tmp_name'], $targetFile);
+                } catch (Exception $e) {
+                    // failed.
+                    $err .= $e->getMessage();
+                }
 
                 if(! file_exists($targetFile) ) {
                     $res['success'] = false;
-                    $res['msg'] = "Failed to save on the server. Please contact the admin.";
+                    $res['msg'] = "Failed to save on the server. Please contact the admin: $err";
+                    $res['_FILES'] = json_encode($_FILES);
                     $this->send_data($res, 'ok');
                     return;
                 }
