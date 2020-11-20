@@ -321,12 +321,8 @@ trait JCAdmin
 
     public function jc_admin_edit_jc_submit()
     {
-        $res = updateTable('jc_presentations', 'id,jc_id,presenter,date', 'other_presenters,title,description,url,time,venue', $_POST
-        );
-        if ($res) {
-            flashMessage('Successfully updated presentation entry');
-        }
-
+        $res = updateJCPresentaiton($_POST);
+        flashMessage($res['msg']);
         redirect('user/jcadmin');
     }
 }

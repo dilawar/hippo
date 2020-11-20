@@ -2,7 +2,6 @@
 
 require_once BASEPATH . 'extra/methods.php';
 require_once BASEPATH . 'database.php';
-require_once BASEPATH . 'extra/ICS.php';
 require_once BASEPATH . 'extra/linkify.php';
 
 require_once FCPATH . 'scripts/generate_pdf_aws.php';
@@ -187,14 +186,21 @@ function addToGoogleCalLink(array $event)
     $link .= '&location=' . rawurlencode($location);
 
     $res = '<a href="' . $link . '" target="_blank" >';
-
-    // Get inline image.
     $res .= inlineGoogleCalImage(FCPATH . 'data/gc_button6.png');
     $res .= '</a>';
-
     $res = '<div class="strip_from_md">' . $res . '</div>';
 
     return $res;
+}
+
+function addCalendarLinks(array $event) : string
+{
+    $html = "<table style='margin-bottom:10px'>";
+    $html .= "<tr>";
+    $html .= "<td style='padding-right:20px'>" . addToGoogleCalLink($event) . "</td>";
+    $html .= "<td style='padding-right:20px'>" . eventToICALLink($event) . "</td>";
+    $html .= " </tr> </table> ";
+    return $html;
 }
 
 function showCourseFeedbackLink(string $year, string $sem, string $cid)
@@ -313,45 +319,12 @@ function bookingToHtml(array $booking, $equipmentMap = []): string
     return $html;
 }
 
-/* --------------------------------------------------------------------------*/
-/**
- * @Synopsis  Convert event to ICS file.
- *
- * @Param $event
- *
- * @Returns
- */
-/* ----------------------------------------------------------------------------*/
-function eventToICAL(array $event): string
-{
-    $ics = new ICS($event);
-
-    return $ics;
-}
-
 function eventToICALLink($event)
 {
-    return '';
-
-    $prop = [];
-    $prop['dtstart'] = $event['date'] . ' ' . $event['start_time'];
-    $prop['dtend'] = $event['date'] . ' ' . $event['end_time'];
-    $prop['description'] = substr(html2Markdown($event['description']), 0, 200);
-    $prop['location'] = venueToText($event['venue']);
-    $prop['summary'] = $event['title'];
-
-    $ical = eventToICAL($prop);
-
-    $filename = __DIR__ . '/_ical/' . $event['gid'] . $event['eid'] . '.ics';
-    file_put_contents($filename, $ical->to_string());
-
-    $link = '.';
-    if (file_exists($filename)) {
-        $link = downloadTextFile($filename, '<i class="fa fa-calendar"> <strong>iCal</strong></i>', 'link_as_button'
-    );
-    }
-
-    return $link;
+    $url = site_url("pub/ical/" . $event['gid'] . '/' . $event['eid'] );
+    $link = "<a href='$url' target='_blank'> <large> &#x1f4c5; Download iCAL </large> </a>";
+    $res = '<div>' . $link . '</div>';
+    return $res;
 }
 
 /**
@@ -567,7 +540,7 @@ function eventSummaryHTML($event, $talk = null): string
     $html .= '</table>';
 
     // Add google and ical links.
-    $html .= addToGoogleCalLink($event);
+    $html .= addCalendarLinks($event);
 
     return $html;
 }
@@ -1937,10 +1910,6 @@ function talkToHTMLLarge($talk, $with_picture = true, string $header = ''): stri
         $host = '<td>Supervisor</td><td>' . loginToHTML($talk['host'], false) . '</td>';
     }
 
-    // Calendar link.
-    $googleCalLink = addToGoogleCalLink($event);
-    //$icalLink = eventToICALLink( $event );
-
     $right = '<table class="table table-sm table-borderless">';
     $right .= '<tr><td colspan="2"><big>' . $speakerHMTL . '</big></td></tr>
             <tr>' . $host . '</tr>
@@ -1952,7 +1921,7 @@ function talkToHTMLLarge($talk, $with_picture = true, string $header = ''): stri
     }
 
     $right .= '<tr><td>Coordinator</td><td>' . loginToHTML($coordinator, true) . '</td></tr>';
-    $right .= "<tr><td>$googleCalLink </td>";
+    $right .= "<tr><td>" . addCalendarLinks($event) . "</td>";
     $right .= '<td><a target="_blank" href="' . site_url('info/talks') . '?date=' . $event['date']
                 . '">Permanent link</a></td></tr>';
     $right .= '</table>';
@@ -2039,11 +2008,6 @@ function talkToHTML($talk, $with_picture = false)
     if (__substr__('THESIS SEMINAR', $talk['class'])) {
         $host = '<td>Supervisor</td><td>' . loginToHTML($talk['host'], false) . '</td>';
     }
-
-    // Calendar link.
-    $googleCalLink = addToGoogleCalLink($event);
-    //$icalLink = eventToICALLink( $event );
-
     // Author information
     $side = $speakerHMTL;
     $side .= '<br /> <br />';
@@ -2060,7 +2024,7 @@ function talkToHTML($talk, $with_picture = false)
     $html .= fixHTML($talk['description']);
 
     // Add the calendar links
-    $html .= $googleCalLink;
+    $html .= addCalendarLinks($event);
     $html .= '<a target="_blank" href="' . site_url('info/talks') . '?date=' . $event['date']
                 . '">Permanent link</a>';
 
@@ -2762,7 +2726,14 @@ function presentationToHTML($presentation)
         arrayToName(getLoginInfo($presentation['presenter']));
 
     $html .= '<br />';
-    $html .= "<div class='addtogooglecal'> " . addToGoogleCalLink($presentation) . '</div>';
+
+    $extid = $presentation['jc_id'] . '.' . $presentation['id'];
+    $event = getJCEvent($extid);
+    if($event) 
+        $html .= addCalendarLinks($event);
+    else
+        $html .= "<div class='addtogooglecal'> " . addToGoogleCalLink($presentation) . '</div>';
+
 
     return $html;
 }
@@ -3308,34 +3279,4 @@ function getAWSTcmHTML(array $aws): string
     }
 
     return implode(', ', $tcms);
-}
-
-function eventToICALString(array $event): string
-{
-    $vCalendar = new \Eluceo\iCal\Component\Calendar('https://ncbs.res.in/hippo');
-    $vEvent = new \Eluceo\iCal\Component\Event();
-    $startDateTime = new DateTime($event['date'] . ' ' . $event['start_time']);
-    $endDateTime = new DateTime($event['date'] . ' ' . $event['end_time']);
-
-    $vEvent->setDtStart($startDateTime);
-    $vEvent->setDtEnd($endDateTime);
-    $vEvent->setSummary($event['title']);
-
-    if (__get__($event, 'vc_url', '')) {
-        $vEvent->setUrl($event['vc_url']);
-    }
-
-    $vCalendar->addComponent($vEvent);
-
-    return $vCalendar->render();
-}
-
-function eventToICALFile(array $event): string
-{
-    $icalStr = eventToICALString($event);
-    $date = $event['date'];
-    $icalFile = sys_get_temp_dir() . '/EVENT_' . $date . '.ics';
-    file_put_contents($icalFile, $icalStr);
-
-    return $icalFile;
 }

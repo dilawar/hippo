@@ -83,8 +83,8 @@ trait JC
                 echo printInfo('Successfully removed  your vote.');
             }
         } elseif ('Save' == __get__($_POST, 'response', '')) {
-            $res = updateTable('jc_presentations', 'id', 'title,description,url,presentation_url', $_POST);
-            if ($res) {
+            $res = updateJCPresentaiton($_POST);
+            if ($res['success']) {
                 echo printInfo('Successfully edited  your JC presentation.');
             }
         } else {

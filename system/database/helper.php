@@ -1080,9 +1080,7 @@ function submitRequestImproved(array $request, bool $removeCollision=false, stri
 function submitRequest(array $request)
 {
     $hippoDB = initDB();
-    ;
     $collision = false;
-
     if (! whoAmI()) {
         echo printErrorSevere("Error: I could not determine the name of user");
         return false;

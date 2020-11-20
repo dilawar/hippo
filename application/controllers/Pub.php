@@ -2,6 +2,12 @@
 
 require_once BASEPATH . 'autoload.php';
 
+function icalStamp(string $date, string $time) : string
+{
+    $dt = new \DateTime("$date $time");
+    return $dt->format("Ymd\THis");
+}
+
 class Pub extends CI_Controller
 {
     // no need for authentication (see HippoHooks.php)
@@ -64,5 +70,55 @@ if($id)
     public function phpinfo()
     {
         echo phpinfo();
+    }
+
+    /**
+        * @brief Generate calendar ical
+        *
+        * @return 
+     */
+    public function ical($gid, $eid)
+    {
+        // Get the event.
+        if(! $gid) {
+            return;
+        }
+
+        $event = getEventsById($gid, $eid);
+        if(! $event) {
+            echo "No event found.";
+            return;
+        }
+
+
+
+        $title = $event['title'];
+        $description = $event['description'];
+        $evStartDatetime = icalStamp($event['date'], $event['start_time']);
+        $evEndDatetime = icalStamp($event['date'], $event['end_time']);
+        $info = getLoginInfo($event['created_by']);
+        $email = $info['email'];
+        $cn = arrayToName($info);
+        $location = venueSummary($event['venue']);
+
+        $filename ="calendar-$gid-$eid.ics";
+
+        header("Content-Type: text/calendar");
+        header("Content-Disposition: inline; filename=$filename");
+        echo "BEGIN:VCALENDAR\n";
+        echo "VERSION:2.0\n";
+        echo "PRODID:-//NCBS Banglaore//NONSGML NCBS Hippo//EN\n";
+        echo "METHOD:REQUEST\n"; // requied by Outlook
+        echo "BEGIN:VEVENT\n";
+        echo "UID:".date('Ymd').'T'.date('His')."-$gid.$eid-hippo.ncbs.res.in\n"; // required by Outlok
+        echo "DTSTAMP:".date('Ymd').'T'.date('His')."\n"; // required by Outlook
+        echo "ORGANIZER;CN:$cn:MAILTO:$email\n"; // required by Outlook
+        echo "DTSTART;TZID=Asia/Kolkata:$evStartDatetime\n"; 
+        echo "DTEND;TZID=Asia/Kolkata:$evEndDatetime\n"; 
+        echo "SUMMARY:$title\n";
+        echo "DESCRIPTION:$description\n";
+        echo "LOCATION:$location\n";
+        echo "END:VEVENT\n";
+        echo "END:VCALENDAR\n";
     }
 }
