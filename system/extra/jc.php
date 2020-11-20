@@ -2,6 +2,60 @@
 
 require_once BASEPATH . 'autoload.php';
 
+function insertOrUpdateJCEevent($data)
+{
+    $extId = $data['jc_id'] . '.' . $data['id'];
+    $ev = getTableEntry('events', 'status,external_id', ['status'=>'VALID'
+        , 'external_id' => $extId]);
+
+    $data['title'] = $data['jc_id'] . ' | ' . __get__($data, 'title', 'Not available yet') . ' by ' . getJCPresenters($data);
+
+    // if no valid event exists exists create one.
+    if(! $ev ) {
+        $req = [
+            'external_id' => $data['jc_id'] . '.' . $data['id'],
+            'class' => 'JOURNAL CLUB MEETING',
+            'description' => '',
+            'url' => '',
+            'vc_url' => '',
+            'start_time' => $data['time'],
+            'end_time' => dbTime(strtotime($data['time'] . ' +90 minutes')),
+            'is_public_event' => 'YES',
+        ];
+        $req = array_merge($req, $data);
+
+        // Approve these requests.
+        $res = submitRequestImproved($req);
+        if(count($res['ridlist']) > 0)
+            foreach($res['ridlist'] as $rid)
+                approveRequest($res['gid'], $rid);
+        else
+            approveRequest($res['gid'], $res['rid']);
+
+        return;
+    }
+
+    // else update the event.
+    $data['external_id'] = $extId;
+    updateTable('events', 'external_id', 'description,url,vc_url,venue,title', $data);
+}
+
+function updateJCPresentaiton($data)
+{
+    $msg = '';
+    $res = updateTable(
+        'jc_presentations', 'id',
+        'title,description,url,presentation_url,vc_url,vc_extra', $_POST
+    );
+    try {
+        insertOrUpdateJCEevent($_POST);
+    } catch (Exception $e) {
+        $msg .= $e->getMessage();
+    }
+    return ['success' => true, 'msg' => $msg];
+}
+
+
 /* --------------------------------------------------------------------------*/
 /**
     * @Synopsis  Assign user to a JC presentation and send an email.
@@ -24,10 +78,19 @@ function fixJCSchedule(string $loginOrEmail, array $data):array
     }
     else
     {
+        // create new JC entry.
         $data[ 'id' ] = getUniqueID( 'jc_presentations' );
-        $data[ 'title' ] = 'Not yet available';
+        $data[ 'title' ] = $data['jc_id'] . ' | Not yet available';
         $res = insertIntoTable( 'jc_presentations'
             , 'id,presenter,jc_id,date,time,venue,title,status', $data );
+
+        // Create a entry in events.
+        try {
+            insertOrUpdateJCEevent($data);
+        } catch (Exception $e) {
+            $msg .= "Failed to create event: " . $e->getMessage();
+            // pass
+        }
     }
 
     if( ! $res  )
@@ -101,6 +164,11 @@ function removeJCPresentation(array $data): array
     $res = updateTable( 'jc_presentations', 'id', 'status', $_POST );
     if($res)
     {
+        // invalidate the event also.
+        $extid = $data['jc_id'] . '.' . $data['id'];
+        updateTable('event', 'external_id', 'status', 
+            ['external_id'=>$extid, 'status' => 'CANCELLED']);
+
         $data = getTableEntry('jc_presentations', 'id', $_POST);
         $to = getLoginEmail($data['presenter']);
         if(! $to)

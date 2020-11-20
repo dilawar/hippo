@@ -55,8 +55,9 @@ if (count($eventTalks) < 1) {
                         . site_url('user/downloadtalk/' . $default['date'] . "/$talkId") . '">
                         <i class="fa fa-download ">PDF</i></a>';
                 $talkHtml .= '<a target="_blank" class="mx-2" href="'
-                        . site_url('user/downloadtalkical/' . $default['date'] . "/$talkId") . '">
-                        <i class="fa fa-calendar ">iCal</i></a>';
+                    . site_url('pub/ical/' . $event['gid'] .'/'. $event['eid'])
+                    . '">
+                        <class="fa fa-calendar ">iCal</i></a>';
                 $talkHtml .= '</div>';
                 $talkHtml .= '</div>';
             } else {

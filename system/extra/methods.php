@@ -2452,3 +2452,10 @@ function cancelThisJCRequest($data)
 
     return $res;
 }
+
+function getJCEvent($extid)
+{
+    return getTableEntry('events', 'external_id,status'
+        , [ 'external_id' => $extid, 'status' => 'VALID']
+    );
+}
