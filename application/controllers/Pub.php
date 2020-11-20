@@ -86,11 +86,13 @@ if($id)
 
         $event = getEventsById($gid, $eid);
         if(! $event) {
-            echo "No event found.";
-            return;
+            $event = getRequestById($gid, $eid);
         }
 
-
+        if(! $event) {
+            echo "Nothing found for this URL";
+            return;
+        }
 
         $title = $event['title'];
         $description = $event['description'];

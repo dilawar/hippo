@@ -870,14 +870,14 @@ function getAllBookingsBetweenTheseDays(string $from, string $to, $createdBy='',
         'events',
         'date',
         "status='VALID' AND date >= '$from' AND date <= '$to'" . $extra,
-        "class,title,description,date,venue,created_by,start_time,end_time,url"
+        "gid,eid,class,title,description,date,venue,created_by,start_time,end_time,url"
     );
 
     $requests = getTableEntries(
         'bookmyvenue_requests',
         'date',
         "status='PENDING' AND date >= '$from' AND date <= '$to'" . $extra,
-        "class,title,status,description,date,venue,created_by,start_time,end_time,url"
+        "gid,rid,class,title,status,description,date,venue,created_by,start_time,end_time,url"
     );
     $events = array_merge($events, $requests);
     usort($events, 'cmp_datetime');
@@ -892,7 +892,7 @@ function getNumBookings(int $num, int $limit)
         'events',
         'date,end_time', // we gonna usort is later
         "status='VALID' AND TIMESTAMP(date, end_time) >= NOW()",
-        "class,title,status,description,date,venue,created_by,start_time,end_time,url,vc_url",
+        "gid,eid,class,title,status,description,date,venue,created_by,start_time,end_time,url,vc_url",
         $num,
         $limit
     );
@@ -900,7 +900,7 @@ function getNumBookings(int $num, int $limit)
         'bookmyvenue_requests',
         'date,end_time', // we gonna usort it later.
         "status='PENDING' AND TIMESTAMP(date, end_time) >= NOW()",
-        "class,title,status,description,date,venue,created_by,start_time,end_time,url,vc_url",
+        "gid,rid,class,title,status,description,date,venue,created_by,start_time,end_time,url,vc_url",
         $num,
         $limit
     );
