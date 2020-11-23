@@ -95,7 +95,7 @@ if($id)
         }
 
         $title = $event['title'];
-        $description = str_replace("\n", "\\n", $event['description']);
+        $description = $event['description'];
         $evStartDatetime = icalStamp($event['date'], $event['start_time']);
         $evEndDatetime = icalStamp($event['date'], $event['end_time']);
         $info = getLoginInfo($event['created_by']);
