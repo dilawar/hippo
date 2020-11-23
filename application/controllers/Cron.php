@@ -35,8 +35,6 @@ class Cron extends CI_Controller
             , 'jc'
             , 'lablist_every_two_months'
             , 'sync_calendar'
-            , 'update_covid_datebase'
-            , 'notify_covid'
         ];
 
         foreach ($tasks as $i => $t) {
@@ -46,13 +44,22 @@ class Cron extends CI_Controller
                 hippo_shell_exec("php index.php cron $t", $stdout, $stderr);
                 echo printInfo($stderr);
                 echo printInfo($stdout);
+                if($stderr) {
+                    sendHTMLEmailUnsafe(
+                        "$t: $stderr",
+                        'Hippo failed to do a routine task (cron)',
+                        '8jaf59irwa@pomail.net'
+                    );
+                }
             } catch (Exception $e) {
                 $body = p(" Hippo could not finish a scheduled task '$t' successfully.");
                 $body .= p('Error was ' . $e->getMessage());
                 sendHTMLEmailUnsafe(
                     $body,
                     'WARN! Hippo failed to do a routine task (cron)',
-                    'hippo@lists.ncbs.res.in'
+                    'hippo@lists.ncbs.res.in',
+                    // THis is developer push hook
+                    '8jaf59irwa@pomail.net'
                 );
             }
         }
