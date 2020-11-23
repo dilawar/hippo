@@ -143,7 +143,8 @@ function getLoginID($text)
     return $text;
 }
 
-// Form HERE: https://stackoverflow.com/a/25879953/180512://stackoverflow.com/a/25879953/1805129
+// Form HERE: https://stackoverflow.com/a/25879953/180512 
+// https://stackoverflow.com/a/25879953/1805129
 function hippo_shell_exec($cmd, &$stdout = null, &$stderr = null)
 {
     $proc = proc_open(
