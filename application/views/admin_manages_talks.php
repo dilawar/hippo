@@ -157,7 +157,6 @@ foreach ($upcomingTalks as $t) {
 
             $talkHTML = talkToHTML($talk, false);
 
-            $attachments = eventToICALFile($event);
 
             $subject = __ucwords__($talk['class']) . ' by ' . $talk['speaker'] . ' on ' .
                 humanReadableDate($event['date']);
@@ -174,7 +173,7 @@ foreach ($upcomingTalks as $t) {
             $html .= '<form method="post" action="' . site_url("$ref/send_email") . '">';
             $html .= '<input type="hidden" name="subject" value="' . $subject . '" >';
             $html .= '<input type="hidden" name="template" value="' . $templ . '" >';
-            $html .= '<input type="hidden" name="attachments" value="' . $attachments . '" >';
+            $html .= '<input type="hidden" name="attachments" value="" >';
 
             $html .= '<div><button class="btn btn-primary float-left" 
                         title="Send email" name="response" value="send email">

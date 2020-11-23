@@ -39,7 +39,7 @@ function events_everyday_morning_cron()
                         $attachment = '';
 
                         try {
-                            $attachment = eventToICALFile($event);
+                            $attachment = eventToICALLink($event);
                         } catch (Exception $e) {
                         }
                         // echo printInfo("Event $subject; attachment: $attachment");
