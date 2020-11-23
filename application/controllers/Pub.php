@@ -111,12 +111,18 @@ if($id)
         echo "VERSION:2.0\n";
         echo "PRODID:-//NCBS Banglaore//NONSGML NCBS Hippo//EN\n";
         echo "METHOD:REQUEST\n"; // requied by Outlook
+        echo "BEGIN:VTIMEZONE\n";
+        echo "TZID:Asia/Bengaluru\n";
+        echo "BEGIN:STANDARD\n";
+        echo "TZOFFSETTO:+0530\n";
+        echo "END:STANDARD\n";
+        echo "END:VTIMEZONE\n";
         echo "BEGIN:VEVENT\n";
         echo "UID:".date('Ymd').'T'.date('His')."-$gid.$eid-hippo.ncbs.res.in\n"; // required by Outlok
         echo "DTSTAMP:".date('Ymd').'T'.date('His')."\n"; // required by Outlook
         echo "ORGANIZER;CN:$cn:MAILTO:$email\n"; // required by Outlook
-        echo "DTSTART;TZID=Asia/Kolkata:$evStartDatetime\n"; 
-        echo "DTEND;TZID=Asia/Kolkata:$evEndDatetime\n"; 
+        echo "DTSTART;TZID=Asia/Bengaluru:$evStartDatetime\n"; 
+        echo "DTEND;TZID=Asia/Bengaluru:$evEndDatetime\n"; 
         echo "SUMMARY:$title\n";
         echo "DESCRIPTION:$description\n";
         echo "LOCATION:$location\n";
