@@ -319,12 +319,29 @@ function bookingToHtml(array $booking, $equipmentMap = []): string
     return $html;
 }
 
-function eventToICALLink($event)
+function eventToICALURL($event) : string
 {
-    $url = site_url("pub/ical/" . $event['gid'] . '/' . $event['eid'] );
+    return site_url("pub/ical/" . $event['gid'] . '/' . $event['eid'] );
+}
+
+function eventToICALLink($event) : string
+{
+    $url = eventToICALURL($event);
     $link = "<a href='$url' target='_blank'> <large> &#x1f4c5; Download iCAL </large> </a>";
     $res = '<div>' . $link . '</div>';
     return $res;
+}
+
+function eventToICALFile($event, bool $regenerate = false) : string
+{
+    $filename = sys_get_temp_dir() . '/' . "cal-".$event['gid']."-".$event['eid'].".ics";
+    if((! $regenerate) && file_exists($filename))
+        return $filename;
+
+    $url = eventToICALURL($event);
+    $content = file_get_contents("$url");
+    file_put_contents($filename, $content);
+    return $filename;
 }
 
 /**

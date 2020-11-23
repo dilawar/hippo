@@ -140,7 +140,7 @@ class Cron extends CI_Controller
 
     public function everyday_morning()
     {
-        if (trueOnGivenDayAndTime('today', '9:15')) {
+        if (trueOnGivenDayAndTime('today', '11:30')) {
             events_everyday_morning_cron();
         }
 

@@ -37,26 +37,32 @@ function events_everyday_morning_cron()
                         $msg = $template['email_body'];
 
                         $attachment = '';
-
                         try {
-                            $attachment = eventToICALLink($event);
+                            $attachment = eventToICALFile($event);
                         } catch (Exception $e) {
                             echo printInfo("Failed to generate ICAL link: " . $e->getMessage());
+
                         }
                         // echo printInfo("Event $subject; attachment: $attachment");
+                        if(! file_exists($attachment)) {
+                            echo printInfo("$attachment is not found.");
+                            $attachment = '';
+                        }
                         $res = sendHTMLEmail($msg, $subject, $to, $ccs, $attachment);
-                        if ($res)
+                        if ($res) {
                             echo printInfo('Email sent successfully');
+                        }
                     }
                 }
             }
         }
         if ($fcmBody) {
-            @sendFirebaseCloudMessage('academic', "Today's academic events", $fcmBody);
+            sendFirebaseCloudMessage('academic', "Today's academic events", $fcmBody);
         }
     } else {
         echo printInfo('No event found on day ' . $today);
     }
+
 }
 
 // JC emails.
