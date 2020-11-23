@@ -49,7 +49,7 @@ class Cron extends CI_Controller
             } catch (Exception $e) {
                 $body = p(" Hippo could not finish a scheduled task '$t' successfully.");
                 $body .= p('Error was ' . $e->getMessage());
-                sendHTMLEmail(
+                sendHTMLEmailUnsafe(
                     $body,
                     'WARN! Hippo failed to do a routine task (cron)',
                     'hippo@lists.ncbs.res.in'
@@ -140,7 +140,7 @@ class Cron extends CI_Controller
 
     public function everyday_morning()
     {
-        if (trueOnGivenDayAndTime('today', '11:30')) {
+        if (trueOnGivenDayAndTime('today', '8:00')) {
             events_everyday_morning_cron();
         }
 
