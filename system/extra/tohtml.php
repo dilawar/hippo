@@ -57,7 +57,7 @@ function eventToEmail(array $event, array $talk = []): array
     }
 
     $talkHTML = talkToHTML($talk, false);
-    $attachments = eventToICALFile($event);
+    $attachments = '';
     $subject = __ucwords__($talk['class']) . ' by ' . $talk['speaker'] . ' on ' .
         humanReadableDate($event['date']);
 

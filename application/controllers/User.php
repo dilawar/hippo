@@ -380,14 +380,7 @@ class User extends CI_Controller
 
     public function downloadtalkical($date, $id)
     {
-        $event = getEventsOfTalkId($id);
-        $icalFile = eventToICALFile($event);
-        $this->download($icalFile, false);
-        echo '<script type="text/javascript" charset="utf-8">
-                window.onload = function() {
-                    window.close();
-                };
-            </script>';
+        return;
     }
 
     public function logout()
