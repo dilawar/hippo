@@ -95,7 +95,7 @@ if($id)
         }
 
         $title = $event['title'];
-        $description = $event['description'];
+        $description = str_replace("\n", "\\n", $event['description']);
         $evStartDatetime = icalStamp($event['date'], $event['start_time']);
         $evEndDatetime = icalStamp($event['date'], $event['end_time']);
         $info = getLoginInfo($event['created_by']);
@@ -107,26 +107,29 @@ if($id)
 
         header("Content-Type: text/calendar");
         header("Content-Disposition: inline; filename=$filename");
-        echo "BEGIN:VCALENDAR\n";
-        echo "VERSION:2.0\n";
-        echo "PRODID:-//NCBS Banglaore//NONSGML NCBS Hippo//EN\n";
-        echo "METHOD:REQUEST\n"; // requied by Outlook
-        echo "BEGIN:VTIMEZONE\n";
-        echo "TZID:Asia/Bengaluru\n";
-        echo "BEGIN:STANDARD\n";
-        echo "TZOFFSETTO:+0530\n";
-        echo "END:STANDARD\n";
-        echo "END:VTIMEZONE\n";
-        echo "BEGIN:VEVENT\n";
-        echo "UID:".date('Ymd').'T'.date('His')."-$gid.$eid-hippo.ncbs.res.in\n"; // required by Outlok
-        echo "DTSTAMP:".date('Ymd').'T'.date('His')."\n"; // required by Outlook
-        echo "ORGANIZER;CN:$cn:MAILTO:$email\n"; // required by Outlook
-        echo "DTSTART;TZID=Asia/Bengaluru:$evStartDatetime\n"; 
-        echo "DTEND;TZID=Asia/Bengaluru:$evEndDatetime\n"; 
-        echo "SUMMARY:$title\n";
-        echo "DESCRIPTION:$description\n";
-        echo "LOCATION:$location\n";
-        echo "END:VEVENT\n";
-        echo "END:VCALENDAR\n";
+        echo "BEGIN:VCALENDAR\r\n";
+        echo "VERSION:2.0\r\n";
+        echo "PRODID:-//NCBS Banglaore//NONSGML NCBS Hippo//EN\r\n";
+        echo "METHOD:REQUEST\r\n"; // requied by Outlook
+        echo "BEGIN:VTIMEZONE\r\n";
+        echo "TZID:Asia/Bengaluru\r\n";
+        echo "BEGIN:STANDARD\r\n";
+        echo "TZOFFSETFROM:+0530\r\n";
+        echo "TZOFFSETTO:+0530\r\n";
+        echo "TZNAME:IST\r\n";
+        echo "DTSTART:19700101T000000\r\n";
+        echo "END:STANDARD\r\n";
+        echo "END:VTIMEZONE\r\n";
+        echo "BEGIN:VEVENT\r\n";
+        echo "UID:".date('Ymd').'T'.date('His')."-$gid.$eid-hippo.ncbs.res.in\r\n"; // required by Outlok
+        echo "DTSTAMP:".date('Ymd').'T'.date('His')."\r\n"; // required by Outlook
+        echo "ORGANIZER;CN:$cn:MAILTO:$email\r\n"; // required by Outlook
+        echo "DTSTART;TZID=Asia/Bengaluru:$evStartDatetime\r\n"; 
+        echo "DTEND;TZID=Asia/Bengaluru:$evEndDatetime\r\n"; 
+        echo "SUMMARY:$title\r\n";
+        echo "DESCRIPTION:$description\r\n";
+        echo "LOCATION:$location\r\n";
+        echo "END:VEVENT\r\n";
+        echo "END:VCALENDAR\r\n";
     }
 }
