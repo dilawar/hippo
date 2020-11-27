@@ -529,7 +529,6 @@ function dbDate($date)
     if (is_int($date)) {
         return date('Y-m-d', $date);
     }
-
     return date('Y-m-d', strtotime($date));
 }
 

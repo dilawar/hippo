@@ -5,14 +5,14 @@ require_once BASEPATH . '/extra/admin.php';
 function events_everyday_morning_cron()
 {
     $today = dbDate('today');
-    echo printInfo('8am. Event for today');
     $todaysEvents = getPublicEventsOnThisDay($today);
     $nTalks = 0;
     $fcmBody = '';
+    echo printInfo('8am. Event for today: = ' . count($todaysEvents));
     if (count($todaysEvents) > 0) {
         foreach ($todaysEvents as $event) {
+            echo printInfo($event['title']);
             $external_id = $event['external_id'];
-
             // External id has the format TALKS.TALK_ID
             $talkid = explode('.', $external_id);
             if (2 == count($talkid)) {
