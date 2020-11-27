@@ -1922,7 +1922,11 @@ class Api extends CI_Controller
                 $_POST['created_by'] = getLogin();
                 $_POST['created_on'] = dbDateTime('now');
                 $_POST['speaker'] = speakerName($_POST['speaker_id']);
-                $data = addNewTalk($_POST);
+                try {
+                    $data = addNewTalk($_POST);
+                } catch (Exception $e) {
+                    $data = ['success'=>false, 'msg' => $e->getMessage()];
+                }
                 $this->send_data($data, 'ok');
 
                 return;

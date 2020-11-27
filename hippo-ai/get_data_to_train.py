@@ -22,6 +22,8 @@ from db_connect import db_
 data_ = [ ]
 
 def strip_image( txt ):
+    if txt is None:
+        return ''
     pat = re.compile( r'(\<img.*?src=\".+?\".*?\s*\/\>)', re.DOTALL )
     return pat.sub( '', txt )
 

@@ -9,21 +9,19 @@
  */
 function addNewTalk( array $data ) : array
 {
-    $hippoDB = initDB();;
+    $hippoDB = initDB();
     // Get the max id
-    $res = $hippoDB->query( 'SELECT MAX(id) AS id FROM talks' );
-    $maxid = $res->fetch( PDO::FETCH_ASSOC);
-    $id = intval( $maxid['id'] ) + 1;
-
+    $id = getUniqueID('talks');
     $data[ 'id' ] = $id;
-    $res = insertIntoTable( 'talks'
-        , 'id,host,class,coordinator,title,speaker,speaker_id,description,created_by,created_on'
-        , $data );
-
-    // Return the id of talk.
-    if($res)
+    try {
+        $res = insertIntoTable( 'talks'
+            , 'id,host,class,coordinator,title,speaker,speaker_id,description,created_by,created_on'
+            , $data );
         return array("id" => $id);
-    return array();
+    } catch (Exception $e) {
+        return ['success'=>false, 'msg'=>'Failed to create new talk' . $e->getMessage()];
+    }
+    return ['success'=>false, 'msg'=>'Failed to create new talk'];
 }
 
 /* --------------------------------------------------------------------------*/

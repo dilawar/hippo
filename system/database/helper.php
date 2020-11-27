@@ -2034,7 +2034,6 @@ function insertIntoTable($tablename, $keys, $data)
 function insertOrUpdateTable($tablename, $keys, $updatekeys, $data)
 {
     $hippoDB = initDB();
-    ;
 
     if (is_string($keys)) {
         $keys = explode(',', $keys);

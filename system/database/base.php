@@ -153,6 +153,7 @@ class BMVPDO extends PDO
                 , created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
                 , status ENUM( "CANCELLED", "INVALID", "VALID", "DELIVERED" ) DEFAULT "VALID"
                 , PRIMARY KEY (id)
+                , CONSTRAINT unique_class_speaker_title UNIQUE(class, speaker, title)
             )' 
         );
 
