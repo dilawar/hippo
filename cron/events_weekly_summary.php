@@ -31,7 +31,7 @@ function events_weekly_summary_cron()
 
                 $id = explode('.', $externalId);
                 $id = $id[1];
-                if (intval($id) < 0) {
+                if ((intval($id) < 0) || ($id[0] !== 'talks')) {
                     continue;
                 }
 
