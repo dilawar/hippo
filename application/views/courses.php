@@ -179,6 +179,7 @@ foreach ($slotUpcomingCourses as $slot => $ucs) {
         $slot = $uc['slot'];
         $sem = getSemester($uc['end_date']);
         $year = getYear($uc['end_date']);
+        $upcomingEnrollments = [];
         $newTab .= courseToHTMLRow($uc, $slot, $sem, $year, $upcomingEnrollments);
         $newTab .= '</tr>';
     }
