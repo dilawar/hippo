@@ -52,7 +52,10 @@ def main( args ):
     idlist = res['idlist']
     # PUBMED allows upto 200 ids in one go and not more than 3 queries per
     # second.
-    idSlices = [ idlist[i:i+200] for i in range(0, len(idlist), 200)]
+    if args.update:
+        idSlices = idlist[:200]
+    else:
+        idSlices = [ idlist[i:i+200] for i in range(0, len(idlist), 200)]
     if not os.path.exists( args.output ) or args.force: 
         results = [fetch_info(slices) for slices in idSlices]
         with open( args.output, 'w' ) as f:

@@ -8,19 +8,20 @@ function events_everyday_morning_cron()
     $todaysEvents = getPublicEventsOnThisDay($today);
     $nTalks = 0;
     $fcmBody = '';
-    echo printInfo('8am. Event for today: = ' . count($todaysEvents));
     if (count($todaysEvents) > 0) {
         foreach ($todaysEvents as $event) {
             echo printInfo($event['title']);
             $external_id = $event['external_id'];
             // External id has the format TALKS.TALK_ID
             $talkid = explode('.', $external_id);
-            if (2 == count($talkid)) {
+
+            if (2 == count($talkid) && $talkid[0] === 'talks') {
                 $data = ['id' => $talkid[1]];
                 $talk = getTableEntry('talks', 'id', $data);
                 if ($talk) {
                     $fcmBody .= '<br />' . $talk['title'];
                     $html = talkToHTML($talk);
+
                     ++$nTalks;
 
                     // Now prepare an email to sent to mailing list.
@@ -48,6 +49,7 @@ function events_everyday_morning_cron()
                             echo printInfo("$attachment is not found.");
                             $attachment = '';
                         }
+
                         $res = sendHTMLEmail($msg, $subject, $to, $ccs, $attachment);
                         if ($res) {
                             echo printInfo('Email sent successfully');
