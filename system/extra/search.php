@@ -77,5 +77,14 @@ function searchInTalks($q): array
         ");
 }
 
+function searchInEvents($q): array 
+{
+    return executeQuery("SELECT * FROM events WHERE 
+        date < NOW() AND
+        (gid='$q' OR created_by LIKE '$q%' OR date='$q' OR title LIKE '%$q%')
+        ORDER BY date DESC
+        LIMIT 20
+        ");
+}
 ?>
 

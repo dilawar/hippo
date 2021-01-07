@@ -517,6 +517,11 @@ class Api extends CI_Controller
             $this->send_data_helper($talks);
 
             return;
+        } elseif ('event' === $args[0]) {
+            $evs = searchInEvents($q);
+            $this->send_data_helper($evs);
+
+            return;
         }
 
         $this->send_data(['Unsupported query']);
