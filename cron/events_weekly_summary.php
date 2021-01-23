@@ -3,7 +3,9 @@
 function events_weekly_summary_cron()
 {
     if (trueOnGivenDayAndTime('this sunday', '19:00')) {
-        error_log('Today is Sunday 7pm. Send out emails for week events.');
+
+        echo('Today is Sunday 7pm. Send out emails for week events.');
+
         $thisMonday = dbDate(strtotime('this monday'));
         $subject = 'This week ( ' . humanReadableDate($thisMonday) . ' ) events ';
 
@@ -24,22 +26,31 @@ function events_weekly_summary_cron()
                     continue;
                 }
 
+
                 $externalId = $event['external_id'];
                 if (!$externalId) {
                     continue;
                 }
 
-                $id = explode('.', $externalId);
-                $id = $id[1];
-                if ((intval($id) < 0) || ($id[0] !== 'talks')) {
+                $idfields = explode('.', $externalId);
+                $id = $idfields[1];
+
+                if (intval($id) < 0)
                     continue;
+
+                // Talks.
+                if($idfields[0] === 'talks') {
+                    $talk = getTableEntry('talks', 'id', ['id' => $id]);
+                    // We just need the summary of every event here.
+                    $html .= eventSummaryHTML($event, $talk);
+                }
+                else {
+                    // JC etc.
+                    $html .= eventSummaryHTML($event);
                 }
 
-                $talk = getTableEntry('talks', 'id', ['id' => $id]);
-
-                // We just need the summary of every event here.
-                $html .= eventSummaryHTML($event, $talk);
                 $html .= '<br>';
+
             }
 
             $html .= '<br><br>';
