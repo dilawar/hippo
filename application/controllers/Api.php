@@ -1842,9 +1842,9 @@ class Api extends CI_Controller
         } elseif ('photo' === $args[0]) {
             $login = $args[1] ?? getLogin();
             if ($login !== getLogin()) {
-                $roles = getRoles($login);
+                $roles = getRoles(getLogin());
                 if (!(in_array('ADMIN', $roles) || in_array('ACAD_ADMIN', $roles))) {
-                    $this->send_data([], 'Forbidden');
+                    $this->send_data([], 'Forbidden: ' . json_encode($roles));
 
                     return;
                 }
@@ -2638,11 +2638,18 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('profile' === $endpoint) {
+
                 $img = $_FILES['file'];
                 $ext = explode('/', $img['type'])[1];
                 $tempFile = $img['tmp_name'];
                 $conf = getConf();
-                $targetFile = $conf['data']['user_imagedir'] . '/' . getLogin() . '.jpg';
+
+                // Admin also uses this endpoint and she might set login field
+                // in the POST and update someone else profile picture. Prefer
+                // 'login' over current login.
+                $login = getHeader('login') ?? getLogin();
+
+                $targetFile = $conf['data']['user_imagedir'] . "/$login.jpg";
                 saveImageAsJPEG($tempFile, $targetFile);
                 $res['stored'] = $targetFile;
                 $this->send_data($res, 'ok');
