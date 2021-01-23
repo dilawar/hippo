@@ -2,8 +2,10 @@
 
 function events_weekly_summary_cron()
 {
-    if (trueOnGivenDayAndTime('this sunday', '19:00')) {
-        error_log('Today is Sunday 7pm. Send out emails for week events.');
+    if (trueOnGivenDayAndTime('this saturday', '22:00')) {
+
+        echo('Today is Sunday 7pm. Send out emails for week events.');
+
         $thisMonday = dbDate(strtotime('this monday'));
         $subject = 'This week ( ' . humanReadableDate($thisMonday) . ' ) events ';
 
@@ -16,13 +18,14 @@ function events_weekly_summary_cron()
             . humanReadableDate($thisMonday)
         );
 
-        $events = getEventsBetween($from = 'today', $duration = '+6 day');
+        $events = getEventsBetween($from = '2021-01-16', $duration = '+6 day');
 
         if (count($events) > 0) {
             foreach ($events as $event) {
                 if ('NO' == $event['is_public_event']) {
                     continue;
                 }
+
 
                 $externalId = $event['external_id'];
                 if (!$externalId) {
@@ -36,7 +39,6 @@ function events_weekly_summary_cron()
                 }
 
                 $talk = getTableEntry('talks', 'id', ['id' => $id]);
-
                 // We just need the summary of every event here.
                 $html .= eventSummaryHTML($event, $talk);
                 $html .= '<br>';

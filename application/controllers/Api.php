@@ -812,8 +812,10 @@ class Api extends CI_Controller
             $presenter = $_POST['presenter'];
             if ($login === explode('@', $presenter)[0] || isThisJCAdmin($login, $_POST['jc_id'])) {
                 $res = updateJCPresentaiton($_POST);
-                $this->send_data(['success' => $res ? 'Success' : 'Failed', 
-                    'msg' => $msg], 'ok');
+                $this->send_data(
+                    ['success' => $res ? 'Success' : 'Failed', 
+                    'msg' => $msg], 'ok'
+                );
 
                 return;
             }
