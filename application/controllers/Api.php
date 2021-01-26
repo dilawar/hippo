@@ -250,6 +250,17 @@ class Api extends CI_Controller
             $downloadname = "talk_$date_$talkid.pdf";
             $filepath = generatePdfForTalk($date, $talkid);
         }
+        else if($args[0] === 'aws') {
+            $date = $args[1];
+            $speaker = $args[2];
+            $downloadname = "aws_$date_$speaker.pdf";
+            $res = pdfFileOfAWS($date, $speaker);
+            $filepath = $res['pdf'] ?? '';
+        }
+        else {
+            $this->send_data(["Unknown endpoint."], 'error', 404);
+            return;
+        }
 
         // EDIT: I added some permission/file checking.
         if (!file_exists($filepath)) {
