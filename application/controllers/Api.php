@@ -18,6 +18,9 @@ require_once BASEPATH . '/extra/charts.php';
 require_once BASEPATH . '/extra/covid19.php';
 require_once BASEPATH . '/extra/photography.php';
 
+require_once FCPATH . '/scripts/generate_pdf_talk.php';
+require_once FCPATH . '/scripts/generate_pdf_aws.php';
+
 /* --------------------------------------------------------------------------*/
 /**
  * @Synopsis Authenticate a given user with given key.
@@ -233,6 +236,47 @@ class Api extends CI_Controller
             }
         }
     }
+
+    public function download()
+    {
+        $args = func_get_args();
+
+        $filepath = null;
+        $downloadname = 'null.pdf';
+
+        if($args[0] === 'talk') {
+            $date = $args[1];
+            $talkid = $args[2];
+            $downloadname = "talk_$date_$talkid.pdf";
+            $filepath = generatePdfForTalk($date, $talkid);
+        }
+        else if($args[0] === 'aws') {
+            $date = $args[1];
+            $speaker = $args[2];
+            $downloadname = "aws_$date_$speaker.pdf";
+            $res = pdfFileOfAWS($date, $speaker);
+            $filepath = $res['pdf'] ?? '';
+        }
+        else {
+            $this->send_data(["Unknown endpoint."], 'error', 404);
+            return;
+        }
+
+        // EDIT: I added some permission/file checking.
+        if (!file_exists($filepath)) {
+            throw new Exception("File $filepath does not exist");
+        }
+        if (!is_readable($filepath)) {
+            throw new Exception("File $filepath is not readable");
+        }
+        http_response_code(200);
+        header('Content-Length: '.filesize($filepath));
+        header("Content-Type: application/pdf");
+        header('Content-Disposition: attachment; filename="'.$downloadname.'"'); 
+        readfile($filepath);
+        exit; 
+    }
+
 
     /* --------------------------------------------------------------------------*/
     /**
