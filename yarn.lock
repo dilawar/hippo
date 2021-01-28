@@ -1882,10 +1882,10 @@ timed-out@^4.0.1:
   resolved "https://registry.yarnpkg.com/timed-out/-/timed-out-4.0.1.tgz#f32eacac5a175bea25d7fab565ab3ed8741ef56f"
   integrity sha1-8y6srFoXW+ol1/q1Zas+2HQe9W8=
 
-tinymce@^5.4.1:
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/tinymce/-/tinymce-5.6.2.tgz#4c20c22e328c5d0baab204928dbc2b0ecbed18b4"
-  integrity sha512-z7zvM5seOPiW86/vqf08kStwW5Zs5U9oQfuqh2rTj4jEcT2QzxT0v72i2zw3W6rbTLldkAej6edFZphj5ee5zg==
+tinymce@^5.6.0:
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/tinymce/-/tinymce-5.6.0.tgz#b5eda4888e1a607ddd545619cfaa137d59de14b4"
+  integrity sha512-f8LsyT80j8hD4wrL8Sac0DWDG5k10cDyykL/qkJ6kexn1KMt7w1ByrGlUm53XCYDqtavBA5snTU7odioMwSXSQ==
 
 to-object-path@^0.3.0:
   version "0.3.0"
