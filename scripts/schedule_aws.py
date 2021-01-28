@@ -70,6 +70,8 @@ def number_of_valid_speakers(date, sp):
 
 def select_randoom_spec(date, specs, sp=None):
     global g_
+    if not specs:
+        return 'U'
     if sp is None:
         random.shuffle(specs)
         sp = random.choice(specs)
