@@ -3,7 +3,7 @@
 function aws_schedule_fac_student_cron()
 {
     /* 9 weeks earlier, if student fails to sign-up, select one from the list */
-    if (trueOnGivenDayAndTime('this thursday', '08:30')) {
+    if (trueOnGivenDayAndTime('this monday', '15:00')) {
         $afterNWeeks = dbDate(strtotime('this monday') + 9 * 7 * 86400);
         echo printInfo("Today is monday and after 9 weeks $afterNWeeks");
 
