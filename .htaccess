@@ -1,3 +1,6 @@
+Header always set Access-Control-Allow-Methods "GET,POST,OPTIONS,PUT,DELETE"
+Header always set Access-Control-Allow-Headers "cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type"
+
 RewriteEngine on
 RewriteCond $1 !^(index\.php|resources|robots\.txt)
 RewriteCond %{REQUEST_FILENAME} !-f
