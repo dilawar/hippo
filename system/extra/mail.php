@@ -62,9 +62,11 @@ function awsEmailForMonday($monday)
     $res['speakers'] = $speakers;
 
     $firstAws = $upcomingAws[0];
-    $venue = venueToShortText($firstAws['venue']
-        , $firstAws['vc_url']
-        , $firstAws['vc_extra']);
+    $venue = venueToShortText(
+        $firstAws['venue'],
+        $firstAws['vc_url'],
+        $firstAws['vc_extra']
+    );
 
     $chair = 'None assigned.';
     if (__get__($firstAws, 'chair', '')) {
@@ -101,7 +103,7 @@ function mailFooter()
     ';
 }
 
-function sendHTMLEmailUnsafe(string $msg, string $subject, string $to, string $cclist = '', string $attachments = ''
+function sendHTMLEmailUnsafe(string $msg, string $subject, string $to, string $cclist = '', string $attachments = '', array $replyto=[]
 ): array {
     $ret = ['success' => false, 'msg' => ''];
     global $maildir;
@@ -163,6 +165,12 @@ function sendHTMLEmailUnsafe(string $msg, string $subject, string $to, string $c
         }
     }
 
+    // reply to
+    if($replyto) {
+        // replyto [ 'email', 'name' ]
+        $mail->addReplyTo($replyto[0], $replyto[1]);
+    }
+
     // Send email.
     $mail->Subject = $subject;
     $mail->Body = $msg;
@@ -176,10 +184,10 @@ function sendHTMLEmailUnsafe(string $msg, string $subject, string $to, string $c
     return $ret;
 }
 
-function sendHTMLEmail(string $msg, string $sub, string $to, string $cclist = '', string $attachments = ''
+function sendHTMLEmail(string $msg, string $sub, string $to, string $cclist = '', string $attachments = '', array $replyto=[]
 ): array {
     try {
-        return sendHTMLEmailUnsafe($msg, $sub, $to, $cclist, $attachments);
+        return sendHTMLEmailUnsafe($msg, $sub, $to, $cclist, $attachments, $replyto);
     } catch (Exception $e) {
         $body = p('Hippo failed to send an email. Fix it soon. Error was <br/>');
         $body .= json_encode($e);

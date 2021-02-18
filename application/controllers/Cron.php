@@ -65,18 +65,6 @@ class Cron extends CI_Controller
         }
     }
 
-    public function update_covid_datebase()
-    {
-        echo "Updating covid database. <br>";
-        return updateCovidData();
-    }
-
-    public function notify_covid()
-    {
-        return notifyCovid();
-    }
-
-    public function update_database()
     {
         if (trueOnGivenDayAndTime('this saturday', '00:00')) {
             echo("Cleaning up database.");
@@ -126,6 +114,7 @@ class Cron extends CI_Controller
         // Try at 8pm.
         if (trueOnGivenDayAndTime('this monday', '8:00')) {
             assignChair();
+            notifyChair();
         }
 
         // At 3 pm. Reminder!
