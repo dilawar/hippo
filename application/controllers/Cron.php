@@ -65,6 +65,7 @@ class Cron extends CI_Controller
         }
     }
 
+    public function update_database()
     {
         if (trueOnGivenDayAndTime('this saturday', '00:00')) {
             echo("Cleaning up database.");
