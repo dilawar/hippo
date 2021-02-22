@@ -186,3 +186,4 @@ class Cron extends CI_Controller
         sync_calendar_cron();
     }
 }
+

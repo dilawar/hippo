@@ -27,7 +27,7 @@ function remindAboutAWS()
     // Also reminder chair.
     $awses = getUpcomingAWSOnThisMonday($thisMonday);
     if (count($awses) > 0) {
-        $chair = $awses[0];
+        $chair = $awses[0]['chair'];
         if ($chair) {
             $subject = "Reminder | You are the Chair of today's AWS session";
             $body = p('Hi, <br/> Academic Dean has instructed me to remind you about it.');
