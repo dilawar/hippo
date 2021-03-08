@@ -3353,13 +3353,13 @@ class Api extends CI_Controller
 
                 // JUST to be sure.
                 if('YES'===$_POST['is_public_event']) {
-                    $ret = updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
+                    updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
                 }
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST, getLogin());
-                $data['msg'] = 'APPROVED';
+                $data = $ret;
             } elseif ('reject' === $subtask) {
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST, getLogin());
-                $data['msg'] = 'REJECTED';
+                $data = $ret;
             } elseif ('update' === $subtask) {
                 $ret = updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
                 $data['msg'] = 'UPDATED';
@@ -3367,7 +3367,6 @@ class Api extends CI_Controller
                 $data = ['flash' => 'Unknown request'];
             }
 
-            // Send final data.
             $this->send_data($data, 'ok');
 
             return;
