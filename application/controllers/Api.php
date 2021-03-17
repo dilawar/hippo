@@ -88,7 +88,7 @@ class Api extends CI_Controller
         header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
         header('Access-Control-Allow-Headers: cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type, *');
         header('Access-Control-Allow-Origin: *');
-        //error_reporting(0);
+        error_reporting(0);
     }
 
     private function send_data_helper(array $data, int $status=200)
