@@ -82,18 +82,20 @@ function eventToTex($event, $talk = null)
     }
 
     $logo2 = '';
-    if (__get__($talk, 'host_extra', '')) {
-        $isInstem = false;
-        $inst = emailInstitute($talk['host_extra'], 'latex');
-        if (false !== strpos(strtolower($inst), 'institute for stem cell')) {
-            $isInstem = true;
-        }
-        if ($isInstem) {
-            $logo2 = '\includegraphics[height=2.5cm]{' . FCPATH . '/data/inStem_logo.png}';
-        } else {
-            $logo2 = '\includegraphics[height=2.5cm]{' . FCPATH . '/data/ncbs_logo.png}';
-        }
-    }
+
+    // FIXME: It is needed.
+    // if (__get__($talk, 'host_extra', '')) {
+    //     $isInstem = false;
+    //     $inst = emailInstitute($talk['host_extra'], 'latex');
+    //     if (false !== strpos(strtolower($inst), 'institute for stem cell')) {
+    //         $isInstem = true;
+    //     }
+    //     if ($isInstem) {
+    //         $logo2 = '\includegraphics[height=2.5cm]{' . FCPATH . '/data/inStem_logo.png}';
+    //     } else {
+    //         $logo2 = '\includegraphics[height=2.5cm]{' . FCPATH . '/data/ncbs_logo.png}';
+    //     }
+    // }
 
     // Logo etc.
     $date = $when;

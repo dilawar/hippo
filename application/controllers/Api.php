@@ -251,7 +251,13 @@ class Api extends CI_Controller
         if($args[0] === 'talk') {
             $date = $args[1];
             $talkid = $args[2];
-            $downloadname = "talk_$date_$talkid.pdf";
+            $event = getEventsOfTalkId($talkid);
+            if(! $event) {
+                $this->send_data(["This talk has not associated booking."], "error", 400);
+                return;
+            }
+            $date = $event['date'];
+            $downloadname = "talk_" . $date . "_$talkid.pdf";
             $filepath = generatePdfForTalk($date, $talkid);
         }
         else if($args[0] === 'aws') {
