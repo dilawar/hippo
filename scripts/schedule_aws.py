@@ -77,8 +77,11 @@ def select_randoom_spec(date, specs, sp=None):
         sp = random.choice(specs)
         # How many speakers are available for this spec.
         while number_of_valid_speakers(date, sp) < 6:
-            specs.remove(sp)
-            sp = random.choice(specs)
+            try:
+                specs.remove(sp)
+                sp = random.choice(specs)
+            except Exception as e:
+                break
     try:
         specs.remove(sp)
     except ValueError as e:
