@@ -61,7 +61,7 @@ class Welcome extends CI_Controller
             }
 
             // In any case, create a entry in database.
-            $this->createUserOrUpdateLogin($ldap, $ldapInfo, $type);
+            createUserOrUpdateLogin($ldap, $ldapInfo);
 
             // Update email id.
             $res = updateTable('logins', 'login', 'email', ['login' => $ldap, 'email' => $email]
@@ -70,51 +70,5 @@ class Welcome extends CI_Controller
             $this->session->set_flashdata('success', 'Loging sucessful.!');
             redirect('user/home');
         }
-    }
-
-    /* --------------------------------------------------------------------------*/
-    /**
-     * @Synopsis  Create a new login on successful login. If login is already
-     * found then update its details from LDAP.
-     *
-     * @Param $ldap
-     * @Param $ldapInfo
-     * @Param $type
-     *
-     * @Returns
-     */
-    /* ----------------------------------------------------------------------------*/
-    private function createUserOrUpdateLogin($ldap, array $ldapInfo, $type = '')
-    {
-        if (!$ldapInfo) {
-            $ldapInfo = @getUserInfoFromLdap($userid);
-        }
-
-        if ('NA' === __get__($ldapInfo, 'last_name', 'NA')) {
-            $ldapInfo['last_name'] = '';
-        }
-
-        $data = [];
-        foreach ($this->db->list_fields('logins') as $f) {
-            // If ldap has this information then override it.
-            // NOTE: If you don't want any other field to be updated then put
-            // then ignore them here.
-            if ('na' !== strtolower(__get__($ldapInfo, $f, 'na'))) {
-                $data[$f] = $ldapInfo[$f];
-            }
-        }
-
-        if (!$this->db->replace('logins', $data)) {
-            flashMessage('Failed to update user. ' . $this->db->error());
-
-            return false;
-        }
-
-        // update last login time.
-        $this->db->set(['last_login' => dbDateTime('now')]);
-        $this->db->where('login', $ldap);
-        $this->db->update('logins');
-
-        return true;
     }
 }

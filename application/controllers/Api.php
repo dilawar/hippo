@@ -563,6 +563,12 @@ class Api extends CI_Controller
             return;
         } elseif ('login' === $args[0]) {
             $logins = searchInLogins($q);
+
+            if(! $logins) 
+                // search in ldap and create a login item if found.
+                if(createUserOrUpdateLogin($q, [])) 
+                    $logins = searchInLogins($q);
+
             $this->send_data_helper($logins);
 
             return;

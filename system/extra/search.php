@@ -20,15 +20,6 @@ function searchInLogins(string $q, $where=''): array
         AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
         GROUP BY email
         ");
-
-    if(! $info) {
-        $info = getUserInfoFromLdap($q, $multi=true);
-        if($info) {
-            $info['name'] = arrayToName($info);
-            $info['pi_or_host'] = $info['laboffice'];
-            $info = [ $info ];
-        }
-    }
     return $info;
 }
 
