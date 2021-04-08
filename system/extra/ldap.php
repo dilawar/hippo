@@ -66,7 +66,7 @@ function getGroupWithLaboffice($laboffice, $prune=true)
     return $result;
 }
 
-function getUserInfoFromLdap($query, $prune=true) : array
+function getUserInfoFromLdap($query, bool $prune=true, bool $multi=false) : array
 {
     $ldap_ip = 'ldap.ncbs.res.in';
     $ds = connectToLDAP($ldap_ip);
@@ -89,9 +89,9 @@ function getUserInfoFromLdap($query, $prune=true) : array
     }
 
     // Return just one.
-    if(count($result) > 0)
+    if(count($result) > 0 && (! $multi))
         return $result[0];
-    return array( );
+    return $result;
 }
 
 function pruneLDAPResponsse(array $i):array
@@ -110,7 +110,8 @@ function pruneLDAPResponsse(array $i):array
     $title = $i[ 'profilecontracttype'][0];
     $designation = $i[ 'profiledesignation'][0];
     $active = $i[ 'profileactive' ][0];
-    return ["fname" => $i['profilefirstname'][0]
+
+    $res = ["fname" => $i['profilefirstname'][0]
         , "first_name" => $i['profilefirstname'][0]
         , "mname" => __get__($i, 'profilemiddlename', [''])[0]
         , "middle_name" => __get__($i, 'profilemiddlename', [''])[0]
@@ -125,6 +126,11 @@ function pruneLDAPResponsse(array $i):array
         , "title" => $title
         , "designation" => $designation
         , 'is_active' => $active];
+
+    $res['name'] = $res['fname'] . ($res['mname']? ' ' . $res['mname'] . ' ': ' ') . $res['lname'];
+    $res['pi_or_host'] = $res['laboffice'];
+
+    return $res;
 }
 
 

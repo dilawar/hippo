@@ -10,7 +10,7 @@ require_once __DIR__ . '/methods.php';
 
 function searchInLogins(string $q, $where=''): array
 {
-    return executeQuery("SELECT 
+    $info = executeQuery("SELECT 
         login,email,last_name,middle_name,first_name,pi_or_host,
         CONCAT_WS(' ',first_name,last_name) as name
         FROM logins WHERE status!='EXPIRED' 
@@ -20,6 +20,16 @@ function searchInLogins(string $q, $where=''): array
         AND (login LIKE '%$q%' OR first_name LIKE '%$q%' OR last_name LIKE '%$q%')
         GROUP BY email
         ");
+
+    if(! $info) {
+        $info = getUserInfoFromLdap($q, $multi=true);
+        if($info) {
+            $info['name'] = arrayToName($info);
+            $info['pi_or_host'] = $info['laboffice'];
+            $info = [ $info ];
+        }
+    }
+    return $info;
 }
 
 /* --------------------------------------------------------------------------*/
