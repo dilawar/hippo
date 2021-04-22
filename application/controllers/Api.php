@@ -87,7 +87,6 @@ class Api extends CI_Controller
         // on windows.
          header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
          header('Access-Control-Allow-Headers: cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type, *');
-         //header('Access-Control-Allow-Origin: https://www.ncbs.res.in/hippo');
         error_reporting(0);
     }
 
