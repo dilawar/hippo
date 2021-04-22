@@ -85,6 +85,7 @@ class Api extends CI_Controller
         // NOTE: Make sure that these are also set in .htaccess file as well. We had a
         // bug in which without changing .htaccess file, things stopped working
         // on windows.
+         header('Access-Control-Allow-Origin: *');
          header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
          header('Access-Control-Allow-Headers: cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type, *');
         error_reporting(0);
