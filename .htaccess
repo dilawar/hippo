@@ -1,4 +1,5 @@
-Header always set Access-Control-Allow-Methods "GET,POST,OPTIONS,PUT,DELETE"
+Header set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET,POST,OPTIONS,PUT"
 Header always set Access-Control-Allow-Headers "cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type"
 
 RewriteEngine on
