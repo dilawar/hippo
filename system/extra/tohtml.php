@@ -2038,7 +2038,7 @@ function talkToHTML($talk, $with_picture = false)
     $html = "<h1> $title </h1>";
     $html .= $side;
     $html .= ' <br />';
-    $html .= fixHTML($talk['description']);
+    $html .= $talk['description'];
 
     // Add the calendar links
     $html .= addCalendarLinks($event);
