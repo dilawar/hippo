@@ -143,9 +143,12 @@ def no_common_labs_a( schedule, nweeks = 2, ncalls = 0 ):
                 continue
             for j in range(picount-1):
                 frm = vals[i+j]
-                x, date2, i2 = find_replacement( frm, date, schedule, pis )
-                replaceWith = schedule[date2][i2]
-                schedule[date][i+j] = replaceWith
-                schedule[date2][i2] = frm
-                print( 'Replaced %s -> %s' % (spk2str(frm), spk2str(replaceWith)))
+                try:
+                    x, date2, i2 = find_replacement( frm, date, schedule, pis )
+                    replaceWith = schedule[date2][i2]
+                    schedule[date][i+j] = replaceWith
+                    schedule[date2][i2] = frm
+                    print( 'Replaced %s -> %s' % (spk2str(frm), spk2str(replaceWith)))
+                except Exception as e:
+                    print(e)
     return schedule
