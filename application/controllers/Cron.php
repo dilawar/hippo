@@ -127,7 +127,8 @@ class Cron extends CI_Controller
 
     public function aws_schedule_fac_student()
     {
-        aws_schedule_fac_student_cron();
+        if (trueOnGivenDayAndTime('this monday', '15:00'))
+            aws_schedule_fac_student_cron();
     }
 
     public function booking_expiring_notice()
