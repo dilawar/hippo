@@ -20,7 +20,7 @@ function printWarning($msg, $append = true)
     if( $append )
         if(isset($_SESSION))
             $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . p($msg);
-    log_message( 'warning', $msg);
+    log_message('notice', $msg);
     return $msg;
 }
 

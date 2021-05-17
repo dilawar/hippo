@@ -42,8 +42,8 @@ class Cron extends CI_Controller
 
             try {
                 hippo_shell_exec("php index.php cron $t", $stdout, $stderr);
-                echo printInfo($stderr);
-                echo printInfo($stdout);
+                // echo printInfo($stderr);
+                // echo printInfo($stdout);
                 if($stderr) {
                     sendHTMLEmailUnsafe(
                         "$t: $stderr",
