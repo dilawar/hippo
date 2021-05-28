@@ -3801,7 +3801,7 @@ class Api extends CI_Controller
                 return;
             } elseif ('delete' === $args[1]) {
                 $id = $args[2];
-                if ($id && is_int($id)) {
+                if ($id) {
                     $res = updateTable(
                         'annual_work_seminars', 'id', 'status',
                         ['id' => $id, 'status' => 'DELETED']
@@ -3812,7 +3812,7 @@ class Api extends CI_Controller
 
                     return;
                 }
-                $this->send_data(['success' => false, 'msg' => "Invalid AWS id $id"]);
+                $this->send_data(['success' => false, 'msg' => "Invalid AWS id $id."]);
 
                 return;
             } elseif ('get' === $args[1]) {
