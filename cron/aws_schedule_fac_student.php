@@ -3,16 +3,16 @@
 function aws_schedule_fac_student_cron()
 {
     $afterNWeeks = dbDate(strtotime('this monday') + 9 * 7 * 86400);
-    echo printInfo("Today is monday and after 9 weeks $afterNWeeks");
+    echo printInfo("Today is tuesday and after 9 weeks $afterNWeeks");
 
     $res = rescheduleAWS();
-    print_r($res);
+    // print_r($res);
 
     // Get how many aws are scheduled.
     $alreadyAWS = getUpcomingAWSOnThisMonday($afterNWeeks);
     $nAlreadyAWSes = count($alreadyAWS);
 
-    echo( humanReadableDate($afterNWeeks) . ". Already assigned aws $nAlreadyAWSes  <br />");
+    echo printInfo( humanReadableDate($afterNWeeks) . ". Already assigned aws $nAlreadyAWSes  <br />");
 
     // Get scheduled AWS on this week.
     $awses = getTentativeAWSSchedule($afterNWeeks);

@@ -37,8 +37,10 @@ class Cron extends CI_Controller
             , 'sync_calendar'
         ];
 
+        echo printInfo("\n\nRunning cron");
+
         foreach ($tasks as $i => $t) {
-            echo printInfo("Running cron job for task $t");
+            // echo printInfo("Running cron job for task $t");
 
             try {
                 hippo_shell_exec("php index.php cron $t", $stdout, $stderr);
@@ -54,6 +56,7 @@ class Cron extends CI_Controller
             } catch (Exception $e) {
                 $body = p(" Hippo could not finish a scheduled task '$t' successfully.");
                 $body .= p('Error was ' . $e->getMessage());
+                printInfo($body);
                 sendHTMLEmailUnsafe(
                     $body,
                     'WARN! Hippo failed to do a routine task (cron)',
@@ -127,7 +130,7 @@ class Cron extends CI_Controller
 
     public function aws_schedule_fac_student()
     {
-        if (trueOnGivenDayAndTime('this monday', '15:00'))
+        if (trueOnGivenDayAndTime('this tuesday', '11:00'))
             aws_schedule_fac_student_cron();
     }
 
