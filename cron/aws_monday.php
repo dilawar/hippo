@@ -30,8 +30,8 @@ function remindAboutAWS()
         $chair = $awses[0]['chair'];
         if ($chair) {
             $subject = "Reminder | You are the Chair of today's AWS session";
-            $body = p('Hi, <br/> Academic Dean has instructed me to remind you about it.');
-            sendHTMLEmail($body, $subject, $chair, 'hippo@lists.ncbs.res.in');
+            $body = p("Hi $chair, <br/> Academic Dean has instructed me to remind you about it.");
+            sendHTMLEmail($body, $subject, $chair, 'hippo@lists.ncbs.res.in', '', ['acadoffice@ncbs.res.in', 'Academic Office']);
         }
     }
 }
