@@ -63,7 +63,9 @@ function getSemesterCourses($year, $sem)
         // year.
         $nextYear = intval($year) + 1;
         $sDate = dbDate(strtotime("$year-07-01"));
-        $eDate = dbDate(strtotime("$nextYear-01-31"));
+
+        // End data could be march next year.
+        $eDate = dbDate(strtotime("$nextYear-03-30"));
     }
 
     $courses = executeQuery("SELECT * FROM courses WHERE
