@@ -65,7 +65,7 @@ function updateJCPresentaiton($data)
     * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function fixJCSchedule(string $loginOrEmail, array $data):array
+function fixJCSchedule(string $loginOrEmail, array & $data):array
 {
     $login = explode( '@', $loginOrEmail)[0];
     $data[ 'status' ] = 'VALID';
@@ -74,7 +74,8 @@ function fixJCSchedule(string $loginOrEmail, array $data):array
 
     if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
     {
-        $res = updateTable( 'jc_presentations', 'presenter,jc_id,date,time,venue', 'status', $data );
+        $msg .= "old entry found, updating it.";
+        $res = updateTable( 'jc_presentations', 'presenter,jc_id,date,venue', 'status,time', $data );
     }
     else
     {
@@ -142,7 +143,7 @@ function fixJCSchedule(string $loginOrEmail, array $data):array
     return array( 'success' => true, 'msg' => $msg);
 }
 
-function assignJCPresentationToLogin( string $loginOrEmail, array $data ) : array
+function assignJCPresentationToLogin( string $loginOrEmail, array & $data ) : array
 {
     // Make sure the only valid login is used and not the email id.
     return fixJCSchedule( $loginOrEmail, $data );

@@ -536,7 +536,7 @@ function dbDateTime($date)
     return date('Y-m-d H:i:s', strtotime($date));
 }
 
-function dbTime($time)
+function dbTime($time) : string
 {
     if (is_int($time)) {
         return date('H:i', $time);

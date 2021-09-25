@@ -966,7 +966,6 @@ class Api extends CI_Controller
 
                 return;
             }
-            $_POST['time'] = dbTime($_POST['time']);
             $speaker = __get__($_POST, 'presenter', '');
             if (!$speaker) {
                 $this->send_data(['status' => false,  'msg' => 'Not valid presenter' . $speaker], 'ok');
@@ -974,7 +973,12 @@ class Api extends CI_Controller
                 return;
             }
 
+            $_POST['time'] = dbTime($_POST['time']);
+
             $res = assignJCPresentationToLogin($speaker, $_POST);
+
+            $res['PAYLOAD'] = json_encode($_POST); // testing.
+
             $this->send_data($res, 'ok');
 
             return;
