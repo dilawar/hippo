@@ -166,7 +166,8 @@ function removeJCPresentation(array $data): array
     {
         // invalidate the event also.
         $extid = $data['jc_id'] . '.' . $data['id'];
-        updateTable('event', 'external_id', 'status', 
+
+        updateTable('events', 'external_id', 'status', 
             ['external_id'=>$extid, 'status' => 'CANCELLED']);
 
         $data = getTableEntry('jc_presentations', 'id', $_POST);
