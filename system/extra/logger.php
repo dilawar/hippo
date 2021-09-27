@@ -2,6 +2,10 @@
 
 function __log__( $message, $type = "INFO" )
 {
+    if(! isset($_SESSION)) {
+        return;
+    }
+
     if( array_key_exists( 'log_file', $_SESSION['conf']['global'] ) )
         $logfile = $_SESSION['conf']['global']['log_file'];
     else
