@@ -109,7 +109,8 @@ function cancelAWS(array $data, string $bywhom = 'HIPPO'): array
         $msg .= p('The AWS schedule which is removed is the following:');
         $msg .= arrayToVerticalTableHTML($aws, 'info');
         $cclist = 'acadoffice@ncbs.res.in,hippo@lists.ncbs.res.in';
-        if ($piOrHost) {
+
+        if (filter_var($piOrHost, FILTER_VALIDATE_EMAIL) ) {
             $cclist .= ",$piOrHost";
         }
 
