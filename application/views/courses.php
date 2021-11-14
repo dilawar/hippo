@@ -110,7 +110,7 @@ foreach ($slotCourses as $slot => $courses) {
     foreach ($courses as $c) {
         $cid = $c['course_id'];
         // Add header only to the first entry.
-        $courseTable = '<table class="table show_course">';
+        $courseTable = '<table class="table show_course" style="border:1px gray">';
         // This function fills in $enrollments.
         $courseTable .= courseToHTMLRow($c, $slot, $sem, $year, $enrollments);
         $courseTable .= '</table>';
@@ -128,6 +128,7 @@ foreach ($slotCourses as $slot => $courses) {
 
             $regTable = '<table style="width:100%;">';
             $regTable .= '<tr>';
+            $regTable .= "<td> Total enrollments " . count($enrollments[$cid]) . "</td>";
             $regTable .= '<td><button class="show_as_link"
                         onclick="toggleShowHide( this, \'' . $tid . '\' )">Show Enrollments</button>
                     </td>';
