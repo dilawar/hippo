@@ -130,12 +130,26 @@ class User extends CI_Controller
     {
         // Update the page here.
         if ('action' == $arg && $_POST) {
+
+            $errormsg = '';
             // Not all login can be queried from ldap. Let user edit everything.
             $where = 'valid_until,honorific,first_name,last_name,title,pi_or_host,specialization' .
                         ',institute,laboffice,joined_on,alternative_email';
 
             $_POST['login'] = whoAmI();
-            $res = updateTable('logins', 'login', $where, $_POST);
+
+            // check for valid emails.
+            foreach(["pi_or_host", "email", "alternative_email"] as $key) {
+                $val = $_POST[key] ?? '';
+                if($val) {
+                    if(! isValidEmail($val))
+                        $errormsg .= "Field '$key' is not a valid email. Current value is '$val'.";
+                }
+            }
+
+            $res = false;
+            if(strlen(trim($errormsg)) == 0)
+                $res = updateTable('logins', 'login', $where, $_POST);
 
             if ($res) {
                 echo msg_fade_out('User details have been updated sucessfully');
@@ -146,7 +160,7 @@ class User extends CI_Controller
                     sendHTMLEmail(arrayToVerticalTableHTML($info, 'details'), 'Your details have been updated successfully.', $info['email']);
                 }
             } else {
-                echo printWarning('Could not update user details ');
+                echo printWarning("Could not update user details: $errormsg.");
             }
         } elseif ('upload_picture' == $arg && $_POST) {
             $conf = getConf();
