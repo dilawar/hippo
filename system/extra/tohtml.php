@@ -2038,7 +2038,7 @@ function talkToHTML($talk, $with_picture = false)
     $html = "<h1> $title </h1>";
     $html .= $side;
     $html .= ' <br />';
-    $html .= fixHTML($talk['description']);
+    $html .= $talk['description'];
 
     // Add the calendar links
     $html .= addCalendarLinks($event);
@@ -2952,7 +2952,7 @@ function getEnrollmentTableAndEmails($cid, $enrollments, $table_class = 'info')
             $row .= '<td>' . mailto($info['email']) . '</td>';
             $row .= '<td>' . $r['type'] . '</td>';
             $row .= '<td>' . $r['registered_on'] . '</td>';
-            $rows[$info['first_name']] = $row;
+            $rows[$info['email']] = $row;
             $allEmails[] = $info['email'];
         } else {
             $row = '';
@@ -2969,12 +2969,13 @@ function getEnrollmentTableAndEmails($cid, $enrollments, $table_class = 'info')
     }
 
     ksort($rows);
+
     $count = 0;
 
     // Construct enrollment table.
     $table = '<table id="show_enrollmenents_' . $cid . '" class="' . $table_class . ' sortable">';
     $table .= '<tr> <th></th> <th>Name</th> <th>Email</th> <th>Type</th> <th>Registation Time</th>  </tr>';
-    foreach ($rows as $fname => $row) {
+    foreach ($rows as $email => $row) {
         ++$count;
         $table .= "<tr><td>$count</td>" . $row . '</tr>';
     }

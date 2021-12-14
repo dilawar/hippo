@@ -7,8 +7,7 @@ function printErrorSevere($msg, $append = false )
     else
         $_SESSION['warning'] =  "<p>$msg </p>";
 
-    error_log( $msg );
-    log_message( 'error', $msg);
+    __log__($msg);
     return $msg;
 }
 
@@ -20,7 +19,7 @@ function printWarning($msg, $append = true)
     if( $append )
         if(isset($_SESSION))
             $_SESSION['warning'] = __get__( $_SESSION, 'warning', '') . p($msg);
-    log_message( 'warning', $msg);
+    __log__($msg);
     return $msg;
 }
 
@@ -34,7 +33,7 @@ function flashMessage( $msg, $category = 'success' )
 
 function printInfo( $msg )
 {
-    log_message("notice", $msg );
+    __log__( $msg );
     $info ="<div class=\"alert alert-info\">".$msg."</div>";
     return $info;
 }

@@ -190,9 +190,9 @@ function sendHTMLEmail(string $msg, string $sub, string $to, string $cclist = ''
         return sendHTMLEmailUnsafe($msg, $sub, $to, $cclist, $attachments, $replyto);
     } catch (Exception $e) {
         $body = p('Hippo failed to send an email. Fix it soon. Error was <br/>');
-        $body .= json_encode($e);
+        $body .= $e->getMessage();
         $body .= p('Content of message:');
-        $body .= "Subject: $sub <br/> MSG: $msg";
+        $body .= "TO: $to, <br/>SUBJECT: $sub <br/> MSG: $msg";
         error_log($body);
 
         return sendHTMLEmailUnsafe($body, 'WARN: Hippo could not send an email', 'hippo@lists.ncbs.res.in');

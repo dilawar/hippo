@@ -54,7 +54,7 @@ function lablist_every_two_months_cron()
                 $cc = $email['cc'];
                 $subject = 'List of AWS speakers from your lab';
                 $to = $fac;
-                sendHTMLEmail($body, $subject, $to, $cc);
+                sendHTMLEmail($body, $subject, $to, $cc, '', ['acadoffice@ncbs.res.in', 'Academic Office']);
             }
         }
     }

@@ -74,7 +74,8 @@ function fixJCSchedule(string $loginOrEmail, array $data):array
 
     if( getTableEntry( 'jc_presentations', 'presenter,jc_id,date' , $data ) )
     {
-        $res = updateTable( 'jc_presentations', 'presenter,jc_id,date,time,venue', 'status', $data );
+        $msg .= "old entry found, updating it.";
+        $res = updateTable( 'jc_presentations', 'presenter,jc_id,date,venue', 'status,time', $data );
     }
     else
     {
@@ -166,7 +167,8 @@ function removeJCPresentation(array $data): array
     {
         // invalidate the event also.
         $extid = $data['jc_id'] . '.' . $data['id'];
-        updateTable('event', 'external_id', 'status', 
+
+        updateTable('events', 'external_id', 'status', 
             ['external_id'=>$extid, 'status' => 'CANCELLED']);
 
         $data = getTableEntry('jc_presentations', 'id', $_POST);

@@ -8,7 +8,7 @@ function venueText($venue)
         $venue = getVenueById($venue);
     }
 
-    return $venue['name'] . ' ' . $venue['building_name'] . ', ' . $venue['location'];
+    return ($venue['name'] ?? '') . ' ' . ($venue['building_name'] ?? '') . ', ' . ($venue['location'] ?? '');
 }
 
 // RSS feed.

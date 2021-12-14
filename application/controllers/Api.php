@@ -85,10 +85,10 @@ class Api extends CI_Controller
         // NOTE: Make sure that these are also set in .htaccess file as well. We had a
         // bug in which without changing .htaccess file, things stopped working
         // on windows.
-        header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
-        header('Access-Control-Allow-Headers: cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type, *');
-        header('Access-Control-Allow-Origin: *');
-        //error_reporting(0);
+         header('Access-Control-Allow-Origin: *');
+         header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
+         header('Access-Control-Allow-Headers: cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type, *');
+        error_reporting(0);
     }
 
     private function send_data_helper(array $data, int $status=200)
@@ -966,7 +966,6 @@ class Api extends CI_Controller
 
                 return;
             }
-            $_POST['time'] = dbTime($_POST['time']);
             $speaker = __get__($_POST, 'presenter', '');
             if (!$speaker) {
                 $this->send_data(['status' => false,  'msg' => 'Not valid presenter' . $speaker], 'ok');
@@ -974,7 +973,12 @@ class Api extends CI_Controller
                 return;
             }
 
+            $_POST['time'] = dbTime($_POST['time']);
+
             $res = assignJCPresentationToLogin($speaker, $_POST);
+
+            $res['PAYLOAD'] = json_encode($_POST); // testing.
+
             $this->send_data($res, 'ok');
 
             return;
@@ -3801,7 +3805,7 @@ class Api extends CI_Controller
                 return;
             } elseif ('delete' === $args[1]) {
                 $id = $args[2];
-                if ($id && is_int($id)) {
+                if ($id) {
                     $res = updateTable(
                         'annual_work_seminars', 'id', 'status',
                         ['id' => $id, 'status' => 'DELETED']
@@ -3812,7 +3816,7 @@ class Api extends CI_Controller
 
                     return;
                 }
-                $this->send_data(['success' => false, 'msg' => "Invalid AWS id $id"]);
+                $this->send_data(['success' => false, 'msg' => "Invalid AWS id $id."]);
 
                 return;
             } elseif ('get' === $args[1]) {
