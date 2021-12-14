@@ -14,12 +14,12 @@ function lablist_every_two_months_cron()
     __log__("lablist_every_two_months");
 
     // Nothing to do on odd months.
-    // if (0 == $intMonth % 2) 
+    if (0 == $intMonth % 2) 
     {
         $year = getCurrentYear();
         $month = date('M', strtotime('today'));
 
-       // if (trueOnGivenDayAndTime("Second Saturday of $month", '15:00')) 
+       if (trueOnGivenDayAndTime("Second Saturday of $month", '15:00')) 
         {
             echo('Second saturday of even month. Update PIs about AWS list');
 
