@@ -1632,9 +1632,9 @@ function getUserInfo(string $user, bool $query_ldap = false, bool $search_everyw
     $res['login'] = $user;
 
     // pi_or_host must be a valid email.
-    if(isValidEmail($res['pi_or_host'])) {
+    if(! isValidEmail($res['pi_or_host'])) {
         __log__("User $login has invalid email for pi_or_host " . $res['pi_or_host']);
-        $res['pi_or_host'] = '';
+        $res['pi_or_host'] = 'Invalid Email: ' . $res['pi_or_host'];
     }
 
     // If no email found, then it is not a valid userid. What a computer system

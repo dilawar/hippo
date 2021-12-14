@@ -4062,7 +4062,6 @@ class Api extends CI_Controller
                 // If no userid is given, use current user.
                 $user = $args[2];
                 $ldap = getUserInfo($user, true);
-
                 $remove = ['fname', 'lname', 'mname'];
                 $data = array_diff_key($ldap, array_flip($remove));
                 $this->send_data($data, 'ok');
