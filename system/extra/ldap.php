@@ -128,8 +128,6 @@ function pruneLDAPResponsse(array $i):array
         , 'is_active' => $active];
 
     $res['name'] = $res['fname'] . ($res['mname']? ' ' . $res['mname'] . ' ': ' ') . $res['lname'];
-    $res['pi_or_host'] = $res['laboffice'];
-
     return $res;
 }
 
