@@ -38,12 +38,12 @@ function getUserIpAddr()
     return $ip;
 }
 
-function whoAmI()
+/**
+ * Check if the email is valid.
+ */
+function isValidEmail(string $email) 
 {
-    // Return the login name.
-    $me = $_SESSION['WHOAMI'] ?? 'UNKNOWN';
-
-    return explode('@', $me)[0];
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
 /* --------------------------------------------------------------------------*/

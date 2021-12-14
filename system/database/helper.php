@@ -1830,6 +1830,12 @@ function getSupervisors()
  */
 function findAnyoneWithEmail($email)
 {
+    // Check if the email is valid.
+    if(! isValidEmail($email)) {
+        __log__("$email is not a valid email. Why did we get it here?");
+        return [];
+    }
+
     $res = getTableEntry('faculty', 'email', array( 'email' => $email ));
     if (! $res) {
         $res = getTableEntry('supervisors', 'email', array('email' => $email));
