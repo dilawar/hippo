@@ -37,11 +37,10 @@ class Cron extends CI_Controller
             , 'sync_calendar'
         ];
 
-        echo printInfo("\n\nRunning cron");
+        __log__(":: Running cron");
 
         foreach ($tasks as $i => $t) {
-            // echo printInfo("Running cron job for task $t");
-
+            __log__("Running cron job for task $t");
             try {
                 hippo_shell_exec("php index.php cron $t", $stdout, $stderr);
                 // echo printInfo($stderr);

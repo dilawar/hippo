@@ -41,9 +41,20 @@ function getUserIpAddr()
 /**
  * Check if the email is valid.
  */
-function isValidEmail(string $email) 
+function isValidEmail(string $email)
 {
-    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
+/**
+ * WhoAmI.
+ */
+function whoAmI()
+{
+    // Return the login name.
+    $me = $_SESSION['WHOAMI'] ?? 'UNKNOWN';
+
+    return explode('@', $me)[0];
 }
 
 /* --------------------------------------------------------------------------*/
@@ -91,15 +102,15 @@ function extract_emails_from($text)
     return $res;
 }
 
-function authenticateUser(string $ldap, string $pass) : array
+function authenticateUser(string $ldap, string $pass): array
 {
     $auth = @authenticateUsingLDAP($ldap, $pass);
-    if (! $auth['success']) {
+    if (!$auth['success']) {
         $auth = @authenticateUsingIMAP($ldap, $pass);
-        $auth['msg'] .= " Used EMAIL.";
+        $auth['msg'] .= ' Used EMAIL.';
+    } else {
+        $auth['msg'] .= ' Used LDAP.';
     }
-    else
-        $auth['msg'] .= " Used LDAP.";
 
     return $auth;
 }
@@ -143,7 +154,7 @@ function getLoginID($text)
     return $text;
 }
 
-// Form HERE: https://stackoverflow.com/a/25879953/180512 
+// Form HERE: https://stackoverflow.com/a/25879953/180512
 // https://stackoverflow.com/a/25879953/1805129
 function hippo_shell_exec($cmd, &$stdout = null, &$stderr = null)
 {
@@ -159,22 +170,24 @@ function hippo_shell_exec($cmd, &$stdout = null, &$stderr = null)
 
     $stderr = stream_get_contents($pipes[2]);
     fclose($pipes[2]);
+
     return proc_close($proc);
 }
 
 function authenticate($ldap, $pass)
 {
     $auth = ['success' => false, 'msg' => ''];
-    if (ldapAlive('ldap.ncbs.res.in')) 
+    if (ldapAlive('ldap.ncbs.res.in')) {
         $auth = @authenticateUsingLDAP($ldap, $pass);
-    else
+    } else {
         // Try login using IMAP.
         $auth = @authenticateUsingIMAP($ldap, $pass);
+    }
 
     return $auth;
 }
 
-function venueToShortText($venue, string $url = '', string $extra=''): string
+function venueToShortText($venue, string $url = '', string $extra = ''): string
 {
     if (is_string($venue)) {
         $venue = getVenueById($venue);
@@ -183,9 +196,9 @@ function venueToShortText($venue, string $url = '', string $extra=''): string
     $txt = $venue['name'];
     if ($url) {
         $urlText = $url;
-        if($extra) {
+        if ($extra) {
             $urlText .= " ($extra)";
-            $txt .= ' (url: <a external target="_system" href="' . $url . '">' 
+            $txt .= ' (url: <a external target="_system" href="' . $url . '">'
                 . $urlText . '</a>)';
         }
     }
@@ -396,8 +409,9 @@ function __get__(array $arr, $what, $default = null)
     if (array_key_exists($what, $arr)) {
         $val = $arr[$what];
 
-        if($val)
+        if ($val) {
             return $val;
+        }
     }
 
     return $default;
@@ -444,7 +458,7 @@ function repeatPatToDays(string $pat, string $start_day = 'today'): array
 
     $thisMonth = date('F', strtotime($baseDay));
 
-    for ($i = 0; $i <= $durationInMonths; ++$i ) { // Iterate of maximum duration.
+    for ($i = 0; $i <= $durationInMonths; ++$i) { // Iterate of maximum duration.
         $month = date('F Y', strtotime('+' . "$i months", strtotime($baseDay)));
         foreach ($weeks as $w) {
             foreach ($days as $d) {
@@ -524,6 +538,7 @@ function dbDate($date)
     if (is_int($date)) {
         return date('Y-m-d', $date);
     }
+
     return date('Y-m-d', strtotime($date));
 }
 
@@ -536,7 +551,7 @@ function dbDateTime($date)
     return date('Y-m-d H:i:s', strtotime($date));
 }
 
-function dbTime($time) : string
+function dbTime($time): string
 {
     if (is_int($time)) {
         return date('H:i', $time);
@@ -868,7 +883,6 @@ function saveImageAsJPEGLarge($originalImage, $outputImage, $quality = 90)
 
     return false;
 }
-
 
 /**
  * @brief Get a low resolution image of pdf files.
@@ -2450,7 +2464,6 @@ function cancelThisJCRequest($data)
 
 function getJCEvent($extid)
 {
-    return getTableEntry('events', 'external_id,status'
-        , [ 'external_id' => $extid, 'status' => 'VALID']
+    return getTableEntry('events', 'external_id,status', ['external_id' => $extid, 'status' => 'VALID']
     );
 }

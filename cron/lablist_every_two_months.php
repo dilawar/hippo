@@ -11,14 +11,18 @@ function lablist_every_two_months_cron()
      */
     /* ----------------------------------------------------------------------------*/
     $intMonth = intval(date('m', strtotime('today')));
+    __log__("lablist_every_two_months");
 
     // Nothing to do on odd months.
-    if (0 == $intMonth % 2) {
+    // if (0 == $intMonth % 2) 
+    {
         $year = getCurrentYear();
         $month = date('M', strtotime('today'));
 
-        if (trueOnGivenDayAndTime("Second Saturday of $month", '15:00')) {
-            error_log('Second saturday of even month. Update PIs about AWS list');
+       // if (trueOnGivenDayAndTime("Second Saturday of $month", '15:00')) 
+        {
+            echo('Second saturday of even month. Update PIs about AWS list');
+
             $speakers = getAWSSpeakers();
             $facultyMap = [];
             foreach ($speakers as $speaker) {
