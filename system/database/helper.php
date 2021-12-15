@@ -1632,9 +1632,10 @@ function getUserInfo(string $user, bool $query_ldap = false, bool $search_everyw
     $res['login'] = $user;
 
     // pi_or_host must be a valid email.
-    if(! isValidEmail($res['pi_or_host'])) {
-        __log__("User $login has invalid email for pi_or_host " . $res['pi_or_host']);
-        $res['pi_or_host'] = 'Invalid Email: ' . $res['pi_or_host'];
+    $piorhost = $res['pi_or_host'] ?? '';
+    if(! isValidEmail($piorhost)) {
+        __log__("User $login has invalid email for pi_or_host " . $piorhost);
+        $res['pi_or_host'] = 'Invalid Email: ' . $piorhost;
     }
 
     // If no email found, then it is not a valid userid. What a computer system
@@ -1834,10 +1835,10 @@ function getSupervisors()
  *
  * @return
  */
-function findAnyoneWithEmail($email)
+function findAnyoneWithEmail(?string $email)
 {
     // Check if the email is valid.
-    if(! isValidEmail($email)) {
+    if(! isValidEmail($email ?? '')) {
         __log__("$email is not a valid email. Why did we get it here?");
         return [];
     }
