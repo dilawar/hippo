@@ -22,30 +22,19 @@ class Cron extends CI_Controller
     public function run()
     {
         // Execute all scripts in ./views/controller/cron folder.
-        $tasks = ['update_database'
-            , 'aws_annoy'
-            , 'aws_friday_notification'
-            , 'aws_friday_notify_faculty'
-            , 'aws_monday'
-            , 'aws_schedule_fac_student'
-            , 'booking_expiring_notice'
-            , 'everyday_morning'
-            , 'events_weekly_summary'
-            , 'jc_assign_n_weeks_in_advance'
-            , 'jc'
-            , 'lablist_every_two_months'
-            , 'sync_calendar'
+        $tasks = ['update_database', 'aws_annoy', 'aws_friday_notification', 'aws_friday_notify_faculty', 'aws_monday', 'aws_schedule_fac_student', 'booking_expiring_notice', 'everyday_morning', 'events_weekly_summary', 'jc_assign_n_weeks_in_advance', 'jc', 'lablist_every_two_months', 'sync_calendar',
         ];
 
-        __log__(":: Running cron");
+        __log__(':: Running cron');
 
         foreach ($tasks as $i => $t) {
             __log__("Running cron job for task $t");
+
             try {
                 hippo_shell_exec("php index.php cron $t", $stdout, $stderr);
                 // echo printInfo($stderr);
                 // echo printInfo($stdout);
-                if($stderr) {
+                if ($stderr) {
                     sendHTMLEmailUnsafe(
                         "$t: $stderr",
                         'Hippo failed to do a routine task (cron)',
@@ -70,7 +59,7 @@ class Cron extends CI_Controller
     public function update_database()
     {
         if (trueOnGivenDayAndTime('this saturday', '00:00')) {
-            echo("Cleaning up database.");
+            echo 'Cleaning up database.';
             update_database_cron();
         }
 
@@ -78,7 +67,7 @@ class Cron extends CI_Controller
             update_publishing_database();
         }
 
-        // Every day monring.  
+        // Every day monring.
         if (trueOnGivenDayAndTime('today', '6:00')) {
             cleanupOrphanedEvents();
         }
@@ -124,13 +113,13 @@ class Cron extends CI_Controller
         if (trueOnGivenDayAndTime('this monday', '15:00')) {
             remindAboutAWS(); // because faculty can't use calendar!
         }
-
     }
 
     public function aws_schedule_fac_student()
     {
-        if (trueOnGivenDayAndTime('this tuesday', '11:00'))
+        if (trueOnGivenDayAndTime('this tuesday', '11:00')) {
             aws_schedule_fac_student_cron();
+        }
     }
 
     public function booking_expiring_notice()
@@ -175,8 +164,9 @@ class Cron extends CI_Controller
     public function jc()
     {
         jc_cron();
-        if(trueOnGivenDayAndTime('today', '8:00'))
+        if (trueOnGivenDayAndTime('today', '8:00')) {
             remind_presenter();
+        }
     }
 
     public function lablist_every_two_months()
@@ -189,4 +179,3 @@ class Cron extends CI_Controller
         sync_calendar_cron();
     }
 }
-

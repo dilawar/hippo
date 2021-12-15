@@ -52,9 +52,9 @@ function getKey()
     return __get__($_POST, 'HIPPO-API-KEY', getHeader('HIPPO-API-KEY'));
 }
 
-function hasRoles($whichRoles, $login=''): bool
+function hasRoles($whichRoles, $login = ''): bool
 {
-    if(! $login) {
+    if (!$login) {
         $login = getLogin();
     }
     $roles = getRoles($login);
@@ -69,7 +69,7 @@ function hasRoles($whichRoles, $login=''): bool
     return false;
 }
 
-function isPhotoClubAdmin($login) : bool
+function isPhotoClubAdmin($login): bool
 {
     return hasRoles('PHOTOGRAPHY_CLUB_ADMIN,ADMIN');
 }
@@ -85,13 +85,13 @@ class Api extends CI_Controller
         // NOTE: Make sure that these are also set in .htaccess file as well. We had a
         // bug in which without changing .htaccess file, things stopped working
         // on windows.
-         header('Access-Control-Allow-Origin: *');
-         header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
-         header('Access-Control-Allow-Headers: cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type, *');
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET,POST,OPTIONS,PUT,DELETE');
+        header('Access-Control-Allow-Headers: cache-control, hippo-login, login, hippo-api-key, x-requested-with, Content-Type, *');
         error_reporting(0);
     }
 
-    private function send_data_helper(array $data, int $status=200)
+    private function send_data_helper(array $data, int $status = 200)
     {
         $json = json_encode(
             $data,
@@ -108,7 +108,7 @@ class Api extends CI_Controller
         $this->send_data($what);
     }
 
-    private function send_data(array $data, string $status = 'ok', int $code=200)
+    private function send_data(array $data, string $status = 'ok', int $code = 200)
     {
         $this->send_data_helper(['status' => $status, 'data' => $data], $code);
     }
@@ -180,24 +180,23 @@ class Api extends CI_Controller
     {
         $args = func_get_args();
 
-        if('holidays_' === $args[0] || 'holidays' === $args[0]) {
+        if ('holidays_' === $args[0] || 'holidays' === $args[0]) {
             $holidays = getHolidaysOfYear(getCurrentYear(), true);
             $data = array_values($holidays);
             $footnotes = [];
 
-            if('holidays_' === $args[0]) {
-                foreach($holidays as &$holiday) {
+            if ('holidays_' === $args[0]) {
+                foreach ($holidays as &$holiday) {
                     $comment = trim($holiday['comment']);
-                    if($comment) {
-                        if(! in_array($comment, $footnotes)) {
+                    if ($comment) {
+                        if (!in_array($comment, $footnotes)) {
                             $footnotes[] = $comment;
                         }
-                        $holiday['description'] = $holiday['description'] 
+                        $holiday['description'] = $holiday['description']
                             . '<sup>' . (count($footnotes)) . '</sup>';
                     }
                 }
-                $data = [ 'holidays'=>array_values($holidays)
-                    , 'footnotes'=>$footnotes];
+                $data = ['holidays' => array_values($holidays), 'footnotes' => $footnotes];
             }
 
             $what = __get__($args, 1, 'json');
@@ -209,10 +208,10 @@ class Api extends CI_Controller
             if ('html' === $what) {
                 $class = 'table ncbs-holiday';
                 $hide = 'is_public_holiday,schedule_talk_or_aws,comment';
-                if('holidays_' === $args[0]) {
+                if ('holidays_' === $args[0]) {
                     $holidays = $data['holidays'];
                     $html = "<table class='$class'>";
-                    $html .= "<tr><th>Holiday</th><th>Date</th><th>Day of the week</th></tr>";
+                    $html .= '<tr><th>Holiday</th><th>Date</th><th>Day of the week</th></tr>';
                     foreach ($holidays as $holiday) {
                         $desc = $holiday['description'];
                         $date = date('F j, Y', strtotime($holiday['date']));
@@ -221,14 +220,12 @@ class Api extends CI_Controller
                         $html .= $row;
                     }
                     $html .= '<tfoot>';
-                    foreach($footnotes as $i => $foot) {
-                        $html .= "<tr><td colspan=4><sup>" . ($i+1) . "</sup>$foot</td></tr>";
+                    foreach ($footnotes as $i => $foot) {
+                        $html .= '<tr><td colspan=4><sup>' . ($i + 1) . "</sup>$foot</td></tr>";
                     }
                     $html .= '</tfoot>';
                     $html .= '</table>';
-                }
-                else
-                {
+                } else {
                     $html = arraysToCombinedTableHTML(
                         $data, 'table ncbs-holiday',
                         'is_public_holiday,schedule_talk_or_aws'
@@ -236,6 +233,7 @@ class Api extends CI_Controller
                 }
                 $this->output->set_content_type('text/html', 'utf-8');
                 $this->output->set_output($html);
+
                 return;
             }
         }
@@ -248,27 +246,27 @@ class Api extends CI_Controller
         $filepath = null;
         $downloadname = 'null.pdf';
 
-        if($args[0] === 'talk') {
+        if ('talk' === $args[0]) {
             $date = $args[1];
             $talkid = $args[2];
             $event = getEventsOfTalkId($talkid);
-            if(! $event) {
-                $this->send_data(["This talk has not associated booking."], "error", 400);
+            if (!$event) {
+                $this->send_data(['This talk has not associated booking.'], 'error', 400);
+
                 return;
             }
             $date = $event['date'];
-            $downloadname = "talk_" . $date . "_$talkid.pdf";
+            $downloadname = 'talk_' . $date . "_$talkid.pdf";
             $filepath = generatePdfForTalk($date, $talkid);
-        }
-        else if($args[0] === 'aws') {
+        } elseif ('aws' === $args[0]) {
             $date = $args[1];
             $speaker = $args[2];
             $downloadname = "aws_$date_$speaker.pdf";
             $res = pdfFileOfAWS($date, $speaker);
             $filepath = $res['pdf'] ?? '';
-        }
-        else {
-            $this->send_data(["Unknown endpoint."], 'error', 404);
+        } else {
+            $this->send_data(['Unknown endpoint.'], 'error', 404);
+
             return;
         }
 
@@ -280,13 +278,12 @@ class Api extends CI_Controller
             throw new Exception("File $filepath is not readable");
         }
         http_response_code(200);
-        header('Content-Length: '.filesize($filepath));
-        header("Content-Type: application/pdf");
-        header('Content-Disposition: attachment; filename="'.$downloadname.'"'); 
+        header('Content-Length: ' . filesize($filepath));
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $downloadname . '"');
         readfile($filepath);
-        exit; 
+        exit;
     }
-
 
     /* --------------------------------------------------------------------------*/
     /**
@@ -328,14 +325,11 @@ class Api extends CI_Controller
                     __get__($item, 'vc_url', ''), $item['vc_extra']
                 );
 
-                if($item['vc_extra']) {
-                    $venueHtml .= " (" . $item['vc_extra'] . ")";
+                if ($item['vc_extra']) {
+                    $venueHtml .= ' (' . $item['vc_extra'] . ')';
                 }
 
-                $cards[] = ['title' => $item['title']
-                    , 'date' => $item['date']
-                    , 'time' => $item['start_time']
-                    , 'venue' => $venueHtml];
+                $cards[] = ['title' => $item['title'], 'date' => $item['date'], 'time' => $item['start_time'], 'venue' => $venueHtml];
             }
 
             // AWS cards.
@@ -444,10 +438,10 @@ class Api extends CI_Controller
             }
 
             $dates = array_keys($data);
-            for($k = strtotime($dates[0]); $k <= strtotime($dates[array_key_last($dates)]); $k += 7*86400) {
+            for ($k = strtotime($dates[0]); $k <= strtotime($dates[array_key_last($dates)]); $k += 7 * 86400) {
                 $awsDay = dbDate($k);
                 // On these dates, no AWS. possibly holiday.
-                if(! in_array($awsDay, $dates)) {
+                if (!in_array($awsDay, $dates)) {
                     $data[$awsDay] = [[]];
                 }
             }
@@ -488,7 +482,7 @@ class Api extends CI_Controller
 
                 return;
             }
-        } elseif('holiday' === $args[0] || 'holidays' === $args[0]) {
+        } elseif ('holiday' === $args[0] || 'holidays' === $args[0]) {
             if ('list' === $args[1]) {
                 $holidays = getHolidaysOfYear();
                 $this->send_data($holidays, 'ok');
@@ -497,8 +491,7 @@ class Api extends CI_Controller
             }
         }
         $this->send_data(
-            ['success'=>false
-            , 'msg'=>'Unknown request /info/' . json_encode($args)],
+            ['success' => false, 'msg' => 'Unknown request /info/' . json_encode($args)],
             'ok'
         );
     }
@@ -564,10 +557,12 @@ class Api extends CI_Controller
         } elseif ('login' === $args[0]) {
             $logins = searchInLogins($q);
 
-            if(! $logins) 
+            if (!$logins) {
                 // search in ldap and create a login item if found.
-                if(createUserOrUpdateLogin($q, [])) 
+                if (createUserOrUpdateLogin($q, [])) {
                     $logins = searchInLogins($q);
+                }
+            }
 
             $this->send_data_helper($logins);
 
@@ -873,8 +868,8 @@ class Api extends CI_Controller
             if ($login === explode('@', $presenter)[0] || isThisJCAdmin($login, $_POST['jc_id'])) {
                 $res = updateJCPresentaiton($_POST);
                 $this->send_data(
-                    ['success' => $res ? 'Success' : 'Failed', 
-                    'msg' => $msg], 'ok'
+                    ['success' => $res ? 'Success' : 'Failed',
+                    'msg' => $msg, ], 'ok'
                 );
 
                 return;
@@ -957,11 +952,10 @@ class Api extends CI_Controller
             return;
         } elseif ('assign' === $args[0]) {
             $_POST['date'] = dbDate($_POST['date']);
-            if(strtotime($_POST['date']) < strtotime('now')) {
+            if (strtotime($_POST['date']) < strtotime('now')) {
                 $this->send_data(
-                    ['status' => false
-                    ,  'msg' => "Can't assign JC in the past: " 
-                    . $_POST['date']], 'ok'
+                    ['status' => false,  'msg' => "Can't assign JC in the past: "
+                    . $_POST['date'], ], 'ok'
                 );
 
                 return;
@@ -1167,8 +1161,8 @@ class Api extends CI_Controller
             $this->send_data([], 'Not authenticated');
 
             return;
-        } 
-        
+        }
+
         if ('info' === $args[0]) {
             $id = __get__($args, 1, 0);
             $data = getVenueById($id);
@@ -1245,25 +1239,22 @@ class Api extends CI_Controller
         $endDateTime = is_numeric($endDateTime) ? $endDateTime : intval($endDateTime);
 
         if ((!$venueId) || ($startDateTime >= $endDateTime)) {
-            $data = ['msg' => "Could not book for: venue=$venueId, start datetime " 
-                . dbDateTime($startDateTime) . " and end datetime . ". dbDateTime($endDateTime)
-                . ". Either venue is invalid or the end time is less that start time!"
-            , 'success' => false];
+            $data = ['msg' => "Could not book for: venue=$venueId, start datetime "
+                . dbDateTime($startDateTime) . ' and end datetime . ' . dbDateTime($endDateTime)
+                . '. Either venue is invalid or the end time is less that start time!', 'success' => false, ];
             $this->send_data($data, 'error');
 
             return;
         }
 
         $bookingDate = dbDate($startDateTime);
-        if(isAWSHoliday($bookingDate)) {
-            $notAllowed = ['THESIS SEMINAR', 'ANNUAL WORK SEMINAR'
-                , 'PRESYNOPSIS SEMINAR'];
-            $holiday = getTableEntry('holidays', 'date', ['date'=>$bookingDate]); 
-            if(in_array($data['class'], $notAllowed)) {
-                $data = ['msg' => $data['class'] . 
-                    " is not allowed on $bookingDate." .  
-                    __get__($holiday, 'description', '')
-                    , 'success' => false];
+        if (isAWSHoliday($bookingDate)) {
+            $notAllowed = ['THESIS SEMINAR', 'ANNUAL WORK SEMINAR', 'PRESYNOPSIS SEMINAR'];
+            $holiday = getTableEntry('holidays', 'date', ['date' => $bookingDate]);
+            if (in_array($data['class'], $notAllowed)) {
+                $data = ['msg' => $data['class'] .
+                    " is not allowed on $bookingDate." .
+                    __get__($holiday, 'description', ''), 'success' => false, ];
                 $this->send_data($data, 'error');
 
                 return;
@@ -1305,9 +1296,7 @@ class Api extends CI_Controller
         }
 
         $this->send_data(
-            ['apikey' => $token, 'gmapapikey' => $gmapkey
-            , 'authenticated' => $res['success']
-            , 'data' => $res], $token ? 'ok' : 'erorr'
+            ['apikey' => $token, 'gmapapikey' => $gmapkey, 'authenticated' => $res['success'], 'data' => $res], $token ? 'ok' : 'erorr'
         );
     }
 
@@ -1417,8 +1406,7 @@ class Api extends CI_Controller
                 if ($rid) {
                     $res = changeRequestStatus($gid, $rid, 'CANCELLED');
                     $this->send_data(
-                        ['success' => $res
-                        , 'msg' => "Request $gid.$rid is deleted"],
+                        ['success' => $res, 'msg' => "Request $gid.$rid is deleted"],
                         'ok'
                     );
 
@@ -1428,6 +1416,7 @@ class Api extends CI_Controller
                 // delete the whole group.
                 $res = false;
                 $warning = '';
+
                 try {
                     $res = changeStatusOfRequests($gid, 'CANCELLED');
                 } catch (Exception $e) {
@@ -1444,6 +1433,7 @@ class Api extends CI_Controller
                 if ($eid) {
                     $res = false;
                     $msg = "Event $gid.$eid is cancelled";
+
                     try {
                         $res = changeStatusOfEvent($gid, $eid, 'CANCELLED');
                     } catch (Exception $e) {
@@ -1556,12 +1546,11 @@ class Api extends CI_Controller
             "SELECT MAX(last_modified_on) AS
             last_modified_on FROM transport WHERE status!='INVALID'"
         );
-        if($lastUpdateOn) {
+        if ($lastUpdateOn) {
             $lastUpdateOn = $lastUpdateOn[0]['last_modified_on'];
         }
 
-        $res = ['timetable'=>$timetableMap, 'routes'=>$routes
-            , 'last_updated_on'=>$lastUpdateOn];
+        $res = ['timetable' => $timetableMap, 'routes' => $routes, 'last_updated_on' => $lastUpdateOn];
         $this->send_data($res, 'ok');
     }
 
@@ -1635,17 +1624,17 @@ class Api extends CI_Controller
             if ('list' === $args[1]) {
                 $vehicles = getVehiclesInAvailableTransport();
                 $vehs = json_decode(getConfigValue('transport.vehicle'), true);
-                if($vehs) {
+                if ($vehs) {
                     $vehicles = array_unique(array_merge($vehicles, $vehs));
                 }
 
                 insertOrUpdateTable(
                     'config', 'id,value,status', 'value,status',
-                    ['id'=>'transport.vehicle', 'value'=>json_encode($vehicles)
-                    , 'status'=>'VALID']
+                    ['id' => 'transport.vehicle', 'value' => json_encode($vehicles), 'status' => 'VALID']
                 );
 
                 $this->send_data($vehicles, 'ok');
+
                 return;
             } elseif ('add' === $args[1]) {
                 $veh = $args[2];
@@ -1654,22 +1643,23 @@ class Api extends CI_Controller
                 $vehicles = array_unique($vehicles);
                 $res = updateTable(
                     'config', 'id', 'value',
-                    ['id'=>'transport.vehicle', 'value' => json_encode($vehicles)]
+                    ['id' => 'transport.vehicle', 'value' => json_encode($vehicles)]
                 );
-                $this->send_data(['success'=>$res, 'msg'=>''], 'ok');
+                $this->send_data(['success' => $res, 'msg' => ''], 'ok');
 
                 return;
             } elseif ('remove' === $args[1] || 'delete' === $args[1]) {
                 // Dont remove if there is a tranport entry with this vehicle.
                 $veh = $args[2];
                 $available = getVehiclesInAvailableTransport();
-                if(in_array($veh, $available)) {
+                if (in_array($veh, $available)) {
                     $this->send_data(
-                        ['success'=>false,
+                        ['success' => false,
                         'msg' => "First delete this vehicle's entries in "
-                        . "transportation schedule."
+                        . 'transportation schedule.',
                         ]
                     );
+
                     return;
                 }
 
@@ -1677,9 +1667,9 @@ class Api extends CI_Controller
                 $vehicles = array_diff($vehicles, [$veh]);  // delete
                 $res = updateTable(
                     'config', 'id,value',
-                    ['id'=>'transport.vehicle', 'value' => json_encode($vehicles)]
+                    ['id' => 'transport.vehicle', 'value' => json_encode($vehicles)]
                 );
-                $this->send_data(['success'=>$res, 'msg'=>''], 'ok');
+                $this->send_data(['success' => $res, 'msg' => ''], 'ok');
 
                 return;
             } elseif ('update' === $args[1]) {
@@ -1757,12 +1747,12 @@ class Api extends CI_Controller
 
                 // If there is any entry in transportantion, refuse to delete.
                 $res = getTableEntry('transport', 'pickup_point,drop_point', $_POST);
-                if($res) {
+                if ($res) {
                     $this->send_data(
-                        ['success'=>false
-                        , 'msg'=> "Please delete all transport entries for this route: $from --> $to"],
-                        "ok"
+                        ['success' => false, 'msg' => "Please delete all transport entries for this route: $from --> $to"],
+                        'ok'
                     );
+
                     return;
                 }
                 $res = deleteRoute($_POST);
@@ -1976,6 +1966,7 @@ class Api extends CI_Controller
             if ('update' === $args[1]) {
                 $data = updateAWS($_POST, getLogin());
                 $this->send_data($data, 'ok');
+
                 return;
             }
         } elseif ('acknowledge_aws' === $args[0]) {
@@ -2578,6 +2569,7 @@ class Api extends CI_Controller
         // Authenticate.
         if (!authenticateAPI(getKey())) {
             $this->send_data([], 'Not authenticated');
+
             return;
         }
 
@@ -2606,8 +2598,8 @@ class Api extends CI_Controller
             $this->send_data($data, 'ok');
 
             return;
-        }         
-        
+        }
+
         if ('delete' === $args[0]) {
             $ids = $args[1];
             $data = ['args' => $ids, 'msg' => ''];
@@ -2704,7 +2696,6 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('profile' === $endpoint) {
-
                 $img = $_FILES['file'];
                 $ext = explode('/', $img['type'])[1];
                 $tempFile = $img['tmp_name'];
@@ -2734,18 +2725,17 @@ class Api extends CI_Controller
 
                 return;
             } elseif ('photographyclub' === $endpoint) {
-
                 $compt_id = intval($_POST['event_id']);
                 $login = getLogin();
 
                 $entry = getTableEntry(
                     'photography_club_competition', 'id',
-                    ['id'=>$compt_id]
+                    ['id' => $compt_id]
                 );
-                if(! $entry) {
-                    $res = ['success' => false
-                        , 'msg' => "No valid competition found with id " . $compt_id];
+                if (!$entry) {
+                    $res = ['success' => false, 'msg' => 'No valid competition found with id ' . $compt_id];
                     $this->send_data($res, 'ok', 403);
+
                     return;
                 }
 
@@ -2754,31 +2744,31 @@ class Api extends CI_Controller
                     'photography_club_entry', 'id',
                     "status='VALID' AND login='$login' AND competition_id='$compt_id'"
                 );
-                if(count($entries) >= 3) {
-                    $res = ['success' => false, 'msg' => "Maximum of 3 entries are allowed."];
+                if (count($entries) >= 3) {
+                    $res = ['success' => false, 'msg' => 'Maximum of 3 entries are allowed.'];
                     $this->send_data($res, 'ok', 403);
-                    return;
 
+                    return;
                 }
 
                 // Check for the allowed dates.
                 $today = strtotime('today');
-                if(($today < strtotime($entry['start_date']))  
+                if (($today < strtotime($entry['start_date']))
                     || ($today > strtotime($entry['end_date']))
                 ) {
-
-                    $res = ['success' => false, 
-                        'msg' => "Uploading is not allowed. Allowed window: " 
-                        . $entry['start_date'] . ' to ' . $entry['end_date']
+                    $res = ['success' => false,
+                        'msg' => 'Uploading is not allowed. Allowed window: '
+                        . $entry['start_date'] . ' to ' . $entry['end_date'],
                     ];
                     $this->send_data($res, 'ok', 403);
+
                     return;
                 }
-            
+
                 $caption = $_POST['caption'];
 
                 $user = getLogin();
-                $hash = md5($user.'-'.$caption);
+                $hash = md5($user . '-' . $caption);
                 $targetFile = getUploadDir() . "/photography-$compt_id-$hash.jpg";
 
                 $img = $_FILES['file'];
@@ -2791,27 +2781,22 @@ class Api extends CI_Controller
                     $err .= $e->getMessage();
                 }
 
-                if(! file_exists($targetFile) ) {
+                if (!file_exists($targetFile)) {
                     $res['success'] = false;
                     $res['msg'] = "Failed to save on the server. Please contact the admin: $err";
                     $res['_FILES'] = json_encode($_FILES);
                     $this->send_data($res, 'ok');
+
                     return;
                 }
 
                 // Execute a query
                 $data = [
-                    'id' => getUniqueID('photography_club_entry')
-                    , 'login' => getLogin()
-                    , 'competition_id' => $compt_id
-                    , 'filepath' => $targetFile
-                    , 'note' => __get__($_POST, 'note', '')
-                    , 'caption' => $caption
-                    , 'hash' => md5_file($targetFile)
-                    , 'comment' => __get__($_POST, 'comment', '')
+                    'id' => getUniqueID('photography_club_entry'), 'login' => getLogin(), 'competition_id' => $compt_id, 'filepath' => $targetFile, 'note' => __get__($_POST, 'note', ''), 'caption' => $caption, 'hash' => md5_file($targetFile), 'comment' => __get__($_POST, 'comment', ''),
                 ];
 
                 $keys = array_keys($data);
+
                 try {
                     $r = insertIntoTable('photography_club_entry', $keys, $data);
                     $res['success'] = $r ? true : false;
@@ -2821,15 +2806,16 @@ class Api extends CI_Controller
                 }
                 $res['stored'] = $targetFile;
                 $this->send_data($res, 'ok');
+
                 return;
             }
 
-            $this->send_data(['success'=>false, 'msg'=>"Unknown request: $endpoint"], 'ok', 404);
+            $this->send_data(['success' => false, 'msg' => "Unknown request: $endpoint"], 'ok', 404);
+
             return;
-        } 
+        }
         // This should be an error.
-        $this->send_data_helper(['success'=>false, 'msg'=>"Unknown endpoint:" . json_encode($args)], 404);
-        return;
+        $this->send_data_helper(['success' => false, 'msg' => 'Unknown endpoint:' . json_encode($args)], 404);
     }
 
     /* --------------------------------------------------------------------------*/
@@ -3006,7 +2992,7 @@ class Api extends CI_Controller
         if ('get' === $args[0]) {
             $limit = __get__($args, 1, 10);
             $notifications = User::getNotifications($this, $login, $limit);
-            if(! $notifications) {
+            if (!$notifications) {
                 $notifications = [];
             }
             $this->send_data($notifications, 'ok');
@@ -3199,7 +3185,7 @@ class Api extends CI_Controller
                 $data['msg'] = 'successfully updated';
             } else {
                 $data['flash'] = 'Unknown request ' . $subtask; // old api.
-                $data['msg'] = 'Unknown request ' . $subtask; 
+                $data['msg'] = 'Unknown request ' . $subtask;
                 $data['success'] = false;
             }
             $this->send_data($data, 'ok');
@@ -3276,11 +3262,10 @@ class Api extends CI_Controller
                 return;
             }
             if ('delete' === $args[1]) {
-                if(! hasRoles('ACAD_ADMIN,BOOKMYVENUE_ADMIN')) {
+                if (!hasRoles('ACAD_ADMIN,BOOKMYVENUE_ADMIN')) {
                     $this->send_data(
                         [
-                        'success' => false
-                        , 'msg' => "You don't have permission to delete a spaeker"
+                        'success' => false, 'msg' => "You don't have permission to delete a spaeker",
                         ], 401
                     );
 
@@ -3366,10 +3351,9 @@ class Api extends CI_Controller
                 );
                 $data['clashes'] = $jcOrLab;
             } elseif ('approve' === $subtask) {
-
                 // JUST to be sure.
-                if('YES'===$_POST['is_public_event']) {
-                    updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
+                if ('YES' === $_POST['is_public_event']) {
+                    updateTable('bookmyvenue_requests', 'gid,rid', 'is_public_event', $_POST);
                 }
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST, getLogin());
                 $data = $ret;
@@ -3377,7 +3361,7 @@ class Api extends CI_Controller
                 $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST, getLogin());
                 $data = $ret;
             } elseif ('update' === $subtask) {
-                $ret = updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
+                $ret = updateTable('bookmyvenue_requests', 'gid,rid', 'is_public_event', $_POST);
                 $data['msg'] = 'UPDATED';
             } else {
                 $data = ['flash' => 'Unknown request'];
@@ -3391,28 +3375,30 @@ class Api extends CI_Controller
         } elseif ('event' === $args[0]) {
             return $this->__commontasks(...$args);
         } elseif ('venue' === $args[0]) {
-            if($args[1] === 'list') {
+            if ('list' === $args[1]) {
                 // Its different than /venues/list (here we return all
                 // entries which are not marked deleted).
                 $venues = getTableEntries('venues', 'id', "status != 'DELETED'");
                 $this->send_data($venues, 'ok');
+
                 return;
-            } elseif($args[1] === 'delete') {
+            } elseif ('delete' === $args[1]) {
                 $id = $args[2];
-                $res = false; 
+                $res = false;
                 $error = '';
+
                 try {
                     $res = updateTable(
                         'venues', 'id',
-                        'status', ['id'=>$id, 'status'=>'DELETED']
+                        'status', ['id' => $id, 'status' => 'DELETED']
                     );
                 } catch (Exception $e) {
                     $error = $e->getMessage();
                 }
-                $this->send_data(['success'=>$res, 'msg'=>$error], 'ok');
+                $this->send_data(['success' => $res, 'msg' => $error], 'ok');
 
                 return;
-            } elseif($args[1] === 'update' || $args[1] === 'add') {
+            } elseif ('update' === $args[1] || 'add' === $args[1]) {
                 $msg = '';
                 $_POST['response'] = $args[1];
                 $res = false;
@@ -3421,16 +3407,17 @@ class Api extends CI_Controller
 
                 try {
                     $res = admin_venue_actions($_POST, $msg);
-                } catch( Exception $e) {
+                } catch (Exception $e) {
                     $msg .= $e->getMessage();
                 }
-                $this->send_data(['success'=>$res, 'msg'=>$msg], 'ok');
+                $this->send_data(['success' => $res, 'msg' => $msg], 'ok');
+
                 return;
             }
         }
         $this->send_data(
-            ['success'=>false, 
-            'msg'=>'bmvadmin: Unknown Request: '.json_encode($args)], 'ok'
+            ['success' => false,
+            'msg' => 'bmvadmin: Unknown Request: ' . json_encode($args), ], 'ok'
         );
     }
 
@@ -3489,8 +3476,8 @@ class Api extends CI_Controller
 
                 if ($tid < 0) {
                     $this->send_data(
-                        ['success'=>false,
-                        'msg'=>"Invalid talk id $tid."], 401
+                        ['success' => false,
+                        'msg' => "Invalid talk id $tid.", ], 401
                     );
 
                     return;
@@ -3525,7 +3512,7 @@ class Api extends CI_Controller
                 return;
             }
 
-            $this->send_data(['success'=>false, 'msg'=>'Unknown request'], 'ok');
+            $this->send_data(['success' => false, 'msg' => 'Unknown request'], 'ok');
 
             return;
         } elseif ('event' === $args[0]) {
@@ -3558,7 +3545,7 @@ class Api extends CI_Controller
             return;
         } elseif ('holidays' === $args[0]) {
             if ('list' === $args[1]) {
-                $this->info("holidays", 'list');
+                $this->info('holidays', 'list');
 
                 return;
             } elseif ('submit' === $args[1]) {
@@ -3634,20 +3621,21 @@ class Api extends CI_Controller
                 $this->people('profile', 'update', $_POST['login']);
 
                 return;
-            } 
-        } 
-        elseif ('config' === $args[0]) {
-            if('list' === $args[1]) {
+            }
+        } elseif ('config' === $args[0]) {
+            if ('list' === $args[1]) {
                 $data = executeQuery("SELECT * FROM config WHERE status!='DELETED'");
                 $this->send_data($data, 'ok');
+
                 return;
-            } elseif('update' === $args[1] || 'add' === $args[1]) {
-                $data = ['success'=>true, 'msg'=>''];
+            } elseif ('update' === $args[1] || 'add' === $args[1]) {
+                $data = ['success' => true, 'msg' => ''];
+
                 try {
                     $_POST['status'] = 'VALID';
                     $res = insertOrUpdateTable(
-                        "config", 'id,value,comment',
-                        "value,comment,status", $_POST
+                        'config', 'id,value,comment',
+                        'value,comment,status', $_POST
                     );
                     $data['success'] = true;
                 } catch (Exception $e) {
@@ -3655,22 +3643,25 @@ class Api extends CI_Controller
                     $data['msg'] .= $e->getMessage();
                 }
                 $this->send_data($data, 'ok');
+
                 return;
-            } elseif('delete' === $args[1] ) {
-                $data = ['success'=>true, 'msg'=>''];
+            } elseif ('delete' === $args[1]) {
+                $data = ['success' => true, 'msg' => ''];
+
                 try {
                     $_POST['status'] = 'DELETED';
-                    $res = updateTable("config", 'id', "status", $_POST);
+                    $res = updateTable('config', 'id', 'status', $_POST);
                     $data['success'] = true;
                 } catch (Exception $e) {
                     $data['success'] = false;
                     $data['msg'] .= $e->getMessage();
                 }
                 $this->send_data($data, 'ok');
+
                 return;
             }
         }
-        $this->send_data(['success'=>false, 'msg'=>'Unknown request: ' . json_encode($args)], 404);
+        $this->send_data(['success' => false, 'msg' => 'Unknown request: ' . json_encode($args)], 404);
     }
 
     /* --------------------------------------------------------------------------*/
@@ -3701,7 +3692,7 @@ class Api extends CI_Controller
         $data = [];
         if ('upcomingaws' === $args[0]) {
             if ('upcoming' === $args[1]) {
-                return $this->info("upcomingaws");
+                return $this->info('upcomingaws');
 
                 return;
             } elseif ('get' === $args[1]) {
@@ -3716,8 +3707,8 @@ class Api extends CI_Controller
                 // If date is a holiday on which AWS are not suppose to be
                 // assigned raise error.
                 $date = $_POST['date'];
-                if(isAWSHoliday($date)) { 
-                    $data = ['sucess'=>false, 'msg'=> "Can't assign on holiday"];
+                if (isAWSHoliday($date)) {
+                    $data = ['sucess' => false, 'msg' => "Can't assign on holiday"];
                 } else {
                     $data = assignAWS(
                         $_POST['speaker'], $_POST['date'],
@@ -3846,9 +3837,9 @@ class Api extends CI_Controller
                 $res = updateTable(
                     'annual_work_seminars',
                     'id',
-                    'title,abstract,status,is_presynopsis_seminar' 
-                        .  ',chair,venue,vc_url,vc_extra'
-                        . ',supervisor_1,supervisor_2' 
+                    'title,abstract,status,is_presynopsis_seminar'
+                        . ',chair,venue,vc_url,vc_extra'
+                        . ',supervisor_1,supervisor_2'
                         . ',tcm_member_1,tcm_member_2,tcm_member_3,tcm_member_4',
                     $_POST, false
                 );
@@ -3879,12 +3870,12 @@ class Api extends CI_Controller
                 assert(__get__($args, 2, '')) or die('Empty TYPE ');
 
                 // Do not send email when using APP.
-                if(! __get__($data, 'is_external', false)) {
+                if (!__get__($data, 'is_external', false)) {
                     $res = @handleCourseRegistration(
                         $course, $data, $args[2],
                         $data['student_id'], getLogin()
                     );
-                } else { 
+                } else {
                     $res = @handleCourseRegistrationExtrnal($course, $data, $args[2], getLogin());
                 }
 
@@ -4035,7 +4026,7 @@ class Api extends CI_Controller
             }
 
             // Unusual function: three tasks are handled here.
-            if(in_array($args[1], ['update', 'delete', 'add'])) {
+            if (in_array($args[1], ['update', 'delete', 'add'])) {
                 // Only admin can update this.
                 if (!hasRoles('ADMIN')) {
                     $this->send_data(['success' => false, 'msg' => "You don't have permission."], 'Forbidden');
@@ -4048,14 +4039,14 @@ class Api extends CI_Controller
                 return;
             }
         }
-       
 
         // These are admin functions.
         if (!hasRoles('ADMIN')) {
             $this->send_data(['success' => false, 'msg' => "You don't have permission."], 'Forbidden');
+
             return;
         }
-       
+
         if ('profile' === $args[0]) {
             $endpoint = __get__($args, 1, 'get');
             if ('get' === $endpoint) {
@@ -4083,23 +4074,24 @@ class Api extends CI_Controller
                 return;
             } elseif ('editables' === $endpoint) {
                 $this->send_data(getProfileEditables(), 'ok');
+
                 return;
             } elseif ('photo' === $endpoint) {
                 $this->me('photo', $args[2]);
+
                 return;
             } elseif ('roles' === $endpoint) {
                 $user = $args[2];
                 $roles = getRoles($user);
                 $allroles = getTableColumnTypes('logins', 'roles');
-                $this->send_data(['roles'=>$roles, 'allroles'=>$allroles], 'ok');
+                $this->send_data(['roles' => $roles, 'allroles' => $allroles], 'ok');
 
                 return;
             }
         }
 
         $this->send_data(
-            ['success' => false
-            , 'msg' => 'Unknown endpoint: ' . json_encode($args)], 'ok'
+            ['success' => false, 'msg' => 'Unknown endpoint: ' . json_encode($args)], 'ok'
         );
     }
 
@@ -4136,7 +4128,7 @@ class Api extends CI_Controller
 
             return;
         }
-        $this->send_data(['msg'=>'Unknown request', 'status'=>false], 'ok');
+        $this->send_data(['msg' => 'Unknown request', 'status' => false], 'ok');
     }
 
     // Emails.
@@ -4157,53 +4149,53 @@ class Api extends CI_Controller
     {
         $args = func_get_args();
 
-        if($args[0] === 'event') {
-
-            if($args[1] === 'list') {
+        if ('event' === $args[0]) {
+            if ('list' === $args[1]) {
                 $data = getTableEntries(
                     'photography_club_competition',
                     'start_date', "status='VALID'"
                 );
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'active') {
+            } elseif ('active' === $args[1]) {
                 $data = getTableEntries(
                     'photography_club_competition',
                     'start_date', "status='VALID' AND start_date <= CURDATE() 
                     AND GREATEST(voting_end_date, judge_voting_end_date) >= CURDATE()"
                 );
-                if(count($data) > 0) {
+                if (count($data) > 0) {
                     $data = $data[0];
                 }
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'upcoming') {
+            } elseif ('upcoming' === $args[1]) {
                 $data = getTableEntries(
                     'photography_club_competition',
                     'start_date', "status='VALID' AND start_date > CURDATE()"
                 );
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'completed') {
+            } elseif ('completed' === $args[1]) {
                 $data = getTableEntries(
                     'photography_club_competition',
                     'start_date',
                     "status='VALID' AND GREATEST(judge_voting_end_date,voting_end_date) <= CURDATE()"
                 );
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'new' || $args[1] === 'add') {
-                $keys = 'id,theme,description,start_date' . 
+            } elseif ('new' === $args[1] || 'add' === $args[1]) {
+                $keys = 'id,theme,description,start_date' .
                     ',end_date,voting_start_date,voting_end_date,judge_voting_end_date,note,status,comment';
 
                 $_POST['id'] = getUniqueID('photography_club_competition');
                 $_POST['status'] = 'VALID';
 
-                $res = ['success'=>false, 'msg'=> ''];
+                $res = ['success' => false, 'msg' => ''];
+
                 try {
                     $r = insertIntoTable('photography_club_competition', $keys, $_POST);
                     $res['success'] = $r;
@@ -4211,11 +4203,12 @@ class Api extends CI_Controller
                     $res['msg'] .= $e->getMessage();
                 }
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'update') {
+            } elseif ('update' === $args[1]) {
                 $keys = 'theme,description,start_date,end_date,voting_start_date,voting_end_date,judge_voting_end_date,note,status,comment';
-                $res = ['success'=>false, 'msg'=> ''];
+                $res = ['success' => false, 'msg' => ''];
+
                 try {
                     $r = updateTable('photography_club_competition', 'id', $keys, $_POST);
                     $res['success'] = $r ? true : false;
@@ -4223,16 +4216,18 @@ class Api extends CI_Controller
                     $res['msg'] .= $e->getMessage();
                 }
                 $this->send_data($res, 'ok');
+
                 return;
-            }
-            else if($args[1] === 'delete') {
+            } elseif ('delete' === $args[1]) {
                 $data = ['status' => 'INVALID', 'id' => $args[2]];
-                $res = ['success'=>false, 'msg'=> ''];
-                if(! hasRoles('ADMIN,PHOTOGRAPHY_CLUB_ADMIN')) {
-                    $res = ['success'=>false, 'msg'=> 'You do not have permission to delete this entry.'];
+                $res = ['success' => false, 'msg' => ''];
+                if (!hasRoles('ADMIN,PHOTOGRAPHY_CLUB_ADMIN')) {
+                    $res = ['success' => false, 'msg' => 'You do not have permission to delete this entry.'];
                     $this->send_data($res, 'ok');
+
                     return;
                 }
+
                 try {
                     $r = updateTable('photography_club_competition', 'id', 'status', $data);
                     $res['success'] = $r ? true : false;
@@ -4240,66 +4235,66 @@ class Api extends CI_Controller
                     $res['msg'] .= $e->getMessage();
                 }
                 $this->send_data($res, 'ok');
+
                 return;
             }
-        } 
-        
-        // Entries (photos) 
-        elseif('entry' === $args[0]) {
-            if($args[1] === 'getall') {
+        }
+
+        // Entries (photos)
+        elseif ('entry' === $args[0]) {
+            if ('getall' === $args[1]) {
                 $where = "status='VALID'";
 
-                if(__get__($args, 2, 0)) {
-                    $where .= " AND competition_id='".$args[2]."'";
+                if (__get__($args, 2, 0)) {
+                    $where .= " AND competition_id='" . $args[2] . "'";
                 }
 
                 $entries = getTableEntries('photography_club_entry', 'id', $where);
-                
-                foreach($entries as &$entry) {
+
+                foreach ($entries as &$entry) {
                     $entry['url'] = site_url() . '/info/photographyclub_image/' . basename($entry['filepath']);
                 }
                 $this->send_data($entries, 'ok');
-                return;
-            } elseif($args[1] === 'remove' || $args[1] === 'update') {
 
+                return;
+            } elseif ('remove' === $args[1] || 'update' === $args[1]) {
                 // remove or update metadata.
                 $msg = '';
                 $_POST['login'] = getLogin();
-                $where = "id";
+                $where = 'id';
                 $success = true;
                 $what = $args[1];
 
                 // make sure that either the user own this image or is admin.
                 $pic = getTableEntry('photography_club_entry', 'id', $_POST);
                 // must be owener if not admin.
-                if(! $pic ) {
+                if (!$pic) {
                     $success = false;
-                    $msg .= "No such image.";
+                    $msg .= 'No such image.';
                 }
-                if(! isPhotoClubAdmin(getLogin()) ) {
-                    if($pic['login'] != getLogin()) {
+                if (!isPhotoClubAdmin(getLogin())) {
+                    if ($pic['login'] != getLogin()) {
                         $success = false;
-                        $msg .= "You don't have permission to ". $what . " this image.";
+                        $msg .= "You don't have permission to " . $what . ' this image.';
                     }
                     $where .= ',login';
                 }
 
-                if($what === 'remove') {
+                if ('remove' === $what) {
                     $_POST['status'] = 'REMOVED';
                     $keys = 'status,note';
-                }
-                else { 
+                } else {
                     $keys = 'caption,comment,note';
                 }
 
                 $r = updateTable('photography_club_entry', $where, $keys, $_POST);
                 $success = $success or $r;
-                $this->send_data(['success'=>$success, 'msg'=>$msg], 'ok');
+                $this->send_data(['success' => $success, 'msg' => $msg], 'ok');
+
                 return;
             }
-        } elseif('rating' === $args[0]) {
-
-            if($args[1] == 'add') {
+        } elseif ('rating' === $args[0]) {
+            if ('add' == $args[1]) {
                 $_POST['login'] = getLogin();
                 $_POST['entry_id'] = $_POST['id'];
                 $_POST['id'] = getUniqueID('photography_club_rating');
@@ -4311,10 +4306,10 @@ class Api extends CI_Controller
                 );
                 $success = $r ? true : false;
                 $msg = '';
-                $this->send_data(['success'=>$success, 'msg'=>$msg], 'ok');
+                $this->send_data(['success' => $success, 'msg' => $msg], 'ok');
+
                 return;
-            }
-            elseif($args[1] == 'getone') {
+            } elseif ('getone' == $args[1]) {
                 $entry_id = $args[2];
                 $ratings = getTableEntries(
                     'photography_club_rating',
@@ -4322,9 +4317,9 @@ class Api extends CI_Controller
                     "status='VALID' AND entry_id='$entry_id'"
                 );
                 $this->send_data($ratings, 'ok');
+
                 return;
-            }
-            elseif($args[1] == 'getall') {
+            } elseif ('getall' == $args[1]) {
                 $comptid = $args[2];
                 $ratings = getTableEntries(
                     'photography_club_rating',
@@ -4332,18 +4327,18 @@ class Api extends CI_Controller
                     "status='VALID' AND competition_id='$comptid'"
                 );
                 $data = [];
-                foreach($ratings as $r) {
+                foreach ($ratings as $r) {
                     $data[$r['login']][$r['entry_id']] = $r['star'];
                     $data[$r['entry_id']][] = $r['star'];
                 }
                 $this->send_data($data, 'ok');
+
                 return;
-            }
-            elseif($args[1] == 'myratings') {
+            } elseif ('myratings' == $args[1]) {
                 $login = getLogin();
                 $where = "status='VALID' AND login='$login'";
                 $entry_id = __get__($args, 2, '');
-                if($entry_id) {
+                if ($entry_id) {
                     $where .= " AND entry_id='$entry_id'";
                 }
 
@@ -4352,29 +4347,29 @@ class Api extends CI_Controller
                     $where
                 );
                 $this->send_data($ratings, 'ok');
+
                 return;
             }
         }
 
-        $data = ['success'=>false, 'msg'=>'Unknown endpoint:' . json_encode($args)];
+        $data = ['success' => false, 'msg' => 'Unknown endpoint:' . json_encode($args)];
         $this->send_data($data, 'ok');
-        return;
-
     }
 
-
-    // Covid 
-    public function covid19() 
+    // Covid
+    public function covid19()
     {
         $args = func_get_args();
-        if($args[0] === 'data') {
+        if ('data' === $args[0]) {
             $data = getTableEntries('covid19', 'id', "status='VALID'");
             $this->send_data($data, 'ok');
+
             return;
         }
-    
-        if($args[0] === 'update') {
+
+        if ('update' === $args[0]) {
             updateCovidData();
+
             return;
         }
 
@@ -4385,40 +4380,40 @@ class Api extends CI_Controller
             return;
         }
 
-
         // alerts can also go to /me
-        else if($args[0] === 'alert') {
-            if($args[1] === 'add') {
+        elseif ('alert' === $args[0]) {
+            if ('add' === $args[1]) {
                 $res = insertIntoTable(
                     'covid19_alerts',
-                    "login,latitude,longitude", $_POST
+                    'login,latitude,longitude', $_POST
                 );
-                $this->send_data(['success'=>$res, 'msg'=>''], 'ok');
+                $this->send_data(['success' => $res, 'msg' => ''], 'ok');
+
                 return;
             }
-            if($args[1] === 'remove' || $args[1] === 'delete') {
-                if($_POST['login'] === getLogin()) {
+            if ('remove' === $args[1] || 'delete' === $args[1]) {
+                if ($_POST['login'] === getLogin()) {
                     $res = deleteFromTable(
                         'covid19_alerts',
-                        "id,login", $_POST
+                        'id,login', $_POST
                     );
-                    $this->send_data(['success'=>$res, 'msg'=>''], 'ok');
+                    $this->send_data(['success' => $res, 'msg' => ''], 'ok');
+
                     return;
                 }
-                $this->send_data(['success'=>false, 'msg'=>'Permission denied.'], 'ok');
+                $this->send_data(['success' => false, 'msg' => 'Permission denied.'], 'ok');
+
                 return;
-            }
-            else if($args[1] === 'mylist') {
+            } elseif ('mylist' === $args[1]) {
                 $login = getLogin();
-                $res = getTableEntries('covid19_alerts', "login", "login='$login'");
+                $res = getTableEntries('covid19_alerts', 'login', "login='$login'");
                 $this->send_data($res, 'ok');
+
                 return;
             }
         }
 
-        $data = ['success'=>false
-            , 'msg' => 'Unknown endpoint:' . json_encode($args)];
+        $data = ['success' => false, 'msg' => 'Unknown endpoint:' . json_encode($args)];
         $this->send_data($data, 'ok');
-        return;
     }
 }
