@@ -3573,11 +3573,7 @@ class Api extends CI_Controller
         // requests associated with talks.
         elseif ('request' === $args[0]) {
             if ('cancel' === $args[1] || 'delete' === $args[1]) {
-                $res = changeRequestStatus(
-                    $request['gid'],
-                    $request['rid'], $request['created_by'],
-                    'CANCELLED'
-                );
+                $res = changeRequestStatus($request['gid'], $request['rid'], 'CANCELLED');
                 $this->send_data(['status' => $res], 'ok');
 
                 return;
