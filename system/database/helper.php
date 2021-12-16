@@ -558,10 +558,9 @@ function getRequestByGroupIdAndStatus($gid, $status)
  *
  * @return true on success, false otherwise.
  */
-function changeRequestStatus($gid, $rid, string $status)
+function changeRequestStatus(string $gid, string $rid, string $status)
 {
     $hippoDB = initDB();
-    ;
     $stmt = $hippoDB->prepare(
         "UPDATE bookmyvenue_requests SET
         status=:status,last_modified_on=NOW() WHERE gid=:gid AND rid=:rid"
