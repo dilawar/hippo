@@ -1,7 +1,6 @@
 <?php
 namespace Psalm;
 
-use function array_filter;
 use function array_keys;
 use function count;
 use function in_array;
@@ -11,7 +10,6 @@ use function preg_quote;
 use function preg_replace;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Clause;
-use Psalm\Internal\MethodIdentifier;
 use Psalm\Storage\FunctionLikeStorage;
 use Psalm\Internal\Type\AssertionReconciler;
 use Psalm\Type\Union;
@@ -51,7 +49,7 @@ class Context
     /**
      * Whether or not we're inside an isset call
      *
-     * Inside isssets Psalm is more lenient about certain things
+     * Inside issets Psalm is more lenient about certain things
      *
      * @var bool
      */
@@ -158,7 +156,7 @@ class Context
     /**
      * A list of hashed clauses that have already been factored in
      *
-     * @var list<string>
+     * @var list<string|int>
      */
     public $reconciled_expression_clauses = [];
 
@@ -170,11 +168,18 @@ class Context
     public $collect_mutations = false;
 
     /**
-     * Whether or not to do a deep analysis and collect initializations from private methods
+     * Whether or not to do a deep analysis and collect initializations from private or final methods
      *
      * @var bool
      */
     public $collect_initializations = false;
+
+    /**
+     * Whether or not to do a deep analysis and collect initializations from public non-final methods
+     *
+     * @var bool
+     */
+    public $collect_nonprivate_initializations = false;
 
     /**
      * Stored to prevent re-analysing methods when checking for initialised properties
@@ -292,6 +297,11 @@ class Context
     public $case_scope = null;
 
     /**
+     * @var Internal\Scope\FinallyScope|null
+     */
+    public $finally_scope = null;
+
+    /**
      * @var Context|null
      */
     public $if_context = null;
@@ -356,10 +366,7 @@ class Context
      */
     public $has_returned = false;
 
-    /**
-     * @param string|null $self
-     */
-    public function __construct($self = null)
+    public function __construct(?string $self = null)
     {
         $this->self = $self;
     }
@@ -388,22 +395,18 @@ class Context
      * Updates the parent context, looking at the changes within a block and then applying those changes, where
      * necessary, to the parent context
      *
-     * @param  Context     $start_context
-     * @param  Context     $end_context
      * @param  bool        $has_leaving_statements   whether or not the parent scope is abandoned between
      *                                               $start_context and $end_context
-     * @param  array       $vars_to_update
      * @param  array<string, bool>  $updated_vars
      *
-     * @return void
      */
     public function update(
         Context $start_context,
         Context $end_context,
-        $has_leaving_statements,
+        bool $has_leaving_statements,
         array $vars_to_update,
         array &$updated_vars
-    ) {
+    ): void {
         foreach ($start_context->vars_in_scope as $var_id => $old_type) {
             // this is only true if there was some sort of type negation
             if (in_array($var_id, $vars_to_update, true)) {
@@ -450,7 +453,7 @@ class Context
      *
      * @return array<string,Type\Union>
      */
-    public function getRedefinedVars(array $new_vars_in_scope, $include_new_vars = false)
+    public function getRedefinedVars(array $new_vars_in_scope, $include_new_vars = false): array
     {
         $redefined_vars = [];
 
@@ -477,12 +480,9 @@ class Context
     }
 
     /**
-     * @param  Context $original_context
-     * @param  Context $new_context
-     *
      * @return array<int, string>
      */
-    public static function getNewOrUpdatedVarIds(Context $original_context, Context $new_context)
+    public static function getNewOrUpdatedVarIds(Context $original_context, Context $new_context): array
     {
         $redefined_var_ids = [];
 
@@ -497,12 +497,7 @@ class Context
         return $redefined_var_ids;
     }
 
-    /**
-     * @param  string $remove_var_id
-     *
-     * @return void
-     */
-    public function remove($remove_var_id)
+    public function remove(string $remove_var_id): void
     {
         unset(
             $this->referenced_var_ids[$remove_var_id],
@@ -518,12 +513,14 @@ class Context
     }
 
     /**
-     * @param  Clause[]             $clauses
-     * @param  array<string, bool>  $changed_var_ids
+     * @param Clause[]             $clauses
+     * @param array<string, bool>  $changed_var_ids
      *
      * @return array{0: list<Clause>, list<Clause>}
+     *
+     * @psalm-pure
      */
-    public static function removeReconciledClauses(array $clauses, array $changed_var_ids)
+    public static function removeReconciledClauses(array $clauses, array $changed_var_ids): array
     {
         $included_clauses = [];
         $rejected_clauses = [];
@@ -548,25 +545,22 @@ class Context
     }
 
     /**
-     * @param  string                 $remove_var_id
      * @param  Clause[]               $clauses
-     * @param  Union|null             $new_type
-     * @param  StatementsAnalyzer|null $statements_analyzer
      *
      * @return list<Clause>
      */
     public static function filterClauses(
-        $remove_var_id,
+        string $remove_var_id,
         array $clauses,
-        Union $new_type = null,
-        StatementsAnalyzer $statements_analyzer = null
-    ) {
+        ?Union $new_type = null,
+        ?StatementsAnalyzer $statements_analyzer = null
+    ): array {
         $new_type_string = $new_type ? $new_type->getId() : '';
 
         $clauses_to_keep = [];
 
         foreach ($clauses as $clause) {
-            \Psalm\Type\Algebra::calculateNegation($clause);
+            $clause = $clause->calculateNegation();
 
             $quoted_remove_var_id = preg_quote($remove_var_id, '/');
 
@@ -630,18 +624,11 @@ class Context
         return $clauses_to_keep;
     }
 
-    /**
-     * @param  string               $remove_var_id
-     * @param  Union|null           $new_type
-     * @param  null|StatementsAnalyzer   $statements_analyzer
-     *
-     * @return void
-     */
     public function removeVarFromConflictingClauses(
-        $remove_var_id,
-        Union $new_type = null,
-        StatementsAnalyzer $statements_analyzer = null
-    ) {
+        string $remove_var_id,
+        ?Union $new_type = null,
+        ?StatementsAnalyzer $statements_analyzer = null
+    ): void {
         $this->clauses = self::filterClauses($remove_var_id, $this->clauses, $new_type, $statements_analyzer);
 
         if ($this->parent_context) {
@@ -650,18 +637,13 @@ class Context
     }
 
     /**
-     * @param  string                 $remove_var_id
-     * @param  \Psalm\Type\Union|null $existing_type
-     * @param  \Psalm\Type\Union|null $new_type
-     * @param  null|StatementsAnalyzer     $statements_analyzer
-     *
      * @return void
      */
     public function removeDescendents(
-        $remove_var_id,
-        Union $existing_type = null,
-        Union $new_type = null,
-        StatementsAnalyzer $statements_analyzer = null
+        string $remove_var_id,
+        ?Union $existing_type = null,
+        ?Union $new_type = null,
+        ?StatementsAnalyzer $statements_analyzer = null
     ) {
         if (!$existing_type && isset($this->vars_in_scope[$remove_var_id])) {
             $existing_type = $this->vars_in_scope[$remove_var_id];
@@ -680,16 +662,10 @@ class Context
             $statements_analyzer
         );
 
-        $vars_to_remove = [];
-
         foreach ($this->vars_in_scope as $var_id => $_) {
             if (preg_match('/' . preg_quote($remove_var_id, '/') . '[\]\[\-]/', $var_id)) {
-                $vars_to_remove[] = $var_id;
+                unset($this->vars_in_scope[$var_id]);
             }
-        }
-
-        foreach ($vars_to_remove as $var_id) {
-            unset($this->vars_in_scope[$var_id]);
         }
     }
 
@@ -734,12 +710,7 @@ class Context
         $this->clauses = $clauses_to_keep;
     }
 
-    /**
-     * @param   Context $op_context
-     *
-     * @return  void
-     */
-    public function updateChecks(Context $op_context)
+    public function updateChecks(Context $op_context): void
     {
         $this->check_classes = $this->check_classes && $op_context->check_classes;
         $this->check_variables = $this->check_variables && $op_context->check_variables;
@@ -748,22 +719,12 @@ class Context
         $this->check_consts = $this->check_consts && $op_context->check_consts;
     }
 
-    /**
-     * @param   string $class_name
-     *
-     * @return  bool
-     */
-    public function isPhantomClass($class_name)
+    public function isPhantomClass(string $class_name): bool
     {
         return isset($this->phantom_classes[strtolower($class_name)]);
     }
 
-    /**
-     * @param  string|null  $var_name
-     *
-     * @return bool
-     */
-    public function hasVariable($var_name, StatementsAnalyzer $statements_analyzer = null)
+    public function hasVariable(?string $var_name, ?StatementsAnalyzer $statements_analyzer = null): bool
     {
         if (!$var_name) {
             return false;
@@ -805,10 +766,7 @@ class Context
         return json_encode($summary);
     }
 
-    /**
-     * @return void
-     */
-    public function defineGlobals()
+    public function defineGlobals(): void
     {
         $globals = [
             '$argv' => new Type\Union([
@@ -829,10 +787,7 @@ class Context
         }
     }
 
-    /**
-     * @return void
-     */
-    public function mergeExceptions(Context $other_context)
+    public function mergeExceptions(Context $other_context): void
     {
         foreach ($other_context->possibly_thrown_exceptions as $possibly_thrown_exception => $codelocations) {
             foreach ($codelocations as $hash => $codelocation) {
@@ -841,10 +796,7 @@ class Context
         }
     }
 
-    /**
-     * @return bool
-     */
-    public function isSuppressingExceptions(StatementsAnalyzer $statements_analyzer)
+    public function isSuppressingExceptions(StatementsAnalyzer $statements_analyzer): bool
     {
         if (!$this->collect_exceptions) {
             return true;
@@ -866,13 +818,10 @@ class Context
         return false;
     }
 
-    /**
-     * @return void
-     */
     public function mergeFunctionExceptions(
         FunctionLikeStorage $function_storage,
         CodeLocation $codelocation
-    ) {
+    ): void {
         $hash = $codelocation->getHash();
         foreach ($function_storage->throws as $possibly_thrown_exception => $_) {
             $this->possibly_thrown_exceptions[$possibly_thrown_exception][$hash] = $codelocation;

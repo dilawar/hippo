@@ -1,7 +1,7 @@
 <?php
 namespace Psalm\Report;
 
-use function json_encode;
+use Psalm\Internal\Json\Json;
 use function max;
 use Psalm\Config;
 use Psalm\Report;
@@ -14,9 +14,6 @@ use Psalm\Report;
  */
 class SonarqubeReport extends Report
 {
-    /**
-     * {@inheritdoc}
-     */
     public function create(): string
     {
         $report = ['issues' => []];
@@ -37,10 +34,12 @@ class SonarqubeReport extends Report
                     ],
                 ],
                 'type' => 'CODE_SMELL',
-                'severity' => $issue_data->severity == Config::REPORT_ERROR ? 'CRITICAL' : 'MINOR',
+                'severity' => $issue_data->severity === Config::REPORT_ERROR ? 'CRITICAL' : 'MINOR',
             ];
         }
 
-        return json_encode($report) . "\n";
+        $options = $this->pretty ? Json::PRETTY : Json::DEFAULT;
+
+        return Json::encode($report, $options) . "\n";
     }
 }

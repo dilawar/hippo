@@ -1,14 +1,11 @@
 <?php
 namespace Psalm\Report;
 
-use function json_encode;
+use Psalm\Internal\Json\Json;
 use Psalm\Report;
 
 class JsonSummaryReport extends Report
 {
-    /**
-     * {@inheritdoc}
-     */
     public function create(): string
     {
         $type_counts = [];
@@ -23,10 +20,12 @@ class JsonSummaryReport extends Report
             ++$type_counts[$type];
         }
 
-        return json_encode([
+        $options = $this->pretty ? Json::PRETTY : Json::DEFAULT;
+
+        return Json::encode([
             'issue_counts' => $type_counts,
             'mixed_expression_count' => $this->mixed_expression_count,
             'total_expression_count' => $this->total_expression_count,
-        ]) . "\n";
+        ], $options) . "\n";
     }
 }

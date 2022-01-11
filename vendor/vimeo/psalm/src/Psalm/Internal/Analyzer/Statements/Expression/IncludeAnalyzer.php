@@ -4,6 +4,7 @@ namespace Psalm\Internal\Analyzer\Statements\Expression;
 use PhpParser;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
+use Psalm\Internal\ControlFlow\TaintSink;
 use Psalm\CodeLocation;
 use Psalm\Config;
 use Psalm\Context;
@@ -37,15 +38,12 @@ use function preg_replace;
  */
 class IncludeAnalyzer
 {
-    /**
-     * @return  false|null
-     */
     public static function analyze(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Expr\Include_ $stmt,
         Context $context,
-        Context $global_context = null
-    ) {
+        ?Context $global_context = null
+    ) : bool {
         $codebase = $statements_analyzer->getCodebase();
         $config = $codebase->config;
 
@@ -67,11 +65,10 @@ class IncludeAnalyzer
             $context->inside_call = false;
         }
 
-        $stmt_expr_type = null;
+        $stmt_expr_type = $statements_analyzer->node_data->getType($stmt->expr);
 
         if ($stmt->expr instanceof PhpParser\Node\Scalar\String_
-            || (($stmt_expr_type = $statements_analyzer->node_data->getType($stmt->expr))
-                && $stmt_expr_type->isSingleStringLiteral())
+            || ($stmt_expr_type && $stmt_expr_type->isSingleStringLiteral())
         ) {
             if ($stmt->expr instanceof PhpParser\Node\Scalar\String_) {
                 $path_to_file = $stmt->expr->value;
@@ -98,9 +95,33 @@ class IncludeAnalyzer
             $path_to_file = self::getPathTo(
                 $stmt->expr,
                 $statements_analyzer->node_data,
+                $statements_analyzer,
                 $statements_analyzer->getFileName(),
                 $config
             );
+        }
+
+        if ($stmt_expr_type
+            && $statements_analyzer->control_flow_graph instanceof \Psalm\Internal\Codebase\TaintFlowGraph
+            && $stmt_expr_type->parent_nodes
+            && !\in_array('TaintedInput', $statements_analyzer->getSuppressedIssues())
+        ) {
+            $arg_location = new CodeLocation($statements_analyzer->getSource(), $stmt->expr);
+
+            $include_param_sink = TaintSink::getForMethodArgument(
+                'include',
+                'include',
+                0,
+                $arg_location
+            );
+
+            $include_param_sink->taints = [\Psalm\Type\TaintKind::INPUT_TEXT];
+
+            $statements_analyzer->control_flow_graph->addSink($include_param_sink);
+
+            foreach ($stmt_expr_type->parent_nodes as $parent_node) {
+                $statements_analyzer->control_flow_graph->addPath($parent_node, $include_param_sink, 'arg');
+            }
         }
 
         if ($path_to_file) {
@@ -108,7 +129,7 @@ class IncludeAnalyzer
 
             // if the file is already included, we can't check much more
             if (in_array(realpath($path_to_file), get_included_files(), true)) {
-                return null;
+                return true;
             }
 
             $current_file_analyzer = $statements_analyzer->getFileAnalyzer();
@@ -119,7 +140,7 @@ class IncludeAnalyzer
                     || ($statements_analyzer->hasAlreadyRequiredFilePath($path_to_file)
                         && !$codebase->file_storage_provider->get($path_to_file)->has_extra_statements)
                 ) {
-                    return null;
+                    return true;
                 }
 
                 $current_file_analyzer->addRequiredFilePath($path_to_file);
@@ -167,6 +188,12 @@ class IncludeAnalyzer
                     }
                 }
 
+                $included_return_type = $include_file_analyzer->getReturnType();
+
+                if ($included_return_type) {
+                    $statements_analyzer->node_data->setType($stmt, $included_return_type);
+                }
+
                 $context->has_returned = false;
 
                 foreach ($include_file_analyzer->getRequiredFilePaths() as $required_file_path) {
@@ -175,7 +202,7 @@ class IncludeAnalyzer
 
                 $include_file_analyzer->clearSourceBeforeDestruction();
 
-                return null;
+                return true;
             }
 
             $source = $statements_analyzer->getSource();
@@ -190,7 +217,7 @@ class IncludeAnalyzer
                 // fall through
             }
         } else {
-            $var_id = ExpressionAnalyzer::getArrayVarId($stmt->expr, null);
+            $var_id = ExpressionIdentifier::getArrayVarId($stmt->expr, null);
 
             if (!$var_id || !isset($context->phantom_files[$var_id])) {
                 $source = $statements_analyzer->getSource();
@@ -213,22 +240,19 @@ class IncludeAnalyzer
             $context->check_functions = false;
         }
 
-        return null;
+        return true;
     }
 
     /**
-     * @param  PhpParser\Node\Expr $stmt
-     * @param  string              $file_name
-     *
-     * @return string|null
      * @psalm-suppress MixedAssignment
      */
     public static function getPathTo(
         PhpParser\Node\Expr $stmt,
         ?\Psalm\Internal\Provider\NodeDataProvider $type_provider,
-        $file_name,
+        ?StatementsAnalyzer $statements_analyzer,
+        string $file_name,
         Config $config
-    ) {
+    ): ?string {
         if (DIRECTORY_SEPARATOR === '/') {
             $is_path_relative = $file_name[0] !== DIRECTORY_SEPARATOR;
         } else {
@@ -246,10 +270,9 @@ class IncludeAnalyzer
             return $stmt->value;
         }
 
-        if ($type_provider
-            && ($stmt_type = $type_provider->getType($stmt))
-            && $stmt_type->isSingleStringLiteral()
-        ) {
+        $stmt_type = $type_provider ? $type_provider->getType($stmt) : null;
+
+        if ($stmt_type && $stmt_type->isSingleStringLiteral()) {
             if (DIRECTORY_SEPARATOR !== '/') {
                 return str_replace(
                     '/',
@@ -272,8 +295,8 @@ class IncludeAnalyzer
                 }
             }
         } elseif ($stmt instanceof PhpParser\Node\Expr\BinaryOp\Concat) {
-            $left_string = self::getPathTo($stmt->left, $type_provider, $file_name, $config);
-            $right_string = self::getPathTo($stmt->right, $type_provider, $file_name, $config);
+            $left_string = self::getPathTo($stmt->left, $type_provider, $statements_analyzer, $file_name, $config);
+            $right_string = self::getPathTo($stmt->right, $type_provider, $statements_analyzer, $file_name, $config);
 
             if ($left_string && $right_string) {
                 return $left_string . $right_string;
@@ -293,7 +316,13 @@ class IncludeAnalyzer
                     }
                 }
 
-                $evaled_path = self::getPathTo($stmt->args[0]->value, $type_provider, $file_name, $config);
+                $evaled_path = self::getPathTo(
+                    $stmt->args[0]->value,
+                    $type_provider,
+                    $statements_analyzer,
+                    $file_name,
+                    $config
+                );
 
                 if (!$evaled_path) {
                     return null;
@@ -320,24 +349,18 @@ class IncludeAnalyzer
         return null;
     }
 
-    /**
-     * @param   string  $file_name
-     * @param   string  $current_directory
-     *
-     * @return  string|null
-     */
-    public static function resolveIncludePath($file_name, $current_directory)
+    public static function resolveIncludePath(string $file_name, string $current_directory): ?string
     {
         if (!$current_directory) {
             return $file_name;
         }
 
-        $paths = PATH_SEPARATOR == ':'
+        $paths = PATH_SEPARATOR === ':'
             ? preg_split('#(?<!phar):#', get_include_path())
             : explode(PATH_SEPARATOR, get_include_path());
 
         foreach ($paths as $prefix) {
-            $ds = substr($prefix, -1) == DIRECTORY_SEPARATOR ? '' : DIRECTORY_SEPARATOR;
+            $ds = substr($prefix, -1) === DIRECTORY_SEPARATOR ? '' : DIRECTORY_SEPARATOR;
 
             if ($prefix === '.') {
                 $prefix = $current_directory;
@@ -353,6 +376,9 @@ class IncludeAnalyzer
         return null;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function normalizeFilePath(string $path_to_file) : string
     {
         // replace all \ with / for normalization

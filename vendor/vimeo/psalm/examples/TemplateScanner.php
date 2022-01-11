@@ -22,24 +22,25 @@ class TemplateScanner extends Psalm\Internal\Scanner\FileScanner
         Codebase $codebase,
         FileStorage $file_storage,
         $storage_from_cache = false,
-        Progress $progress = null
+        ?Progress $progress = null
     ) {
         $stmts = $codebase->statements_provider->getStatementsForFile(
             $file_storage->file_path,
+            '7.4',
             $progress
         );
 
-        if (empty($stmts)) {
+        if ($stmts === []) {
             return;
         }
 
         $first_stmt = $stmts[0];
 
         if (($first_stmt instanceof PhpParser\Node\Stmt\Nop) && ($doc_comment = $first_stmt->getDocComment())) {
-            $comment_block = DocComment::parse(trim($doc_comment->getText()));
+            $comment_block = DocComment::parsePreservingLength($doc_comment);
 
-            if (isset($comment_block['specials']['variablesfrom'])) {
-                $variables_from = trim($comment_block['specials']['variablesfrom'][0]);
+            if (isset($comment_block->tags['variablesfrom'])) {
+                $variables_from = trim($comment_block->tags['variablesfrom'][0]);
 
                 $first_line_regex = '/([A-Za-z\\\0-9]+::[a-z_A-Z]+)(\s+weak)?/';
 
@@ -49,7 +50,7 @@ class TemplateScanner extends Psalm\Internal\Scanner\FileScanner
                     throw new \InvalidArgumentException('Could not interpret doc comment correctly');
                 }
 
-                list($fq_class_name) = explode('::', $matches[1]);
+                [$fq_class_name] = explode('::', $matches[1]);
 
                 $codebase->scanner->queueClassLikeForScanning(
                     $fq_class_name,

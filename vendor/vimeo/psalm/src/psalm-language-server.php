@@ -1,8 +1,38 @@
 <?php
-require_once('command_functions.php');
 
-use Psalm\Config;
+namespace Psalm;
+
 use Psalm\Internal\Analyzer\ProjectAnalyzer;
+use Psalm\Internal\Composer;
+use Psalm\Internal\IncludeCollector;
+use function gc_disable;
+use function error_reporting;
+use function array_slice;
+use function array_search;
+use function array_map;
+use function substr;
+use function preg_replace;
+use function in_array;
+use function fwrite;
+use const STDERR;
+use const PHP_EOL;
+use function error_log;
+use function getopt;
+use function implode;
+use function array_key_exists;
+use function ini_set;
+use function is_array;
+use function getcwd;
+use const DIRECTORY_SEPARATOR;
+use function is_string;
+use function realpath;
+use function setlocale;
+use const LC_CTYPE;
+use function chdir;
+use function strtolower;
+
+require_once('command_functions.php');
+require_once __DIR__ . '/Psalm/Internal/Composer.php';
 
 gc_disable();
 
@@ -30,6 +60,8 @@ $valid_long_options = [
     'tcp-server',
     'disable-on-change::',
     'enable-autocomplete',
+    'use-extended-diagnostic-codes',
+    'verbose'
 ];
 
 $args = array_slice($argv, 1);
@@ -57,20 +89,6 @@ array_map(
                 fwrite(
                     STDERR,
                     'Unrecognised argument "--' . $arg_name . '"' . PHP_EOL
-                    . 'Type --help to see a list of supported arguments' . PHP_EOL
-                );
-                error_log('Bad argument');
-                exit(1);
-            }
-        } elseif (substr($arg, 0, 2) === '-' && $arg !== '-' && $arg !== '--') {
-            $arg_name = preg_replace('/=.*$/', '', substr($arg, 1));
-
-            if (!in_array($arg_name, $valid_short_options, true)
-                && !in_array($arg_name . ':', $valid_short_options, true)
-            ) {
-                fwrite(
-                    STDERR,
-                    'Unrecognised argument "-' . $arg_name . '"' . PHP_EOL
                     . 'Type --help to see a list of supported arguments' . PHP_EOL
                 );
                 error_log('Bad argument');
@@ -146,8 +164,19 @@ Options:
 
     --enable-autocomplete[=BOOL]
         Enables or disables autocomplete on methods and properties. Default is true.
+
+    --use-extended-diagnostic-codes
+        Enables sending help uri links with the code in diagnostic messages.
+
+    --verbose
+        Will send log messages to the client with information.
 HELP;
 
+    exit;
+}
+
+if (array_key_exists('v', $options)) {
+    echo 'Psalm ' . PSALM_VERSION . PHP_EOL;
     exit;
 }
 
@@ -176,14 +205,16 @@ if (isset($options['r']) && is_string($options['r'])) {
     $current_dir = $root_path . DIRECTORY_SEPARATOR;
 }
 
-$vendor_dir = getVendorDir($current_dir);
+$vendor_dir = \Psalm\getVendorDir($current_dir);
 
-$first_autoloader = requireAutoloaders($current_dir, isset($options['r']), $vendor_dir);
+require_once __DIR__ . '/Psalm/Internal/IncludeCollector.php';
+$include_collector = new IncludeCollector();
 
-if (array_key_exists('v', $options)) {
-    echo 'Psalm ' . PSALM_VERSION . PHP_EOL;
-    exit;
-}
+$first_autoloader = $include_collector->runAndCollect(
+    function () use ($current_dir, $options, $vendor_dir): ?\Composer\Autoload\ClassLoader {
+        return \Psalm\requireAutoloaders($current_dir, isset($options['r']), $vendor_dir);
+    }
+);
 
 $ini_handler = new \Psalm\Internal\Fork\PsalmRestarter('PSALM');
 
@@ -194,7 +225,7 @@ $ini_handler->check();
 
 setlocale(LC_CTYPE, 'C');
 
-$path_to_config = get_path_to_config($options);
+$path_to_config = \Psalm\get_path_to_config($options);
 
 if (isset($options['tcp'])) {
     if (!is_string($options['tcp'])) {
@@ -203,9 +234,10 @@ if (isset($options['tcp'])) {
     }
 }
 
-$find_dead_code = isset($options['find-dead-code']);
+$find_unused_code = isset($options['find-dead-code']) ? 'auto' : null;
 
-$config = initialiseConfig($path_to_config, $current_dir, \Psalm\Report::TYPE_CONSOLE, $first_autoloader);
+$config = \Psalm\initialiseConfig($path_to_config, $current_dir, \Psalm\Report::TYPE_CONSOLE, $first_autoloader);
+$config->setIncludeCollector($include_collector);
 
 if ($config->resolve_from_config_file) {
     $current_dir = $config->base_dir;
@@ -217,24 +249,34 @@ $config->setServerMode();
 if (isset($options['clear-cache'])) {
     $cache_directory = $config->getCacheDirectory();
 
-    Config::removeCacheDirectory($cache_directory);
+    if ($cache_directory !== null) {
+        Config::removeCacheDirectory($cache_directory);
+    }
     echo 'Cache directory deleted' . PHP_EOL;
     exit;
 }
 
-$providers = new Psalm\Internal\Provider\Providers(
-    new Psalm\Internal\Provider\FileProvider,
-    new Psalm\Internal\Provider\ParserCacheProvider($config),
-    new Psalm\Internal\Provider\FileStorageCacheProvider($config),
-    new Psalm\Internal\Provider\ClassLikeStorageCacheProvider($config),
-    new Psalm\Internal\Provider\FileReferenceCacheProvider($config),
-    new Psalm\Internal\Provider\ProjectCacheProvider($current_dir . DIRECTORY_SEPARATOR . 'composer.lock')
+$providers = new \Psalm\Internal\Provider\Providers(
+    new \Psalm\Internal\Provider\FileProvider,
+    new \Psalm\Internal\Provider\ParserCacheProvider($config),
+    new \Psalm\Internal\Provider\FileStorageCacheProvider($config),
+    new \Psalm\Internal\Provider\ClassLikeStorageCacheProvider($config),
+    new \Psalm\Internal\Provider\FileReferenceCacheProvider($config),
+    new \Psalm\Internal\Provider\ProjectCacheProvider(Composer::getLockFilePath($current_dir))
 );
 
 $project_analyzer = new ProjectAnalyzer(
     $config,
     $providers
 );
+
+if ($config->find_unused_variables) {
+    $project_analyzer->getCodebase()->reportUnusedVariables();
+}
+
+if ($config->find_unused_code) {
+    $find_unused_code = 'auto';
+}
 
 if (isset($options['disable-on-change'])) {
     $project_analyzer->onchange_line_limit = (int) $options['disable-on-change'];
@@ -246,8 +288,16 @@ $project_analyzer->provide_completion = !isset($options['enable-autocomplete'])
 
 $config->visitComposerAutoloadFiles($project_analyzer);
 
-if ($find_dead_code) {
-    $project_analyzer->getCodebase()->reportUnusedCode();
+if ($find_unused_code) {
+    $project_analyzer->getCodebase()->reportUnusedCode($find_unused_code);
+}
+
+if (isset($options['use-extended-diagnostic-codes'])) {
+    $project_analyzer->language_server_use_extended_diagnostic_codes = true;
+}
+
+if (isset($options['verbose'])) {
+    $project_analyzer->language_server_verbose = true;
 }
 
 $project_analyzer->server($options['tcp'] ?? null, isset($options['tcp-server']) ? true : false);

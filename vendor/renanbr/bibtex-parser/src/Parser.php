@@ -11,6 +11,7 @@
 
 namespace RenanBr\BibTexParser;
 
+use ErrorException;
 use RenanBr\BibTexParser\Exception\ParserException;
 
 class Parser
@@ -36,16 +37,16 @@ class Parser
     /** @var string */
     private $buffer;
 
-    /** @var null|int */
+    /** @var int|null */
     private $bufferOffset;
 
-    /** @var null|array */
+    /** @var array|null */
     private $firstTagSnapshot;
 
-    /** @var null|string */
+    /** @var string|null */
     private $originalEntryBuffer;
 
-    /** @var null|int */
+    /** @var int|null */
     private $originalEntryOffset;
 
     /** @var bool */
@@ -66,7 +67,7 @@ class Parser
     /** @var bool */
     private $mayConcatenateTagContent;
 
-    /** @var null|string */
+    /** @var string|null */
     private $tagContentDelimiter;
 
     /** @var int */
@@ -84,11 +85,14 @@ class Parser
      * @param string $file
      *
      * @throws ParserException if $file given is not a valid BibTeX
-     * @throws \ErrorException if $file given is not readable
+     * @throws ErrorException  if $file given is not readable
      */
     public function parseFile($file)
     {
-        $handle = fopen($file, 'r');
+        $handle = @fopen($file, 'r');
+        if (!$handle) {
+            throw new ErrorException(sprintf('Unable to open %s', $file));
+        }
         try {
             $this->reset();
             while (!feof($handle)) {
@@ -262,7 +266,7 @@ class Parser
      */
     private function readTagName($char)
     {
-        if (preg_match('/^[a-zA-Z0-9_\+:\-\.\/]$/', $char)) {
+        if (preg_match('/^[a-zA-Z0-9_\+:\-\.\/\x{00C0}-\x{01FF}]$/u', $char)) {
             $this->appendToBuffer($char);
         } elseif ($this->isWhitespace($char) && empty($this->buffer)) {
             // Skips because we didn't start reading
@@ -355,7 +359,7 @@ class Parser
      */
     private function readRawTagContent($char)
     {
-        if (preg_match('/^[a-zA-Z0-9]$/', $char)) {
+        if (preg_match('/^[a-zA-Z0-9_\+:\-\.\/]$/', $char)) {
             $this->appendToBuffer($char);
         } else {
             $this->throwExceptionIfBufferIsEmpty($char);
@@ -444,7 +448,6 @@ class Parser
     /**
      * @param string $text
      * @param string $type
-     * @param array  $context
      */
     private function triggerListeners($text, $type, array $context)
     {

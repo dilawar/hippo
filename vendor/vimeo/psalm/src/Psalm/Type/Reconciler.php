@@ -1,7 +1,6 @@
 <?php
 namespace Psalm\Type;
 
-use function array_map;
 use function array_pop;
 use function array_shift;
 use function count;
@@ -11,45 +10,29 @@ use function ksort;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
-use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
-use Psalm\Internal\Analyzer\TraitAnalyzer;
 use Psalm\Internal\Type\AssertionReconciler;
 use Psalm\Issue\DocblockTypeContradiction;
 use Psalm\Issue\PsalmInternalError;
 use Psalm\Issue\RedundantCondition;
 use Psalm\Issue\RedundantConditionGivenDocblockType;
+use Psalm\Issue\TypeDoesNotContainNull;
 use Psalm\Issue\TypeDoesNotContainType;
 use Psalm\IssueBuffer;
 use Psalm\Type;
-use Psalm\Type\Atomic\ObjectLike;
-use Psalm\Type\Atomic\Scalar;
-use Psalm\Type\Atomic\TArray;
-use Psalm\Type\Atomic\TArrayKey;
-use Psalm\Type\Atomic\TBool;
-use Psalm\Type\Atomic\TCallable;
-use Psalm\Type\Atomic\TCallableObjectLikeArray;
-use Psalm\Type\Atomic\TClassString;
 use Psalm\Type\Atomic\TEmpty;
-use Psalm\Type\Atomic\TFalse;
-use Psalm\Type\Atomic\TInt;
 use Psalm\Type\Atomic\TMixed;
 use Psalm\Type\Atomic\TNamedObject;
 use Psalm\Type\Atomic\TNull;
-use Psalm\Type\Atomic\TNumeric;
-use Psalm\Type\Atomic\TNumericString;
 use Psalm\Type\Atomic\TObject;
-use Psalm\Type\Atomic\TResource;
-use Psalm\Type\Atomic\TScalar;
 use Psalm\Type\Atomic\TString;
 use Psalm\Type\Atomic\TTemplateParam;
-use Psalm\Type\Atomic\TTrue;
-use function sort;
 use function str_replace;
 use function str_split;
 use function strpos;
 use function strtolower;
 use function substr;
-use Exception;
+use function preg_match;
+use function preg_quote;
 
 class Reconciler
 {
@@ -64,8 +47,6 @@ class Reconciler
      * @param  array<string, Type\Union> $existing_types
      * @param  array<string, bool>       $changed_var_ids
      * @param  array<string, bool>       $referenced_var_ids
-     * @param  StatementsAnalyzer         $statements_analyzer
-     * @param  CodeLocation|null         $code_location
      * @param  array<string, array<string, array{Type\Union}>> $template_type_map
      *
      * @return array<string, Type\Union>
@@ -79,8 +60,9 @@ class Reconciler
         StatementsAnalyzer $statements_analyzer,
         array $template_type_map = [],
         bool $inside_loop = false,
-        CodeLocation $code_location = null
-    ) {
+        ?CodeLocation $code_location = null,
+        bool $negated = false
+    ): array {
         if (!$new_types) {
             return $existing_types;
         }
@@ -176,6 +158,14 @@ class Reconciler
                         } else {
                             $new_types[$key_parts[2]] = [['=in-array-' . $key_parts[0]]];
                         }
+
+                        if ($key_parts[0][0] === '$') {
+                            if (isset($new_types[$key_parts[0]])) {
+                                $new_types[$key_parts[0]][] = ['=has-array-key-' . $key_parts[2]];
+                            } else {
+                                $new_types[$key_parts[0]] = [['=has-array-key-' . $key_parts[2]]];
+                            }
+                        }
                     }
                 }
             }
@@ -257,6 +247,26 @@ class Reconciler
                 $orred_type = null;
 
                 foreach ($new_type_part_parts as $new_type_part_part) {
+                    if ($new_type_part_part[0] === '>') {
+                        /** @var array<string, array<array<string>>> */
+                        $data = \json_decode(substr($new_type_part_part, 1), true);
+
+                        $existing_types = self::reconcileKeyedTypes(
+                            $data,
+                            $data,
+                            $existing_types,
+                            $changed_var_ids,
+                            $referenced_var_ids,
+                            $statements_analyzer,
+                            $template_type_map,
+                            $inside_loop,
+                            $code_location,
+                            $negated
+                        );
+
+                        $new_type_part_part = '!falsy';
+                    }
+
                     $result_type_candidate = AssertionReconciler::reconcile(
                         $new_type_part_part,
                         $result_type ? clone $result_type : null,
@@ -270,7 +280,8 @@ class Reconciler
                             ? $code_location
                             : null,
                         $suppressed_issues,
-                        $failed_reconciliation
+                        $failed_reconciliation,
+                        $negated
                     );
 
                     if (!$result_type_candidate->getAtomicTypes()) {
@@ -297,6 +308,14 @@ class Reconciler
                 continue;
             }
 
+            if ($before_adjustment
+                && $before_adjustment->parent_nodes
+                && !$result_type->isInt()
+                && !$result_type->isFloat()
+            ) {
+                $result_type->parent_nodes = $before_adjustment->parent_nodes;
+            }
+
             $type_changed = !$before_adjustment || !$result_type->equals($before_adjustment);
 
             if ($type_changed || $failed_reconciliation) {
@@ -310,6 +329,18 @@ class Reconciler
                         $changed_var_ids,
                         $result_type
                     );
+                } elseif ($key !== '$this') {
+                    foreach ($existing_types as $new_key => $_) {
+                        if ($new_key === $key) {
+                            continue;
+                        }
+
+                        if (!isset($new_types[$new_key])
+                            && preg_match('/' . preg_quote($key, '/') . '[\]\[\-]/', $new_key)
+                        ) {
+                            unset($existing_types[$new_key]);
+                        }
+                    }
                 }
             } elseif (!$has_negation && !$has_falsyish && !$has_isset) {
                 $changed_var_ids[$key] = true;
@@ -328,11 +359,9 @@ class Reconciler
     }
 
     /**
-     * @param  string $path
-     *
      * @return array<int, string>
      */
-    public static function breakUpPathIntoParts($path)
+    public static function breakUpPathIntoParts(string $path): array
     {
         if (isset(self::$broken_paths[$path])) {
             return self::$broken_paths[$path];
@@ -437,12 +466,10 @@ class Reconciler
     /**
      * Gets the type for a given (non-existent key) based on the passed keys
      *
-     * @param  string                    $key
      * @param  array<string,Type\Union>  $existing_keys
      * @param  array<string,mixed>       $new_assertions
      * @param  string[][]                $new_type_parts
      *
-     * @return Type\Union|null
      */
     private static function getValueForKey(
         Codebase $codebase,
@@ -455,7 +482,7 @@ class Reconciler
         bool $has_empty,
         bool $inside_loop,
         bool &$has_object_array_access
-    ) {
+    ): ?Union {
         $key_parts = self::breakUpPathIntoParts($key);
 
         if (count($key_parts) === 1) {
@@ -471,7 +498,11 @@ class Reconciler
 
         if (!isset($existing_keys[$base_key])) {
             if (strpos($base_key, '::')) {
-                list($fq_class_name, $const_name) = explode('::', $base_key);
+                [$fq_class_name, $const_name] = explode('::', $base_key);
+
+                if (!$codebase->classlikes->classOrInterfaceExists($fq_class_name)) {
+                    return null;
+                }
 
                 $class_constant = $codebase->classlikes->getConstantForClass(
                     $fq_class_name,
@@ -646,7 +677,7 @@ class Reconciler
                                     );
 
                                     if ($method_return_type) {
-                                        $class_property_type = ExpressionAnalyzer::fleshOutType(
+                                        $class_property_type = \Psalm\Internal\Type\TypeExpander::expandUnion(
                                             $codebase,
                                             clone $method_return_type,
                                             $declaring_class,
@@ -657,42 +688,14 @@ class Reconciler
                                         $class_property_type = Type::getMixed();
                                     }
                                 } else {
-                                    $property_id = $existing_key_type_part->value . '::$' . $property_name;
+                                    $class_property_type = self::getPropertyType(
+                                        $codebase,
+                                        $existing_key_type_part->value,
+                                        $property_name
+                                    );
 
-                                    if (!$codebase->properties->propertyExists($property_id, true)) {
+                                    if (!$class_property_type) {
                                         return null;
-                                    }
-
-                                    $declaring_property_class = $codebase->properties->getDeclaringClassForProperty(
-                                        $property_id,
-                                        true
-                                    );
-
-                                    if ($declaring_property_class === null) {
-                                        return null;
-                                    }
-
-                                    $class_property_type = $codebase->properties->getPropertyType(
-                                        $property_id,
-                                        false,
-                                        null,
-                                        null
-                                    );
-
-                                    $declaring_class_storage = $codebase->classlike_storage_provider->get(
-                                        $declaring_property_class
-                                    );
-
-                                    if ($class_property_type) {
-                                        $class_property_type = ExpressionAnalyzer::fleshOutType(
-                                            $codebase,
-                                            clone $class_property_type,
-                                            $declaring_class_storage->name,
-                                            $declaring_class_storage->name,
-                                            null
-                                        );
-                                    } else {
-                                        $class_property_type = Type::getMixed();
                                     }
                                 }
                             }
@@ -736,14 +739,61 @@ class Reconciler
         return $existing_keys[$base_key];
     }
 
+    private static function getPropertyType(
+        Codebase $codebase,
+        string $fq_class_name,
+        string $property_name
+    ) : ?Type\Union {
+        $property_id = $fq_class_name . '::$' . $property_name;
+
+        if (!$codebase->properties->propertyExists($property_id, true)) {
+            $declaring_class_storage = $codebase->classlike_storage_provider->get(
+                $fq_class_name
+            );
+
+            if (isset($declaring_class_storage->pseudo_property_get_types['$' . $property_name])) {
+                return clone $declaring_class_storage->pseudo_property_get_types['$' . $property_name];
+            }
+
+            return null;
+        }
+
+        $declaring_property_class = $codebase->properties->getDeclaringClassForProperty(
+            $property_id,
+            true
+        );
+
+        if ($declaring_property_class === null) {
+            return null;
+        }
+
+        $class_property_type = $codebase->properties->getPropertyType(
+            $property_id,
+            false,
+            null,
+            null
+        );
+
+        $declaring_class_storage = $codebase->classlike_storage_provider->get(
+            $declaring_property_class
+        );
+
+        if ($class_property_type) {
+            return \Psalm\Internal\Type\TypeExpander::expandUnion(
+                $codebase,
+                clone $class_property_type,
+                $declaring_class_storage->name,
+                $declaring_class_storage->name,
+                null
+            );
+        }
+
+        return Type::getMixed();
+    }
+
     /**
-     * @param  string       $key
-     * @param  string       $old_var_type_string
-     * @param  string       $assertion
-     * @param  bool         $redundant
      * @param  string[]     $suppressed_issues
      *
-     * @return void
      */
     protected static function triggerIssueForImpossible(
         Union $existing_var_type,
@@ -751,10 +801,20 @@ class Reconciler
         string $key,
         string $assertion,
         bool $redundant,
+        bool $negated,
         CodeLocation $code_location,
         array $suppressed_issues
-    ) {
-        $reconciliation = ' and trying to reconcile type \'' . $old_var_type_string . '\' to ' . $assertion;
+    ): void {
+        $not = $assertion[0] === '!';
+
+        if ($not) {
+            $assertion = substr($assertion, 1);
+        }
+
+        if ($negated) {
+            $redundant = !$redundant;
+            $not = !$not;
+        }
 
         $existing_var_atomic_types = $existing_var_type->getAtomicTypes();
 
@@ -766,9 +826,11 @@ class Reconciler
             if ($from_docblock) {
                 if (IssueBuffer::accepts(
                     new RedundantConditionGivenDocblockType(
-                        'Found a redundant condition when evaluating docblock-defined type '
-                            . $key . $reconciliation,
-                        $code_location
+                        'Docblock-defined type ' . $old_var_type_string
+                            . ' for ' . $key
+                            . ' is ' . ($not ? 'never ' : 'always ') . $assertion,
+                        $code_location,
+                        $old_var_type_string . ' ' . $assertion
                     ),
                     $suppressed_issues
                 )) {
@@ -777,8 +839,11 @@ class Reconciler
             } else {
                 if (IssueBuffer::accepts(
                     new RedundantCondition(
-                        'Found a redundant condition when evaluating ' . $key . $reconciliation,
-                        $code_location
+                        'Type ' . $old_var_type_string
+                            . ' for ' . $key
+                            . ' is ' . ($not ? 'never ' : 'always ') . $assertion,
+                        $code_location,
+                        $old_var_type_string . ' ' . $assertion
                     ),
                     $suppressed_issues
                 )) {
@@ -789,20 +854,37 @@ class Reconciler
             if ($from_docblock) {
                 if (IssueBuffer::accepts(
                     new DocblockTypeContradiction(
-                        'Found a contradiction with a docblock-defined type '
-                            . 'when evaluating ' . $key . $reconciliation,
-                        $code_location
+                        'Docblock-defined type ' . $old_var_type_string
+                            . ' for ' . $key
+                            . ' is ' . ($not ? 'always ' : 'never ') . $assertion,
+                        $code_location,
+                        $old_var_type_string . ' ' . $assertion
                     ),
                     $suppressed_issues
                 )) {
                     // fall through
                 }
             } else {
+                if ($assertion === 'null' && !$not) {
+                    $issue = new TypeDoesNotContainNull(
+                        'Type ' . $old_var_type_string
+                            . ' for ' . $key
+                            . ' is never ' . $assertion,
+                        $code_location,
+                        $old_var_type_string . ' ' . $assertion
+                    );
+                } else {
+                    $issue = new TypeDoesNotContainType(
+                        'Type ' . $old_var_type_string
+                            . ' for ' . $key
+                            . ' is ' . ($not ? 'always ' : 'never ') . $assertion,
+                        $code_location,
+                        $old_var_type_string . ' ' . $assertion
+                    );
+                }
+
                 if (IssueBuffer::accepts(
-                    new TypeDoesNotContainType(
-                        'Found a contradiction when evaluating ' . $key . $reconciliation,
-                        $code_location
-                    ),
+                    $issue,
                     $suppressed_issues
                 )) {
                     // fall through

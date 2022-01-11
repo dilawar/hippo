@@ -2,17 +2,11 @@
 namespace Psalm\Internal\Analyzer\Statements\Block;
 
 use PhpParser;
-use Psalm\Codebase;
-use Psalm\Internal\Analyzer\AlgebraAnalyzer;
 use Psalm\Internal\Analyzer\ScopeAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
+use Psalm\Internal\Analyzer\Statements\Expression\ExpressionIdentifier;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
-use Psalm\CodeLocation;
 use Psalm\Context;
-use Psalm\Issue\ContinueOutsideLoop;
-use Psalm\Issue\ParadoxicalCondition;
-use Psalm\IssueBuffer;
-use Psalm\Internal\Scope\CaseScope;
 use Psalm\Internal\Scope\SwitchScope;
 use Psalm\Type;
 use Psalm\Type\Algebra;
@@ -20,10 +14,6 @@ use Psalm\Type\Reconciler;
 use function count;
 use function in_array;
 use function array_merge;
-use function is_string;
-use function substr;
-use function array_intersect_key;
-use function array_diff_key;
 
 /**
  * @internal
@@ -31,17 +21,13 @@ use function array_diff_key;
 class SwitchAnalyzer
 {
     /**
-     * @param   StatementsAnalyzer               $statements_analyzer
-     * @param   PhpParser\Node\Stmt\Switch_     $stmt
-     * @param   Context                         $context
-     *
      * @return  false|null
      */
     public static function analyze(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Stmt\Switch_ $stmt,
         Context $context
-    ) {
+    ): ?bool {
         $codebase = $statements_analyzer->getCodebase();
 
         $context->inside_conditional = true;
@@ -50,11 +36,24 @@ class SwitchAnalyzer
         }
         $context->inside_conditional = false;
 
-        $switch_var_id = ExpressionAnalyzer::getArrayVarId(
+        $switch_var_id = ExpressionIdentifier::getArrayVarId(
             $stmt->cond,
             null,
             $statements_analyzer
         );
+
+        if (!$switch_var_id
+            && ($stmt->cond instanceof PhpParser\Node\Expr\FuncCall
+                || $stmt->cond instanceof PhpParser\Node\Expr\MethodCall
+                || $stmt->cond instanceof PhpParser\Node\Expr\StaticCall
+            )
+        ) {
+            $switch_var_id = '$__tmp_switch__' . (int) $stmt->cond->getAttribute('startFilePos');
+
+            $condition_type = $statements_analyzer->node_data->getType($stmt->cond) ?: Type::getMixed();
+
+            $context->vars_in_scope[$switch_var_id] = $condition_type;
+        }
 
         $original_context = clone $context;
 
@@ -73,7 +72,7 @@ class SwitchAnalyzer
         for ($i = count($stmt->cases) - 1; $i >= 0; --$i) {
             $case = $stmt->cases[$i];
 
-            $case_actions = $case_action_map[$i] = ScopeAnalyzer::getFinalControlActions(
+            $case_actions = $case_action_map[$i] = ScopeAnalyzer::getControlActions(
                 $case->stmts,
                 $statements_analyzer->node_data,
                 $config->exit_functions,

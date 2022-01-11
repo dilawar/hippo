@@ -1,14 +1,12 @@
 <?php
 namespace Psalm\Internal\Provider;
 
-use const PHP_VERSION;
 use PhpParser;
 use Psalm\CodeLocation;
 use Psalm\Context;
 use Psalm\Plugin\Hook\PropertyExistenceProviderInterface;
 use Psalm\StatementsSource;
 use function strtolower;
-use function version_compare;
 
 class PropertyExistenceProvider
 {
@@ -35,14 +33,12 @@ class PropertyExistenceProvider
     /**
      * @param  class-string<PropertyExistenceProviderInterface> $class
      *
-     * @return void
      */
-    public function registerClass(string $class)
+    public function registerClass(string $class): void
     {
         $callable = \Closure::fromCallable([$class, 'doesPropertyExist']);
 
         foreach ($class::getClassLikeNames() as $fq_classlike_name) {
-            /** @psalm-suppress MixedTypeCoercion */
             $this->registerClosure($fq_classlike_name, $callable);
         }
     }
@@ -57,9 +53,8 @@ class PropertyExistenceProvider
      *     ?CodeLocation=
      *   ) : ?bool $c
      *
-     * @return void
      */
-    public function registerClosure(string $fq_classlike_name, \Closure $c)
+    public function registerClosure(string $fq_classlike_name, \Closure $c): void
     {
         self::$handlers[strtolower($fq_classlike_name)][] = $c;
     }
@@ -72,16 +67,15 @@ class PropertyExistenceProvider
     /**
      * @param  array<PhpParser\Node\Arg>  $call_args
      *
-     * @return ?bool
      */
     public function doesPropertyExist(
         string $fq_classlike_name,
         string $property_name,
         bool $read_mode,
-        StatementsSource $source = null,
-        Context $context = null,
-        CodeLocation $code_location = null
-    ) {
+        ?StatementsSource $source = null,
+        ?Context $context = null,
+        ?CodeLocation $code_location = null
+    ): ?bool {
         foreach (self::$handlers[strtolower($fq_classlike_name)] as $property_handler) {
             $property_exists = $property_handler(
                 $fq_classlike_name,

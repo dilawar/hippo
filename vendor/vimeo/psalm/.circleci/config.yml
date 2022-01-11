@@ -15,24 +15,27 @@ jobs:
       - run: date "+%F" > /tmp/cachekey; cat composer.json >> /tmp/cachekey
       - restore_cache:
           keys:
-            - composer-v2-{{ checksum "/tmp/cachekey" }}
-            # fallback to using the latest cache if no exact match is found (See https://circleci.com/docs/2.0/caching/)
-            - composer-v2-
+            - composer-v3
       - restore_cache:
           keys:
             - psalm-cache-{{ checksum "/tmp/cachekey" }} # speeds up run with --diff and --diff-methods
       - run: composer update
+
       - save_cache:
-          key: composer-v2-{{ checksum "/tmp/cachekey" }}
+          key: composer-v3
           paths:
-            - vendor
+            - /home/docker/.composer/cache/files
+            - /home/docker/.composer/cache/vcs
+
+      - run:
+          name: Static analysis
+          command: php -dextension=pcntl.so ./psalm --threads=10 --diff --diff-methods
+
       - save_cache:
           key: psalm-cache-{{ checksum "/tmp/cachekey" }}
           paths:
             - /tmp/psalm
-      - run:
-          name: Static analysis
-          command: php -dextension=pcntl.so ./psalm --threads=10 --diff --diff-methods
+
       - persist_to_workspace:
           root: /home/docker/project/
           paths:
@@ -52,7 +55,7 @@ jobs:
             at: /home/docker/project/
       - run:
           name: PHPUnit test
-          command: php vendor/bin/phpunit --log-junit build/phpunit/phpunit.xml
+          command: php vendor/bin/paratest --runner=WrapperRunner --log-junit build/phpunit/phpunit.xml
       - store_test_results:
           path: build/
       - store_artifacts:
@@ -61,24 +64,6 @@ jobs:
           root: /home/docker/project/
           paths:
             - .
-  coverage:
-    executor: php-72
-    steps:
-      - attach_workspace:
-          at: /home/docker/project/
-      - run:
-          name: PHPUnit test with coverage
-          command: php -dextension=pcov.so vendor/bin/phpunit --coverage-html build/phpunit/coverage-html
-      - run:
-          name: Upload code coverage
-          command: php vendor/bin/php-coveralls -v
-      - store_artifacts:
-          path: build/phpunit/coverage-html
-      # - run:
-          # name: Display link to coverage report
-          # command: |
-            # echo "PHPUnit coverage report available at:"
-            # echo https://circleci.com/api/v1.1/project/github/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BUILD_NUM}/artifacts/0/home/docker/project/build/phpunit/coverage-html/index.html
   phar-build:
     executor: php-72
     steps:
@@ -117,6 +102,9 @@ jobs:
       - run:
           name: Analyse ProxyManager
           command: bin/test-with-real-projects.sh proxymanager
+      - run:
+          name: Analyse Psl
+          command: bin/test-with-real-projects.sh psl
 
 # Orchestrate or schedule a set of jobs, see https://circleci.com/docs/2.0/workflows/
 workflows:
@@ -129,10 +117,6 @@ workflows:
       - "Code Style Analysis":
           requires:
             - install-and-self-analyse
-      - coverage:
-          requires:
-            - test
-            - "Code Style Analysis"
       - phar-build:
           requires:
             - test

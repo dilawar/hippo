@@ -6,9 +6,9 @@ namespace Psalm\Type\Atomic;
  */
 class TCallableObjectLikeArray extends ObjectLike
 {
-    const KEY = 'callable-array';
+    public const KEY = 'callable-array';
 
-    public function getKey(bool $include_extra = true)
+    public function getKey(bool $include_extra = true): string
     {
         return 'array';
     }

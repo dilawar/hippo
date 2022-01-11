@@ -1,12 +1,53 @@
 <?php
-require_once('command_functions.php');
 
-use Psalm\DocComment;
+namespace Psalm;
+
+require_once('command_functions.php');
+require_once __DIR__ . '/Psalm/Internal/Composer.php';
+
 use Psalm\Internal\Analyzer\ProjectAnalyzer;
-use Psalm\Config;
-use Psalm\IssueBuffer;
+use Psalm\Internal\Composer;
+use Psalm\Internal\IncludeCollector;
 use Psalm\Progress\DebugProgress;
 use Psalm\Progress\DefaultProgress;
+use function error_reporting;
+use function ini_set;
+use function gc_collect_cycles;
+use function gc_disable;
+use function array_slice;
+use function getopt;
+use function implode;
+use function array_map;
+use function substr;
+use function preg_replace;
+use function in_array;
+use function fwrite;
+use const STDERR;
+use const PHP_EOL;
+use function array_key_exists;
+use function is_array;
+use function getcwd;
+use const DIRECTORY_SEPARATOR;
+use function is_string;
+use function realpath;
+use function chdir;
+use function explode;
+use function file_exists;
+use function file_get_contents;
+use function preg_split;
+use function array_shift;
+use function array_filter;
+use function trim;
+use function strpos;
+use function strtolower;
+use function is_dir;
+use function pathinfo;
+use const PATHINFO_EXTENSION;
+use function filter_var;
+use const FILTER_VALIDATE_BOOLEAN;
+use const FILTER_NULL_ON_FAILURE;
+use function microtime;
+use function count;
 
 // show all errors
 error_reporting(-1);
@@ -14,8 +55,8 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 $memLimit = getMemoryLimitInBytes();
 // Magic number is 4096M in bytes
-if ($memLimit > 0 && $memLimit < 4294967296) {
-    ini_set('memory_limit', '4096M');
+if ($memLimit > 0 && $memLimit < 8 * 1024 * 1024 * 1024) {
+    ini_set('memory_limit', (string) (8 * 1024 * 1024 * 1024));
 }
 
 gc_collect_cycles();
@@ -27,7 +68,7 @@ $args = array_slice($argv, 1);
 
 $valid_short_options = ['f:', 'm', 'h', 'r:', 'c:'];
 $valid_long_options = [
-    'help', 'debug', 'debug-by-line', 'config:', 'file:', 'root:',
+    'help', 'debug', 'debug-by-line', 'debug-emitted-issues', 'config:', 'file:', 'root:',
     'plugin:', 'issues:', 'list-supported-issues', 'php-version:', 'dry-run', 'safe-types',
     'find-unused-code', 'threads:', 'codeowner:',
     'allow-backwards-incompatible-changes:',
@@ -64,17 +105,6 @@ array_map(
                 );
                 exit(1);
             }
-        } elseif (substr($arg, 0, 2) === '-' && $arg !== '-' && $arg !== '--') {
-            $arg_name = preg_replace('/=.*$/', '', substr($arg, 1));
-
-            if (!in_array($arg_name, $valid_short_options) && !in_array($arg_name . ':', $valid_short_options)) {
-                fwrite(
-                    STDERR,
-                    'Unrecognised argument "-' . $arg_name . '"' . PHP_EOL
-                    . 'Type --help to see a list of supported arguments'. PHP_EOL
-                );
-                exit(1);
-            }
         }
     },
     $args
@@ -105,7 +135,7 @@ Options:
     -h, --help
         Display this help message
 
-    --debug, --debug-by-line
+    --debug, --debug-by-line, --debug-emitted-issues
         Debug information
 
     -c, --config=psalm.xml
@@ -183,9 +213,16 @@ if (isset($options['r']) && is_string($options['r'])) {
     $current_dir = $root_path . DIRECTORY_SEPARATOR;
 }
 
-$vendor_dir = getVendorDir($current_dir);
+$vendor_dir = \Psalm\getVendorDir($current_dir);
 
-$first_autoloader = requireAutoloaders($current_dir, isset($options['r']), $vendor_dir);
+require_once __DIR__ . '/Psalm/Internal/IncludeCollector.php';
+$include_collector = new IncludeCollector();
+$first_autoloader = $include_collector->runAndCollect(
+    function () use ($current_dir, $options, $vendor_dir): ?\Composer\Autoload\ClassLoader {
+        return requireAutoloaders($current_dir, isset($options['r']), $vendor_dir);
+    }
+);
+
 
 // If Xdebug is enabled, restart without it
 (new \Composer\XdebugHandler\XdebugHandler('PSALTER'))->check();
@@ -195,6 +232,7 @@ $paths_to_check = getPathsToCheck(isset($options['f']) ? $options['f'] : null);
 $path_to_config = get_path_to_config($options);
 
 $config = initialiseConfig($path_to_config, $current_dir, \Psalm\Report::TYPE_CONSOLE, $first_autoloader);
+$config->setIncludeCollector($include_collector);
 
 if ($config->resolve_from_config_file) {
     $current_dir = $config->base_dir;
@@ -204,17 +242,17 @@ if ($config->resolve_from_config_file) {
 $threads = isset($options['threads']) ? (int)$options['threads'] : 1;
 
 if (isset($options['no-cache'])) {
-    $providers = new Psalm\Internal\Provider\Providers(
-        new Psalm\Internal\Provider\FileProvider()
+    $providers = new \Psalm\Internal\Provider\Providers(
+        new \Psalm\Internal\Provider\FileProvider()
     );
 } else {
-    $providers = new Psalm\Internal\Provider\Providers(
-        new Psalm\Internal\Provider\FileProvider(),
-        new Psalm\Internal\Provider\ParserCacheProvider($config, false),
-        new Psalm\Internal\Provider\FileStorageCacheProvider($config),
-        new Psalm\Internal\Provider\ClassLikeStorageCacheProvider($config),
+    $providers = new \Psalm\Internal\Provider\Providers(
+        new \Psalm\Internal\Provider\FileProvider(),
+        new \Psalm\Internal\Provider\ParserCacheProvider($config, false),
+        new \Psalm\Internal\Provider\FileStorageCacheProvider($config),
+        new \Psalm\Internal\Provider\ClassLikeStorageCacheProvider($config),
         null,
-        new Psalm\Internal\Provider\ProjectCacheProvider($current_dir . DIRECTORY_SEPARATOR . 'composer.lock')
+        new \Psalm\Internal\Provider\ProjectCacheProvider(Composer::getLockFilePath($current_dir))
     );
 }
 
@@ -223,7 +261,7 @@ if (array_key_exists('list-supported-issues', $options)) {
     exit();
 }
 
-$debug = array_key_exists('debug', $options);
+$debug = array_key_exists('debug', $options) || array_key_exists('debug-by-line', $options);
 $progress = $debug
     ? new DebugProgress()
     : new DefaultProgress();
@@ -242,6 +280,10 @@ $project_analyzer = new ProjectAnalyzer(
 
 if (array_key_exists('debug-by-line', $options)) {
     $project_analyzer->debug_lines = true;
+}
+
+if (array_key_exists('debug-emitted-issues', $options)) {
+    $config->debug_emitted_issues = true;
 }
 
 $config->visitComposerAutoloadFiles($project_analyzer);
@@ -304,7 +346,7 @@ if (isset($options['codeowner'])) {
 
     $codeowner_files = [];
 
-    foreach ($codeowner_lines as list($path, $owners)) {
+    foreach ($codeowner_lines as [$path, $owners]) {
         if (!file_exists($path)) {
             continue;
         }
@@ -380,7 +422,7 @@ if (isset($options['add-newline-between-docblock-annotations'])) {
         die('--add-newline-between-docblock-annotations expects a boolean value [true|false|1|0]' . PHP_EOL);
     }
 
-    DocComment::addNewLineBetweenAnnotations($doc_block_add_new_line_before_return);
+    \Psalm\Internal\Scanner\ParsedDocblock::addNewLineBetweenAnnotations($doc_block_add_new_line_before_return);
 }
 
 $plugins = [];
@@ -400,17 +442,15 @@ foreach ($plugins as $plugin_path) {
 
 $find_unused_code = array_key_exists('find-unused-code', $options);
 
-if ($config->find_unused_code) {
-    $find_unused_code = true;
-}
-
 foreach ($keyed_issues as $issue_name => $_) {
     // MissingParamType requires the scanning of all files to inform possible params
     if (strpos($issue_name, 'Unused') !== false
         || $issue_name === 'MissingParamType'
         || $issue_name === 'UnnecessaryVarAnnotation'
-        || $issue_name === 'all') {
+        || $issue_name === 'all'
+    ) {
         $find_unused_code = true;
+        break;
     }
 }
 

@@ -34,8 +34,6 @@ class NamesProcessor
     }
 
     /**
-     * @param array $entry
-     *
      * @return array
      */
     public function __invoke(array $entry)
@@ -64,7 +62,7 @@ class NamesProcessor
 
         $authorarray = [];
         $authorarray = explode(' and ', $entry);
-        for ($i = 0; $i < count($authorarray); ++$i) {
+        for ($i = 0; $i < \count($authorarray); ++$i) {
             $author = trim($authorarray[$i]);
             /*The first version of how an author could be written (First von Last)
             has no commas in it*/
@@ -75,7 +73,7 @@ class NamesProcessor
             if (false === mb_strpos($author, ',')) {
                 $tmparray = [];
                 $tmparray = preg_split('/[\s\~]/', $author);
-                $size = count($tmparray);
+                $size = \count($tmparray);
                 if (1 === $size) { //There is only a last
                     $last = $tmparray[0];
                 } elseif (2 === $size) { //There is a first and a last
@@ -143,7 +141,7 @@ class NamesProcessor
                 //The first entry must contain von and last
                 $vonlastarray = [];
                 $vonlastarray = explode(' ', $tmparray[0]);
-                $size = count($vonlastarray);
+                $size = \count($vonlastarray);
                 if (1 === $size) { //Only one entry->got to be the last
                     $last = $vonlastarray[0];
                 } else {
@@ -178,11 +176,11 @@ class NamesProcessor
                     $last .= ' '.$vonlastarray[$size - 1];
                 }
                 //Now we check if it is version three (three entries in the array (two commas)
-                if (3 === count($tmparray)) {
+                if (3 === \count($tmparray)) {
                     $jr = $tmparray[1];
                 }
                 //Everything in the last entry is first
-                $first = $tmparray[count($tmparray) - 1];
+                $first = $tmparray[\count($tmparray) - 1];
             }
             $authorarray[$i] = ['first' => trim($first), 'von' => trim($von), 'last' => trim($last), 'jr' => trim($jr)];
         }
@@ -213,13 +211,13 @@ class NamesProcessor
         $trimmedword = trim($word);
         /*We need this variable. Without the next of would not work
         (trim changes the variable automatically to a string!)*/
-        if (is_string($word) && (mb_strlen($trimmedword) > 0)) {
+        if (\is_string($word) && (mb_strlen($trimmedword) > 0)) {
             $i = 0;
             $found = false;
             $openbrace = 0;
             while (!$found && ($i <= mb_strlen($word))) {
                 $letter = mb_substr($trimmedword, $i, 1);
-                $ord = ord($letter);
+                $ord = \ord($letter);
                 if (123 === $ord) { //Open brace
                     ++$openbrace;
                 }

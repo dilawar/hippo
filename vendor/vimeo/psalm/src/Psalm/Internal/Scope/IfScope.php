@@ -70,7 +70,7 @@ class IfScope
      * statement, if the `if` statement contains branches with leaving statements,
      * and the else leaves too
      *
-     * @var array<int, Clause>
+     * @var list<Clause>
      */
     public $reasonable_clauses = [];
 
@@ -90,4 +90,9 @@ class IfScope
      * @var array<string, array<string, CodeLocation>>
      */
     public $new_unreferenced_vars = [];
+
+    /**
+     * @var ?\Psalm\Context
+     */
+    public $mic_drop_context;
 }

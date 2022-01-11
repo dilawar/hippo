@@ -31,9 +31,6 @@ class NativeDriver extends Driver
     /** @var Watcher[][] */
     private $signalWatchers = [];
 
-    /** @var bool */
-    private $nowUpdateNeeded = false;
-
     /** @var int Internal timestamp for now. */
     private $now;
 
@@ -43,6 +40,12 @@ class NativeDriver extends Driver
     /** @var bool */
     private $signalHandling;
 
+    /** @var callable */
+    private $streamSelectErrorHandler;
+
+    /** @var bool */
+    private $streamSelectIgnoreResult = false;
+
     public function __construct()
     {
         $this->timerQueue = new Internal\TimerQueue;
@@ -50,6 +53,31 @@ class NativeDriver extends Driver
         $this->nowOffset = getCurrentTime();
         $this->now = \random_int(0, $this->nowOffset);
         $this->nowOffset -= $this->now;
+        $this->streamSelectErrorHandler = function ($errno, $message) {
+            // Casing changed in PHP 8 from 'unable' to 'Unable'
+            if (\stripos($message, "stream_select(): unable to select [4]: ") === 0) { // EINTR
+                $this->streamSelectIgnoreResult = true;
+
+                return;
+            }
+
+            if (\strpos($message, 'FD_SETSIZE') !== false) {
+                $message = \str_replace(["\r\n", "\n", "\r"], " ", $message);
+                $pattern = '(stream_select\(\): You MUST recompile PHP with a larger value of FD_SETSIZE. It is set to (\d+), but you have descriptors numbered at least as high as (\d+)\.)';
+
+                if (\preg_match($pattern, $message, $match)) {
+                    $helpLink = 'https://amphp.org/amp/event-loop/#implementations';
+
+                    $message = 'You have reached the limits of stream_select(). It has a FD_SETSIZE of ' . $match[1]
+                        . ', but you have file descriptors numbered at least as high as ' . $match[2] . '. '
+                        . "You can install one of the extensions listed on {$helpLink} to support a higher number of "
+                        . "concurrent file descriptors. If a large number of open file descriptors is unexpected, you "
+                        . "might be leaking file descriptors that aren't closed correctly.";
+                }
+            }
+
+            throw new \Exception($message, $errno);
+        };
     }
 
     /**
@@ -71,10 +99,7 @@ class NativeDriver extends Driver
      */
     public function now(): int
     {
-        if ($this->nowUpdateNeeded) {
-            $this->now = getCurrentTime() - $this->nowOffset;
-            $this->nowUpdateNeeded = false;
-        }
+        $this->now = getCurrentTime() - $this->nowOffset;
 
         return $this->now;
     }
@@ -96,182 +121,45 @@ class NativeDriver extends Driver
      */
     protected function dispatch(bool $blocking)
     {
-        $this->nowUpdateNeeded = true;
-
         $this->selectStreams(
             $this->readStreams,
             $this->writeStreams,
             $blocking ? $this->getTimeout() : 0
         );
 
-        $scheduleQueue = [];
+        $now = $this->now();
 
-        try {
-            $now = $this->now();
-
-            while ($watcher = $this->timerQueue->extract($now)) {
-                if ($watcher->type & Watcher::REPEAT) {
-                    $expiration = $now + $watcher->value;
-                    $scheduleQueue[] = [$watcher, $expiration];
-                } else {
-                    $this->cancel($watcher->id);
-                }
-
-                try {
-                    // Execute the timer.
-                    $result = ($watcher->callback)($watcher->id, $watcher->data);
-
-                    if ($result === null) {
-                        continue;
-                    }
-
-                    if ($result instanceof \Generator) {
-                        $result = new Coroutine($result);
-                    }
-
-                    if ($result instanceof Promise || $result instanceof ReactPromise) {
-                        rethrow($result);
-                    }
-                } catch (\Throwable $exception) {
-                    $this->error($exception);
-                }
+        while ($watcher = $this->timerQueue->extract($now)) {
+            if ($watcher->type & Watcher::REPEAT) {
+                $watcher->enabled = false; // Trick base class into adding to enable queue when calling enable()
+                $this->enable($watcher->id);
+            } else {
+                $this->cancel($watcher->id);
             }
-        } finally {
-            foreach ($scheduleQueue as list($watcher, $expiration)) {
-                if ($watcher->enabled) {
-                    $this->timerQueue->insert($watcher, $expiration);
+
+            try {
+                // Execute the timer.
+                $result = ($watcher->callback)($watcher->id, $watcher->data);
+
+                if ($result === null) {
+                    continue;
                 }
+
+                if ($result instanceof \Generator) {
+                    $result = new Coroutine($result);
+                }
+
+                if ($result instanceof Promise || $result instanceof ReactPromise) {
+                    rethrow($result);
+                }
+            } catch (\Throwable $exception) {
+                $this->error($exception);
             }
         }
 
         if ($this->signalHandling) {
             \pcntl_signal_dispatch();
         }
-    }
-
-    /**
-     * @param resource[] $read
-     * @param resource[] $write
-     * @param int        $timeout
-     *
-     * @return void
-     */
-    private function selectStreams(array $read, array $write, int $timeout)
-    {
-        $timeout /= self::MILLISEC_PER_SEC;
-
-        if (!empty($read) || !empty($write)) { // Use stream_select() if there are any streams in the loop.
-            if ($timeout >= 0) {
-                $seconds = (int) $timeout;
-                $microseconds = (int) (($timeout - $seconds) * self::MICROSEC_PER_SEC);
-            } else {
-                $seconds = null;
-                $microseconds = null;
-            }
-
-            $except = null;
-
-            // Error reporting suppressed since stream_select() emits an E_WARNING if it is interrupted by a signal.
-            if (!($result = @\stream_select($read, $write, $except, $seconds, $microseconds))) {
-                if ($result === 0) {
-                    return;
-                }
-
-                $error = \error_get_last();
-
-                if (\strpos($error["message"] ?? '', "unable to select") !== 0) {
-                    return;
-                }
-
-                $this->error(new \Exception($error["message"] ?? 'Unknown error during stream_select'));
-            }
-
-            foreach ($read as $stream) {
-                $streamId = (int) $stream;
-                if (!isset($this->readWatchers[$streamId])) {
-                    continue; // All read watchers disabled.
-                }
-
-                foreach ($this->readWatchers[$streamId] as $watcher) {
-                    if (!isset($this->readWatchers[$streamId][$watcher->id])) {
-                        continue; // Watcher disabled by another IO watcher.
-                    }
-
-                    try {
-                        $result = ($watcher->callback)($watcher->id, $stream, $watcher->data);
-
-                        if ($result === null) {
-                            continue;
-                        }
-
-                        if ($result instanceof \Generator) {
-                            $result = new Coroutine($result);
-                        }
-
-                        if ($result instanceof Promise || $result instanceof ReactPromise) {
-                            rethrow($result);
-                        }
-                    } catch (\Throwable $exception) {
-                        $this->error($exception);
-                    }
-                }
-            }
-
-            \assert(\is_array($write)); // See https://github.com/vimeo/psalm/issues/3036
-
-            foreach ($write as $stream) {
-                $streamId = (int) $stream;
-                if (!isset($this->writeWatchers[$streamId])) {
-                    continue; // All write watchers disabled.
-                }
-
-                foreach ($this->writeWatchers[$streamId] as $watcher) {
-                    if (!isset($this->writeWatchers[$streamId][$watcher->id])) {
-                        continue; // Watcher disabled by another IO watcher.
-                    }
-
-                    try {
-                        $result = ($watcher->callback)($watcher->id, $stream, $watcher->data);
-
-                        if ($result === null) {
-                            continue;
-                        }
-
-                        if ($result instanceof \Generator) {
-                            $result = new Coroutine($result);
-                        }
-
-                        if ($result instanceof Promise || $result instanceof ReactPromise) {
-                            rethrow($result);
-                        }
-                    } catch (\Throwable $exception) {
-                        $this->error($exception);
-                    }
-                }
-            }
-
-            return;
-        }
-
-        if ($timeout > 0) { // Otherwise sleep with usleep() if $timeout > 0.
-            \usleep((int) ($timeout * self::MICROSEC_PER_SEC));
-        }
-    }
-
-    /**
-     * @return int Milliseconds until next timer expires or -1 if there are no pending times.
-     */
-    private function getTimeout(): int
-    {
-        $expiration = $this->timerQueue->peek();
-
-        if ($expiration === null) {
-            return -1;
-        }
-
-        $expiration -= getCurrentTime() - $this->nowOffset;
-
-        return $expiration > 0 ? $expiration : 0;
     }
 
     /**
@@ -302,9 +190,7 @@ class NativeDriver extends Driver
                 case Watcher::DELAY:
                 case Watcher::REPEAT:
                     \assert(\is_int($watcher->value));
-
-                    $expiration = $this->now() + $watcher->value;
-                    $this->timerQueue->insert($watcher, $expiration);
+                    $this->timerQueue->insert($watcher);
                     break;
 
                 case Watcher::SIGNAL:
@@ -378,6 +264,151 @@ class NativeDriver extends Driver
                 throw new \Error("Unknown watcher type");
             // @codeCoverageIgnoreEnd
         }
+    }
+
+    /**
+     * @param resource[] $read
+     * @param resource[] $write
+     * @param int        $timeout
+     *
+     * @return void
+     */
+    private function selectStreams(array $read, array $write, int $timeout)
+    {
+        $timeout /= self::MILLISEC_PER_SEC;
+
+        if (!empty($read) || !empty($write)) { // Use stream_select() if there are any streams in the loop.
+            if ($timeout >= 0) {
+                $seconds = (int) $timeout;
+                $microseconds = (int) (($timeout - $seconds) * self::MICROSEC_PER_SEC);
+            } else {
+                $seconds = null;
+                $microseconds = null;
+            }
+
+            // Failed connection attempts are indicated via except on Windows
+            // @link https://github.com/reactphp/event-loop/blob/8bd064ce23c26c4decf186c2a5a818c9a8209eb0/src/StreamSelectLoop.php#L279-L287
+            // @link https://docs.microsoft.com/de-de/windows/win32/api/winsock2/nf-winsock2-select
+            $except = null;
+            if (\DIRECTORY_SEPARATOR === '\\') {
+                $except = $write;
+            }
+
+            \set_error_handler($this->streamSelectErrorHandler);
+
+            try {
+                $result = \stream_select($read, $write, $except, $seconds, $microseconds);
+            } finally {
+                \restore_error_handler();
+            }
+
+            if ($this->streamSelectIgnoreResult || $result === 0) {
+                $this->streamSelectIgnoreResult = false;
+                return;
+            }
+
+            if (!$result) {
+                $this->error(new \Exception('Unknown error during stream_select'));
+                return;
+            }
+
+            foreach ($read as $stream) {
+                $streamId = (int) $stream;
+                if (!isset($this->readWatchers[$streamId])) {
+                    continue; // All read watchers disabled.
+                }
+
+                foreach ($this->readWatchers[$streamId] as $watcher) {
+                    if (!isset($this->readWatchers[$streamId][$watcher->id])) {
+                        continue; // Watcher disabled by another IO watcher.
+                    }
+
+                    try {
+                        $result = ($watcher->callback)($watcher->id, $stream, $watcher->data);
+
+                        if ($result === null) {
+                            continue;
+                        }
+
+                        if ($result instanceof \Generator) {
+                            $result = new Coroutine($result);
+                        }
+
+                        if ($result instanceof Promise || $result instanceof ReactPromise) {
+                            rethrow($result);
+                        }
+                    } catch (\Throwable $exception) {
+                        $this->error($exception);
+                    }
+                }
+            }
+
+            \assert(\is_array($write)); // See https://github.com/vimeo/psalm/issues/3036
+
+            if ($except) {
+                foreach ($except as $key => $socket) {
+                    $write[$key] = $socket;
+                }
+            }
+
+            foreach ($write as $stream) {
+                $streamId = (int) $stream;
+                if (!isset($this->writeWatchers[$streamId])) {
+                    continue; // All write watchers disabled.
+                }
+
+                foreach ($this->writeWatchers[$streamId] as $watcher) {
+                    if (!isset($this->writeWatchers[$streamId][$watcher->id])) {
+                        continue; // Watcher disabled by another IO watcher.
+                    }
+
+                    try {
+                        $result = ($watcher->callback)($watcher->id, $stream, $watcher->data);
+
+                        if ($result === null) {
+                            continue;
+                        }
+
+                        if ($result instanceof \Generator) {
+                            $result = new Coroutine($result);
+                        }
+
+                        if ($result instanceof Promise || $result instanceof ReactPromise) {
+                            rethrow($result);
+                        }
+                    } catch (\Throwable $exception) {
+                        $this->error($exception);
+                    }
+                }
+            }
+
+            return;
+        }
+
+        if ($timeout < 0) { // Only signal watchers are enabled, so sleep indefinitely.
+            \usleep(\PHP_INT_MAX);
+            return;
+        }
+
+        if ($timeout > 0) { // Sleep until next timer expires.
+            \usleep((int) ($timeout * self::MICROSEC_PER_SEC));
+        }
+    }
+
+    /**
+     * @return int Milliseconds until next timer expires or -1 if there are no pending times.
+     */
+    private function getTimeout(): int
+    {
+        $expiration = $this->timerQueue->peek();
+
+        if ($expiration === null) {
+            return -1;
+        }
+
+        $expiration -= getCurrentTime() - $this->nowOffset;
+
+        return $expiration > 0 ? $expiration : 0;
     }
 
     /**

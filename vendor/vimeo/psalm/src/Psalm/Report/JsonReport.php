@@ -2,18 +2,26 @@
 
 namespace Psalm\Report;
 
+use Psalm\Internal\Json\Json;
 use Psalm\Report;
 
-use function json_encode;
 use function array_values;
 
 class JsonReport extends Report
 {
-    /**
-     * {@inheritdoc}
-     */
     public function create(): string
     {
-        return json_encode(array_values($this->issues_data)) . "\n";
+        $options = $this->pretty ? Json::PRETTY : Json::DEFAULT;
+
+        $issues_data = \array_map(
+            function ($issue_data): array {
+                $issue_data = (array) $issue_data;
+                unset($issue_data['dupe_key']);
+                return $issue_data;
+            },
+            $this->issues_data
+        );
+
+        return Json::encode(array_values($issues_data), $options) . "\n";
     }
 }

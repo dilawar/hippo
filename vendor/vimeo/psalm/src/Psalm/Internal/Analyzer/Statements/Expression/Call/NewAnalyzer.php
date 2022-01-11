@@ -7,6 +7,7 @@ use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
 use Psalm\Internal\Analyzer\NamespaceAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
+use Psalm\Internal\ControlFlow\ControlFlowNode;
 use Psalm\CodeLocation;
 use Psalm\Context;
 use Psalm\Issue\AbstractInstantiation;
@@ -17,6 +18,7 @@ use Psalm\Issue\InternalClass;
 use Psalm\Issue\InvalidStringClass;
 use Psalm\Issue\MixedMethodCall;
 use Psalm\Issue\TooManyArguments;
+use Psalm\Issue\UnsafeInstantiation;
 use Psalm\Issue\UndefinedClass;
 use Psalm\IssueBuffer;
 use Psalm\Type;
@@ -32,18 +34,11 @@ use function is_string;
  */
 class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAnalyzer
 {
-    /**
-     * @param   StatementsAnalyzer           $statements_analyzer
-     * @param   PhpParser\Node\Expr\New_    $stmt
-     * @param   Context                     $context
-     *
-     * @return  false|null
-     */
     public static function analyze(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Expr\New_ $stmt,
         Context $context
-    ) {
+    ) : bool {
         $fq_class_name = null;
 
         $codebase = $statements_analyzer->getCodebase();
@@ -87,8 +82,12 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                         // @todo maybe we can do better here
                         $class_storage = $codebase->classlike_storage_provider->get($context->self);
                         $fq_class_name = $class_storage->name;
-                        $can_extend = true;
-                        $from_static = true;
+
+                        if (!$class_storage->final) {
+                            $can_extend = true;
+                            $from_static = true;
+                        }
+
                         break;
                 }
             }
@@ -139,9 +138,21 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                                 $lhs_type_part->param_name,
                                 $lhs_type_part->as_type
                                     ? new Type\Union([$lhs_type_part->as_type])
-                                    : Type::parseString($lhs_type_part->as),
+                                    : Type::getObject(),
                                 $lhs_type_part->defining_class
                             );
+
+                            if (!$lhs_type_part->as_type) {
+                                if (IssueBuffer::accepts(
+                                    new MixedMethodCall(
+                                        'Cannot call constructor on an unknown class',
+                                        new CodeLocation($statements_analyzer->getSource(), $stmt)
+                                    ),
+                                    $statements_analyzer->getSuppressedIssues()
+                                )) {
+                                    // fall through
+                                }
+                            }
 
                             if ($new_type) {
                                 $new_type = Type::combineUnionTypes(
@@ -150,6 +161,28 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                                 );
                             } else {
                                 $new_type = new Type\Union([$new_type_part]);
+                            }
+
+                            if ($lhs_type_part->as_type
+                                && $codebase->classlikes->classExists($lhs_type_part->as_type->value)
+                            ) {
+                                $as_storage = $codebase->classlike_storage_provider->get(
+                                    $lhs_type_part->as_type->value
+                                );
+
+                                if (!$as_storage->preserve_constructor_signature) {
+                                    if (IssueBuffer::accepts(
+                                        new UnsafeInstantiation(
+                                            'Cannot safely instantiate class ' . $lhs_type_part->as_type->value
+                                                . ' with "new $class_name" as'
+                                                . ' its constructor might change in child classes',
+                                            new CodeLocation($statements_analyzer->getSource(), $stmt)
+                                        ),
+                                        $statements_analyzer->getSuppressedIssues()
+                                    )) {
+                                        // fall through
+                                    }
+                                }
                             }
                         }
 
@@ -179,6 +212,28 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                                 $generated_type = $lhs_type_part->as_type
                                     ? clone $lhs_type_part->as_type
                                     : new Type\Atomic\TObject();
+
+                                if ($lhs_type_part->as_type
+                                    && $codebase->classlikes->classExists($lhs_type_part->as_type->value)
+                                ) {
+                                    $as_storage = $codebase->classlike_storage_provider->get(
+                                        $lhs_type_part->as_type->value
+                                    );
+
+                                    if (!$as_storage->preserve_constructor_signature) {
+                                        if (IssueBuffer::accepts(
+                                            new UnsafeInstantiation(
+                                                'Cannot safely instantiate class ' . $lhs_type_part->as_type->value
+                                                    . ' with "new $class_name" as'
+                                                    . ' its constructor might change in child classes',
+                                                new CodeLocation($statements_analyzer->getSource(), $stmt)
+                                            ),
+                                            $statements_analyzer->getSuppressedIssues()
+                                        )) {
+                                            // fall through
+                                        }
+                                    }
+                                }
                             } elseif ($lhs_type_part instanceof Type\Atomic\GetClassT) {
                                 $generated_type = new Type\Atomic\TObject();
 
@@ -288,10 +343,26 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                         $statements_analyzer->node_data->setType($stmt, $new_type);
                     }
 
-                    return null;
+                    ArgumentsAnalyzer::analyze(
+                        $statements_analyzer,
+                        $stmt->args,
+                        null,
+                        null,
+                        $context
+                    );
+
+                    return true;
                 }
             } else {
-                return null;
+                ArgumentsAnalyzer::analyze(
+                    $statements_analyzer,
+                    $stmt->args,
+                    null,
+                    null,
+                    $context
+                );
+
+                return true;
             }
         }
 
@@ -311,7 +382,15 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
 
             if ($context->check_classes) {
                 if ($context->isPhantomClass($fq_class_name)) {
-                    return null;
+                    ArgumentsAnalyzer::analyze(
+                        $statements_analyzer,
+                        $stmt->args,
+                        null,
+                        null,
+                        $context
+                    );
+
+                    return true;
                 }
 
                 if (ClassLikeAnalyzer::checkFullyQualifiedClassLikeName(
@@ -323,7 +402,15 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                     $statements_analyzer->getSuppressedIssues(),
                     false
                 ) === false) {
-                    return;
+                    ArgumentsAnalyzer::analyze(
+                        $statements_analyzer,
+                        $stmt->args,
+                        null,
+                        null,
+                        $context
+                    );
+
+                    return true;
                 }
 
                 if ($codebase->interfaceExists($fq_class_name)) {
@@ -336,7 +423,7 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                     )) {
                     }
 
-                    return null;
+                    return true;
                 }
             }
 
@@ -357,6 +444,19 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
             ) {
                 $storage = $codebase->classlike_storage_provider->get($fq_class_name);
 
+                if ($from_static && !$storage->preserve_constructor_signature) {
+                    if (IssueBuffer::accepts(
+                        new UnsafeInstantiation(
+                            'Cannot safely instantiate class ' . $fq_class_name . ' with "new static" as'
+                                . ' its constructor might change in child classes',
+                            new CodeLocation($statements_analyzer->getSource(), $stmt)
+                        ),
+                        $statements_analyzer->getSuppressedIssues()
+                    )) {
+                        // fall through
+                    }
+                }
+
                 // if we're not calling this constructor via new static()
                 if ($storage->abstract && !$can_extend) {
                     if (IssueBuffer::accepts(
@@ -366,7 +466,7 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                         ),
                         $statements_analyzer->getSuppressedIssues()
                     )) {
-                        return;
+                        return true;
                     }
                 }
 
@@ -384,33 +484,21 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                 }
 
 
-                if ($storage->psalm_internal && $context->self) {
-                    if (! NamespaceAnalyzer::isWithin($context->self, $storage->psalm_internal)) {
-                        if (IssueBuffer::accepts(
-                            new InternalClass(
-                                $fq_class_name . ' is marked internal to ' . $storage->psalm_internal,
-                                new CodeLocation($statements_analyzer->getSource(), $stmt),
-                                $fq_class_name
-                            ),
-                            $statements_analyzer->getSuppressedIssues()
-                        )) {
-                            // fall through
-                        }
-                    }
-                }
-
-                if ($storage->internal && $context->self) {
-                    if (! NamespaceAnalyzer::nameSpaceRootsMatch($context->self, $fq_class_name)) {
-                        if (IssueBuffer::accepts(
-                            new InternalClass(
-                                $fq_class_name . ' is marked internal',
-                                new CodeLocation($statements_analyzer->getSource(), $stmt),
-                                $fq_class_name
-                            ),
-                            $statements_analyzer->getSuppressedIssues()
-                        )) {
-                            // fall through
-                        }
+                if ($context->self
+                    && !$context->collect_initializations
+                    && !$context->collect_mutations
+                    && !NamespaceAnalyzer::isWithin($context->self, $storage->internal)
+                ) {
+                    if (IssueBuffer::accepts(
+                        new InternalClass(
+                            $fq_class_name . ' is internal to ' . $storage->internal
+                                . ' but called from ' . $context->self,
+                            new CodeLocation($statements_analyzer->getSource(), $stmt),
+                            $fq_class_name
+                        ),
+                        $statements_analyzer->getSuppressedIssues()
+                    )) {
+                        // fall through
                     }
                 }
 
@@ -448,7 +536,7 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                         return false;
                     }
 
-                    if (MethodVisibilityAnalyzer::analyze(
+                    if (Method\MethodVisibilityAnalyzer::analyze(
                         $method_id,
                         $context,
                         $statements_analyzer->getSource(),
@@ -458,13 +546,13 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                         return false;
                     }
 
-                    if ($context->pure) {
-                        $declaring_method_id = $codebase->methods->getDeclaringMethodId($method_id);
+                    $declaring_method_id = $codebase->methods->getDeclaringMethodId($method_id);
 
-                        if ($declaring_method_id) {
-                            $method_storage = $codebase->methods->getStorage($declaring_method_id);
+                    if ($declaring_method_id) {
+                        $method_storage = $codebase->methods->getStorage($declaring_method_id);
 
-                            if (!$method_storage->external_mutation_free && !$context->inside_throw) {
+                        if (!$method_storage->external_mutation_free && !$context->inside_throw) {
+                            if ($context->pure) {
                                 if (IssueBuffer::accepts(
                                     new ImpureMethodCall(
                                         'Cannot call an impure constructor from a pure context',
@@ -474,6 +562,12 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                                 )) {
                                     // fall through
                                 }
+                            } elseif ($statements_analyzer->getSource()
+                                    instanceof \Psalm\Internal\Analyzer\FunctionLikeAnalyzer
+                                && $statements_analyzer->getSource()->track_mutations
+                            ) {
+                                $statements_analyzer->getSource()->inferred_has_mutation = true;
+                                $statements_analyzer->getSource()->inferred_impure = true;
                             }
                         }
                     }
@@ -481,8 +575,6 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                     $generic_param_types = null;
 
                     if ($storage->template_types) {
-                        $declaring_method_id = $codebase->methods->getDeclaringMethodId($method_id);
-
                         $declaring_fq_class_name = $declaring_method_id
                             ? $declaring_method_id->fq_class_name
                             : $fq_class_name;
@@ -499,7 +591,11 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                                     $template_result->upper_bounds
                                 );
                             } else {
-                                $generic_param_type = array_values($base_type)[0][0];
+                                if ($fq_class_name === 'SplObjectStorage') {
+                                    $generic_param_type = Type::getEmpty();
+                                } else {
+                                    $generic_param_type = array_values($base_type)[0][0];
+                                }
                             }
 
                             $generic_param_type->had_template = true;
@@ -543,21 +639,65 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
                         $stmt_type->reference_free = true;
                     }
                 }
+
+                if ($statements_analyzer->control_flow_graph
+                    && !\in_array('TaintedInput', $statements_analyzer->getSuppressedIssues())
+                    && ($stmt_type = $statements_analyzer->node_data->getType($stmt))
+                ) {
+                    $code_location = new CodeLocation($statements_analyzer->getSource(), $stmt);
+
+                    $method_storage = null;
+
+                    $declaring_method_id = $codebase->methods->getDeclaringMethodId($method_id);
+
+                    if ($declaring_method_id) {
+                        $method_storage = $codebase->methods->getStorage($declaring_method_id);
+                    }
+
+                    if ($storage->external_mutation_free
+                        || ($method_storage && $method_storage->specialize_call)
+                    ) {
+                        $method_source = ControlFlowNode::getForMethodReturn(
+                            (string) $method_id,
+                            $fq_class_name . '::__construct',
+                            $storage->location,
+                            $code_location
+                        );
+                    } else {
+                        $method_source = ControlFlowNode::getForMethodReturn(
+                            (string) $method_id,
+                            $fq_class_name . '::__construct',
+                            $storage->location
+                        );
+                    }
+
+                    $statements_analyzer->control_flow_graph->addNode($method_source);
+
+                    $stmt_type->parent_nodes = [$method_source->id => $method_source];
+                }
+            } else {
+                ArgumentsAnalyzer::analyze(
+                    $statements_analyzer,
+                    $stmt->args,
+                    null,
+                    null,
+                    $context
+                );
             }
         }
+
+
 
         if (!$config->remember_property_assignments_after_call && !$context->collect_initializations) {
             $context->removeAllObjectVars();
         }
 
-        return null;
+        return true;
     }
 
     /**
-     * @param  string $template_name
      * @param  array<string, array<int|string, Type\Union>>  $template_type_extends
      * @param  array<string, array<string, array{Type\Union}>>  $found_generic_params
-     * @return Type\Union
      */
     private static function getGenericParamForOffset(
         string $fq_class_name,
@@ -565,7 +705,7 @@ class NewAnalyzer extends \Psalm\Internal\Analyzer\Statements\Expression\CallAna
         array $template_type_extends,
         array $found_generic_params,
         bool $mapped = false
-    ) {
+    ): Type\Union {
         if (isset($found_generic_params[$template_name][$fq_class_name])) {
             if (!$mapped && isset($template_type_extends[$fq_class_name][$template_name])) {
                 foreach ($template_type_extends[$fq_class_name][$template_name]->getAtomicTypes() as $t) {

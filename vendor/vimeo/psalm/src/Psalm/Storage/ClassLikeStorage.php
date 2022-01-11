@@ -88,19 +88,30 @@ class ClassLikeStorage
     public $deprecated = false;
 
     /**
-     * @var bool
+     * @var string
      */
-    public $internal = false;
+    public $internal = '';
 
     /**
-     * @var null|string
+     * @var null|Type\Atomic\TTemplateParam|Type\Atomic\TNamedObject
+     * @deprecated
      */
-    public $psalm_internal = null;
+    public $mixin = null;
 
     /**
-     * @var null|string
+     * @var Type\Atomic\TTemplateParam[]
      */
-    public $mixin_fqcln = null;
+    public $templatedMixins = [];
+
+    /**
+     * @var Type\Atomic\TNamedObject[]
+     */
+    public $namedMixins = [];
+
+    /**
+     * @var ?string
+     */
+    public $mixin_declaring_fqcln = null;
 
     /**
      * @var array<string, bool>
@@ -222,6 +233,11 @@ class ClassLikeStorage
     public $trait_alias_map = [];
 
     /**
+     * @var array<lowercase-string, bool>
+     */
+    public $trait_final_map = [];
+
+    /**
      * @var array<string, int>
      */
     public $trait_visibility_map = [];
@@ -245,6 +261,11 @@ class ClassLikeStorage
      * @var bool
      */
     public $mutation_free = false;
+
+    /**
+     * @var bool
+     */
+    public $specialize_instance = false;
 
     /**
      * @var array<lowercase-string, MethodStorage>
@@ -394,9 +415,16 @@ class ClassLikeStorage
     public $docblock_issues = [];
 
     /**
-     * @param string $name
+     * @var array<string, \Psalm\Internal\Type\TypeAlias\ClassTypeAlias>
      */
-    public function __construct($name)
+    public $type_aliases = [];
+
+    /**
+     * @var bool
+     */
+    public $preserve_constructor_signature = false;
+
+    public function __construct(string $name)
     {
         $this->name = $name;
     }

@@ -31,9 +31,6 @@ class EventDriver extends Driver
     /** @var \Event[] */
     private $signals = [];
 
-    /** @var bool */
-    private $nowUpdateNeeded = false;
-
     /** @var int Internal timestamp for now. */
     private $now;
 
@@ -42,8 +39,12 @@ class EventDriver extends Driver
 
     public function __construct()
     {
-        /** @psalm-suppress TooFewArguments https://github.com/JetBrains/phpstorm-stubs/pull/763 */
-        $this->handle = new \EventBase;
+        $config = new \EventConfig();
+        if (\DIRECTORY_SEPARATOR !== '\\') {
+            $config->requireFeatures(\EventConfig::FEATURE_FDS);
+        }
+
+        $this->handle = new \EventBase($config);
         $this->nowOffset = getCurrentTime();
         $this->now = \random_int(0, $this->nowOffset);
         $this->nowOffset -= $this->now;
@@ -167,15 +168,16 @@ class EventDriver extends Driver
      */
     public function __destruct()
     {
-        foreach ($this->events as $event) {
+        // Unset here, otherwise $event->del() in the loop may fail with a warning, because __destruct order isn't defined.
+        // Related https://github.com/amphp/amp/issues/159.
+        $events = $this->events;
+        $this->events = [];
+
+        foreach ($events as $event) {
             if ($event !== null) { // Events may have been nulled in extension depending on destruct order.
                 $event->free();
             }
         }
-
-        // Unset here, otherwise $event->del() fails with a warning, because __destruct order isn't defined.
-        // See https://github.com/amphp/amp/issues/159.
-        $this->events = [];
 
         // Manually free the loop handle to fully release loop resources.
         // See https://github.com/amphp/amp/issues/177.
@@ -235,10 +237,7 @@ class EventDriver extends Driver
      */
     public function now(): int
     {
-        if ($this->nowUpdateNeeded) {
-            $this->now = getCurrentTime() - $this->nowOffset;
-            $this->nowUpdateNeeded = false;
-        }
+        $this->now = getCurrentTime() - $this->nowOffset;
 
         return $this->now;
     }
@@ -258,7 +257,6 @@ class EventDriver extends Driver
      */
     protected function dispatch(bool $blocking)
     {
-        $this->nowUpdateNeeded = true;
         $this->handle->loop($blocking ? \EventBase::LOOP_ONCE : \EventBase::LOOP_ONCE | \EventBase::LOOP_NONBLOCK);
     }
 
@@ -269,7 +267,7 @@ class EventDriver extends Driver
      */
     protected function activate(array $watchers)
     {
-        $now = getCurrentTime() - $this->nowOffset;
+        $now = $this->now();
 
         foreach ($watchers as $watcher) {
             if (!isset($this->events[$id = $watcher->id])) {
@@ -335,7 +333,7 @@ class EventDriver extends Driver
                 case Watcher::REPEAT:
                     \assert(\is_int($watcher->value));
 
-                    $interval = $watcher->value - ($now - $this->now());
+                    $interval = \max(0, $watcher->expiration - $now);
                     $this->events[$id]->add($interval > 0 ? $interval / self::MILLISEC_PER_SEC : 0);
                     break;
 

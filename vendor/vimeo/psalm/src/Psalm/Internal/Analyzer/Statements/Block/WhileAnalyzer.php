@@ -17,17 +17,13 @@ use function array_merge;
 class WhileAnalyzer
 {
     /**
-     * @param   StatementsAnalyzer           $statements_analyzer
-     * @param   PhpParser\Node\Stmt\While_  $stmt
-     * @param   Context                     $context
-     *
      * @return  false|null
      */
     public static function analyze(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Stmt\While_ $stmt,
         Context $context
-    ) {
+    ): ?bool {
         $while_true = ($stmt->cond instanceof PhpParser\Node\Expr\ConstFetch && $stmt->cond->name->parts === ['true'])
             || ($stmt->cond instanceof PhpParser\Node\Scalar\LNumber && $stmt->cond->value > 0);
 

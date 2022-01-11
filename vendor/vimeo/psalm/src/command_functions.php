@@ -1,17 +1,47 @@
 <?php
 
-use Composer\Autoload\ClassLoader;
-use Psalm\Config;
-use Psalm\Exception\ConfigException;
+namespace Psalm;
 
-/**
- * @param  string $current_dir
- * @param  bool   $has_explicit_root
- * @param  string $vendor_dir
- *
- * @return ?\Composer\Autoload\ClassLoader
- */
-function requireAutoloaders($current_dir, $has_explicit_root, $vendor_dir)
+use Composer\Autoload\ClassLoader;
+use Phar;
+use Psalm\Internal\Composer;
+use function basename;
+use function dirname;
+use function getenv;
+use function pathinfo;
+use function strpos;
+use function realpath;
+use const DIRECTORY_SEPARATOR;
+use function file_exists;
+use function in_array;
+use const PATHINFO_EXTENSION;
+use const PHP_EOL;
+use function fwrite;
+use const STDERR;
+use function implode;
+use function define;
+use function json_decode;
+use function file_get_contents;
+use function is_array;
+use function is_string;
+use function count;
+use function strlen;
+use function substr;
+use function stream_get_meta_data;
+use const STDIN;
+use function stream_set_blocking;
+use function fgets;
+use function preg_split;
+use function trim;
+use function is_dir;
+use function preg_replace;
+use function substr_replace;
+use function file_put_contents;
+use function ini_get;
+use function preg_match;
+use function strtoupper;
+
+function requireAutoloaders(string $current_dir, bool $has_explicit_root, string $vendor_dir): ?ClassLoader
 {
     $autoload_roots = [$current_dir];
 
@@ -37,7 +67,7 @@ function requireAutoloaders($current_dir, $has_explicit_root, $vendor_dir)
     foreach ($autoload_roots as $autoload_root) {
         $has_autoloader = false;
 
-        $nested_autoload_file = dirname(dirname($autoload_root)) . DIRECTORY_SEPARATOR . 'autoload.php';
+        $nested_autoload_file = dirname($autoload_root, 2). DIRECTORY_SEPARATOR . 'autoload.php';
 
         // note: don't realpath $nested_autoload_file, or phar version will fail
         if (file_exists($nested_autoload_file)) {
@@ -58,7 +88,8 @@ function requireAutoloaders($current_dir, $has_explicit_root, $vendor_dir)
             $has_autoloader = true;
         }
 
-        if (!$has_autoloader && file_exists($autoload_root . '/composer.json')) {
+        $composer_json_file = Composer::getJsonFilePath($autoload_root);
+        if (!$has_autoloader && file_exists($composer_json_file)) {
             $error_message = 'Could not find any composer autoloaders in ' . $autoload_root;
 
             if (!$has_explicit_root) {
@@ -102,24 +133,20 @@ function requireAutoloaders($current_dir, $has_explicit_root, $vendor_dir)
         exit(1);
     }
 
-    define('PSALM_VERSION', \PackageVersions\Versions::getVersion('vimeo/psalm'));
+    define('PSALM_VERSION', (string)\PackageVersions\Versions::getVersion('vimeo/psalm'));
     define('PHP_PARSER_VERSION', \PackageVersions\Versions::getVersion('nikic/php-parser'));
 
     return $first_autoloader;
 }
 
 /**
- * @param  string $current_dir
- *
- * @return string
- *
  * @psalm-suppress MixedArrayAccess
  * @psalm-suppress MixedAssignment
  * @psalm-suppress PossiblyUndefinedStringArrayOffset
  */
-function getVendorDir($current_dir)
+function getVendorDir(string $current_dir): string
 {
-    $composer_json_path = $current_dir . DIRECTORY_SEPARATOR . 'composer.json';
+    $composer_json_path = Composer::getJsonFilePath($current_dir);
 
     if (!file_exists($composer_json_path)) {
         return 'vendor';
@@ -186,7 +213,7 @@ function getArguments() : array
  *
  * @return string[]|null
  */
-function getPathsToCheck($f_paths)
+function getPathsToCheck($f_paths): ?array
 {
     global $argv;
 
@@ -269,6 +296,9 @@ function getPathsToCheck($f_paths)
     return $paths_to_check;
 }
 
+/**
+ * @psalm-pure
+ */
 function getPsalmHelpText(): string
 {
     return <<<HELP
@@ -281,6 +311,9 @@ Basic configuration:
 
     --use-ini-defaults
         Use PHP-provided ini defaults for memory and error display
+
+    --memory-limit=LIMIT
+        Use a specific memory limit. Cannot be combined with --use-ini-defaults
 
     --disable-extension=[extension]
         Used to disable certain extensions while Psalm is running.
@@ -315,11 +348,17 @@ Surfacing issues:
     --no-suggestions
         Hide suggestions
 
+    --taint-analysis
+        Run Psalm in taint analysis mode – see https://psalm.dev/docs/security_analysis for more info
+
 Issue baselines:
     --set-baseline=PATH
         Save all current error level issues to a file, to mark them as info in subsequent runs
 
         Add --include-php-versions to also include a list of PHP extension versions
+
+    --use-baseline=PATH
+        Allows you to use a baseline other than the default baseline provided in your config
 
     --ignore-baseline
         Ignore the error baseline
@@ -339,7 +378,8 @@ Output:
 
     --output-format=console
         Changes the output format.
-        Available formats: compact, console, text, emacs, json, pylint, xml, checkstyle, junit, sonarqube, github
+        Available formats: compact, console, text, emacs, json, pylint, xml, checkstyle, junit, sonarqube, github,
+                           phpstorm
 
     --no-progress
         Disable the progress indicator
@@ -353,7 +393,8 @@ Output:
 Reports:
     --report=PATH
         The path where to output report file. The output format is based on the file extension.
-        (Currently supported format: ".json", ".xml", ".txt", ".emacs")
+        (Currently supported formats: ".json", ".xml", ".txt", ".emacs", ".pylint", ".console",
+        "checkstyle.xml", "sonarqube.json", "summary.json", "junit.xml")
 
     --report-show-info[=BOOLEAN]
         Whether the report should include non-errors in its output (defaults to true)
@@ -393,6 +434,9 @@ Miscellaneous:
     --debug-by-line
         Debug information on a line-by-line level
 
+    --debug-emitted-issues
+        Print a php backtrace to stderr when emitting issues.
+
     -r, --root
         If running Psalm globally you'll need to specify a project root. Defaults to cwd
 
@@ -426,7 +470,7 @@ function initialiseConfig(
         } else {
             $config = Config::getConfigForPath($current_dir, $current_dir, $output_format);
         }
-    } catch (Psalm\Exception\ConfigException $e) {
+    } catch (\Psalm\Exception\ConfigException $e) {
         fwrite(STDERR, $e->getMessage() . PHP_EOL);
         exit(1);
     }
@@ -442,7 +486,11 @@ function update_config_file(Config $config, string $config_file_path, string $ba
         return;
     }
 
-    $configFile = Config::locateConfigFile($config_file_path);
+    $configFile = $config_file_path;
+
+    if (is_dir($config_file_path)) {
+        $configFile = Config::locateConfigFile($config_file_path);
+    }
 
     if (!$configFile) {
         fwrite(STDERR, "Don't forget to set errorBaseline=\"{$baseline_path}\" to your config.");
@@ -497,6 +545,9 @@ function get_path_to_config(array $options): ?string
     return $path_to_config;
 }
 
+/**
+ * @psalm-pure
+ */
 function getMemoryLimitInBytes(): int
 {
     $limit = ini_get('memory_limit');

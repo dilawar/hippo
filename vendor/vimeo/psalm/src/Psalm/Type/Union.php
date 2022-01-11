@@ -8,17 +8,15 @@ use function array_values;
 use function count;
 use function get_class;
 use function implode;
-use function is_string;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
-use Psalm\Internal\Analyzer\TypeAnalyzer;
+use Psalm\Internal\Type\Comparator\UnionTypeComparator;
 use Psalm\Internal\Type\TemplateResult;
 use Psalm\Internal\Type\TypeCombination;
 use Psalm\StatementsSource;
 use Psalm\Storage\FileStorage;
 use Psalm\Type;
 use Psalm\Type\Atomic\TFloat;
-use Psalm\Type\Atomic\TGenericObject;
 use Psalm\Type\Atomic\TInt;
 use Psalm\Type\Atomic\TIterable;
 use Psalm\Type\Atomic\TLiteralFloat;
@@ -32,26 +30,9 @@ use function sort;
 use function strpos;
 use function strval;
 use function substr;
-use Doctrine\Instantiator\Exception\UnexpectedValueException;
 
 class Union implements TypeNode
 {
-    const TAINTED_INPUT_SQL = 1;
-    const TAINTED_INPUT_HTML = 2;
-    const TAINTED_INPUT_SHELL = 4;
-    const TAINTED_USER_SECRET = 8;
-    const TAINTED_SYSTEM_SECRET = 16;
-
-    const TAINTED_INPUT = self::TAINTED_INPUT_SQL
-        | self::TAINTED_INPUT_HTML
-        | self::TAINTED_INPUT_SHELL;
-
-    const TAINTED = self::TAINTED_INPUT_SQL
-        | self::TAINTED_INPUT_HTML
-        | self::TAINTED_INPUT_SHELL
-        | self::TAINTED_USER_SECRET
-        | self::TAINTED_SYSTEM_SECRET;
-
     /**
      * @var non-empty-array<string, Atomic>
      */
@@ -180,14 +161,9 @@ class Union implements TypeNode
     private $id;
 
     /**
-     * @var ?int
+     * @var array<string, \Psalm\Internal\ControlFlow\ControlFlowNode>
      */
-    public $tainted = null;
-
-    /**
-     * @var ?array<\Psalm\Internal\Taint\Source>
-     */
-    public $sources;
+    public $parent_nodes = [];
 
     /**
      * @var bool
@@ -234,7 +210,7 @@ class Union implements TypeNode
      * @deprecated in favour of getAtomicTypes()
      * @psalm-suppress PossiblyUnusedMethod
      */
-    public function getTypes()
+    public function getTypes(): array
     {
         return $this->types;
     }
@@ -242,15 +218,12 @@ class Union implements TypeNode
     /**
      * @return non-empty-array<string, Atomic>
      */
-    public function getAtomicTypes()
+    public function getAtomicTypes(): array
     {
         return $this->types;
     }
 
-    /**
-     * @return void
-     */
-    public function addType(Atomic $type)
+    public function addType(Atomic $type): void
     {
         $this->types[$type->getKey()] = $type;
 
@@ -308,7 +281,7 @@ class Union implements TypeNode
         }
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $types = [];
 
@@ -383,10 +356,7 @@ class Union implements TypeNode
         return implode('|', $types);
     }
 
-    /**
-     * @return string
-     */
-    public function getId()
+    public function getId(): string
     {
         if ($this->id) {
             return $this->id;
@@ -397,6 +367,15 @@ class Union implements TypeNode
             $types[] = strval($type->getId());
         }
         sort($types);
+
+        if (\count($types) > 1) {
+            foreach ($types as $i => $type) {
+                if (strpos($type, ' as ') && strpos($type, '(') === false) {
+                    $types[$i] = '(' . $type . ')';
+                }
+            }
+        }
+
         $id = implode('|', $types);
 
         $this->id = $id;
@@ -404,10 +383,7 @@ class Union implements TypeNode
         return $id;
     }
 
-    /**
-     * @return string
-     */
-    public function getAssertionString()
+    public function getAssertionString(): string
     {
         foreach ($this->types as $type) {
             return $type->getAssertionString();
@@ -419,71 +395,53 @@ class Union implements TypeNode
     /**
      * @param  array<string, string> $aliased_classes
      *
-     * @return string
      */
     public function toNamespacedString(
         ?string $namespace,
         array $aliased_classes,
         ?string $this_class,
         bool $use_phpdoc_format
-    ) {
-        $printed_int = false;
-        $printed_float = false;
-        $printed_string = false;
-
+    ): string {
         $types = [];
+
+        $multi_ints = count($this->literal_int_types) > 1
+            || $this->hasPositiveInt();
+        $multi_strings = count($this->literal_string_types) > 1;
+        $multi_floats = count($this->literal_float_types) > 1;
 
         foreach ($this->types as $type) {
             $type_string = $type->toNamespacedString($namespace, $aliased_classes, $this_class, $use_phpdoc_format);
 
-            if ($type instanceof TLiteralFloat && $type_string === 'float') {
-                if ($printed_float) {
-                    continue;
-                }
-
-                $printed_float = true;
-            } elseif ($type instanceof TLiteralString && $type_string === 'string') {
-                if ($printed_string) {
-                    continue;
-                }
-
-                $printed_string = true;
-            } elseif ($type instanceof TLiteralInt && $type_string === 'int') {
-                if ($printed_int) {
-                    continue;
-                }
-
-                $printed_int = true;
+            if ($type instanceof TLiteralInt && !$multi_ints) {
+                $type_string = 'int';
+            } elseif ($type instanceof TLiteralFloat && !$multi_floats) {
+                $type_string = 'float';
+            } elseif ($type instanceof TLiteralString && !$multi_strings) {
+                $type_string = 'string';
             }
 
             $types[] = $type_string;
         }
 
         sort($types);
-        return implode('|', $types);
+        return implode('|', \array_unique($types));
     }
 
     /**
-     * @param  string|null   $namespace
      * @param  array<string, string> $aliased_classes
-     * @param  string|null   $this_class
-     * @param  int           $php_major_version
-     * @param  int           $php_minor_version
-     *
-     * @return null|string
      */
     public function toPhpString(
-        $namespace,
+        ?string $namespace,
         array $aliased_classes,
-        $this_class,
-        $php_major_version,
-        $php_minor_version
-    ) {
+        ?string $this_class,
+        int $php_major_version,
+        int $php_minor_version
+    ): ?string {
         $nullable = false;
 
         if (!$this->isSingleAndMaybeNullable()
             || $php_major_version < 7
-            || (isset($this->types['null']) && $php_minor_version < 1)
+            || (isset($this->types['null']) && $php_major_version === 7 && $php_minor_version < 1)
         ) {
             return null;
         }
@@ -517,10 +475,7 @@ class Union implements TypeNode
         return null;
     }
 
-    /**
-     * @return bool
-     */
-    public function canBeFullyExpressedInPhp()
+    public function canBeFullyExpressedInPhp(): bool
     {
         if (!$this->isSingleAndMaybeNullable()) {
             return false;
@@ -541,12 +496,7 @@ class Union implements TypeNode
         return $atomic_type->canBeFullyExpressedInPhp();
     }
 
-    /**
-     * @param  string $type_string
-     *
-     * @return bool
-     */
-    public function removeType($type_string)
+    public function removeType(string $type_string): bool
     {
         if (isset($this->types[$type_string])) {
             unset($this->types[$type_string]);
@@ -595,44 +545,27 @@ class Union implements TypeNode
         return false;
     }
 
-    /**
-     * @return void
-     */
-    public function bustCache()
+    public function bustCache(): void
     {
         $this->id = null;
     }
 
-    /**
-     * @param  string  $type_string
-     *
-     * @return bool
-     */
-    public function hasType($type_string)
+    public function hasType(string $type_string): bool
     {
         return isset($this->types[$type_string]);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasArray()
+    public function hasArray(): bool
     {
         return isset($this->types['array']);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasList()
+    public function hasList(): bool
     {
         return isset($this->types['array']) && $this->types['array'] instanceof Atomic\TList;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasClassStringMap()
+    public function hasClassStringMap(): bool
     {
         return isset($this->types['array']) && $this->types['array'] instanceof Atomic\TClassStringMap;
     }
@@ -643,17 +576,14 @@ class Union implements TypeNode
             && count(
                 array_filter(
                     $this->types,
-                    function ($type) {
+                    function ($type): bool {
                         return $type instanceof Atomic\TTemplateParamClass;
                     }
                 )
             ) === 1;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasEmptyArray()
+    public function hasEmptyArray(): bool
     {
         return isset($this->types['array'])
             && $this->types['array'] instanceof Atomic\TArray
@@ -670,10 +600,7 @@ class Union implements TypeNode
         );
     }
 
-    /**
-     * @return bool
-     */
-    public function hasCallableType()
+    public function hasCallableType(): bool
     {
         return $this->getCallableTypes() || $this->getClosureTypes();
     }
@@ -681,11 +608,11 @@ class Union implements TypeNode
     /**
      * @return array<Atomic\TCallable>
      */
-    private function getCallableTypes()
+    private function getCallableTypes(): array
     {
         return array_filter(
             $this->types,
-            function ($type) {
+            function ($type): bool {
                 return $type instanceof Atomic\TCallable;
             }
         );
@@ -694,28 +621,22 @@ class Union implements TypeNode
     /**
      * @return array<Atomic\TFn>
      */
-    public function getClosureTypes()
+    public function getClosureTypes(): array
     {
         return array_filter(
             $this->types,
-            function ($type) {
+            function ($type): bool {
                 return $type instanceof Atomic\TFn;
             }
         );
     }
 
-    /**
-     * @return bool
-     */
-    public function hasObject()
+    public function hasObject(): bool
     {
         return isset($this->types['object']);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasObjectType()
+    public function hasObjectType(): bool
     {
         foreach ($this->types as $type) {
             if ($type->isObjectType()) {
@@ -726,10 +647,7 @@ class Union implements TypeNode
         return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function isObjectType()
+    public function isObjectType(): bool
     {
         foreach ($this->types as $type) {
             if (!$type->isObjectType()) {
@@ -740,10 +658,7 @@ class Union implements TypeNode
         return true;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasNamedObjectType()
+    public function hasNamedObjectType(): bool
     {
         foreach ($this->types as $type) {
             if ($type->isNamedObjectType()) {
@@ -754,10 +669,7 @@ class Union implements TypeNode
         return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function isFormerStaticObject()
+    public function isFormerStaticObject(): bool
     {
         foreach ($this->types as $type) {
             if (!$type instanceof TNamedObject
@@ -770,10 +682,7 @@ class Union implements TypeNode
         return true;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasFormerStaticObject()
+    public function hasFormerStaticObject(): bool
     {
         foreach ($this->types as $type) {
             if ($type instanceof TNamedObject
@@ -786,34 +695,42 @@ class Union implements TypeNode
         return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function isNullable()
+    public function isNullable(): bool
     {
-        return isset($this->types['null']);
+        if (isset($this->types['null'])) {
+            return true;
+        }
+
+        foreach ($this->types as $type) {
+            if ($type instanceof TTemplateParam && $type->as->isNullable()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function isFalsable()
+    public function isFalsable(): bool
     {
-        return isset($this->types['false']);
+        if (isset($this->types['false'])) {
+            return true;
+        }
+
+        foreach ($this->types as $type) {
+            if ($type instanceof TTemplateParam && $type->as->isFalsable()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasBool()
+    public function hasBool(): bool
     {
         return isset($this->types['bool']) || isset($this->types['false']) || isset($this->types['true']);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasString()
+    public function hasString(): bool
     {
         return isset($this->types['string'])
             || isset($this->types['class-string'])
@@ -823,50 +740,39 @@ class Union implements TypeNode
             || $this->typed_class_strings;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasLowercaseString()
+    public function hasLowercaseString(): bool
     {
-        return isset($this->types['string']) && $this->types['string'] instanceof Atomic\TLowercaseString;
+        return isset($this->types['string'])
+            && ($this->types['string'] instanceof Atomic\TLowercaseString
+                || $this->types['string'] instanceof Atomic\TNonEmptyLowercaseString);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasLiteralClassString()
+    public function hasLiteralClassString(): bool
     {
         return count($this->typed_class_strings) > 0;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasInt()
+    public function hasInt(): bool
     {
         return isset($this->types['int']) || isset($this->types['array-key']) || $this->literal_int_types;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasArrayKey()
+    public function hasPositiveInt(): bool
+    {
+        return isset($this->types['int']) && $this->types['int'] instanceof Type\Atomic\TPositiveInt;
+    }
+
+    public function hasArrayKey(): bool
     {
         return isset($this->types['array-key']);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasFloat()
+    public function hasFloat(): bool
     {
         return isset($this->types['float']) || $this->literal_float_types;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasDefinitelyNumericType(bool $include_literal_int = true)
+    public function hasDefinitelyNumericType(bool $include_literal_int = true): bool
     {
         return isset($this->types['int'])
             || isset($this->types['float'])
@@ -875,10 +781,7 @@ class Union implements TypeNode
             || $this->literal_float_types;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasPossiblyNumericType()
+    public function hasPossiblyNumericType(): bool
     {
         return isset($this->types['int'])
             || isset($this->types['float'])
@@ -889,26 +792,17 @@ class Union implements TypeNode
             || $this->literal_string_types;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasScalar()
+    public function hasScalar(): bool
     {
         return isset($this->types['scalar']);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasNumeric()
+    public function hasNumeric(): bool
     {
         return isset($this->types['numeric']);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasScalarType()
+    public function hasScalarType(): bool
     {
         return isset($this->types['int'])
             || isset($this->types['float'])
@@ -926,48 +820,74 @@ class Union implements TypeNode
             || $this->typed_class_strings;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasTemplate()
+    public function hasTemplate(): bool
     {
         return (bool) array_filter(
             $this->types,
             function (Atomic $type) : bool {
-                return $type instanceof Type\Atomic\TTemplateParam;
+                return $type instanceof Type\Atomic\TTemplateParam
+                    || ($type instanceof Type\Atomic\TNamedObject
+                        && $type->extra_types
+                        && array_filter(
+                            $type->extra_types,
+                            function ($t): bool {
+                                return $t instanceof Type\Atomic\TTemplateParam;
+                            }
+                        )
+                    );
             }
         );
     }
 
-    /**
-     * @return bool
-     */
-    public function hasMixed()
+    public function hasConditional(): bool
+    {
+        return (bool) array_filter(
+            $this->types,
+            function (Atomic $type) : bool {
+                return $type instanceof Type\Atomic\TConditional;
+            }
+        );
+    }
+
+    public function hasTemplateOrStatic(): bool
+    {
+        return (bool) array_filter(
+            $this->types,
+            function (Atomic $type) : bool {
+                return $type instanceof Type\Atomic\TTemplateParam
+                    || ($type instanceof Type\Atomic\TNamedObject
+                        && ($type->was_static
+                            || ($type->extra_types
+                                && array_filter(
+                                    $type->extra_types,
+                                    function ($t): bool {
+                                        return $t instanceof Type\Atomic\TTemplateParam;
+                                    }
+                                )
+                            )
+                        )
+                    );
+            }
+        );
+    }
+
+    public function hasMixed(): bool
     {
         return isset($this->types['mixed']);
     }
 
-    /**
-     * @return bool
-     */
-    public function isMixed()
+    public function isMixed(): bool
     {
         return isset($this->types['mixed']) && count($this->types) === 1;
     }
 
-    /**
-     * @return bool
-     */
-    public function isEmptyMixed()
+    public function isEmptyMixed(): bool
     {
         return isset($this->types['mixed'])
             && $this->types['mixed'] instanceof Type\Atomic\TEmptyMixed;
     }
 
-    /**
-     * @return bool
-     */
-    public function isVanillaMixed()
+    public function isVanillaMixed(): bool
     {
         /**
          * @psalm-suppress UndefinedPropertyFetch
@@ -979,68 +899,44 @@ class Union implements TypeNode
             && count($this->types) === 1;
     }
 
-    /**
-     * @return bool
-     */
-    public function isArrayKey()
+    public function isArrayKey(): bool
     {
         return isset($this->types['array-key']) && count($this->types) === 1;
     }
 
-    /**
-     * @return bool
-     */
-    public function isNull()
+    public function isNull(): bool
     {
         return count($this->types) === 1 && isset($this->types['null']);
     }
 
-    /**
-     * @return bool
-     */
-    public function isFalse()
+    public function isFalse(): bool
     {
         return count($this->types) === 1 && isset($this->types['false']);
     }
 
-    /**
-     * @return bool
-     */
-    public function isTrue()
+    public function isTrue(): bool
     {
         return count($this->types) === 1 && isset($this->types['true']);
     }
 
-    /**
-     * @return bool
-     */
-    public function isVoid()
+    public function isVoid(): bool
     {
         return isset($this->types['void']);
     }
 
-    /**
-     * @return bool
-     */
-    public function isNever()
+    public function isNever(): bool
     {
         return isset($this->types['never-return']);
     }
 
-    /**
-     * @return bool
-     */
-    public function isGenerator()
+    public function isGenerator(): bool
     {
         return count($this->types) === 1
             && (($single_type = reset($this->types)) instanceof TNamedObject)
             && ($single_type->value === 'Generator');
     }
 
-    /**
-     * @return bool
-     */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return isset($this->types['empty']);
     }
@@ -1048,7 +944,7 @@ class Union implements TypeNode
     /**
      * @return void
      */
-    public function substitute(Union $old_type, Union $new_type = null)
+    public function substitute(Union $old_type, ?Union $new_type = null)
     {
         if ($this->hasMixed() && !$this->isEmptyMixed()) {
             return;
@@ -1314,29 +1210,58 @@ class Union implements TypeNode
 
                 $class_template_type = null;
 
+                $atomic_type = clone $atomic_type;
+
                 if ($template_type) {
-                    if (TypeAnalyzer::isContainedBy(
+                    $atomic_type->as_type->replaceTemplateTypesWithArgTypes(
+                        $template_result,
+                        $codebase
+                    );
+
+                    if ($atomic_type->as_type->isNullable() && $template_type->isVoid()) {
+                        $template_type = Type::getNull();
+                    }
+
+                    if (UnionTypeComparator::isContainedBy(
                         $codebase,
                         $template_type,
                         $atomic_type->conditional_type
                     )) {
                         $class_template_type = clone $atomic_type->if_type;
-                    } elseif (TypeAnalyzer::isContainedBy(
+                        $class_template_type->replaceTemplateTypesWithArgTypes(
+                            $template_result,
+                            $codebase
+                        );
+                    } elseif (UnionTypeComparator::isContainedBy(
                         $codebase,
                         $template_type,
                         $atomic_type->as_type
                     )
-                        && !TypeAnalyzer::isContainedBy(
+                        && !UnionTypeComparator::isContainedBy(
                             $codebase,
                             $atomic_type->as_type,
                             $template_type
                         )
                     ) {
                         $class_template_type = clone $atomic_type->else_type;
+                        $class_template_type->replaceTemplateTypesWithArgTypes(
+                            $template_result,
+                            $codebase
+                        );
                     }
                 }
 
                 if (!$class_template_type) {
+                    $atomic_type->if_type->replaceTemplateTypesWithArgTypes(
+                        $template_result,
+                        $codebase
+                    );
+
+                    $atomic_type->else_type->replaceTemplateTypesWithArgTypes(
+                        $template_result,
+                        $codebase
+                    );
+
                     $class_template_type = Type::combineUnionTypes(
                         $atomic_type->if_type,
                         $atomic_type->else_type,
@@ -1385,13 +1310,12 @@ class Union implements TypeNode
                 $atomic_types,
                 $codebase
             )->getAtomicTypes();
+
+            $this->id = null;
         }
     }
 
-    /**
-     * @return bool
-     */
-    public function isSingle()
+    public function isSingle(): bool
     {
         $type_count = count($this->types);
 
@@ -1413,10 +1337,7 @@ class Union implements TypeNode
         return $type_count === 1;
     }
 
-    /**
-     * @return bool
-     */
-    public function isSingleAndMaybeNullable()
+    public function isSingleAndMaybeNullable(): bool
     {
         $is_nullable = isset($this->types['null']);
 
@@ -1447,19 +1368,26 @@ class Union implements TypeNode
     /**
      * @return bool true if this is an int
      */
-    public function isInt()
+    public function isInt(bool $check_templates = false): bool
     {
-        if (!$this->isSingle()) {
-            return false;
-        }
-
-        return isset($this->types['int']) || $this->literal_int_types;
+        return count(
+            array_filter(
+                $this->types,
+                function ($type) use ($check_templates): bool {
+                    return $type instanceof TInt
+                        || ($check_templates
+                            && $type instanceof TTemplateParam
+                            && $type->as->isInt()
+                        );
+                }
+            )
+        ) === count($this->types);
     }
 
     /**
      * @return bool true if this is a float
      */
-    public function isFloat()
+    public function isFloat(): bool
     {
         if (!$this->isSingle()) {
             return false;
@@ -1471,23 +1399,26 @@ class Union implements TypeNode
     /**
      * @return bool true if this is a string
      */
-    public function isString()
+    public function isString(bool $check_templates = false): bool
     {
-        if (!$this->isSingle()) {
-            return false;
-        }
-
-        return isset($this->types['string'])
-            || isset($this->types['class-string'])
-            || isset($this->types['trait-string'])
-            || isset($this->types['numeric-string'])
-            || $this->literal_string_types;
+        return count(
+            array_filter(
+                $this->types,
+                function ($type) use ($check_templates): bool {
+                    return $type instanceof TString
+                        || ($check_templates
+                            && $type instanceof TTemplateParam
+                            && $type->as->isString()
+                        );
+                }
+            )
+        ) === count($this->types);
     }
 
     /**
      * @return bool true if this is a string literal with only one possible value
      */
-    public function isSingleStringLiteral()
+    public function isSingleStringLiteral(): bool
     {
         return count($this->types) === 1 && count($this->literal_string_types) === 1;
     }
@@ -1497,7 +1428,7 @@ class Union implements TypeNode
      *
      * @return TLiteralString the only string literal represented by this union type
      */
-    public function getSingleStringLiteral()
+    public function getSingleStringLiteral(): TLiteralString
     {
         if (count($this->types) !== 1 || count($this->literal_string_types) !== 1) {
             throw new \InvalidArgumentException('Not a string literal');
@@ -1526,18 +1457,12 @@ class Union implements TypeNode
             || isset($this->types['true']);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasLiteralString()
+    public function hasLiteralString(): bool
     {
         return count($this->literal_string_types) > 0;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasLiteralInt()
+    public function hasLiteralInt(): bool
     {
         return count($this->literal_int_types) > 0;
     }
@@ -1545,7 +1470,7 @@ class Union implements TypeNode
     /**
      * @return bool true if this is a int literal with only one possible value
      */
-    public function isSingleIntLiteral()
+    public function isSingleIntLiteral(): bool
     {
         return count($this->types) === 1 && count($this->literal_int_types) === 1;
     }
@@ -1555,7 +1480,7 @@ class Union implements TypeNode
      *
      * @return TLiteralInt the only int literal represented by this union type
      */
-    public function getSingleIntLiteral()
+    public function getSingleIntLiteral(): TLiteralInt
     {
         if (count($this->types) !== 1 || count($this->literal_int_types) !== 1) {
             throw new \InvalidArgumentException('Not an int literal');
@@ -1565,13 +1490,9 @@ class Union implements TypeNode
     }
 
     /**
-     * @param  StatementsSource $source
-     * @param  CodeLocation     $code_location
      * @param  array<string>    $suppressed_issues
      * @param  array<string, bool> $phantom_classes
-     * @param  bool             $inferred
      *
-     * @return bool
      */
     public function check(
         StatementsSource $source,
@@ -1580,7 +1501,8 @@ class Union implements TypeNode
         array $phantom_classes = [],
         bool $inferred = true,
         bool $inherited = false,
-        bool $prevent_template_covariance = false
+        bool $prevent_template_covariance = false,
+        ?string $calling_method_id = null
     ) : bool {
         if ($this->checked) {
             return true;
@@ -1593,7 +1515,8 @@ class Union implements TypeNode
             $phantom_classes,
             $inferred,
             $inherited,
-            $prevent_template_covariance
+            $prevent_template_covariance,
+            $calling_method_id
         );
 
         $checker->traverseArray($this->types);
@@ -1606,13 +1529,12 @@ class Union implements TypeNode
     /**
      * @param  array<string, mixed> $phantom_classes
      *
-     * @return void
      */
     public function queueClassLikesForScanning(
         Codebase $codebase,
-        FileStorage $file_storage = null,
+        ?FileStorage $file_storage = null,
         array $phantom_classes = []
-    ) {
+    ): void {
         $scanner_visitor = new \Psalm\Internal\TypeVisitor\TypeScanner(
             $codebase->scanner,
             $file_storage,
@@ -1637,7 +1559,7 @@ class Union implements TypeNode
     /**
      * @return list<TTemplateParam>
      */
-    public function getTemplateTypes()
+    public function getTemplateTypes(): array
     {
         $template_type_collector = new \Psalm\Internal\TypeVisitor\TemplateTypeCollector();
 
@@ -1646,10 +1568,7 @@ class Union implements TypeNode
         return $template_type_collector->getTemplateTypes();
     }
 
-    /**
-     * @return void
-     */
-    public function setFromDocblock()
+    public function setFromDocblock(): void
     {
         $this->from_docblock = true;
 
@@ -1666,10 +1585,7 @@ class Union implements TypeNode
         }
     }
 
-    /**
-     * @return bool
-     */
-    public function equals(Union $other_type)
+    public function equals(Union $other_type): bool
     {
         if ($other_type === $this) {
             return true;
@@ -1729,7 +1645,7 @@ class Union implements TypeNode
     /**
      * @return array<string, TLiteralString>
      */
-    public function getLiteralStrings()
+    public function getLiteralStrings(): array
     {
         return $this->literal_string_types;
     }
@@ -1737,7 +1653,7 @@ class Union implements TypeNode
     /**
      * @return array<string, TLiteralInt>
      */
-    public function getLiteralInts()
+    public function getLiteralInts(): array
     {
         return $this->literal_int_types;
     }
@@ -1745,7 +1661,7 @@ class Union implements TypeNode
     /**
      * @return array<string, TLiteralFloat>
      */
-    public function getLiteralFloats()
+    public function getLiteralFloats(): array
     {
         return $this->literal_float_types;
     }

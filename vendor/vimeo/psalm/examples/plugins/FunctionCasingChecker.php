@@ -12,8 +12,6 @@ use Psalm\Codebase;
 use Psalm\CodeLocation;
 use Psalm\Context;
 use Psalm\FileManipulation;
-use Psalm\IssueBuffer;
-use Psalm\Issue\TypeCoercion;
 use Psalm\Plugin\Hook\AfterFunctionCallAnalysisInterface;
 use Psalm\Plugin\Hook\AfterMethodCallAnalysisInterface;
 use Psalm\StatementsSource;
@@ -53,6 +51,10 @@ class FunctionCasingChecker implements AfterFunctionCallAnalysisInterface, After
                 return;
             }
 
+            if ($function_storage->cased_name === '__callStatic') {
+                return;
+            }
+
             if ($function_storage->cased_name !== (string)$expr->name) {
                 if (\Psalm\IssueBuffer::accepts(
                     new IncorrectFunctionCasing(
@@ -70,6 +72,7 @@ class FunctionCasingChecker implements AfterFunctionCallAnalysisInterface, After
     }
 
     /**
+     * @param non-empty-string $function_id
      * @param  FileManipulation[] $file_replacements
      *
      * @return void
@@ -92,7 +95,7 @@ class FunctionCasingChecker implements AfterFunctionCallAnalysisInterface, After
                 $statements_source instanceof \Psalm\Internal\Analyzer\StatementsAnalyzer
                     ? $statements_source
                     : null,
-                $function_id
+                strtolower($function_id)
             );
 
             if (!$function_storage->cased_name) {

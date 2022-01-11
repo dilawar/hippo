@@ -20,21 +20,20 @@ use function strlen;
 use function strpos;
 use function strrpos;
 use function substr;
+use function reset;
+use function array_merge;
 
 /**
  * @internal
  */
 class FunctionDocblockManipulator
 {
-    /** @var array<string, array<string, FunctionDocblockManipulator>> */
-    private static $manipulators = [];
-
     /**
      * Manipulators ordered by line number
      *
      * @var array<string, array<int, FunctionDocblockManipulator>>
      */
-    private static $ordered_manipulators = [];
+    private static $manipulators = [];
 
     /** @var Closure|Function_|ClassMethod|ArrowFunction */
     private $stmt;
@@ -90,36 +89,32 @@ class FunctionDocblockManipulator
     /** @var array<string, array{int, int}> */
     private $param_typehint_offsets = [];
 
+    /** @var bool */
+    private $is_pure = false;
+
     /**
-     * @param  string $file_path
-     * @param  string $function_id
      * @param  Closure|Function_|ClassMethod|ArrowFunction $stmt
-     *
-     * @return self
      */
     public static function getForFunction(
         ProjectAnalyzer $project_analyzer,
-        $file_path,
-        $function_id,
+        string $file_path,
         FunctionLike $stmt
-    ) {
-        if (isset(self::$manipulators[$file_path][$function_id])) {
-            return self::$manipulators[$file_path][$function_id];
+    ): FunctionDocblockManipulator {
+        if (isset(self::$manipulators[$file_path][$stmt->getLine()])) {
+            return self::$manipulators[$file_path][$stmt->getLine()];
         }
 
         $manipulator
-            = self::$manipulators[$file_path][$function_id]
-            = self::$ordered_manipulators[$file_path][$stmt->getLine()]
+            = self::$manipulators[$file_path][$stmt->getLine()]
             = new self($file_path, $stmt, $project_analyzer);
 
         return $manipulator;
     }
 
     /**
-     * @param string $file_path
      * @param Closure|Function_|ClassMethod|ArrowFunction $stmt
      */
-    private function __construct($file_path, FunctionLike $stmt, ProjectAnalyzer $project_analyzer)
+    private function __construct(string $file_path, FunctionLike $stmt, ProjectAnalyzer $project_analyzer)
     {
         $this->stmt = $stmt;
         $docblock = $stmt->getDocComment();
@@ -261,16 +256,14 @@ class FunctionDocblockManipulator
     /**
      * Sets the new return type
      *
-     * @param   ?string     $php_type
-     * @param   string      $new_type
-     * @param   string      $phpdoc_type
-     * @param   bool        $is_php_compatible
-     * @param   ?string     $description
-     *
-     * @return  void
      */
-    public function setReturnType($php_type, $new_type, $phpdoc_type, $is_php_compatible, $description)
-    {
+    public function setReturnType(
+        ?string $php_type,
+        string $new_type,
+        string $phpdoc_type,
+        bool $is_php_compatible,
+        ?string $description
+    ): void {
         $new_type = str_replace(['<mixed, mixed>', '<array-key, mixed>'], '', $new_type);
 
         $this->new_php_return_type = $php_type;
@@ -283,20 +276,15 @@ class FunctionDocblockManipulator
     /**
      * Sets a new param type
      *
-     * @param   string      $param_name
-     * @param   ?string     $php_type
-     * @param   string      $new_type
-     * @param   string      $phpdoc_type
      * @param   bool        $is_php_compatible
      *
-     * @return  void
      */
     public function setParamType(
         string $param_name,
         ?string $php_type,
         string $new_type,
         string $phpdoc_type
-    ) {
+    ): void {
         $new_type = str_replace(['<mixed, mixed>', '<array-key, mixed>', '<empty, empty>'], '', $new_type);
 
         if ($php_type) {
@@ -313,27 +301,32 @@ class FunctionDocblockManipulator
      * Gets a new docblock given the existing docblock, if one exists, and the updated return types
      * and/or parameters
      *
-     * @return string
      */
-    private function getDocblock()
+    private function getDocblock(): string
     {
         $docblock = $this->stmt->getDocComment();
 
         if ($docblock) {
-            $parsed_docblock = DocComment::parse((string)$docblock, null, true);
+            $parsed_docblock = DocComment::parsePreservingLength($docblock);
         } else {
-            $parsed_docblock = ['description' => '', 'specials' => []];
+            $parsed_docblock = new \Psalm\Internal\Scanner\ParsedDocblock('', []);
         }
+
+        $modified_docblock = false;
 
         foreach ($this->new_phpdoc_param_types as $param_name => $phpdoc_type) {
             $found_in_params = false;
             $new_param_block = $phpdoc_type . ' ' . '$' . $param_name;
 
-            if (isset($parsed_docblock['specials']['param'])) {
-                foreach ($parsed_docblock['specials']['param'] as &$param_block) {
+            if (isset($parsed_docblock->tags['param'])) {
+                foreach ($parsed_docblock->tags['param'] as &$param_block) {
                     $doc_parts = CommentAnalyzer::splitDocLine($param_block);
 
                     if (($doc_parts[1] ?? null) === '$' . $param_name) {
+                        if ($param_block !== $new_param_block) {
+                            $modified_docblock = true;
+                        }
+
                         $param_block = $new_param_block;
                         $found_in_params = true;
                         break;
@@ -342,34 +335,59 @@ class FunctionDocblockManipulator
             }
 
             if (!$found_in_params) {
-                $parsed_docblock['specials']['param'][] = $new_param_block;
+                $modified_docblock = true;
+                $parsed_docblock->tags['param'][] = $new_param_block;
             }
         }
 
-        if ($this->new_phpdoc_return_type) {
-            $parsed_docblock['specials']['return'] = [
+        $old_phpdoc_return_type = null;
+        if (isset($parsed_docblock->tags['return'])) {
+            $old_phpdoc_return_type = reset($parsed_docblock->tags['return']);
+        }
+
+        if ($this->is_pure) {
+            $modified_docblock = true;
+            $parsed_docblock->tags['psalm-pure'] = [''];
+        }
+
+        if ($this->new_phpdoc_return_type
+            && $this->new_phpdoc_return_type !== $old_phpdoc_return_type
+        ) {
+            $modified_docblock = true;
+            $parsed_docblock->tags['return'] = [
                 $this->new_phpdoc_return_type
                     . ($this->return_type_description ? (' ' . $this->return_type_description) : ''),
             ];
         }
 
-        if ($this->new_phpdoc_return_type !== $this->new_psalm_return_type && $this->new_psalm_return_type) {
-            $parsed_docblock['specials']['psalm-return'] = [$this->new_psalm_return_type];
+        $old_psalm_return_type = null;
+        if (isset($parsed_docblock->tags['psalm-return'])) {
+            $old_psalm_return_type = reset($parsed_docblock->tags['psalm-return']);
         }
 
-        if (!$parsed_docblock['specials'] && !$parsed_docblock['description']) {
+        if ($this->new_psalm_return_type
+            && $this->new_phpdoc_return_type !== $this->new_psalm_return_type
+            && $this->new_psalm_return_type !== $old_psalm_return_type
+        ) {
+            $modified_docblock = true;
+            $parsed_docblock->tags['psalm-return'] = [$this->new_psalm_return_type];
+        }
+
+        if (!$parsed_docblock->tags && !$parsed_docblock->description) {
             return '';
         }
 
-        return DocComment::render($parsed_docblock, $this->indentation);
+        if (!$modified_docblock) {
+            return (string)$docblock . "\n" . $this->indentation;
+        }
+
+        return $parsed_docblock->render($this->indentation);
     }
 
     /**
-     * @param  string $file_path
-     *
      * @return array<int, FileManipulation>
      */
-    public static function getManipulationsForFile($file_path)
+    public static function getManipulationsForFile(string $file_path): array
     {
         if (!isset(self::$manipulators[$file_path])) {
             return [];
@@ -377,7 +395,7 @@ class FunctionDocblockManipulator
 
         $file_manipulations = [];
 
-        foreach (self::$ordered_manipulators[$file_path] as $manipulator) {
+        foreach (self::$manipulators[$file_path] as $manipulator) {
             if ($manipulator->new_php_return_type) {
                 if ($manipulator->return_typehint_start && $manipulator->return_typehint_end) {
                     $file_manipulations[$manipulator->return_typehint_start] = new FileManipulation(
@@ -408,6 +426,7 @@ class FunctionDocblockManipulator
             if (!$manipulator->new_php_return_type
                 || !$manipulator->return_type_is_php_compatible
                 || $manipulator->docblock_start !== $manipulator->docblock_end
+                || $manipulator->is_pure
             ) {
                 $file_manipulations[$manipulator->docblock_start] = new FileManipulation(
                     $manipulator->docblock_start,
@@ -454,12 +473,29 @@ class FunctionDocblockManipulator
         return $file_manipulations;
     }
 
-    /**
-     * @return void
-     */
-    public static function clearCache()
+    public function makePure() : void
+    {
+        $this->is_pure = true;
+    }
+
+    public static function clearCache(): void
     {
         self::$manipulators = [];
-        self::$ordered_manipulators = [];
+    }
+
+    /**
+     * @param array<string, array<int, FunctionDocblockManipulator>> $manipulators
+     */
+    public static function addManipulators(array $manipulators) : void
+    {
+        self::$manipulators = array_merge($manipulators, self::$manipulators);
+    }
+
+    /**
+     * @return array<string, array<int, FunctionDocblockManipulator>>
+     */
+    public static function getManipulators(): array
+    {
+        return self::$manipulators;
     }
 }

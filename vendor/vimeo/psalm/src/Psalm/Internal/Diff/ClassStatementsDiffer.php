@@ -17,9 +17,6 @@ class ClassStatementsDiffer extends AstDiffer
     /**
      * Calculate diff (edit script) from $a to $b.
      *
-     * @param string $name
-     * @param string $a_code
-     * @param string $b_code
      * @param array<int, PhpParser\Node\Stmt> $a
      * @param array<int, PhpParser\Node\Stmt> $b
      *
@@ -30,11 +27,11 @@ class ClassStatementsDiffer extends AstDiffer
      *      3: array<int, array{0: int, 1: int, 2: int, 3: int}>
      * }
      */
-    public static function diff($name, array $a, array $b, $a_code, $b_code)
+    public static function diff(string $name, array $a, array $b, string $a_code, string $b_code): array
     {
         $diff_map = [];
 
-        list($trace, $x, $y, $bc) = self::calculateTrace(
+        [$trace, $x, $y, $bc] = self::calculateTrace(
             /**
              * @param string $a_code
              * @param string $b_code
@@ -48,7 +45,7 @@ class ClassStatementsDiffer extends AstDiffer
                 $a_code,
                 $b_code,
                 &$body_change = false
-            ) use (&$diff_map) {
+            ) use (&$diff_map): bool {
                 if (get_class($a) !== get_class($b)) {
                     return false;
                 }
@@ -95,6 +92,7 @@ class ClassStatementsDiffer extends AstDiffer
                     $start_diff = $b_start - $a_start;
                     $line_diff = $b->getLine() - $a->getLine();
 
+                    /** @psalm-suppress MixedArrayAssignment */
                     $diff_map[] = [$a_start, $a_end, $start_diff, $line_diff];
 
                     return true;
@@ -172,6 +170,7 @@ class ClassStatementsDiffer extends AstDiffer
                 }
 
                 if (!$signature_change && !$body_change) {
+                    /** @psalm-suppress MixedArrayAssignment */
                     $diff_map[] = [$a_start, $a_end, $b_start - $a_start, $b->getLine() - $a->getLine()];
                 }
 

@@ -22,12 +22,10 @@ class LatexToUnicodeProcessor
 {
     use TagCoverageTrait;
 
-    /** @var null|Pandoc */
+    /** @var Pandoc|null */
     private $pandoc;
 
     /**
-     * @param array $entry
-     *
      * @return array
      */
     public function __invoke(array $entry)
@@ -35,15 +33,15 @@ class LatexToUnicodeProcessor
         $covered = $this->getCoveredTags(array_keys($entry));
         foreach ($covered as $tag) {
             // Translate string
-            if (is_string($entry[$tag])) {
+            if (\is_string($entry[$tag])) {
                 $entry[$tag] = $this->decode($entry[$tag]);
                 continue;
             }
 
             // Translate array
-            if (is_array($entry[$tag])) {
+            if (\is_array($entry[$tag])) {
                 array_walk_recursive($entry[$tag], function (&$text) {
-                    if (is_string($text)) {
+                    if (\is_string($text)) {
                         $text = $this->decode($text);
                     }
                 });
@@ -68,16 +66,10 @@ class LatexToUnicodeProcessor
             return $this->pandoc->runWith($text, [
                 'from' => 'latex',
                 'to' => 'plain',
+                'wrap' => 'none',
             ]);
         } catch (PandocException $exception) {
-            throw new ProcessorException(
-                sprintf(
-                    'Error while processing LaTeX to Unicode: %s',
-                    $exception->getMessage()
-                ),
-                0,
-                $exception
-            );
+            throw new ProcessorException(sprintf('Error while processing LaTeX to Unicode: %s', $exception->getMessage()), 0, $exception);
         }
     }
 }

@@ -1,12 +1,12 @@
 <?php
 namespace Psalm\Config;
 
+use Psalm\Internal\Composer;
 use function array_merge;
 use function array_shift;
 use function array_unique;
 use function count;
 use const DIRECTORY_SEPARATOR;
-use function dirname;
 use function explode;
 use function file_exists;
 use function file_get_contents;
@@ -25,12 +25,12 @@ use function array_filter;
 use function array_sum;
 use function array_keys;
 use function max;
+use const GLOB_NOSORT;
 
 class Creator
 {
-    const TEMPLATE = '<?xml version="1.0"?>
+    private const TEMPLATE = '<?xml version="1.0"?>
 <psalm
-    totallyTyped="true"
     errorLevel="1"
     resolveFromConfigFile="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -65,14 +65,6 @@ class Creator
             '<directory name="' . $vendor_dir . '" />',
             $template
         );
-
-        if ($level > 1) {
-            $template = str_replace(
-                'totallyTyped="true"',
-                'totallyTyped="false"',
-                $template
-            );
-        }
 
         $template = str_replace(
             'errorLevel="1"',
@@ -130,7 +122,7 @@ class Creator
             // remove any issues where < 0.1% of expressions are affected
             $filtered_issues = array_filter(
                 $issues,
-                function ($amount) {
+                function ($amount): bool {
                     return $amount > 0.1;
                 }
             );
@@ -156,7 +148,7 @@ class Creator
     /**
      * @return non-empty-list<string>
      */
-    public static function getPaths(string $current_dir, ?string $suggested_dir)
+    public static function getPaths(string $current_dir, ?string $suggested_dir): array
     {
         $replacements = [];
 
@@ -173,7 +165,7 @@ class Creator
         } elseif (is_dir($current_dir . DIRECTORY_SEPARATOR . 'src')) {
             $replacements[] = '<directory name="src" />';
         } else {
-            $composer_json_location = $current_dir . DIRECTORY_SEPARATOR . 'composer.json';
+            $composer_json_location = Composer::getJsonFilePath($current_dir);
 
             if (!file_exists($composer_json_location)) {
                 throw new ConfigCreationException(
@@ -259,9 +251,9 @@ class Creator
 
         /** @var string[] */
         $php_files = array_merge(
-            glob($current_dir . DIRECTORY_SEPARATOR . '*.php'),
-            glob($current_dir . DIRECTORY_SEPARATOR . '**/*.php'),
-            glob($current_dir . DIRECTORY_SEPARATOR . '**/**/*.php')
+            glob($current_dir . DIRECTORY_SEPARATOR . '*.php', GLOB_NOSORT),
+            glob($current_dir . DIRECTORY_SEPARATOR . '**/*.php', GLOB_NOSORT),
+            glob($current_dir . DIRECTORY_SEPARATOR . '**/**/*.php', GLOB_NOSORT)
         );
 
         foreach ($php_files as $php_file) {

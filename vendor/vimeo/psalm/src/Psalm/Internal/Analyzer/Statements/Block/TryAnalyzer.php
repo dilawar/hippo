@@ -12,6 +12,7 @@ use Psalm\IssueBuffer;
 use Psalm\Type;
 use Psalm\Type\Atomic\TNamedObject;
 use Psalm\Type\Union;
+use Psalm\Internal\Scope\FinallyScope;
 use function in_array;
 use function array_merge;
 use function array_intersect_key;
@@ -28,17 +29,13 @@ use const PHP_VERSION;
 class TryAnalyzer
 {
     /**
-     * @param   StatementsAnalyzer               $statements_analyzer
-     * @param   PhpParser\Node\Stmt\TryCatch    $stmt
-     * @param   Context                         $context
-     *
      * @return  false|null
      */
     public static function analyze(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Stmt\TryCatch $stmt,
         Context $context
-    ) {
+    ): ?bool {
         $catch_actions = [];
         $all_catches_leave = true;
 
@@ -46,7 +43,7 @@ class TryAnalyzer
 
         /** @var int $i */
         foreach ($stmt->catches as $i => $catch) {
-            $catch_actions[$i] = ScopeAnalyzer::getFinalControlActions(
+            $catch_actions[$i] = ScopeAnalyzer::getControlActions(
                 $catch->stmts,
                 $statements_analyzer->node_data,
                 $codebase->config->exit_functions
@@ -71,6 +68,10 @@ class TryAnalyzer
             if ($codebase->alter_code) {
                 $try_context->branch_point = $try_context->branch_point ?: (int) $stmt->getAttribute('startFilePos');
             }
+
+            if ($stmt->finally) {
+                $try_context->finally_scope = new FinallyScope($try_context->vars_in_scope);
+            }
         }
 
         $assigned_var_ids = $try_context->assigned_var_ids;
@@ -85,9 +86,25 @@ class TryAnalyzer
             return false;
         }
 
+        if ($try_context->finally_scope) {
+            foreach ($context->vars_in_scope as $var_id => $type) {
+                if (isset($try_context->finally_scope->vars_in_scope[$var_id])) {
+                    if ($try_context->finally_scope->vars_in_scope[$var_id] !== $type) {
+                        $try_context->finally_scope->vars_in_scope[$var_id] = Type::combineUnionTypes(
+                            $try_context->finally_scope->vars_in_scope[$var_id],
+                            $type,
+                            $statements_analyzer->getCodebase()
+                        );
+                    }
+                } else {
+                    $try_context->finally_scope->vars_in_scope[$var_id] = $type;
+                }
+            }
+        }
+
         $context->has_returned = false;
 
-        $stmt_control_actions = ScopeAnalyzer::getFinalControlActions(
+        $stmt_control_actions = ScopeAnalyzer::getControlActions(
             $stmt->stmts,
             $statements_analyzer->node_data,
             $codebase->config->exit_functions,
@@ -111,7 +128,9 @@ class TryAnalyzer
             foreach ($context->vars_in_scope as $var_id => $type) {
                 if (!isset($try_context->vars_in_scope[$var_id])) {
                     $try_context->vars_in_scope[$var_id] = clone $type;
-                    $try_context->vars_in_scope[$var_id]->from_docblock = true;
+
+                    $context->vars_in_scope[$var_id]->possibly_undefined = true;
+                    $context->vars_in_scope[$var_id]->possibly_undefined_from_try = true;
                 } else {
                     $try_context->vars_in_scope[$var_id] = Type::combineUnionTypes(
                         $try_context->vars_in_scope[$var_id],
@@ -195,12 +214,6 @@ class TryAnalyzer
 
             $fq_catch_classes = [];
 
-            $catch_var_name = $catch->var->name;
-
-            if (!is_string($catch_var_name)) {
-                throw new \UnexpectedValueException('Catch var name must be a string');
-            }
-
             if (!$catch->types) {
                 throw new \UnexpectedValueException('Very bad');
             }
@@ -210,6 +223,8 @@ class TryAnalyzer
                     $catch_type,
                     $statements_analyzer->getAliases()
                 );
+
+                $fq_catch_class = $codebase->classlikes->getUnAliasedName($fq_catch_class);
 
                 if ($codebase->alter_code && $fq_catch_class) {
                     $codebase->classlikes->handleClassLikeReferenceInMigration(
@@ -284,53 +299,56 @@ class TryAnalyzer
                 $catch_context->possibly_thrown_exceptions = [];
             }
 
-            $catch_var_id = '$' . $catch_var_name;
-
-            $catch_context->vars_in_scope[$catch_var_id] = new Union(
-                array_map(
-                    /**
-                     * @param string $fq_catch_class
-                     *
-                     * @return Type\Atomic
-                     */
-                    function ($fq_catch_class) use ($codebase) {
-                        $catch_class_type = new TNamedObject($fq_catch_class);
-
-                        if (version_compare(PHP_VERSION, '7.0.0dev', '>=')
-                            && strtolower($fq_catch_class) !== 'throwable'
-                            && $codebase->interfaceExists($fq_catch_class)
-                            && !$codebase->interfaceExtends($fq_catch_class, 'Throwable')
-                        ) {
-                            $catch_class_type->addIntersectionType(new TNamedObject('Throwable'));
-                        }
-
-                        return $catch_class_type;
-                    },
-                    $fq_catch_classes
-                )
-            );
-
             // discard all clauses because crazy stuff may have happened in try block
             $catch_context->clauses = [];
 
-            $catch_context->vars_possibly_in_scope[$catch_var_id] = true;
+            /** @psalm-suppress RedundantConditionGivenDocblockType */
+            if ($catch->var && is_string($catch->var->name)) {
+                $catch_var_id = '$' . $catch->var->name;
 
-            if (!$statements_analyzer->hasVariable($catch_var_id)) {
-                $location = new CodeLocation(
-                    $statements_analyzer,
-                    $catch->var,
-                    $context->include_location
+                $catch_context->vars_in_scope[$catch_var_id] = new Union(
+                    array_map(
+                        /**
+                         * @param string $fq_catch_class
+                         *
+                         * @return Type\Atomic
+                         */
+                        function ($fq_catch_class) use ($codebase): Type\Atomic {
+                            $catch_class_type = new TNamedObject($fq_catch_class);
+
+                            if (version_compare(PHP_VERSION, '7.0.0dev', '>=')
+                                && strtolower($fq_catch_class) !== 'throwable'
+                                && $codebase->interfaceExists($fq_catch_class)
+                                && !$codebase->interfaceExtends($fq_catch_class, 'Throwable')
+                            ) {
+                                $catch_class_type->addIntersectionType(new TNamedObject('Throwable'));
+                            }
+
+                            return $catch_class_type;
+                        },
+                        $fq_catch_classes
+                    )
                 );
-                $statements_analyzer->registerVariable(
-                    $catch_var_id,
-                    $location,
-                    $try_context->branch_point
-                );
-                $catch_context->unreferenced_vars[$catch_var_id] = [$location->getHash() => $location];
+
+                $catch_context->vars_possibly_in_scope[$catch_var_id] = true;
+
+                if (!$statements_analyzer->hasVariable($catch_var_id)) {
+                    $location = new CodeLocation(
+                        $statements_analyzer,
+                        $catch->var,
+                        $context->include_location
+                    );
+                    $statements_analyzer->registerVariable(
+                        $catch_var_id,
+                        $location,
+                        $try_context->branch_point
+                    );
+                    $catch_context->unreferenced_vars[$catch_var_id] = [$location->getHash() => $location];
+                }
+
+                // this registers the variable to avoid unfair deadcode issues
+                $catch_context->hasVariable($catch_var_id, $statements_analyzer);
             }
-
-            // this registers the variable to avoid unfair deadcode issues
-            $catch_context->hasVariable($catch_var_id, $statements_analyzer);
 
             $suppressed_issues = $statements_analyzer->getSuppressedIssues();
 
@@ -347,7 +365,7 @@ class TryAnalyzer
             $statements_analyzer->analyze($catch->stmts, $catch_context);
 
             // recalculate in case there's a no-return clause
-            $catch_actions[$i] = ScopeAnalyzer::getFinalControlActions(
+            $catch_actions[$i] = ScopeAnalyzer::getControlActions(
                 $catch->stmts,
                 $statements_analyzer->node_data,
                 $codebase->config->exit_functions,
@@ -416,9 +434,7 @@ class TryAnalyzer
                 foreach ($catch_context->vars_in_scope as $var_id => $type) {
                     if ($stmt_control_actions === [ScopeAnalyzer::ACTION_END]) {
                         $context->vars_in_scope[$var_id] = $type;
-                    } elseif (isset($context->vars_in_scope[$var_id])
-                        && !$context->vars_in_scope[$var_id]->equals($type)
-                    ) {
+                    } elseif (isset($context->vars_in_scope[$var_id])) {
                         $context->vars_in_scope[$var_id] = Type::combineUnionTypes(
                             $context->vars_in_scope[$var_id],
                             $type
@@ -439,32 +455,20 @@ class TryAnalyzer
                 }
             }
 
-            if ($stmt->finally) {
-                $suppressed_issues = $statements_analyzer->getSuppressedIssues();
-
-                foreach ($issues_to_suppress as $issue_to_suppress) {
-                    if (!in_array($issue_to_suppress, $suppressed_issues, true)) {
-                        $statements_analyzer->addSuppressedIssues([$issue_to_suppress]);
+            if ($try_context->finally_scope) {
+                foreach ($catch_context->vars_in_scope as $var_id => $type) {
+                    if (isset($try_context->finally_scope->vars_in_scope[$var_id])) {
+                        if ($try_context->finally_scope->vars_in_scope[$var_id] !== $type) {
+                            $try_context->finally_scope->vars_in_scope[$var_id] = Type::combineUnionTypes(
+                                $try_context->finally_scope->vars_in_scope[$var_id],
+                                $type,
+                                $statements_analyzer->getCodebase()
+                            );
+                        }
+                    } else {
+                        $try_context->finally_scope->vars_in_scope[$var_id] = $type;
                     }
                 }
-
-                $catch_context->has_returned = false;
-
-                $statements_analyzer->analyze($stmt->finally->stmts, $catch_context);
-
-                foreach ($issues_to_suppress as $issue_to_suppress) {
-                    if (!in_array($issue_to_suppress, $suppressed_issues, true)) {
-                        $statements_analyzer->removeSuppressedIssues([$issue_to_suppress]);
-                    }
-                }
-            }
-        }
-
-        foreach ($definitely_newly_assigned_var_ids as $var_id => $_) {
-            if (isset($context->vars_in_scope[$var_id])) {
-                $new_type = clone $context->vars_in_scope[$var_id];
-                $new_type->possibly_undefined_from_try = false;
-                $context->vars_in_scope[$var_id] = $new_type;
             }
         }
 
@@ -505,20 +509,75 @@ class TryAnalyzer
         }
 
         if ($stmt->finally) {
-            $suppressed_issues = $statements_analyzer->getSuppressedIssues();
+            if ($try_context->finally_scope) {
+                $finally_context = clone $context;
 
-            foreach ($issues_to_suppress as $issue_to_suppress) {
-                if (!in_array($issue_to_suppress, $suppressed_issues, true)) {
-                    $statements_analyzer->addSuppressedIssues([$issue_to_suppress]);
+                $finally_context->assigned_var_ids = [];
+                $finally_context->possibly_assigned_var_ids = [];
+
+                $finally_context->vars_in_scope = $try_context->finally_scope->vars_in_scope;
+
+                $statements_analyzer->analyze($stmt->finally->stmts, $finally_context);
+
+                if ($finally_context->has_returned) {
+                    $context->has_returned = true;
+                }
+
+                /** @var string $var_id */
+                foreach ($finally_context->assigned_var_ids as $var_id => $_) {
+                    if (isset($context->vars_in_scope[$var_id])) {
+                        if ($context->vars_in_scope[$var_id]->possibly_undefined
+                            && $context->vars_in_scope[$var_id]->possibly_undefined_from_try
+                        ) {
+                            $context->vars_in_scope[$var_id]->possibly_undefined = false;
+                            $context->vars_in_scope[$var_id]->possibly_undefined_from_try = false;
+                        }
+
+                        $context->vars_in_scope[$var_id] = Type::combineUnionTypes(
+                            $context->vars_in_scope[$var_id],
+                            $finally_context->vars_in_scope[$var_id],
+                            $codebase
+                        );
+                    } elseif (isset($finally_context->vars_in_scope[$var_id])) {
+                        $context->vars_in_scope[$var_id] = clone $finally_context->vars_in_scope[$var_id];
+                    }
+                }
+
+                $newly_unreferenced_vars = array_merge(
+                    $newly_unreferenced_vars,
+                    array_diff_key(
+                        $finally_context->unreferenced_vars,
+                        $old_unreferenced_vars
+                    )
+                );
+
+                foreach ($finally_context->unreferenced_vars as $var_id => $locations) {
+                    if (!isset($old_unreferenced_vars[$var_id])
+                        && (isset($context->unreferenced_vars[$var_id])
+                            || isset($newly_assigned_var_ids[$var_id]))
+                    ) {
+                        $statements_analyzer->registerVariableUses($locations);
+                    } elseif (isset($old_unreferenced_vars[$var_id])
+                        && $old_unreferenced_vars[$var_id] !== $locations
+                    ) {
+                        $statements_analyzer->registerVariableUses($locations);
+                    } elseif (isset($newly_unreferenced_vars[$var_id])) {
+                        $context->unreferenced_vars[$var_id] = $newly_unreferenced_vars[$var_id];
+                    }
                 }
             }
+        }
 
-            $statements_analyzer->analyze($stmt->finally->stmts, $context);
+        foreach ($definitely_newly_assigned_var_ids as $var_id => $_) {
+            if (isset($context->vars_in_scope[$var_id])) {
+                $new_type = clone $context->vars_in_scope[$var_id];
 
-            foreach ($issues_to_suppress as $issue_to_suppress) {
-                if (!in_array($issue_to_suppress, $suppressed_issues, true)) {
-                    $statements_analyzer->removeSuppressedIssues([$issue_to_suppress]);
+                if ($new_type->possibly_undefined_from_try) {
+                    $new_type->possibly_undefined = false;
+                    $new_type->possibly_undefined_from_try = false;
                 }
+
+                $context->vars_in_scope[$var_id] = $new_type;
             }
         }
 

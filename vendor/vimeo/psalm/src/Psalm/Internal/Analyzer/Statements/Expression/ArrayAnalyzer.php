@@ -20,23 +20,16 @@ use function count;
  */
 class ArrayAnalyzer
 {
-    /**
-     * @param   StatementsAnalyzer           $statements_analyzer
-     * @param   PhpParser\Node\Expr\Array_  $stmt
-     * @param   Context                     $context
-     *
-     * @return  false|null
-     */
     public static function analyze(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Expr\Array_ $stmt,
         Context $context
-    ) {
+    ) : bool {
         // if the array is empty, this special type allows us to match any other array type against it
         if (empty($stmt->items)) {
             $statements_analyzer->node_data->setType($stmt, Type::getEmptyArray());
 
-            return null;
+            return true;
         }
 
         $item_key_atomic_types = [];
@@ -55,8 +48,7 @@ class ArrayAnalyzer
 
         $all_list = true;
 
-        $taint_sources = [];
-        $either_tainted = 0;
+        $parent_taint_nodes = [];
 
         foreach ($stmt->items as $int_offset => $item) {
             if ($item === null) {
@@ -210,20 +202,37 @@ class ArrayAnalyzer
                 $array_keys[$item_key_value] = true;
             }
 
-            if ($codebase->taint) {
+            if ($statements_analyzer->control_flow_graph
+                && !\in_array('TaintedInput', $statements_analyzer->getSuppressedIssues())
+            ) {
                 if ($item_value_type = $statements_analyzer->node_data->getType($item->value)) {
-                    $taint_sources = array_merge($taint_sources, $item_value_type->sources ?: []);
-                    $either_tainted = $either_tainted | $item_value_type->tainted;
-                }
+                    if ($item_value_type->parent_nodes) {
+                        $var_location = new CodeLocation($statements_analyzer->getSource(), $item);
 
-                if ($item->key && ($item_key_type = $statements_analyzer->node_data->getType($item->key))) {
-                    $taint_sources = array_merge($taint_sources, $item_key_type->sources ?: []);
-                    $either_tainted = $either_tainted | $item_key_type->tainted;
+                        $new_parent_node = \Psalm\Internal\ControlFlow\ControlFlowNode::getForAssignment(
+                            'array'
+                                . ($item_key_value !== null ? '[\'' . $item_key_value . '\']' : ''),
+                            $var_location
+                        );
+
+                        $statements_analyzer->control_flow_graph->addNode($new_parent_node);
+
+                        foreach ($item_value_type->parent_nodes as $parent_node) {
+                            $statements_analyzer->control_flow_graph->addPath(
+                                $parent_node,
+                                $new_parent_node,
+                                'array-assignment'
+                                    . ($item_key_value !== null ? '-\'' . $item_key_value . '\'' : '')
+                            );
+                        }
+
+                        $parent_taint_nodes[$new_parent_node->id] = $new_parent_node;
+                    }
                 }
             }
 
             if ($item->byRef) {
-                $var_id = ExpressionAnalyzer::getArrayVarId(
+                $var_id = ExpressionIdentifier::getArrayVarId(
                     $item->value,
                     $statements_analyzer->getFQCLN(),
                     $statements_analyzer
@@ -304,17 +313,13 @@ class ArrayAnalyzer
 
             $stmt_type = new Type\Union([$object_like]);
 
-            if ($taint_sources) {
-                $stmt_type->sources = $taint_sources;
-            }
-
-            if ($either_tainted) {
-                $stmt_type->tainted = $either_tainted;
+            if ($parent_taint_nodes) {
+                $stmt_type->parent_nodes = $parent_taint_nodes;
             }
 
             $statements_analyzer->node_data->setType($stmt, $stmt_type);
 
-            return null;
+            return true;
         }
 
         if ($all_list) {
@@ -325,17 +330,13 @@ class ArrayAnalyzer
                 $array_type,
             ]);
 
-            if ($taint_sources) {
-                $stmt_type->sources = $taint_sources;
-            }
-
-            if ($either_tainted) {
-                $stmt_type->tainted = $either_tainted;
+            if ($parent_taint_nodes) {
+                $stmt_type->parent_nodes = $parent_taint_nodes;
             }
 
             $statements_analyzer->node_data->setType($stmt, $stmt_type);
 
-            return null;
+            return true;
         }
 
         $array_type = new Type\Atomic\TNonEmptyArray([
@@ -349,16 +350,12 @@ class ArrayAnalyzer
             $array_type,
         ]);
 
-        if ($taint_sources) {
-            $stmt_type->sources = $taint_sources;
-        }
-
-        if ($either_tainted) {
-            $stmt_type->tainted = $either_tainted;
+        if ($parent_taint_nodes) {
+            $stmt_type->parent_nodes = $parent_taint_nodes;
         }
 
         $statements_analyzer->node_data->setType($stmt, $stmt_type);
 
-        return null;
+        return true;
     }
 }

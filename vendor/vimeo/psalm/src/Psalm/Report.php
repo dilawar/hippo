@@ -6,20 +6,21 @@ use Psalm\Internal\Analyzer\IssueData;
 
 abstract class Report
 {
-    const TYPE_COMPACT = 'compact';
-    const TYPE_CONSOLE = 'console';
-    const TYPE_PYLINT = 'pylint';
-    const TYPE_JSON = 'json';
-    const TYPE_JSON_SUMMARY = 'json-summary';
-    const TYPE_SONARQUBE = 'sonarqube';
-    const TYPE_EMACS = 'emacs';
-    const TYPE_XML = 'xml';
-    const TYPE_JUNIT = 'junit';
-    const TYPE_CHECKSTYLE = 'checkstyle';
-    const TYPE_TEXT = 'text';
-    const TYPE_GITHUB_ACTIONS = 'github';
+    public const TYPE_COMPACT = 'compact';
+    public const TYPE_CONSOLE = 'console';
+    public const TYPE_PYLINT = 'pylint';
+    public const TYPE_JSON = 'json';
+    public const TYPE_JSON_SUMMARY = 'json-summary';
+    public const TYPE_SONARQUBE = 'sonarqube';
+    public const TYPE_EMACS = 'emacs';
+    public const TYPE_XML = 'xml';
+    public const TYPE_JUNIT = 'junit';
+    public const TYPE_CHECKSTYLE = 'checkstyle';
+    public const TYPE_TEXT = 'text';
+    public const TYPE_GITHUB_ACTIONS = 'github';
+    public const TYPE_PHP_STORM = 'phpstorm';
 
-    const SUPPORTED_OUTPUT_TYPES = [
+    public const SUPPORTED_OUTPUT_TYPES = [
         self::TYPE_COMPACT,
         self::TYPE_CONSOLE,
         self::TYPE_PYLINT,
@@ -32,6 +33,7 @@ abstract class Report
         self::TYPE_CHECKSTYLE,
         self::TYPE_TEXT,
         self::TYPE_GITHUB_ACTIONS,
+        self::TYPE_PHP_STORM,
     ];
 
     /**
@@ -50,6 +52,9 @@ abstract class Report
 
     /** @var bool */
     protected $show_info;
+
+    /** @var bool */
+    protected $pretty;
 
     /** @var int */
     protected $mixed_expression_count;
@@ -86,13 +91,11 @@ abstract class Report
         $this->use_color = $report_options->use_color;
         $this->show_snippet = $report_options->show_snippet;
         $this->show_info = $report_options->show_info;
+        $this->pretty = $report_options->pretty;
 
         $this->mixed_expression_count = $mixed_expression_count;
         $this->total_expression_count = $total_expression_count;
     }
 
-    /**
-     * @return string
-     */
     abstract public function create(): string;
 }

@@ -8,17 +8,16 @@ use function array_map;
 
 class XmlReport extends Report
 {
-    /**
-     * {@inheritdoc}
-     */
     public function create(): string
     {
         $xml = Array2XML::createXML(
             'report',
             [
                 'item' => array_map(
-                    function (IssueData $issue_data) {
-                        return (array) $issue_data;
+                    function (IssueData $issue_data): array {
+                        $issue_data = (array) $issue_data;
+                        unset($issue_data['dupe_key']);
+                        return $issue_data;
                     },
                     $this->issues_data
                 )

@@ -1,8 +1,8 @@
 <?php
 namespace Psalm\Issue;
 
-class UndefinedGlobalVariable extends CodeIssue
+class UndefinedGlobalVariable extends VariableIssue
 {
-    const ERROR_LEVEL = -1;
-    const SHORTCODE = 127;
+    public const ERROR_LEVEL = -1;
+    public const SHORTCODE = 127;
 }

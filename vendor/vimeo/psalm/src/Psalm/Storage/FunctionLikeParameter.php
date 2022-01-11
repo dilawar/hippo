@@ -26,6 +26,11 @@ class FunctionLikeParameter
     /**
      * @var Type\Union|null
      */
+    public $out_type;
+
+    /**
+     * @var Type\Union|null
+     */
     public $signature_type;
 
     /**
@@ -69,9 +74,9 @@ class FunctionLikeParameter
     public $is_variadic;
 
     /**
-     * @var int
+     * @var array<string>|null
      */
-    public $sink = 0;
+    public $sinks;
 
     /**
      * @var bool
@@ -79,25 +84,25 @@ class FunctionLikeParameter
     public $assert_untainted = false;
 
     /**
-     * @param string        $name
-     * @param bool       $by_ref
-     * @param Type\Union|null    $type
-     * @param CodeLocation|null  $location
-     * @param bool       $is_optional
-     * @param bool       $is_nullable
-     * @param bool       $is_variadic
-     * @param Type\Union|null    $default_type
+     * @var bool
      */
+    public $type_inferred = false;
+
+    /**
+     * @var bool
+     */
+    public $expect_variable = false;
+
     public function __construct(
-        $name,
+        string $name,
         bool $by_ref,
-        Type\Union $type = null,
-        CodeLocation $location = null,
-        CodeLocation $type_location = null,
-        $is_optional = true,
-        $is_nullable = false,
-        $is_variadic = false,
-        $default_type = null
+        ?Type\Union $type = null,
+        ?CodeLocation $location = null,
+        ?CodeLocation $type_location = null,
+        bool $is_optional = true,
+        bool $is_nullable = false,
+        bool $is_variadic = false,
+        ?Type\Union $default_type = null
     ) {
         $this->name = $name;
         $this->by_ref = $by_ref;
@@ -110,13 +115,6 @@ class FunctionLikeParameter
         $this->type_location = $type_location;
         $this->signature_type_location = $type_location;
         $this->default_type = $default_type;
-    }
-
-    public function __toString()
-    {
-        return ($this->type ?: 'mixed')
-            . ($this->is_variadic ? '...' : '')
-            . ($this->is_optional ? '=' : '');
     }
 
     public function getId() : string

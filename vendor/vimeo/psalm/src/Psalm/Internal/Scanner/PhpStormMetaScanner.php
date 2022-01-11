@@ -5,7 +5,6 @@ use PhpParser;
 use Psalm\Context;
 use Psalm\Codebase;
 use Psalm\CodeLocation;
-use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Type;
 use function strtolower;
 use function implode;
@@ -92,7 +91,6 @@ class PhpStormMetaScanner
                     $meta_fq_classlike_name,
                     /**
                      * @param array<PhpParser\Node\Arg> $call_args
-                     * @return ?Type\Union
                      */
                     function (
                         \Psalm\StatementsSource $statements_analyzer,
@@ -106,7 +104,7 @@ class PhpStormMetaScanner
                         $offset,
                         $meta_fq_classlike_name,
                         $meta_method_name
-                    ) {
+                    ): ?Type\Union {
                         if (!$statements_analyzer instanceof \Psalm\Internal\Analyzer\StatementsAnalyzer) {
                             return Type::getMixed();
                         }
@@ -150,7 +148,6 @@ class PhpStormMetaScanner
                     $meta_fq_classlike_name,
                     /**
                      * @param array<PhpParser\Node\Arg> $call_args
-                     * @return ?Type\Union
                      */
                     function (
                         \Psalm\StatementsSource $statements_analyzer,
@@ -164,7 +161,7 @@ class PhpStormMetaScanner
                         $type_offset,
                         $meta_fq_classlike_name,
                         $meta_method_name
-                    ) {
+                    ): ?Type\Union {
                         if (!$statements_analyzer instanceof \Psalm\Internal\Analyzer\StatementsAnalyzer) {
                             return Type::getMixed();
                         }
@@ -190,7 +187,6 @@ class PhpStormMetaScanner
                     $meta_fq_classlike_name,
                     /**
                      * @param array<PhpParser\Node\Arg> $call_args
-                     * @return ?Type\Union
                      */
                     function (
                         \Psalm\StatementsSource $statements_analyzer,
@@ -204,7 +200,7 @@ class PhpStormMetaScanner
                         $element_type_offset,
                         $meta_fq_classlike_name,
                         $meta_method_name
-                    ) {
+                    ): ?Type\Union {
                         if (!$statements_analyzer instanceof \Psalm\Internal\Analyzer\StatementsAnalyzer) {
                             return Type::getMixed();
                         }
@@ -256,6 +252,7 @@ class PhpStormMetaScanner
                 $codebase->functions->return_type_provider->registerClosure(
                     $function_id,
                     /**
+                     * @param non-empty-string $function_id
                      * @param array<PhpParser\Node\Arg> $call_args
                      */
                     function (
@@ -300,7 +297,7 @@ class PhpStormMetaScanner
 
                         $storage = $statements_analyzer->getCodebase()->functions->getStorage(
                             $statements_analyzer,
-                            $function_id
+                            strtolower($function_id)
                         );
 
                         return $storage->return_type ?: Type::getMixed();
@@ -310,6 +307,7 @@ class PhpStormMetaScanner
                 $codebase->functions->return_type_provider->registerClosure(
                     $function_id,
                     /**
+                     * @param non-empty-string $function_id
                      * @param array<PhpParser\Node\Arg> $call_args
                      */
                     function (
@@ -335,7 +333,7 @@ class PhpStormMetaScanner
 
                         $storage = $statements_analyzer->getCodebase()->functions->getStorage(
                             $statements_analyzer,
-                            $function_id
+                            strtolower($function_id)
                         );
 
                         return $storage->return_type ?: Type::getMixed();
@@ -345,6 +343,7 @@ class PhpStormMetaScanner
                 $codebase->functions->return_type_provider->registerClosure(
                     $function_id,
                     /**
+                     * @param non-empty-string $function_id
                      * @param array<PhpParser\Node\Arg> $call_args
                      */
                     function (
@@ -385,7 +384,7 @@ class PhpStormMetaScanner
 
                         $storage = $statements_analyzer->getCodebase()->functions->getStorage(
                             $statements_analyzer,
-                            $function_id
+                            strtolower($function_id)
                         );
 
                         return $storage->return_type ?: Type::getMixed();

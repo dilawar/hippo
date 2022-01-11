@@ -14,14 +14,13 @@ namespace RenanBr\BibTexParser\Processor;
 trait TagSearchTrait
 {
     /**
-     * Searchs for the actual name of a tag.
+     * Searches for the actual name of a tag.
      *
      * The search performed is case-insensitive.
      *
      * @param string $needle
-     * @param array  $haystack
      *
-     * @return null|string
+     * @return string|null
      */
     protected function tagSearch($needle, array $haystack)
     {
