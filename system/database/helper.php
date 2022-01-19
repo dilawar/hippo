@@ -4395,7 +4395,7 @@ function registerForCourse(array $course, array $data, bool $sendEmail=true): ar
 
     // If number of students are over the number of allowed students
     // then add student to waiting list and raise a flag.
-    if ($course['max_registration'] > 0) {
+    if (intval($course['max_registration']) > 0) {
         $numEnrollments = count(getCourseRegistrations($cid, $course['year'], $course['semester']));
         if (intval($numEnrollments) >= intval($course['max_registration'])) {
             $data['status'] = 'WAITLIST';
