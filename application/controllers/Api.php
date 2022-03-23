@@ -3344,8 +3344,23 @@ class Api extends CI_Controller
         if ('requests' === $args[0]) {
             $data = [];
             $subtask = __get__($args, 1, 'pending');
+            $gid = intval(__get__($args, 2, -1));
+
+            // Get pending requests. If `gid` is invalid, returns pending
+            // requests grouped by gid.
             if ('pending' === $subtask) {
-                $data = getPendingRequestsGroupedByGID();
+                if($gid < 0)
+                    $data = getPendingRequestsGroupedByGID();
+                else
+                    $data = getRequestByGroupIdAndStatus($gid, 'PENDING');
+            } elseif ('approve' === $subtask) {
+                $rids = explode(",", __get__($args, 3, ""));
+                $ret = actOnRequests($gid, $rids, 'APPROVE', true, [], getLogin());
+                $data = $ret;
+            } elseif ('reject' === $subtask) {
+                $rids = explode(",", __get__($args, 3, ""));
+                $ret = actOnRequests($gid, $rids, 'REJECT', true, [], getLogin());
+                $data = $ret;
             } elseif ('date' === $subtask) {
                 $data = getPendingRequestsOnThisDay($args[2]);
             } else {
@@ -3371,10 +3386,10 @@ class Api extends CI_Controller
                 if('YES'===$_POST['is_public_event']) {
                     updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
                 }
-                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST, getLogin());
+                $ret = actOnRequests($_POST['gid'], [$_POST['rid']], 'APPROVE', true, $_POST, getLogin());
                 $data = $ret;
             } elseif ('reject' === $subtask) {
-                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'REJECT', true, $_POST, getLogin());
+                $ret = actOnRequests($_POST['gid'], [$_POST['rid']], 'REJECT', true, $_POST, getLogin());
                 $data = $ret;
             } elseif ('update' === $subtask) {
                 $ret = updateTable('bookmyvenue_requests', 'gid,rid', "is_public_event", $_POST);
@@ -3596,7 +3611,7 @@ class Api extends CI_Controller
                 return;
             } elseif ('approve' === $args[1]) {
                 // make sure that it is a PUBLIC EVENT.
-                $ret = actOnRequest($_POST['gid'], $_POST['rid'], 'APPROVE', true, $_POST, getLogin());
+                $ret = actOnRequests($_POST['gid'], [$_POST['rid']], 'APPROVE', true, $_POST, getLogin());
                 $this->send_data($ret, 'ok');
 
                 return;

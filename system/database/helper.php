@@ -542,7 +542,6 @@ function getRequestByGroupId($gid)
 function getRequestByGroupIdAndStatus($gid, $status)
 {
     $hippoDB = initDB();
-    ;
     $stmt = $hippoDB->prepare('SELECT * FROM bookmyvenue_requests WHERE gid=:gid AND status=:status');
     $stmt->bindValue(':gid', $gid);
     $stmt->bindValue(':status', $status);
@@ -1276,9 +1275,9 @@ function rejectRequest($gid, $rid)
  * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-function actOnRequest(
+function actOnRequests(
     string $gid,
-    string $rid,
+    array $rids,
     string $whatToDo,
     bool $notify=false,
     array $request=[],
@@ -1289,39 +1288,42 @@ function actOnRequest(
         $byWhom = whoAmI();
     }
 
-    $success = false;
-    if ($whatToDo === 'APPROVE') {
-        $res = approveRequest($gid, $rid);
-        $success = $res['success'];
-        if (! $success) {
-            return $res;
+    if(count($rids) == 0)
+        return ['status'=>false, 'msg'=>"Empty list of rid for $gid."];
+
+    $success = true;
+    $res = [];
+    foreach($rids as $rid) {
+        $key = "$gid.$rid";
+        if ($whatToDo === 'APPROVE') {
+            $res[$key] = approveRequest($gid, $rid);
+            $status = 'APPROVED';
+        } elseif ($whatToDo === 'REJECT') {
+            $res[$key] = rejectRequest($gid, $rid);
+            $status = 'REJECTED';
+        } else {
+            return ['status'=>false
+                , 'msg'=>"Unknown request " . $gid . '.' . $rid .  " or command: " . $whatToDo];
         }
-        $status = 'APPROVED';
-    } elseif ($whatToDo === 'REJECT') {
-        $success = rejectRequest($gid, $rid);
-        $status = 'REJECTED';
-    } else {
-        return ['status'=>false
-            , 'msg'=>"Unknown request " . $gid . '.' . $rid .  " or command: " . $whatToDo];
     }
 
-    if ($notify && $success) {
-        $req = getRequestById($gid, $rid);
-        $title = $req['title'];
+    if ($notify) {
+        $reqs = getRequestByGroupId($gid);
+        $title = $reqs[0]['title'];
         $subject = "Your booking request '$title' has been $status.";
-        $msg  = '<p>The current status of your booking request is following.</p>';
-        $msg .=  arrayToVerticalTableHTML($req, 'info');
+        $msg  = '<p>Current status of your booking request(s) is following.</p>';
+        $msg .=  arraysToCombinedTableHTML($reqs, 'info');
         $msg .= "<p>If there is any mistake, please contact Dean's Office. 
             This request was acted upon by '$byWhom'</p>";
 
-        $userEmail = getLoginEmail($req['created_by']);
+        $userEmail = getLoginEmail($reqs[0]['created_by']);
         if (! $userEmail) {
             $userEmail = 'hippo@lists.ncbs.res.in';
-            $msg .=  p("Alert! Could not find any email for " . $req['created_by']);
+            $msg .=  p("Alert! Could not find any email for " . $reqs[0]['created_by']);
         }
         $res = sendHTMLEmail($msg, $subject, $userEmail);
     }
-    return ['success'=>$success, 'msg'=>"Successfully $status request $gid.$rid."];
+    return ['success'=>$success, 'msg'=>"Successfully $status request $gid.", "details" => $res];
 }
 
 function changeIfEventIsPublic($gid, $eid, $status)

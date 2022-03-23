@@ -321,7 +321,7 @@ class Adminbmv extends CI_Controller
                 $status = $whatToDo . 'ED';
             }
 
-            $ret = actOnRequest($gid, $rid, $whatToDo);
+            $ret = actOnRequests($gid, [$rid], $whatToDo);
             if (!$ret['success']) {
                 $warningMsg .= p('Failed to act on request.');
                 $warningMsg .= p($ret['msg']);
@@ -415,7 +415,7 @@ class Adminbmv extends CI_Controller
     {
         $gid = $_POST['gid'];
         $rid = $_POST['rid'];
-        $ret = actOnRequest($gid, $rid, 'APPROVE', true);
+        $ret = actOnRequests($gid, [$rid], 'APPROVE', true);
         if ($ret['success']) {
             flashMessage("Request $gid.$rid is approved and venue has been blocked.");
         } else {
