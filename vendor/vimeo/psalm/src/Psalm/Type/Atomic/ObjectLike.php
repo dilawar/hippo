@@ -9,8 +9,6 @@ use function implode;
 use function is_int;
 use function sort;
 use Psalm\Codebase;
-use Psalm\CodeLocation;
-use Psalm\StatementsSource;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Type\TypeCombination;
 use Psalm\Internal\Type\TemplateResult;
@@ -58,7 +56,7 @@ class ObjectLike extends \Psalm\Type\Atomic
      */
     public $is_list = false;
 
-    const KEY = 'array';
+    public const KEY = 'array';
 
     /**
      * Constructs a new instance of a generic type
@@ -66,53 +64,67 @@ class ObjectLike extends \Psalm\Type\Atomic
      * @param non-empty-array<string|int, Union> $properties
      * @param array<string, bool> $class_strings
      */
-    public function __construct(array $properties, array $class_strings = null)
+    public function __construct(array $properties, ?array $class_strings = null)
     {
         $this->properties = $properties;
         $this->class_strings = $class_strings;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        $union_type_parts = array_map(
-            /**
-             * @param  string|int $name
-             * @param  Union $type
-             *
-             * @return string
-             */
-            function ($name, Union $type) {
+        $property_strings = array_map(
+            function ($name, Union $type): string {
+                if ($this->is_list && $this->sealed) {
+                    return (string) $type;
+                }
+
+                if (\is_string($name) && \preg_match('/[ "\'\\\\.\n:]/', $name)) {
+                    $name = '\'' . \str_replace("\n", '\n', \addslashes($name)) . '\'';
+                }
+
                 return $name . ($type->possibly_undefined ? '?' : '') . ': ' . $type;
             },
             array_keys($this->properties),
             $this->properties
         );
-        sort($union_type_parts);
+
+        if (!$this->is_list) {
+            sort($property_strings);
+        }
+
         /** @psalm-suppress MixedOperand */
-        return static::KEY . '{' . implode(', ', $union_type_parts) . '}';
+        return static::KEY . '{' . implode(', ', $property_strings) . '}';
     }
 
-    public function getId(bool $nested = false)
+    public function getId(bool $nested = false): string
     {
-        $union_type_parts = array_map(
-            /**
-             * @param  string|int $name
-             * @param  Union $type
-             *
-             * @return string
-             */
-            function ($name, Union $type) {
+        $property_strings = array_map(
+            function ($name, Union $type): string {
+                if ($this->is_list && $this->sealed) {
+                    return $type->getId();
+                }
+
+                if (\is_string($name) && \preg_match('/[ "\'\\\\.\n:]/', $name)) {
+                    $name = '\'' . \str_replace("\n", '\n', \addslashes($name)) . '\'';
+                }
+
                 return $name . ($type->possibly_undefined ? '?' : '') . ': ' . $type->getId();
             },
             array_keys($this->properties),
             $this->properties
         );
-        sort($union_type_parts);
+
+        if (!$this->is_list) {
+            sort($property_strings);
+        }
+
         /** @psalm-suppress MixedOperand */
         return static::KEY . '{' .
-                implode(', ', $union_type_parts) .
+                implode(', ', $property_strings) .
                 '}'
                 . ($this->previous_value_type
+                    && (!$this->previous_value_type->isMixed()
+                        || ($this->previous_key_type && !$this->previous_key_type->isArrayKey()))
                     ? '<' . ($this->previous_key_type ? $this->previous_key_type->getId() . ', ' : '')
                         . $this->previous_value_type->getId() . '>'
                     : '');
@@ -121,14 +133,13 @@ class ObjectLike extends \Psalm\Type\Atomic
     /**
      * @param  array<string, string> $aliased_classes
      *
-     * @return string
      */
     public function toNamespacedString(
         ?string $namespace,
         array $aliased_classes,
         ?string $this_class,
         bool $use_phpdoc_format
-    ) {
+    ): string {
         if ($use_phpdoc_format) {
             return $this->getGenericArrayType()->toNamespacedString(
                 $namespace,
@@ -143,12 +154,6 @@ class ObjectLike extends \Psalm\Type\Atomic
                 implode(
                     ', ',
                     array_map(
-                        /**
-                         * @param  string|int $name
-                         * @param  Union  $type
-                         *
-                         * @return string
-                         */
                         function (
                             $name,
                             Union $type
@@ -157,7 +162,11 @@ class ObjectLike extends \Psalm\Type\Atomic
                             $aliased_classes,
                             $this_class,
                             $use_phpdoc_format
-                        ) {
+                        ): string {
+                            if (\is_string($name) && \preg_match('/[ "\'\\\\.\n:]/', $name)) {
+                                $name = '\'' . \str_replace("\n", '\n', \addslashes($name)) . '\'';
+                            }
+
                             return $name . ($type->possibly_undefined ? '?' : '') . ': ' . $type->toNamespacedString(
                                 $namespace,
                                 $aliased_classes,
@@ -173,28 +182,24 @@ class ObjectLike extends \Psalm\Type\Atomic
     }
 
     /**
-     * @param  string|null   $namespace
      * @param  array<string> $aliased_classes
-     * @param  string|null   $this_class
-     * @param  int           $php_major_version
-     * @param  int           $php_minor_version
-     *
-     * @return string
      */
-    public function toPhpString($namespace, array $aliased_classes, $this_class, $php_major_version, $php_minor_version)
-    {
+    public function toPhpString(
+        ?string $namespace,
+        array $aliased_classes,
+        ?string $this_class,
+        int $php_major_version,
+        int $php_minor_version
+    ): string {
         return $this->getKey();
     }
 
-    public function canBeFullyExpressedInPhp()
+    public function canBeFullyExpressedInPhp(): bool
     {
         return false;
     }
 
-    /**
-     * @return Union
-     */
-    public function getGenericKeyType()
+    public function getGenericKeyType(): Union
     {
         $key_types = [];
 
@@ -210,6 +215,8 @@ class ObjectLike extends \Psalm\Type\Atomic
 
         $key_type = TypeCombination::combineTypes($key_types);
 
+        $key_type->possibly_undefined = false;
+
         if ($this->previous_key_type) {
             $key_type = Type::combineUnionTypes($this->previous_key_type, $key_type);
         }
@@ -217,10 +224,7 @@ class ObjectLike extends \Psalm\Type\Atomic
         return $key_type;
     }
 
-    /**
-     * @return Union
-     */
-    public function getGenericValueType()
+    public function getGenericValueType(): Union
     {
         $value_type = null;
 
@@ -241,13 +245,12 @@ class ObjectLike extends \Psalm\Type\Atomic
         return $value_type;
     }
 
-    /**
-     * @return Type\Atomic\TArray
-     */
-    public function getGenericArrayType()
+    public function getGenericArrayType(): TArray
     {
         $key_types = [];
         $value_type = null;
+
+        $has_defined_keys = false;
 
         foreach ($this->properties as $key => $property) {
             if (is_int($key)) {
@@ -263,6 +266,10 @@ class ObjectLike extends \Psalm\Type\Atomic
             } else {
                 $value_type = Type::combineUnionTypes($property, $value_type);
             }
+
+            if (!$value_type->possibly_undefined) {
+                $has_defined_keys = true;
+            }
         }
 
         $key_type = TypeCombination::combineTypes($key_types);
@@ -277,9 +284,8 @@ class ObjectLike extends \Psalm\Type\Atomic
 
         $value_type->possibly_undefined = false;
 
-        if ($this->sealed || $this->previous_value_type) {
+        if ($this->previous_value_type || $has_defined_keys) {
             $array_type = new TNonEmptyArray([$key_type, $value_type]);
-            $array_type->count = count($this->properties);
         } else {
             $array_type = new TArray([$key_type, $value_type]);
         }
@@ -294,10 +300,7 @@ class ObjectLike extends \Psalm\Type\Atomic
         }
     }
 
-    /**
-     * @return string
-     */
-    public function getKey(bool $include_extra = true)
+    public function getKey(bool $include_extra = true): string
     {
         /** @var string */
         return static::KEY;
@@ -307,7 +310,7 @@ class ObjectLike extends \Psalm\Type\Atomic
         TemplateResult $template_result,
         ?Codebase $codebase = null,
         ?StatementsAnalyzer $statements_analyzer = null,
-        Atomic $input_type = null,
+        ?Atomic $input_type = null,
         ?int $input_arg_offset = null,
         ?string $calling_class = null,
         ?string $calling_function = null,
@@ -361,10 +364,7 @@ class ObjectLike extends \Psalm\Type\Atomic
         return $this->properties;
     }
 
-    /**
-     * @return bool
-     */
-    public function equals(Atomic $other_type)
+    public function equals(Atomic $other_type): bool
     {
         if (get_class($other_type) !== static::class) {
             return false;
@@ -391,10 +391,7 @@ class ObjectLike extends \Psalm\Type\Atomic
         return true;
     }
 
-    /**
-     * @return string
-     */
-    public function getAssertionString()
+    public function getAssertionString(): string
     {
         return $this->getKey();
     }

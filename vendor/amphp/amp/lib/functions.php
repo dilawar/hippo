@@ -199,7 +199,7 @@ namespace Amp\Promise
      *
      * @return mixed Promise success value.
      *
-     * @psalm-param T $promise
+     * @psalm-param T              $promise
      * @psalm-return (T is Promise ? TPromise : mixed)
      *
      * @throws \TypeError If $promise is not an instance of \Amp\Promise or \React\Promise\PromiseInterface.
@@ -329,6 +329,10 @@ namespace Amp\Promise
      */
     function adapt($promise): Promise
     {
+        if (!\is_object($promise)) {
+            throw new \Error("Object must be provided");
+        }
+
         $deferred = new Deferred;
 
         if (\method_exists($promise, 'done')) {
@@ -350,9 +354,11 @@ namespace Amp\Promise
      * This function is the same as some() with the notable exception that it will never fail even
      * if all promises in the array resolve unsuccessfully.
      *
-     * @param Promise[]|ReactPromise[] $promises
+     * @template TValue
      *
-     * @return Promise
+     * @param Promise<TValue>[]|ReactPromise[] $promises
+     *
+     * @return Promise<array{0: \Throwable[], 1: TValue[]}>
      *
      * @throws \Error If a non-Promise is in the array.
      */
@@ -366,7 +372,7 @@ namespace Amp\Promise
      * promise succeeds with an array of values used to succeed each contained promise, with keys corresponding to
      * the array of promises.
      *
-     * @param Promise[]|ReactPromise[] $promises Array of only promises.
+     * @param Promise[]|ReactPromise[]                             $promises Array of only promises.
      *
      * @return Promise
      *
@@ -423,9 +429,11 @@ namespace Amp\Promise
     /**
      * Returns a promise that succeeds when the first promise succeeds, and fails only if all promises fail.
      *
-     * @param Promise[]|ReactPromise[] $promises Array of only promises.
+     * @template TValue
      *
-     * @return Promise
+     * @param Promise<TValue>[]|ReactPromise[] $promises Array of only promises.
+     *
+     * @return Promise<TValue>
      *
      * @throws \Error If the array is empty or a non-Promise is in the array.
      */
@@ -476,11 +484,13 @@ namespace Amp\Promise
      *
      * The returned promise will only fail if the given number of required promises fail.
      *
-     * @param Promise[]|ReactPromise[] $promises Array of only promises.
-     * @param int                      $required Number of promises that must succeed for the
+     * @template TValue
+     *
+     * @param Promise<TValue>[]|ReactPromise[] $promises Array of only promises.
+     * @param int                              $required Number of promises that must succeed for the
      *     returned promise to succeed.
      *
-     * @return Promise
+     * @return Promise<array{0: \Throwable[], 1: TValue[]}>
      *
      * @throws \Error If a non-Promise is in the array.
      */
@@ -763,11 +773,36 @@ namespace Amp\Iterator
     }
 
     /**
+     * Discards all remaining items and returns the number of discarded items.
+     *
+     * @template TValue
+     *
+     * @param Iterator               $iterator
+     *
+     * @return Promise
+     *
+     * @psalm-param Iterator<TValue> $iterator
+     * @psalm-return Promise<int>
+     */
+    function discard(Iterator $iterator): Promise
+    {
+        return call(static function () use ($iterator): \Generator {
+            $count = 0;
+
+            while (yield $iterator->advance()) {
+                $count++;
+            }
+
+            return $count;
+        });
+    }
+
+    /**
      * Collects all items from an iterator into an array.
      *
      * @template TValue
      *
-     * @param Iterator $iterator
+     * @param Iterator               $iterator
      *
      * @psalm-param Iterator<TValue> $iterator
      *

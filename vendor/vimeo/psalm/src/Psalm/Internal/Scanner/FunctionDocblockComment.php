@@ -42,14 +42,9 @@ class FunctionDocblockComment
     public $params_out = [];
 
     /**
-     * @var array<int, array{name:string}>
+     * @var array{type:string, line_number: int}|null
      */
-    public $taint_sink_params = [];
-
-    /**
-     * @var array<int, array{name:string}>
-     */
-    public $assert_untainted_params = [];
+    public $self_out;
 
     /**
      * @var array<int, array{name:string, type:string, line_number: int}>
@@ -90,6 +85,45 @@ class FunctionDocblockComment
      * @var bool
      */
     public $pure = false;
+
+    /**
+     * Whether or not to specialize a given call (useful for taint analysis)
+     *
+     * @var bool
+     */
+    public $specialize_call = false;
+
+    /**
+     * Represents the flow from function params to return type
+     *
+     * @var array<string>
+     */
+    public $flows = [];
+
+    /**
+     * @var array<string>
+     */
+    public $added_taints = [];
+
+    /**
+     * @var array<string>
+     */
+    public $removed_taints = [];
+
+    /**
+     * @var array<int, array{name:string, taint: string}>
+     */
+    public $taint_sink_params = [];
+
+    /**
+     * @var array<string>
+     */
+    public $taint_source_types = [];
+
+    /**
+     * @var array<int, array{name:string}>
+     */
+    public $assert_untainted_params = [];
 
     /**
      * Whether or not to ignore the nullability of this function's return type
@@ -158,5 +192,8 @@ class FunctionDocblockComment
     /**
      * @var bool
      */
-    public $remove_taint = false;
+    public $no_named_args = false;
+
+    /** @var bool */
+    public $stub_override = false;
 }

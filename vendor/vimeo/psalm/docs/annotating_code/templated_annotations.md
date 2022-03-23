@@ -10,11 +10,11 @@ Let's look at a simple class `MyContainer`:
 <?php
 class MyContainer {
   private $value;
-  
+
   public function __construct($value) {
     $this->value = $value;
   }
-  
+
   public function getValue() {
     return $this->value;
   }
@@ -33,12 +33,12 @@ Templated annotations provide us with a workaround - we can define a generic/tem
 class MyContainer {
   /** @var T */
   private $value;
-  
+
   /** @param T $value */
   public function __construct($value) {
     $this->value = $value;
   }
-  
+
   /** @return T */
   public function getValue() {
     return $this->value;
@@ -53,12 +53,12 @@ Now we can substitute values for that templated param when we reference `MyConta
 class One_off_instance_of_MyContainer {
   /** @var int */
   private $value;
-  
+
   /** @param int $value */
   public function __construct($value) {
     $this->value = $value;
   }
-  
+
   /** @return int */
   public function getValue() {
     return $this->value;
@@ -86,7 +86,7 @@ function mirror($t) {
 }
 
 $a = 5;
-$b = mirror(5); // Psalm knows the result is an int
+$b = mirror($a); // Psalm knows the result is an int
 
 $c = "foo";
 $d = mirror($c); // Psalm knows the result is string
@@ -113,7 +113,7 @@ function array_combine(array $arr, array $arr2) {}
 - `@template` tag order matters for class docblocks, as they dictate the order in which those generic parameters are referenced in docblocks.
 - The names of your templated types (e.g. `TKey`, `TValue` don't matter outside the scope of the class or function in which they're declared.
 
-## `@param class-string<T>`
+## @param class-string&lt;T&gt;
 
 Psalm also allows you to parameterize class types
 
@@ -299,14 +299,14 @@ class Collection {
      * @var array<int, T>
      */
     public array $list;
-  
+
     /**
      * @param array<int, T> $list
      */
     public function __construct(array $list) {
         $this->list = $list;
     }
-  
+
     /**
      * @param T $t
      */
@@ -330,7 +330,7 @@ function takesDogList(Collection $dog_collection) : void {
 }
 ```
 
-That last call `addAnimal($doc_collection)` breaks the type of the collection – suddenly a collection of dogs becomes a collection of dogs _or_ cats. That is bad.
+That last call `addAnimal($dog_collection)` breaks the type of the collection – suddenly a collection of dogs becomes a collection of dogs _or_ cats. That is bad.
 
 To prevent this, Psalm emits an error when calling `addAnimal($dog_collection)` saying "addAnimal expects a `Collection<Animal>`, but `Collection<Dog>` was passed". If you haven't encountered this rule before it's probably confusing to you – any function that accepted an `Animal` would be happy to accept a subtype thereof. But as we see in the example above, doing so can lead to problems.
 
@@ -409,14 +409,14 @@ class Collection {
      * @var array<int, T>
      */
     public array $list = [];
-  
+
     /**
      * @param array<int, T> $list
      */
     public function __construct(array $list) {
         $this->list = $list;
     }
-  
+
     /**
      * @param T $t
      * @return Collection<T>

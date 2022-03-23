@@ -1,7 +1,6 @@
 <?php
 namespace Psalm\Internal\Provider;
 
-use const PHP_VERSION;
 use PhpParser;
 use Psalm\CodeLocation;
 use Psalm\Context;
@@ -9,7 +8,6 @@ use Psalm\Plugin\Hook\FunctionReturnTypeProviderInterface;
 use Psalm\StatementsSource;
 use Psalm\Type;
 use function strtolower;
-use function version_compare;
 
 class FunctionReturnTypeProvider
 {
@@ -18,7 +16,7 @@ class FunctionReturnTypeProvider
      *   string,
      *   array<\Closure(
      *     StatementsSource,
-     *     string,
+     *     non-empty-string,
      *     array<PhpParser\Node\Arg>,
      *     Context,
      *     CodeLocation
@@ -62,14 +60,12 @@ class FunctionReturnTypeProvider
     /**
      * @param  class-string<FunctionReturnTypeProviderInterface> $class
      *
-     * @return void
      */
-    public function registerClass(string $class)
+    public function registerClass(string $class): void
     {
         $callable = \Closure::fromCallable([$class, 'getFunctionReturnType']);
 
         foreach ($class::getFunctionIds() as $function_id) {
-            /** @psalm-suppress MixedTypeCoercion */
             $this->registerClosure($function_id, $callable);
         }
     }
@@ -78,15 +74,14 @@ class FunctionReturnTypeProvider
      * /**
      * @param \Closure(
      *     StatementsSource,
-     *     string,
+     *     non-empty-string,
      *     array<PhpParser\Node\Arg>,
      *     Context,
      *     CodeLocation
      *   ) : ?Type\Union $c
      *
-     * @return void
      */
-    public function registerClosure(string $function_id, \Closure $c)
+    public function registerClosure(string $function_id, \Closure $c): void
     {
         self::$handlers[$function_id][] = $c;
     }
@@ -97,9 +92,9 @@ class FunctionReturnTypeProvider
     }
 
     /**
+     * @param  non-empty-string $function_id
      * @param  array<PhpParser\Node\Arg>  $call_args
      *
-     * @return ?Type\Union
      */
     public function getReturnType(
         StatementsSource $statements_source,
@@ -107,7 +102,7 @@ class FunctionReturnTypeProvider
         array $call_args,
         Context $context,
         CodeLocation $code_location
-    ) {
+    ): ?Type\Union {
         foreach (self::$handlers[strtolower($function_id)] as $function_handler) {
             $return_type = $function_handler(
                 $statements_source,

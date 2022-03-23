@@ -8,10 +8,10 @@ class TFn extends TNamedObject
 {
     use CallableTrait;
 
-    /**
-     * @return bool
-     */
-    public function canBeFullyExpressedInPhp()
+    /** @var array<string, bool> */
+    public $byref_uses = [];
+
+    public function canBeFullyExpressedInPhp(): bool
     {
         return false;
     }

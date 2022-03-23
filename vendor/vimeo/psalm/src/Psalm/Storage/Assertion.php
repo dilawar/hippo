@@ -44,13 +44,13 @@ class Assertion
                     $first_rule = $rules[0];
 
                     if ($template_type_map) {
-                        $rule_tokens = \Psalm\Type::tokenize($first_rule);
+                        $rule_tokens = \Psalm\Internal\Type\TypeTokenizer::tokenize($first_rule);
 
                         $substitute = false;
 
                         foreach ($rule_tokens as &$rule_token) {
                             if (isset($template_type_map[$rule_token[0]])) {
-                                foreach ($template_type_map[$rule_token[0]] as list($type)) {
+                                foreach ($template_type_map[$rule_token[0]] as [$type]) {
                                     $substitute = true;
 
                                     $first_type = \array_values($type->getAtomicTypes())[0];

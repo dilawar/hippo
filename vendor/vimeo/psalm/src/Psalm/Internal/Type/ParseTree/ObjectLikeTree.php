@@ -12,10 +12,11 @@ class ObjectLikeTree extends \Psalm\Internal\Type\ParseTree
     public $value;
 
     /**
-     * @param string $value
-     * @param \Psalm\Internal\Type\ParseTree|null $parent
+     * @var bool
      */
-    public function __construct($value, \Psalm\Internal\Type\ParseTree $parent = null)
+    public $terminated = false;
+
+    public function __construct(string $value, ?\Psalm\Internal\Type\ParseTree $parent = null)
     {
         $this->value = $value;
         $this->parent = $parent;

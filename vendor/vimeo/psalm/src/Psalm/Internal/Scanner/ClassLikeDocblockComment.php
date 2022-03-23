@@ -21,6 +21,13 @@ class ClassLikeDocblockComment
     public $internal = false;
 
     /**
+     * Whether or not the class is final
+     *
+     * @var bool
+     */
+    public $final = false;
+
+    /**
      * If set, the class is internal to the given namespace.
      *
      * @var null|string
@@ -29,8 +36,14 @@ class ClassLikeDocblockComment
 
     /**
      * @var null|string
+     * @deprecated
      */
     public $mixin = null;
+
+    /**
+     * @var string[]
+     */
+    public $mixins = [];
 
     /**
      * @var array<int, array{string, ?string, ?string, bool, int}>
@@ -93,7 +106,25 @@ class ClassLikeDocblockComment
     public $external_mutation_free = false;
 
     /**
+     * @var bool
+     */
+    public $taint_specialize = false;
+
+    /**
      * @var array<int, string>
      */
     public $suppressed_issues = [];
+
+    /**
+     * @var list<array{line_number:int,start_offset:int,end_offset:int,parts:list<string>}>
+     */
+    public $imported_types = [];
+
+    /**
+     * @var bool
+     */
+    public $consistent_constructor = false;
+
+    /** @var bool */
+    public $stub_override = false;
 }

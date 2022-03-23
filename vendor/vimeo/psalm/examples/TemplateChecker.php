@@ -11,18 +11,19 @@ use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\CodeLocation;
 use Psalm\Context;
 use Psalm\DocComment;
+use Psalm\Storage\MethodStorage;
 use Psalm\Type;
 
 class TemplateAnalyzer extends Psalm\Internal\Analyzer\FileAnalyzer
 {
     const VIEW_CLASS = 'Your\\View\\Class';
 
-    public function analyze(Context $context = null, $update_docblocks = false, Context $global_context = null)
+    public function analyze(?Context $file_context = null, bool $preserve_analyzers = false, ?Context $global_context = null)
     {
         $codebase = $this->project_analyzer->getCodebase();
         $stmts = $codebase->getStatementsForFile($this->file_path);
 
-        if (empty($stmts)) {
+        if ($stmts === []) {
             return;
         }
 
@@ -31,10 +32,10 @@ class TemplateAnalyzer extends Psalm\Internal\Analyzer\FileAnalyzer
         $this_params = null;
 
         if (($first_stmt instanceof PhpParser\Node\Stmt\Nop) && ($doc_comment = $first_stmt->getDocComment())) {
-            $comment_block = DocComment::parse(trim($doc_comment->getText()));
+            $comment_block = DocComment::parsePreservingLength($doc_comment);
 
-            if (isset($comment_block['specials']['variablesfrom'])) {
-                $variables_from = trim($comment_block['specials']['variablesfrom'][0]);
+            if (isset($comment_block->tags['variablesfrom'])) {
+                $variables_from = trim($comment_block->tags['variablesfrom'][0]);
 
                 $first_line_regex = '/([A-Za-z\\\0-9]+::[a-z_A-Z]+)(\s+weak)?/';
 
@@ -156,7 +157,7 @@ class TemplateAnalyzer extends Psalm\Internal\Analyzer\FileAnalyzer
 
         $class_analyzer = new ClassAnalyzer($class, $this, self::VIEW_CLASS);
 
-        $view_method_analyzer = new MethodAnalyzer($class_method, $class_analyzer);
+        $view_method_analyzer = new MethodAnalyzer($class_method, $class_analyzer, new MethodStorage());
 
         if (!$context->check_variables) {
             $view_method_analyzer->addSuppressedIssue('UndefinedVariable');

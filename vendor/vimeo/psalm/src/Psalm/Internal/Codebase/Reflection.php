@@ -6,7 +6,7 @@ use Psalm\Codebase;
 use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
 use Psalm\Internal\Provider\ClassLikeStorageProvider;
 use Psalm\Storage\FunctionLikeParameter;
-use Psalm\Storage\FunctionLikeStorage;
+use Psalm\Storage\FunctionStorage;
 use Psalm\Storage\MethodStorage;
 use Psalm\Storage\PropertyStorage;
 use Psalm\Type;
@@ -30,7 +30,7 @@ class Reflection
     private $codebase;
 
     /**
-     * @var array<string, FunctionLikeStorage>
+     * @var array<string, FunctionStorage>
      */
     private static $builtin_functions = [];
 
@@ -85,7 +85,6 @@ class Reflection
 
             $storage->public_class_constants = $parent_storage->public_class_constants;
             $storage->protected_class_constants = $parent_storage->protected_class_constants;
-            $parent_class_name_lc = $parent_class_name_lc;
             $storage->parent_classes = array_merge(
                 [$parent_class_name_lc => $parent_class_name],
                 $parent_storage->parent_classes
@@ -129,19 +128,25 @@ class Reflection
         }
 
         // have to do this separately as there can be new properties here
-        foreach ($public_mapped_properties as $property_name => $type) {
+        foreach ($public_mapped_properties as $property_name => $type_string) {
+            $property_id = $class_name . '::$' . $property_name;
+
             if (!isset($storage->properties[$property_name])) {
                 $storage->properties[$property_name] = new PropertyStorage();
                 $storage->properties[$property_name]->visibility = ClassLikeAnalyzer::VISIBILITY_PUBLIC;
-
-                $property_id = $class_name . '::$' . $property_name;
 
                 $storage->declaring_property_ids[$property_name] = $class_name;
                 $storage->appearing_property_ids[$property_name] = $property_id;
                 $storage->inheritable_property_ids[$property_name] = $property_id;
             }
 
-            $storage->properties[$property_name]->type = Type::parseString($type);
+            $type = Type::parseString($type_string);
+
+            if ($property_id === 'DateInterval::$days') {
+                $type->ignore_falsable_issues = true;
+            }
+
+            $storage->properties[$property_name]->type = $type;
         }
 
         /** @var array<string, int|string|float|null|array> */
@@ -214,8 +219,6 @@ class Reflection
     }
 
     /**
-     * @param \ReflectionMethod $method
-     *
      * @return void
      */
     public function extractReflectionMethodInfo(\ReflectionMethod $method)
@@ -261,8 +264,6 @@ class Reflection
         $storage->mutation_free = $storage->external_mutation_free
             = $method_name_lc === '__construct' && $fq_class_name_lc === 'datetimezone';
 
-        $declaring_method_id = $declaring_class->name . '::' . $method_name_lc;
-
         $class_storage->declaring_method_ids[$method_name_lc] = new \Psalm\Internal\MethodIdentifier(
             $declaring_class->name,
             $method_name_lc
@@ -278,18 +279,14 @@ class Reflection
             ? ClassLikeAnalyzer::VISIBILITY_PRIVATE
             : ($method->isProtected() ? ClassLikeAnalyzer::VISIBILITY_PROTECTED : ClassLikeAnalyzer::VISIBILITY_PUBLIC);
 
-        $callables = CallMap::getCallablesFromCallMap($method_id);
+        $callables = InternalCallMapHandler::getCallablesFromCallMap($method_id);
 
         if ($callables && $callables[0]->params !== null && $callables[0]->return_type !== null) {
             $storage->params = [];
 
-            foreach ($callables[0]->params as $i => $param) {
+            foreach ($callables[0]->params as $param) {
                 if ($param->type) {
                     $param->type->queueClassLikesForScanning($this->codebase);
-                }
-
-                if ($declaring_method_id === 'PDO::exec' && $i === 0) {
-                    $param->sink = Type\Union::TAINTED_INPUT_SQL;
                 }
             }
 
@@ -305,7 +302,7 @@ class Reflection
             foreach ($params as $param) {
                 $param_array = $this->getReflectionParamData($param);
                 $storage->params[] = $param_array;
-                $storage->param_types[$param->name] = $param_array->type;
+                $storage->param_lookup[$param->name] = true;
             }
         }
 
@@ -318,12 +315,7 @@ class Reflection
         }
     }
 
-    /**
-     * @param  \ReflectionParameter $param
-     *
-     * @return FunctionLikeParameter
-     */
-    private function getReflectionParamData(\ReflectionParameter $param)
+    private function getReflectionParamData(\ReflectionParameter $param): FunctionLikeParameter
     {
         $param_type = self::getPsalmTypeFromReflectionType($param->getType());
         $param_name = (string)$param->getName();
@@ -351,7 +343,7 @@ class Reflection
      *
      * @return false|null
      */
-    public function registerFunction($function_id)
+    public function registerFunction($function_id): ?bool
     {
         try {
             $reflection_function = new \ReflectionFunction($function_id);
@@ -359,13 +351,13 @@ class Reflection
             $callmap_callable = null;
 
             if (isset(self::$builtin_functions[$function_id])) {
-                return;
+                return null;
             }
 
-            $storage = self::$builtin_functions[$function_id] = new FunctionLikeStorage();
+            $storage = self::$builtin_functions[$function_id] = new FunctionStorage();
 
-            if (CallMap::inCallMap($function_id)) {
-                $callmap_callable = \Psalm\Internal\Codebase\CallMap::getCallableFromCallMapById(
+            if (InternalCallMapHandler::inCallMap($function_id)) {
+                $callmap_callable = \Psalm\Internal\Codebase\InternalCallMapHandler::getCallableFromCallMapById(
                     $this->codebase,
                     $function_id,
                     [],
@@ -406,9 +398,11 @@ class Reflection
         } catch (\ReflectionException $e) {
             return false;
         }
+
+        return null;
     }
 
-    public static function getPsalmTypeFromReflectionType(\ReflectionType $reflection_type = null) : Type\Union
+    public static function getPsalmTypeFromReflectionType(?\ReflectionType $reflection_type = null) : Type\Union
     {
         if (!$reflection_type) {
             return Type::getMixed();
@@ -423,16 +417,10 @@ class Reflection
         return Type::parseString($reflection_type->getName() . $suffix);
     }
 
-    /**
-     * @param string $fq_class_name
-     * @param string $parent_class
-     *
-     * @return void
-     */
     private function registerInheritedMethods(
-        $fq_class_name,
-        $parent_class
-    ) {
+        string $fq_class_name,
+        string $parent_class
+    ): void {
         $parent_storage = $this->storage_provider->get($parent_class);
         $storage = $this->storage_provider->get($fq_class_name);
 
@@ -455,12 +443,11 @@ class Reflection
      * @param lowercase-string $fq_class_name
      * @param lowercase-string $parent_class
      *
-     * @return void
      */
     private function registerInheritedProperties(
-        $fq_class_name,
-        $parent_class
-    ) {
+        string $fq_class_name,
+        string $parent_class
+    ): void {
         $parent_storage = $this->storage_provider->get($parent_class);
         $storage = $this->storage_provider->get($fq_class_name);
 
@@ -501,22 +488,12 @@ class Reflection
         }
     }
 
-    /**
-     * @param  string  $function_id
-     *
-     * @return bool
-     */
-    public function hasFunction($function_id)
+    public function hasFunction(string $function_id): bool
     {
         return isset(self::$builtin_functions[$function_id]);
     }
 
-    /**
-     * @param  string  $function_id
-     *
-     * @return FunctionLikeStorage
-     */
-    public function getFunctionStorage($function_id)
+    public function getFunctionStorage(string $function_id): FunctionStorage
     {
         if (isset(self::$builtin_functions[$function_id])) {
             return self::$builtin_functions[$function_id];

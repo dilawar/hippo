@@ -5,9 +5,10 @@ Atomic types are the basic building block of all type information used in Psalm.
 ## [Scalar types](scalar_types.md)
 
 - [int](scalar_types.md)
+- [positive-int](scalar_types.md#positive-int)
 - [float](scalar_types.md)
 - [string](scalar_types.md)
-- [class-string and class-string\<Foo\>](scalar_types.md#class-string)
+- [class-string and class-string&lt;Foo&gt;](scalar_types.md#class-string)
 - [trait-string](scalar_types.md#trait-string)
 - [callable-string](scalar_types.md#callable-string)
 - [numeric-string](scalar_types.md#numeric-string)
@@ -30,6 +31,7 @@ Atomic types are the basic building block of all type information used in Psalm.
 - [list & non-empty-list](array_types.md#lists)
 - [list\<string\>](array_types.md#lists)
 - [array{foo: int, bar: string}](array_types.md#object-like-arrays)
+- [callable-array](array_types.md#callable-array)
 
 ## [Callable types](callable_types.md)
 
@@ -39,7 +41,7 @@ Atomic types are the basic building block of all type information used in Psalm.
 
 - [null](value_types.md#null)
 - [true, false](value_types.md#true-false)
-- [6, 7.0, "fourty-two" and 'fourty two'](value_types.md#some_string-4-314)
+- [6, 7.0, "forty-two" and 'forty two'](value_types.md#some_string-4-314)
 - [Foo\Bar::MY_SCALAR_CONST](value_types.md#regular-class-constants)
 
 ## Magical types

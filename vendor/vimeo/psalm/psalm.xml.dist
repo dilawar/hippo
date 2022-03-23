@@ -20,13 +20,10 @@
         <directory name="tests"/>
         <directory name="examples"/>
         <ignoreFiles>
-            <file name="src/Psalm/Internal/CallMap.php"/>
             <file name="src/Psalm/Internal/PhpTraverser/CustomTraverser.php"/>
             <file name="tests/ErrorBaselineTest.php"/>
             <file name="vendor/symfony/console/Command/Command.php"/>
             <file name="src/spl_object_id.php"/>
-            <file name="src/Psalm/Internal/Stubs/*.php"/>
-            <file name="src/Psalm/Internal/Stubs/*.phpstub"/>
             <directory name="tests/fixtures"/>
             <file name="vendor/felixfbecker/advanced-json-rpc/lib/Dispatcher.php" />
             <directory name="vendor/netresearch/jsonmapper" />
@@ -55,6 +52,11 @@
                 <referencedMethod name="PhpParser\Comment::getLine" />
             </errorLevel>
         </DeprecatedMethod>
+        <DeprecatedClass>
+            <errorLevel type="suppress">
+                <referencedClass name="PackageVersions\Versions"/>
+            </errorLevel>
+        </DeprecatedClass>
 
         <UnusedParam>
             <errorLevel type="suppress">
@@ -138,6 +140,8 @@
                 <directory name="src/Psalm/Internal/Provider/ReturnTypeProvider" />
                 <file name="src/Psalm/Internal/Type/AssertionReconciler.php" />
                 <file name="src/Psalm/Internal/Type/NegatedAssertionReconciler.php" />
+                <file name="src/Psalm/Internal/Type/SimpleAssertionReconciler.php" />
+                <file name="src/Psalm/Internal/Type/SimpleNegatedAssertionReconciler.php" />
                 <directory name="tests"/>
             </errorLevel>
         </PossiblyUndefinedStringArrayOffset>

@@ -4,7 +4,7 @@ Psalm's type system represents the types of variables within a program using dif
 
 ## Union types
 
-All type Psalm's type information you are likely to use will be wrapped in a [Union Type](../../annotating_code/docblock_type_syntax.md#union-types).
+All type information you are likely to use will be wrapped in a [Union Type](../../annotating_code/type_syntax/union_types.md).
 
 The `Union` class constructor takes an array of `Atomic` types, and can represent one or more of these types at a time. They correspond to a vertical bar in a doc comment.
 
@@ -168,13 +168,13 @@ foreach (range(1,1) as $_) $a[(string)rand(0,1)] = rand(0,1); // array<string,in
 
 ## Creating type object instances
 
-There are two ways of creating the object instances which describe a given type. They can be created directly using new, or created declaratively from a doc string. Normally, you'd want to use the second option. Howeaver, understanding the structure of this data will help you understand types passed into a plugin.
+There are two ways of creating the object instances which describe a given type. They can be created directly using new, or created declaratively from a doc string. Normally, you'd want to use the second option. However, understanding the structure of this data will help you understand types passed into a plugin.
 
 Note that these classes do sometimes change, so `Type::parseString` is always going to be the more robust option.
 
 ### Creating type object instances directly
 
-The following example constructs a types representing a string, a floating point number, and a class called 'Foo\Bar\SomeClass'.
+The following example constructs types representing a string, a floating-point number, and a class called 'Foo\Bar\SomeClass'.
 
 ``` php
 new TLiteralString('A text string')
@@ -185,9 +185,9 @@ new TNamedObject('Foo\Bar\SomeClass')
 Types within Psalm are always wrapped in a union as a convenience feature. Almost anywhere you may expect a type, you can get a union as well (property types, return types, argument types, etc). So wrapping a single atomic type (like TInt) in a union container allows to uniformly handle that type elsewhere, without repetitive checks like this:
 
 ``` php
-if ($type instanceof Union) 
-   foreach ($types->getTypes() as $atomic) 
-      handleAtomic($atomic); 
+if ($type instanceof Union)
+   foreach ($types->getTypes() as $atomic)
+      handleAtomic($atomic);
 else handleAtomic($type);
 
 // with union container it becomes
@@ -197,7 +197,7 @@ foreach ($types->getTypes() as $atomic)
 
 Also, union trees are always shallow, because Psalm will flatten union of unions into a single-level union `((A|B)|(C|D) => A|B|C|D)`.
 
-More complex types can be constructed as follows. The following represents an assosiative array with 3 keys. Psalm calls these 'object-like arrays', and represents them with the 'ObjectLike' class.
+More complex types can be constructed as follows. The following represents an associative array with 3 keys. Psalm calls these 'object-like arrays', and represents them with the 'ObjectLike' class.
 
 
 ``` php
@@ -208,7 +208,7 @@ More complex types can be constructed as follows. The following represents an as
                 'key_3' => new Union([new TBool()])])]);
 ```
 
-The Type object includes some static helper methods, which automatically wrap the type in a Union. Thus this can be written more tersely: 
+The Type object includes some static helper methods, which automatically wrap the type in a Union. Thus this can be written more tersely:
 
 ``` php
 new Union([
@@ -228,6 +228,6 @@ Another way of creating these instances is to use the class `Psalm\Type` which i
 \Psalm\Type::parseString('int|null');
 ```
 
-You can find how psalm would represent a given type as objects, by specifying the type as an input to this function, and calling `var_dump` on the result.
+You can find how Psalm would represent a given type as objects, by specifying the type as an input to this function, and calling `var_dump` on the result.
 
 

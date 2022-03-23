@@ -10,13 +10,11 @@ use Psalm\Internal\Analyzer\FunctionLikeAnalyzer;
 use Psalm\Internal\Analyzer\Statements\Expression\Call\ClassTemplateParamCollector;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Analyzer\TraitAnalyzer;
-use Psalm\Internal\Analyzer\TypeAnalyzer;
+use Psalm\Internal\Type\Comparator\UnionTypeComparator;
 use Psalm\CodeLocation;
 use Psalm\Context;
 use Psalm\Exception\DocblockParseException;
-use Psalm\Internal\Analyzer\TypeComparisonResult;
-use Psalm\Internal\Taint\Sink;
-use Psalm\Internal\Taint\Source;
+use Psalm\Internal\ControlFlow\ControlFlowNode;
 use Psalm\Internal\Type\TemplateResult;
 use Psalm\Issue\FalsableReturnStatement;
 use Psalm\Issue\InvalidDocblock;
@@ -27,8 +25,6 @@ use Psalm\Issue\MixedReturnTypeCoercion;
 use Psalm\Issue\NoValue;
 use Psalm\Issue\NullableReturnStatement;
 use Psalm\IssueBuffer;
-use Psalm\Storage\FunctionLikeParameter;
-use Psalm\Storage\FunctionLikeStorage;
 use Psalm\Type;
 use function explode;
 use function strtolower;
@@ -39,16 +35,13 @@ use function strtolower;
 class ReturnAnalyzer
 {
     /**
-     * @param  PhpParser\Node\Stmt\Return_ $stmt
-     * @param  Context                     $context
-     *
      * @return false|null
      */
     public static function analyze(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Stmt\Return_ $stmt,
         Context $context
-    ) {
+    ): ?bool {
         $doc_comment = $stmt->getDocComment();
 
         $var_comments = [];
@@ -88,7 +81,7 @@ class ReturnAnalyzer
                     continue;
                 }
 
-                $comment_type = ExpressionAnalyzer::fleshOutType(
+                $comment_type = \Psalm\Internal\Type\TypeExpander::expandUnion(
                     $codebase,
                     $var_comment->type,
                     $context->self,
@@ -122,6 +115,10 @@ class ReturnAnalyzer
                     continue;
                 }
 
+                if (isset($context->vars_in_scope[$var_comment->var_id])) {
+                    $comment_type->parent_nodes = $context->vars_in_scope[$var_comment->var_id]->parent_nodes;
+                }
+
                 $context->vars_in_scope[$var_comment->var_id] = $comment_type;
             }
         }
@@ -129,7 +126,9 @@ class ReturnAnalyzer
         if ($stmt->expr) {
             $context->inside_call = true;
 
-            if ($stmt->expr instanceof PhpParser\Node\Expr\Closure) {
+            if ($stmt->expr instanceof PhpParser\Node\Expr\Closure
+                || $stmt->expr instanceof PhpParser\Node\Expr\ArrowFunction
+            ) {
                 self::potentiallyInferTypesOnClosureFromParentReturnType(
                     $statements_analyzer,
                     $stmt->expr,
@@ -141,11 +140,17 @@ class ReturnAnalyzer
                 return false;
             }
 
+            $stmt_expr_type = $statements_analyzer->node_data->getType($stmt->expr);
+
             if ($var_comment_type) {
                 $stmt_type = $var_comment_type;
 
+                if ($stmt_expr_type && $stmt_expr_type->parent_nodes) {
+                    $stmt_type->parent_nodes = $stmt_expr_type->parent_nodes;
+                }
+
                 $statements_analyzer->node_data->setType($stmt, $var_comment_type);
-            } elseif ($stmt_expr_type = $statements_analyzer->node_data->getType($stmt->expr)) {
+            } elseif ($stmt_expr_type) {
                 $stmt_type = $stmt_expr_type;
 
                 if ($stmt_type->isNever()) {
@@ -174,6 +179,22 @@ class ReturnAnalyzer
 
         $statements_analyzer->node_data->setType($stmt, $stmt_type);
 
+        if ($context->finally_scope) {
+            foreach ($context->vars_in_scope as $var_id => $type) {
+                if (isset($context->finally_scope->vars_in_scope[$var_id])) {
+                    if ($context->finally_scope->vars_in_scope[$var_id] !== $type) {
+                        $context->finally_scope->vars_in_scope[$var_id] = Type::combineUnionTypes(
+                            $context->finally_scope->vars_in_scope[$var_id],
+                            $type,
+                            $statements_analyzer->getCodebase()
+                        );
+                    }
+                } else {
+                    $context->finally_scope->vars_in_scope[$var_id] = $type;
+                }
+            }
+        }
+
         if ($source instanceof FunctionLikeAnalyzer
             && !($source->getSource() instanceof TraitAnalyzer)
         ) {
@@ -186,7 +207,7 @@ class ReturnAnalyzer
             $cased_method_id = $source->getCorrectlyCasedMethodId();
 
             if ($stmt->expr && $storage->location) {
-                $inferred_type = ExpressionAnalyzer::fleshOutType(
+                $inferred_type = \Psalm\Internal\Type\TypeExpander::expandUnion(
                     $codebase,
                     $stmt_type,
                     $source->getFQCLN(),
@@ -194,14 +215,15 @@ class ReturnAnalyzer
                     $source->getParentFQCLN()
                 );
 
-                self::handleTaints(
-                    $statements_analyzer,
-                    $codebase,
-                    $stmt,
-                    $cased_method_id,
-                    $inferred_type,
-                    $storage
-                );
+                if ($statements_analyzer->control_flow_graph) {
+                    self::handleTaints(
+                        $statements_analyzer,
+                        $stmt,
+                        $cased_method_id,
+                        $inferred_type,
+                        $storage
+                    );
+                }
 
                 if ($storage instanceof \Psalm\Storage\MethodStorage && $context->self) {
                     $self_class = $context->self;
@@ -223,14 +245,14 @@ class ReturnAnalyzer
                     );
 
                     if ($storage instanceof \Psalm\Storage\MethodStorage) {
-                        list($fq_class_name, $method_name) = explode('::', $cased_method_id);
+                        [$fq_class_name, $method_name] = explode('::', $cased_method_id);
 
                         $class_storage = $codebase->classlike_storage_provider->get($fq_class_name);
 
                         $found_generic_params = ClassTemplateParamCollector::collect(
                             $codebase,
                             $class_storage,
-                            $fq_class_name,
+                            $class_storage,
                             strtolower($method_name),
                             null,
                             '$this'
@@ -254,7 +276,7 @@ class ReturnAnalyzer
                         return null;
                     }
 
-                    if ($stmt_type->isMixed()) {
+                    if ($stmt_type->hasMixed()) {
                         if ($local_return_type->isVoid() || $local_return_type->isNever()) {
                             if (IssueBuffer::accepts(
                                 new InvalidReturnStatement(
@@ -275,16 +297,32 @@ class ReturnAnalyzer
                             $codebase->analyzer->incrementMixedCount($statements_analyzer->getFilePath());
                         }
 
+                        if ($stmt_type->isMixed()) {
+                            if (IssueBuffer::accepts(
+                                new MixedReturnStatement(
+                                    'Could not infer a return type',
+                                    new CodeLocation($source, $stmt->expr)
+                                ),
+                                $statements_analyzer->getSuppressedIssues()
+                            )) {
+                                // fall through
+                            }
+
+                            return null;
+                        }
+
                         if (IssueBuffer::accepts(
                             new MixedReturnStatement(
-                                'Could not infer a return type',
+                                'Possibly-mixed return value',
                                 new CodeLocation($source, $stmt->expr)
                             ),
                             $statements_analyzer->getSuppressedIssues()
                         )) {
-                            return false;
+                            // fall through
                         }
+                    }
 
+                    if ($local_return_type->isMixed()) {
                         return null;
                     }
 
@@ -310,9 +348,9 @@ class ReturnAnalyzer
                         return null;
                     }
 
-                    $union_comparison_results = new \Psalm\Internal\Analyzer\TypeComparisonResult();
+                    $union_comparison_results = new \Psalm\Internal\Type\Comparator\TypeComparisonResult();
 
-                    if (!TypeAnalyzer::isContainedBy(
+                    if (!UnionTypeComparator::isContainedBy(
                         $codebase,
                         $inferred_type,
                         $local_return_type,
@@ -407,7 +445,7 @@ class ReturnAnalyzer
                         } else {
                             if (IssueBuffer::accepts(
                                 new InvalidReturnStatement(
-                                    'The inferred type \'' . $stmt_type->getId()
+                                    'The inferred type \'' . $inferred_type->getId()
                                         . '\' does not match the declared return '
                                         . 'type \'' . $local_return_type->getId() . '\' for ' . $cased_method_id,
                                     new CodeLocation($source, $stmt->expr)
@@ -479,108 +517,33 @@ class ReturnAnalyzer
 
     private static function handleTaints(
         StatementsAnalyzer $statements_analyzer,
-        \Psalm\Codebase $codebase,
         PhpParser\Node\Stmt\Return_ $stmt,
         string $cased_method_id,
         Type\Union $inferred_type,
         \Psalm\Storage\FunctionLikeStorage $storage
     ) : void {
-        if (!$codebase->taint || !$stmt->expr || !$storage->location || $storage->remove_taint) {
+        if (!$statements_analyzer->control_flow_graph || !$stmt->expr || !$storage->location) {
             return;
         }
 
-        $method_sink = new Sink(
+        $method_node = ControlFlowNode::getForMethodReturn(
             strtolower($cased_method_id),
             $cased_method_id,
-            $storage->location
+            $storage->signature_return_type_location ?: $storage->location
         );
 
-        if ($previous_sink = $codebase->taint->hasPreviousSink($method_sink, $suffixes)) {
-            if ($inferred_type->sources) {
-                if ($suffixes !== null) {
-                    $new_sinks = [];
+        $statements_analyzer->control_flow_graph->addNode($method_node);
 
-                    foreach ($suffixes as $suffix) {
-                        foreach ($inferred_type->sources as $inferred_source) {
-                            $codebase->taint->addSpecialization($inferred_source->id, $suffix);
-
-                            $new_sink = new Sink(
-                                $inferred_source->id . '-' . $suffix,
-                                $inferred_source->label,
-                                $inferred_source->code_location
-                            );
-
-                            $new_sink->children = [$previous_sink];
-
-                            $new_sinks[] = $new_sink;
-                        }
-                    }
-                } else {
-                    $new_sinks = \array_map(
-                        function (Source $inferred_source) use ($previous_sink) {
-                            $new_sink = new Sink(
-                                $inferred_source->id,
-                                $inferred_source->label,
-                                $inferred_source->code_location
-                            );
-
-                            $new_sink->children = [$previous_sink];
-                            return $new_sink;
-                        },
-                        $inferred_type->sources
-                    );
-                }
-
-                $codebase->taint->addSinks(
-                    $new_sinks
+        if ($inferred_type->parent_nodes) {
+            foreach ($inferred_type->parent_nodes as $parent_node) {
+                $statements_analyzer->control_flow_graph->addPath(
+                    $parent_node,
+                    $method_node,
+                    'return',
+                    $storage->added_taints,
+                    $storage->removed_taints
                 );
             }
-        }
-
-        if ($inferred_type->sources) {
-            foreach ($inferred_type->sources as $type_source) {
-                if (($previous_source = $codebase->taint->hasPreviousSource($type_source, $suffixes))
-                    || $inferred_type->tainted
-                ) {
-                    if ($suffixes !== null) {
-                        $new_sources = [];
-
-                        foreach ($suffixes as $suffix) {
-                            $codebase->taint->addSpecialization(strtolower($cased_method_id), $suffix);
-
-                            $new_source = new Source(
-                                strtolower($cased_method_id . '-' . $suffix),
-                                $cased_method_id,
-                                $storage->location
-                            );
-
-                            $new_source->parents = [$previous_source ?: $type_source];
-
-                            $new_sources[] = $new_source;
-                        }
-                    } else {
-                        $new_source = new Source(
-                            strtolower($cased_method_id),
-                            $cased_method_id,
-                            $storage->location
-                        );
-
-                        $new_source->parents = [$previous_source ?: $type_source];
-
-                        $new_sources = [$new_source];
-                    }
-
-                    $codebase->taint->addSources(
-                        $new_sources
-                    );
-                }
-            }
-        } elseif ($inferred_type->tainted) {
-            throw new \UnexpectedValueException(
-                'sources should exist for tainted var in '
-                    . $statements_analyzer->getFileName() . ':'
-                    . $stmt->getLine()
-            );
         }
     }
 
@@ -588,10 +551,11 @@ class ReturnAnalyzer
      * If a function returns a closure, we try to infer the param/return types of
      * the inner closure.
      * @see \Psalm\Tests\ReturnTypeTest:756
+     * @param PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\ArrowFunction $expr
      */
     private static function potentiallyInferTypesOnClosureFromParentReturnType(
         StatementsAnalyzer $statements_analyzer,
-        PhpParser\Node\Expr\Closure $expr,
+        PhpParser\Node\FunctionLike $expr,
         Context $context
     ): void {
         // if not returning from inside of a function, return
@@ -599,11 +563,12 @@ class ReturnAnalyzer
             return;
         }
 
-        $closure_id = (new ClosureAnalyzer($expr, $statements_analyzer))->getId();
+        $closure_id = (new ClosureAnalyzer($expr, $statements_analyzer))->getClosureId();
         $closure_storage = $statements_analyzer
             ->getCodebase()
             ->getFunctionLikeStorage($statements_analyzer, $closure_id);
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         $parent_fn_storage = $statements_analyzer
             ->getCodebase()
             ->getFunctionLikeStorage(
@@ -662,7 +627,7 @@ class ReturnAnalyzer
         if (!$parent_return_type) {
             return $return_type;
         }
-        if (!$return_type || TypeAnalyzer::isContainedBy($codebase, $parent_return_type, $return_type)) {
+        if (!$return_type || UnionTypeComparator::isContainedBy($codebase, $parent_return_type, $return_type)) {
             return $parent_return_type;
         }
         return $return_type;

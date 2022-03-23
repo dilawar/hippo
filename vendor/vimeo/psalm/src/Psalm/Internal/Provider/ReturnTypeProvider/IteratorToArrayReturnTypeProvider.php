@@ -6,8 +6,8 @@ use PhpParser;
 use Psalm\CodeLocation;
 use Psalm\Context;
 use Psalm\Internal\Analyzer\Statements\Block\ForeachAnalyzer;
-use Psalm\Internal\Analyzer\TypeAnalyzer;
-use Psalm\Internal\Codebase\CallMap;
+use Psalm\Internal\Type\Comparator\AtomicTypeComparator;
+use Psalm\Internal\Codebase\InternalCallMapHandler;
 use Psalm\StatementsSource;
 use Psalm\Type;
 
@@ -44,7 +44,7 @@ class IteratorToArrayReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionRe
 
             foreach ($first_arg_type->getAtomicTypes() as $call_arg_atomic_type) {
                 if ($call_arg_atomic_type instanceof Type\Atomic\TNamedObject
-                    && TypeAnalyzer::isAtomicContainedBy(
+                    && AtomicTypeComparator::isContainedBy(
                         $codebase,
                         $call_arg_atomic_type,
                         new Type\Atomic\TIterable([Type::getMixed(), Type::getMixed()])
@@ -83,7 +83,7 @@ class IteratorToArrayReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionRe
                     ? $key_type
                     : Type::getArrayKey();
 
-                if ($key_type->isMixed()) {
+                if ($key_type->hasMixed()) {
                     $key_type = Type::getArrayKey();
                 }
 
@@ -96,7 +96,7 @@ class IteratorToArrayReturnTypeProvider implements \Psalm\Plugin\Hook\FunctionRe
             }
         }
 
-        $callmap_callables = CallMap::getCallablesFromCallMap($function_id);
+        $callmap_callables = InternalCallMapHandler::getCallablesFromCallMap($function_id);
 
         assert($callmap_callables && $callmap_callables[0]->return_type);
 

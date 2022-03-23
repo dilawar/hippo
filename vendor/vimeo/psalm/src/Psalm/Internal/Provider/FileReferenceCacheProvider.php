@@ -7,63 +7,59 @@ use function file_get_contents;
 use function file_put_contents;
 use function is_array;
 use function is_readable;
-use Psalm\Internal\Analyzer\IssueData;
 use Psalm\Config;
 use function serialize;
 use function unserialize;
 
 /**
- * @psalm-type  TaggedCodeType = array<int, array{0: int, 1: string}>
- */
-/**
+ * @psalm-import-type  FileMapType from \Psalm\Internal\Codebase\Analyzer
+ *
  * Used to determine which files reference other files, necessary for using the --diff
  * option from the command line.
  */
 class FileReferenceCacheProvider
 {
-    const REFERENCE_CACHE_NAME = 'references';
-    const CLASSLIKE_FILE_CACHE_NAME = 'classlike_files';
-    const NONMETHOD_CLASS_REFERENCE_CACHE_NAME = 'file_class_references';
-    const METHOD_CLASS_REFERENCE_CACHE_NAME = 'method_class_references';
-    const ANALYZED_METHODS_CACHE_NAME = 'analyzed_methods';
-    const CLASS_METHOD_CACHE_NAME = 'class_method_references';
-    const FILE_CLASS_MEMBER_CACHE_NAME = 'file_class_member_references';
-    const ISSUES_CACHE_NAME = 'issues';
-    const FILE_MAPS_CACHE_NAME = 'file_maps';
-    const TYPE_COVERAGE_CACHE_NAME = 'type_coverage';
-    const CONFIG_HASH_CACHE_NAME = 'config';
-    const METHOD_MISSING_MEMBER_CACHE_NAME = 'method_missing_member';
-    const FILE_MISSING_MEMBER_CACHE_NAME = 'file_missing_member';
-    const UNKNOWN_MEMBER_CACHE_NAME = 'unknown_member_references';
-    const METHOD_PARAM_USE_CACHE_NAME = 'method_param_uses';
+    private const REFERENCE_CACHE_NAME = 'references';
+    private const CLASSLIKE_FILE_CACHE_NAME = 'classlike_files';
+    private const NONMETHOD_CLASS_REFERENCE_CACHE_NAME = 'file_class_references';
+    private const METHOD_CLASS_REFERENCE_CACHE_NAME = 'method_class_references';
+    private const ANALYZED_METHODS_CACHE_NAME = 'analyzed_methods';
+    private const CLASS_METHOD_CACHE_NAME = 'class_method_references';
+    private const FILE_CLASS_MEMBER_CACHE_NAME = 'file_class_member_references';
+    private const ISSUES_CACHE_NAME = 'issues';
+    private const FILE_MAPS_CACHE_NAME = 'file_maps';
+    private const TYPE_COVERAGE_CACHE_NAME = 'type_coverage';
+    private const CONFIG_HASH_CACHE_NAME = 'config';
+    private const METHOD_MISSING_MEMBER_CACHE_NAME = 'method_missing_member';
+    private const FILE_MISSING_MEMBER_CACHE_NAME = 'file_missing_member';
+    private const UNKNOWN_MEMBER_CACHE_NAME = 'unknown_member_references';
+    private const METHOD_PARAM_USE_CACHE_NAME = 'method_param_uses';
 
     /**
      * @var Config
      */
-    private $config;
-
-    /**
-     * @var bool
-     */
-    public $config_changed;
+    protected $config;
 
     public function __construct(Config $config)
     {
         $this->config = $config;
-        $this->config_changed = $config->hash !== $this->getConfigHashCache();
-        $this->setConfigHashCache($config->hash);
+    }
+
+    public function hasConfigChanged() : bool
+    {
+        $has_changed = $this->config->hash !== $this->getConfigHashCache();
+        $this->setConfigHashCache($this->config->hash);
+        return $has_changed;
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedFileReferences()
+    public function getCachedFileReferences(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
-        if (!$cache_directory || $this->config_changed) {
+        if (!$cache_directory) {
             return null;
         }
 
@@ -83,15 +79,13 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedClassLikeFiles()
+    public function getCachedClassLikeFiles(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
-        if (!$cache_directory || $this->config_changed) {
+        if (!$cache_directory) {
             return null;
         }
 
@@ -111,11 +105,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedNonMethodClassReferences()
+    public function getCachedNonMethodClassReferences(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -139,11 +131,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedMethodClassReferences()
+    public function getCachedMethodClassReferences(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -167,11 +157,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedMethodMemberReferences()
+    public function getCachedMethodMemberReferences(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -195,11 +183,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedMethodMissingMemberReferences()
+    public function getCachedMethodMissingMemberReferences(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -223,11 +209,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedFileMemberReferences()
+    public function getCachedFileMemberReferences(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -251,11 +235,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedFileMissingMemberReferences()
+    public function getCachedFileMissingMemberReferences(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -280,11 +262,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedMixedMemberNameReferences()
+    public function getCachedMixedMemberNameReferences(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -308,11 +288,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedMethodParamUses()
+    public function getCachedMethodParamUses(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -336,11 +314,9 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return ?array
-     *
      * @psalm-suppress MixedAssignment
      */
-    public function getCachedIssues()
+    public function getCachedIssues(): ?array
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -510,7 +486,7 @@ class FileReferenceCacheProvider
     /**
      * @return void
      */
-    public function setCachedMethodParamUses(array $references)
+    public function setCachedMethodParamUses(array $uses)
     {
         $cache_directory = $this->config->getCacheDirectory();
 
@@ -520,7 +496,7 @@ class FileReferenceCacheProvider
 
         $cache_location = $cache_directory . DIRECTORY_SEPARATOR . self::METHOD_PARAM_USE_CACHE_NAME;
 
-        file_put_contents($cache_location, serialize($references));
+        file_put_contents($cache_location, serialize($uses));
     }
 
     /**
@@ -550,7 +526,6 @@ class FileReferenceCacheProvider
 
         if ($cache_directory
             && file_exists($analyzed_methods_cache_location)
-            && !$this->config_changed
         ) {
             /** @var array<string, array<string, int>> */
             return unserialize(file_get_contents($analyzed_methods_cache_location));
@@ -581,14 +556,7 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @return array<
-     *      string,
-     *      array{
-     *          0: TaggedCodeType,
-     *          1: TaggedCodeType,
-     *          2: array<int, array{0: int, 1: string, 2: int}>
-     *      }
-     *  >|false
+     * @return array<string, FileMapType>|false
      */
     public function getFileMapCache()
     {
@@ -598,17 +566,9 @@ class FileReferenceCacheProvider
 
         if ($cache_directory
             && file_exists($file_maps_cache_location)
-            && !$this->config_changed
         ) {
             /**
-             * @var array<
-             *      string,
-             *      array{
-             *          0: TaggedCodeType,
-             *          1: TaggedCodeType,
-             *          2: array<int, array{0: int, 1: string, 2: int}>
-             *      }
-             *  >
+             * @var array<string, FileMapType>
              */
             $file_maps_cache = unserialize(file_get_contents($file_maps_cache_location));
 
@@ -619,14 +579,7 @@ class FileReferenceCacheProvider
     }
 
     /**
-     * @param array<
-     *      string,
-     *      array{
-     *          0: TaggedCodeType,
-     *          1: TaggedCodeType,
-     *          2: array<int, array{0: int, 1: string, 2: int}>
-     *      }
-     *  > $file_maps
+     * @param array<string, FileMapType> $file_maps
      *
      * @return void
      */
@@ -655,7 +608,6 @@ class FileReferenceCacheProvider
 
         if ($cache_directory
             && file_exists($type_coverage_cache_location)
-            && !$this->config_changed
         ) {
             /** @var array<string, array{int, int}> */
             $type_coverage_cache = unserialize(file_get_contents($type_coverage_cache_location));
@@ -698,7 +650,7 @@ class FileReferenceCacheProvider
             && file_exists($config_hash_cache_location)
         ) {
             /** @var string */
-            $file_maps_cache = unserialize(file_get_contents($config_hash_cache_location));
+            $file_maps_cache = file_get_contents($config_hash_cache_location);
 
             return $file_maps_cache;
         }
@@ -706,10 +658,7 @@ class FileReferenceCacheProvider
         return false;
     }
 
-    /**
-     * @return void
-     */
-    public function setConfigHashCache(string $hash)
+    public function setConfigHashCache(string $hash): void
     {
         $cache_directory = Config::getInstance()->getCacheDirectory();
 
@@ -722,7 +671,7 @@ class FileReferenceCacheProvider
 
             file_put_contents(
                 $config_hash_cache_location,
-                serialize($hash)
+                $hash
             );
         }
     }

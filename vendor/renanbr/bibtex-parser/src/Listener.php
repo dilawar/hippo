@@ -28,22 +28,22 @@ class Listener implements ListenerInterface
     /** @var array */
     private $processors = [];
 
-    /** @var bool */
-    private $processed = false;
+    /** @var array */
+    private $processed = [];
 
     /**
      * @return array all entries found during parsing process
      */
     public function export()
     {
-        if (!$this->processed) {
-            foreach ($this->processors as $processor) {
-                $this->entries = array_filter(array_map($processor, $this->entries));
-            }
-            $this->processed = true;
+        $offset = \count($this->processed);
+        $missing = \array_slice($this->entries, $offset);
+        foreach ($this->processors as $processor) {
+            $missing = array_filter(array_map($processor, $missing));
         }
+        $this->processed = array_merge($this->processed, $missing);
 
-        return $this->entries;
+        return $this->processed;
     }
 
     /**
@@ -63,25 +63,28 @@ class Listener implements ListenerInterface
         switch ($type) {
             case Parser::TYPE:
                 // Starts a new entry
-                $this->entries[] = ['type' => $text];
+                $this->entries[] = [
+                    '_type' => $text,
+                    'type' => $text, // compatibility
+                ];
                 break;
 
             case Parser::CITATION_KEY:
-                $index = count($this->entries) - 1;
+                $index = \count($this->entries) - 1;
                 $this->entries[$index]['citation-key'] = $text;
                 break;
 
             case Parser::TAG_NAME:
                 // Saves tag into the current entry
-                $index = count($this->entries) - 1;
+                $index = \count($this->entries) - 1;
                 $this->currentTagName = $text;
                 $this->entries[$index][$this->currentTagName] = null;
                 break;
 
             case Parser::RAW_TAG_CONTENT:
-                // Searchs for an abbreviation
+                // Searches for an abbreviation
                 foreach ($this->entries as $entry) {
-                    if ('string' === $entry['type'] && array_key_exists($text, $entry)) {
+                    if ('string' === $entry['type'] && \array_key_exists($text, $entry)) {
                         $text = $entry[$text];
                         break;
                     }
@@ -92,13 +95,13 @@ class Listener implements ListenerInterface
             case Parser::QUOTED_TAG_CONTENT:
                 // Appends content into the current tag
                 if (null !== $text) {
-                    $index = count($this->entries) - 1;
+                    $index = \count($this->entries) - 1;
                     $this->entries[$index][$this->currentTagName] .= $text;
                 }
                 break;
 
             case Parser::ENTRY:
-                $index = count($this->entries) - 1;
+                $index = \count($this->entries) - 1;
                 $this->entries[$index]['_original'] = $text;
                 break;
         }

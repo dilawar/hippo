@@ -34,7 +34,7 @@ Configuration file may be split into several files using [XInclude](https://www.
 ```
 
 
-## Optional `<psalm />` attributes
+## Optional &lt;psalm /&gt; attributes
 
 ### Coding style
 
@@ -107,6 +107,15 @@ If not using all docblock types, you can still use docblock property types. Defa
 ```
 The PHPDoc `@method` annotation normally only applies to classes with a `__call` method. Setting this to `true` allows you to use the `@method` annotation to override inherited method return types. Defaults to `false`.
 
+#### usePhpDocPropertiesWithoutMagicCall
+
+```xml
+<psalm
+  usePhpDocPropertiesWithoutMagicCall="[bool]"
+>
+```
+The PHPDoc `@property`, `@property-read` and `@property-write` annotations normally only apply to classes with `__get`/`__set` methods. Setting this to `true` allows you to use the `@property`, `@property-read` and `@property-write` annotations to override property existence checks and resulting property types. Defaults to `false`.
+
 #### strictBinaryOperands
 
 ```xml
@@ -151,15 +160,6 @@ Setting this to `false` means that any function calls will cause Psalm to forget
 >
 ```
 Allows you to specify whether or not to use the typed iterator docblock format supported by PHP Storm e.g. `ArrayIterator|string[]`, which Psalm transforms to `ArrayIterator<string>`. Defaults to `false`.
-
-#### allowCoercionFromStringToClassConst
-
-```xml
-<psalm
-  allowCoercionFromStringToClassConst="[bool]"
->
-```
-When `true`, strings can be coerced to [`class-string`](../annotating_code/templated_annotations.md#param-class-stringt), with Psalm emitting a `TypeCoercion` issue. If disabled, that issue changes to a more serious one. Defaults to `false`.
 
 #### allowStringToStandInForClass
 
@@ -220,7 +220,7 @@ When `true`, Psalm will check that the developer has caught every exception in g
   ignoreInternalFunctionFalseReturn="[bool]"
 >
 ```
-When `true`, Psalm ignores possibly-false issues stemming from return values of internal functions (like `preg_split`) that may return false, but do so rarely). Defaults to `false`.
+When `true`, Psalm ignores possibly-false issues stemming from return values of internal functions (like `preg_split`) that may return false, but do so rarely. Defaults to `true`.
 
 #### ignoreInternalFunctionNullReturn
 
@@ -247,13 +247,21 @@ When `true`, Psalm will attempt to find all unused variables, the equivalent of 
 ```
 When `true`, Psalm will attempt to find all unused code (including unused variables), the equivalent of running with `--find-unused-code`. Defaults to `false`.
 
+#### findUnusedPsalmSuppress
+```xml
+<psalm
+  findUnusedPsalmSuppress="[bool]"
+>
+```
+When `true`, Psalm will report all `@psalm-suppress` annotations that aren't used, the equivalent of running with `--find-unused-psalm-suppress`. Defaults to `false`.
+
 #### loadXdebugStub
 ```xml
 <psalm
   loadXdebugStub="[bool]"
 >
 ```
-If not present, Psalm will only load the Xdebug stub if psalm has unloaded the extension.
+If not present, Psalm will only load the Xdebug stub if Psalm has unloaded the extension.
 When `true`, Psalm will load the Xdebug extension stub (as the extension is unloaded when Psalm runs).
 Setting to `false` prevents the stub from loading.
 
@@ -265,13 +273,21 @@ Setting to `false` prevents the stub from loading.
 ```
 When `true`, Psalm will complain when referencing an explicit string offset on an array e.g. `$arr['foo']` without a user first asserting that it exists (either via an `isset` check or via an object-like array). Defaults to `false`.
 
+#### ensureArrayIntOffsetsExist
+```xml
+<psalm
+  ensureArrayIntOffsetsExist="[bool]"
+>
+```
+When `true`, Psalm will complain when referencing an explicit integer offset on an array e.g. `$arr[7]` without a user first asserting that it exists (either via an `isset` check or via an object-like array). Defaults to `false`.
+
 #### phpVersion
 ```xml
 <psalm
   phpVersion="[string]"
 >
 ```
-Set the php version psalm should assume when checking and/or fixing the project. If this attribute is not set, psalm uses the declaration in `composer.json` if one is present. It will check against the earliest version of PHP that satisfies the declared `php` dependency
+Set the php version Psalm should assume when checking and/or fixing the project. If this attribute is not set, Psalm uses the declaration in `composer.json` if one is present. It will check against the earliest version of PHP that satisfies the declared `php` dependency
 
 This can be overridden on the command-line using the `--php-version=` flag which takes the highest precedence over both the `phpVersion` setting and the version derived from `composer.json`.
 
@@ -284,7 +300,37 @@ This can be overridden on the command-line using the `--php-version=` flag which
 
 When `true`, Psalm will skip checking classes, variables and functions after it comes across an `include` or `require` it cannot resolve. This allows code to reference functions and classes unknown to Psalm.
 
-For backwards compatibility, this defaults to `true`, but if you do not rely on dynamically generated includes to cause classes otherwise unknown to psalm to come into existence, it's recommended you set this to `false` in order to reliably detect errors that would be fatal to PHP at runtime.
+For backwards compatibility, this defaults to `true`, but if you do not rely on dynamically generated includes to cause classes otherwise unknown to Psalm to come into existence, it's recommended you set this to `false` in order to reliably detect errors that would be fatal to PHP at runtime.
+
+#### sealAllMethods
+
+```xml
+<psalm
+  sealAllMethods="[bool]"
+>
+```
+
+When `true`, Psalm will treat all classes as if they had sealed methods, meaning that if you implement the magic method `__call`, you also have to add `@method` for each magic method. Defaults to false.
+
+#### runTaintAnalysis
+
+```xml
+<psalm
+  runTaintAnalysis="[bool]"
+>
+```
+
+When `true`, Psalm will run [Taint Analysis](../security_analysis/index.md) on your codebase. This config is the same as if you were running Psalm with `--taint-analysis`.
+
+#### reportInfo
+
+```xml
+<psalm
+  reportInfo="[bool]"
+>
+```
+
+When `false`, Psalm will not consider issue at lower level than `errorLevel` as `info` (they will be suppressed instead). This can be a big improvement in analysis time for big projects. However, this config will prevent Psalm to count or suggest fixes for suppressed issue
 
 ### Running Psalm
 
@@ -294,7 +340,7 @@ For backwards compatibility, this defaults to `true`, but if you do not rely on 
   autoloader="[string]"
 >
 ```
-if your application registers one or more custom autoloaders, and/or declares universal constants/functions, this autoloader script will be executed by Psalm before scanning starts. Psalm always registers composer's autoloader by default.
+If your application registers one or more custom autoloaders, and/or declares universal constants/functions, this autoloader script will be executed by Psalm before scanning starts. Psalm always registers composer's autoloader by default.
 
 #### throwExceptionOnError
 ```xml
@@ -302,7 +348,7 @@ if your application registers one or more custom autoloaders, and/or declares un
   throwExceptionOnError="[bool]"
 >
 ```
-Useful in testing, things makes Psalm throw a regular-old exception when it encounters an error. Defaults to `false`.
+Useful in testing, this makes Psalm throw a regular-old exception when it encounters an error. Defaults to `false`.
 
 #### hideExternalErrors
 ```xml
@@ -310,7 +356,7 @@ Useful in testing, things makes Psalm throw a regular-old exception when it enco
   hideExternalErrors="[bool]"
 >
 ```
-whether or not to show issues in files that are used by your project files, but which are not included in `<projectFiles>`. Defaults to `false`.
+Whether or not to show issues in files that are used by your project files, but which are not included in `<projectFiles>`. Defaults to `false`.
 
 #### cacheDirectory
 ```xml
@@ -319,6 +365,8 @@ whether or not to show issues in files that are used by your project files, but 
 >
 ```
 The directory used to store Psalm's cache data - if you specify one (and it does not already exist), its parent directory must already exist, otherwise Psalm will throw an error.
+
+Defaults to `$XDG_CACHE_HOME/psalm`. If `$XDG_CACHE_HOME` is either not set or empty, a default equal to `$HOME/.cache/psalm` is used or `sys_get_temp_dir() . '/psalm'` when not defined.
 
 #### allowFileIncludes
 ```xml
@@ -334,12 +382,12 @@ Whether or not to allow `require`/`include` calls in your PHP. Defaults to `true
   serializer="['igbinary'|'default']"
 >
 ```
-Allows you to hard-code a serializer for Psalm to use when caching data. By default, Psalm uses `ext-igbinary` *if* the version is greater or equal to 2.0.5, otherwise it defaults to PHP's built-in serializer.
+Allows you to hard-code a serializer for Psalm to use when caching data. By default, Psalm uses `ext-igbinary` *if* the version is greater than or equal to 2.0.5, otherwise it defaults to PHP's built-in serializer.
 
 
 ## Project settings
 
-#### `<projectFiles>`
+#### &lt;projectFiles&gt;
 Contains a list of all the directories that Psalm should inspect. You can also specify a set of files and folders to ignore with the `<ignoreFiles>` directive, e.g.
 ```xml
 <projectFiles>
@@ -350,22 +398,28 @@ Contains a list of all the directories that Psalm should inspect. You can also s
 </projectFiles>
 ```
 
-#### `<fileExtensions>`
+#### &lt;extraFiles&gt;
+Optional. Same format as `<projectFiles>`. Directories Psalm should load but not inspect.
+
+#### &lt;fileExtensions&gt;
 Optional.  A list of extensions to search over. See [Checking non-PHP files](checking_non_php_files.md) to understand how to extend this.
 
-#### `<plugins>`
+#### &lt;plugins&gt;
 Optional.  A list of `<plugin filename="path_to_plugin.php" />` entries. See the [Plugins](plugins/using_plugins.md) section for more information.
 
-#### `<issueHandlers>`
+#### &lt;issueHandlers&gt;
 Optional.  If you don't want Psalm to complain about every single issue it finds, the issueHandler tag allows you to configure that. [Dealing with code issues](dealing_with_code_issues.md) tells you more.
 
-#### `<mockClasses>`
+#### &lt;mockClasses&gt;
 Optional. Do you use mock classes in your tests? If you want Psalm to ignore them when checking files, include a fully-qualified path to the class with `<class name="Your\Namespace\ClassName" />`
 
-#### `<stubs>`
+#### &lt;universalObjectCrates&gt;
+Optional. Do you have objects with properties that cannot be determined statically? If you want Psalm to treat all properties on a given classlike as mixed, include a fully-qualified path to the class with `<class name="Your\Namespace\ClassName" />`. By default, `stdClass` and `SimpleXMLElement` are configured to be universal object crates.
+
+#### &lt;stubs&gt;
 Optional. If your codebase uses classes and functions that are not visible to Psalm via reflection (e.g. if there are internal packages that your codebase relies on that are not available on the machine running Psalm), you can use stub files. Used by PhpStorm (a popular IDE) and others, stubs provide a description of classes and functions without the implementations. You can find a list of stubs for common classes [here](https://github.com/JetBrains/phpstorm-stubs). List out each file with `<file name="path/to/file.php" />`.
 
-#### `<ignoreExceptions>`
+#### &lt;ignoreExceptions&gt;
 Optional.  A list of exceptions to not report for `checkForThrowsDocblock` or `checkForThrowsInGlobalScope`. If an exception has `onlyGlobalScope` set to `true`, only `checkForThrowsInGlobalScope` is ignored for that exception, e.g.
 ```xml
 <ignoreExceptions>
@@ -373,7 +427,7 @@ Optional.  A list of exceptions to not report for `checkForThrowsDocblock` or `c
 </ignoreExceptions>
 ```
 
-#### `<globals>`
+#### &lt;globals&gt;
 Optional.  If your codebase uses global variables that are accessed with the `global` keyword, you can declare their type.  e.g.
 ```xml
 <globals>

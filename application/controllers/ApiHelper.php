@@ -15,8 +15,9 @@ function sendBookingEmail(string $gid, array $request, string $login): array
     $repeatPat = $request['repeat_pat'] ?? '';
 
     // '' is often ignored by insertIntoTable function.
-    if($repeatPat === '')
+    if ('' === $repeatPat) {
         $repeatPat = ' ';
+    }
 
     $userInfo = getLoginInfo($login);
     $userEmail = $userInfo['email'];
@@ -26,7 +27,7 @@ function sendBookingEmail(string $gid, array $request, string $login): array
     $data['BOOKING_REQUEST'] = arrayToVerticalTableHTML($rgroup[0], 'request');
 
     // add the recurrent pattern to table recurrent_pattern.
-    $patData = ['id' => getUniqueID('recurrent_pattern'), 'request_gid' => $gid, 'pattern' => $repeatPat,];
+    $patData = ['id' => getUniqueID('recurrent_pattern'), 'request_gid' => $gid, 'pattern' => $repeatPat];
 
     $res = insertIntoTable('recurrent_pattern', 'id,request_gid,pattern', $patData);
 
@@ -129,12 +130,12 @@ function submitBookingRequest(array $request, string $login): array
                 $errorMsg .= arrayToTableHTML($ev, 'events', $hide);
             }
             $collision = true;
+
             continue;
         }
 
         $request['timestamp'] = dbDateTime('now');
-        $res = insertIntoTable('bookmyvenue_requests'
-            , 'gid,rid,external_id,created_by,venue,title,vc_url,vc_extra,description' .
+        $res = insertIntoTable('bookmyvenue_requests', 'gid,rid,external_id,created_by,venue,title,vc_url,vc_extra,description' .
                 ',date,start_time,end_time,timestamp,is_public_event,class', $request
         );
 

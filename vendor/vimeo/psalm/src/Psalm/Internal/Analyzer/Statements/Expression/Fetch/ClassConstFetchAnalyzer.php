@@ -3,6 +3,7 @@ namespace Psalm\Internal\Analyzer\Statements\Expression\Fetch;
 
 use PhpParser;
 use Psalm\Internal\Analyzer\ClassLikeAnalyzer;
+use Psalm\Internal\Analyzer\NamespaceAnalyzer;
 use Psalm\Internal\Analyzer\Statements\ExpressionAnalyzer;
 use Psalm\Internal\Analyzer\StatementsAnalyzer;
 use Psalm\Internal\Analyzer\TraitAnalyzer;
@@ -12,6 +13,7 @@ use Psalm\Context;
 use Psalm\Issue\CircularReference;
 use Psalm\Issue\DeprecatedClass;
 use Psalm\Issue\DeprecatedConstant;
+use Psalm\Issue\InternalClass;
 use Psalm\Issue\InaccessibleClassConstant;
 use Psalm\Issue\NonStaticSelfCall;
 use Psalm\Issue\ParentNotFound;
@@ -26,18 +28,11 @@ use function explode;
  */
 class ClassConstFetchAnalyzer
 {
-    /**
-     * @param   StatementsAnalyzer                   $statements_analyzer
-     * @param   PhpParser\Node\Expr\ClassConstFetch $stmt
-     * @param   Context                             $context
-     *
-     * @return  null|false
-     */
     public static function analyze(
         StatementsAnalyzer $statements_analyzer,
         PhpParser\Node\Expr\ClassConstFetch $stmt,
         Context $context
-    ) {
+    ) : bool {
         $codebase = $statements_analyzer->getCodebase();
 
         if ($stmt->class instanceof PhpParser\Node\Name) {
@@ -55,7 +50,7 @@ class ClassConstFetchAnalyzer
                         return false;
                     }
 
-                    return;
+                    return true;
                 }
 
                 $fq_class_name = $context->self;
@@ -73,7 +68,7 @@ class ClassConstFetchAnalyzer
                         return false;
                     }
 
-                    return;
+                    return true;
                 }
             } else {
                 $fq_class_name = ClassLikeAnalyzer::getFQCLNFromNameObject(
@@ -95,7 +90,7 @@ class ClassConstFetchAnalyzer
                             false,
                             true
                         ) === false) {
-                            return;
+                            return true;
                         }
                     }
                 }
@@ -162,14 +157,14 @@ class ClassConstFetchAnalyzer
                     );
                 }
 
-                return null;
+                return true;
             }
 
             // if we're ignoring that the class doesn't exist, exit anyway
             if (!$codebase->classlikes->classOrInterfaceExists($fq_class_name)) {
                 $statements_analyzer->node_data->setType($stmt, Type::getMixed());
 
-                return null;
+                return true;
             }
 
             if ($codebase->store_node_types
@@ -184,7 +179,7 @@ class ClassConstFetchAnalyzer
             }
 
             if (!$stmt->name instanceof PhpParser\Node\Identifier) {
-                return;
+                return true;
             }
 
             $const_id = $fq_class_name . '::' . $stmt->name;
@@ -224,7 +219,7 @@ class ClassConstFetchAnalyzer
                     $statements_analyzer
                 );
             } catch (\InvalidArgumentException $_) {
-                return;
+                return true;
             } catch (\Psalm\Exception\CircularReferenceException $e) {
                 if (IssueBuffer::accepts(
                     new CircularReference(
@@ -236,7 +231,7 @@ class ClassConstFetchAnalyzer
                     // fall through
                 }
 
-                return;
+                return true;
             }
 
             if (!$class_constant_type) {
@@ -271,7 +266,7 @@ class ClassConstFetchAnalyzer
                     }
                 }
 
-                return;
+                return true;
             }
 
             if ($context->calling_method_id) {
@@ -286,7 +281,7 @@ class ClassConstFetchAnalyzer
             if ($codebase->alter_code && !$moved_class) {
                 foreach ($codebase->class_constant_transforms as $original_pattern => $transformation) {
                     if ($declaring_const_id === $original_pattern) {
-                        list($new_fq_class_name, $new_const_name) = explode('::', $transformation);
+                        [$new_fq_class_name, $new_const_name] = explode('::', $transformation);
 
                         $file_manipulations = [];
 
@@ -315,6 +310,25 @@ class ClassConstFetchAnalyzer
             }
 
             $class_const_storage = $codebase->classlike_storage_provider->get($fq_class_name);
+
+            if ($context->self
+                && !$context->collect_initializations
+                && !$context->collect_mutations
+                && $class_const_storage->internal
+                && !NamespaceAnalyzer::isWithin($context->self, $class_const_storage->internal)
+            ) {
+                if (IssueBuffer::accepts(
+                    new InternalClass(
+                        $fq_class_name . ' is internal to ' . $class_const_storage->internal
+                            . ' but called from ' . $context->self,
+                        new CodeLocation($statements_analyzer->getSource(), $stmt),
+                        $fq_class_name
+                    ),
+                    $statements_analyzer->getSuppressedIssues()
+                )) {
+                    // fall through
+                }
+            }
 
             if ($class_const_storage->deprecated && $fq_class_name !== $context->self) {
                 if (IssueBuffer::accepts(
@@ -348,7 +362,7 @@ class ClassConstFetchAnalyzer
                 $statements_analyzer->node_data->setType($stmt, Type::getMixed());
             }
 
-            return null;
+            return true;
         }
 
         if ($stmt->name instanceof PhpParser\Node\Identifier && $stmt->name->name === 'class') {
@@ -382,7 +396,7 @@ class ClassConstFetchAnalyzer
                 $statements_analyzer->node_data->setType($stmt, Type::getMixed());
             }
 
-            return;
+            return true;
         }
 
         $statements_analyzer->node_data->setType($stmt, Type::getMixed());
@@ -391,6 +405,39 @@ class ClassConstFetchAnalyzer
             return false;
         }
 
-        return null;
+        return true;
+    }
+
+    public static function analyzeClassConstAssignment(
+        StatementsAnalyzer $statements_analyzer,
+        PhpParser\Node\Stmt\ClassConst $stmt,
+        Context $context
+    ): void {
+        $const_visibility = \ReflectionProperty::IS_PUBLIC;
+
+        if ($stmt->isProtected()) {
+            $const_visibility = \ReflectionProperty::IS_PROTECTED;
+        }
+
+        if ($stmt->isPrivate()) {
+            $const_visibility = \ReflectionProperty::IS_PRIVATE;
+        }
+
+        $codebase = $statements_analyzer->getCodebase();
+
+        foreach ($stmt->consts as $const) {
+            ExpressionAnalyzer::analyze($statements_analyzer, $const->value, $context);
+
+            if (($const_type = $statements_analyzer->node_data->getType($const->value))
+                && !$const_type->hasMixed()
+            ) {
+                $codebase->classlikes->setConstantType(
+                    (string)$statements_analyzer->getFQCLN(),
+                    $const->name->name,
+                    $const_type,
+                    $const_visibility
+                );
+            }
+        }
     }
 }

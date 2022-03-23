@@ -16,15 +16,12 @@ class GetTypeT extends TString
     /**
      * @param string $typeof the variable id
      */
-    public function __construct($typeof)
+    public function __construct(string $typeof)
     {
         $this->typeof = $typeof;
     }
 
-    /**
-     * @return bool
-     */
-    public function canBeFullyExpressedInPhp()
+    public function canBeFullyExpressedInPhp(): bool
     {
         return false;
     }

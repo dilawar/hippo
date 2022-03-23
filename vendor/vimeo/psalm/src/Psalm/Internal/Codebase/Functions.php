@@ -10,12 +10,14 @@ use Psalm\Internal\Provider\FileStorageProvider;
 use Psalm\Internal\Provider\FunctionExistenceProvider;
 use Psalm\Internal\Provider\FunctionParamsProvider;
 use Psalm\Internal\Provider\FunctionReturnTypeProvider;
+use Psalm\Internal\Type\Comparator\CallableTypeComparator;
 use Psalm\StatementsSource;
-use Psalm\Storage\FunctionLikeStorage;
+use Psalm\Storage\FunctionStorage;
 use function strpos;
 use function strtolower;
 use function substr;
-use Closure;
+use Psalm\Type\Atomic\TNamedObject;
+use Psalm\Internal\MethodIdentifier;
 
 /**
  * @internal
@@ -28,7 +30,7 @@ class Functions
     private $file_storage_provider;
 
     /**
-     * @var array<string, FunctionLikeStorage>
+     * @var array<lowercase-string, FunctionStorage>
      */
     private static $stubbed_functions;
 
@@ -57,14 +59,21 @@ class Functions
         self::$stubbed_functions = [];
     }
 
+    /**
+     * @param non-empty-lowercase-string $function_id
+     */
     public function getStorage(
         ?StatementsAnalyzer $statements_analyzer,
         string $function_id,
         ?string $root_file_path = null,
         ?string $checked_file_path = null
-    ) : FunctionLikeStorage {
-        if (isset(self::$stubbed_functions[strtolower($function_id)])) {
-            return self::$stubbed_functions[strtolower($function_id)];
+    ) : FunctionStorage {
+        if ($function_id[0] === '\\') {
+            $function_id = substr($function_id, 1);
+        }
+
+        if (isset(self::$stubbed_functions[$function_id])) {
+            return self::$stubbed_functions[$function_id];
         }
 
         $file_storage = null;
@@ -132,42 +141,31 @@ class Functions
         return $declaring_file_storage->functions[$function_id];
     }
 
-    /**
-     * @param string $function_id
-     * @param FunctionLikeStorage $storage
-     *
-     * @return void
-     */
-    public function addGlobalFunction($function_id, FunctionLikeStorage $storage)
+    public function addGlobalFunction(string $function_id, FunctionStorage $storage): void
     {
         self::$stubbed_functions[strtolower($function_id)] = $storage;
     }
 
-    /**
-     * @param  string  $function_id
-     *
-     * @return bool
-     */
-    public function hasStubbedFunction($function_id)
+    public function hasStubbedFunction(string $function_id): bool
     {
         return isset(self::$stubbed_functions[strtolower($function_id)]);
     }
 
     /**
-     * @return array<string, FunctionLikeStorage>
+     * @return array<string, FunctionStorage>
      */
-    public function getAllStubbedFunctions()
+    public function getAllStubbedFunctions(): array
     {
         return self::$stubbed_functions;
     }
 
     /**
-     * @return bool
+     * @param lowercase-string $function_id
      */
     public function functionExists(
         StatementsAnalyzer $statements_analyzer,
         string $function_id
-    ) {
+    ): bool {
         if ($this->existence_provider->has($function_id)) {
             $function_exists = $this->existence_provider->doesFunctionExist($statements_analyzer, $function_id);
 
@@ -186,7 +184,7 @@ class Functions
             return true;
         }
 
-        if (isset(self::$stubbed_functions[strtolower($function_id)])) {
+        if (isset(self::$stubbed_functions[$function_id])) {
             return true;
         }
 
@@ -197,7 +195,7 @@ class Functions
         $predefined_functions = $statements_analyzer->getCodebase()->config->getPredefinedFunctions();
 
         if (isset($predefined_functions[$function_id])) {
-            /** @psalm-suppress TypeCoercion */
+            /** @psalm-suppress ArgumentTypeCoercion */
             if ($this->reflection->registerFunction($function_id) === false) {
                 return false;
             }
@@ -209,19 +207,20 @@ class Functions
     }
 
     /**
-     * @param  string                   $function_name
-     * @param  StatementsSource         $source
+     * @param  non-empty-string         $function_name
      *
-     * @return string
+     * @return non-empty-string
      */
-    public function getFullyQualifiedFunctionNameFromString($function_name, StatementsSource $source)
+    public function getFullyQualifiedFunctionNameFromString(string $function_name, StatementsSource $source)
     {
-        if (empty($function_name)) {
-            throw new \InvalidArgumentException('$function_name cannot be empty');
-        }
-
         if ($function_name[0] === '\\') {
-            return substr($function_name, 1);
+            $function_name = substr($function_name, 1);
+
+            if ($function_name === '') {
+                throw new \UnexpectedValueException('Malformed function name');
+            }
+
+            return $function_name;
         }
 
         $function_name_lcase = strtolower($function_name);
@@ -253,13 +252,7 @@ class Functions
         return ($namespace ? $namespace . '\\' : '') . $function_name;
     }
 
-    /**
-     * @param  string $function_id
-     * @param  string $file_path
-     *
-     * @return bool
-     */
-    public static function isVariadic(Codebase $codebase, $function_id, $file_path)
+    public static function isVariadic(Codebase $codebase, string $function_id, string $file_path): bool
     {
         $file_storage = $codebase->file_storage_provider->get($file_path);
 
@@ -281,16 +274,19 @@ class Functions
      */
     public function isCallMapFunctionPure(
         Codebase $codebase,
+        ?\Psalm\NodeTypeProvider $type_provider,
         string $function_id,
         ?array $args,
         bool &$must_use = true
     ) : bool {
         $impure_functions = [
             // file io
-            'chdir', 'chgrp', 'chmod', 'chown', 'chroot', 'closedir', 'copy', 'file_put_contents',
+            'chdir', 'chgrp', 'chmod', 'chown', 'chroot', 'copy', 'file_put_contents',
+            'opendir', 'readdir', 'closedir', 'rewinddir', 'scandir',
             'fopen', 'fread', 'fwrite', 'fclose', 'touch', 'fpassthru', 'fputs', 'fscanf', 'fseek',
             'ftruncate', 'fprintf', 'symlink', 'mkdir', 'unlink', 'rename', 'rmdir', 'popen', 'pclose',
-            'fputcsv', 'umask', 'finfo_close', 'readline_add_history', 'stream_set_timeout', 'fflush',
+            'fgetcsv', 'fputcsv', 'umask', 'finfo_close', 'readline_add_history', 'stream_set_timeout',
+            'fgets', 'fflush', 'move_uploaded_file', 'file_exists', 'realpath', 'glob',
 
             // stream/socket io
             'stream_context_set_option', 'socket_write', 'stream_set_blocking', 'socket_close',
@@ -341,6 +337,7 @@ class Functions
             'mt_rand', 'rand', 'random_int', 'random_bytes',
             'wincache_ucache_delete', 'wincache_ucache_set', 'wincache_ucache_inc',
             'class_alias',
+            'class_exists', // impure by virtue of triggering autoloader
 
             // php environment
             'ini_set', 'sleep', 'usleep', 'register_shutdown_function',
@@ -354,8 +351,9 @@ class Functions
             'openlog', 'syslog', 'error_log', 'define_syslog_variables',
 
             // session
-            'session_id', 'session_name', 'session_set_cookie_params', 'session_set_save_handler',
-            'session_regenerate_id', 'mb_internal_encoding', 'session_start',
+            'session_id', 'session_decode', 'session_name', 'session_set_cookie_params',
+            'session_set_save_handler', 'session_regenerate_id', 'mb_internal_encoding',
+            'session_start',
 
             // ldap
             'ldap_set_option',
@@ -368,8 +366,14 @@ class Functions
             'mysqli_next_result', 'mysqli_options', 'mysqli_ping', 'mysqli_query', 'mysqli_report',
             'mysqli_rollback', 'mysqli_savepoint', 'mysqli_set_charset', 'mysqli_ssl_set',
 
+            // script execution
+            'ignore_user_abort',
+
             // ftp
             'ftp_close',
+
+            // bcmath
+            'bcscale',
         ];
 
         if (\in_array(strtolower($function_id), $impure_functions, true)) {
@@ -389,7 +393,33 @@ class Functions
             return true;
         }
 
-        $function_callable = \Psalm\Internal\Codebase\CallMap::getCallableFromCallMapById(
+        if ($function_id === 'func_num_args' || $function_id === 'func_get_args') {
+            return true;
+        }
+
+        if ($function_id === 'count' && isset($args[0]) && $type_provider) {
+            $count_type = $type_provider->getType($args[0]->value);
+
+            if ($count_type) {
+                foreach ($count_type->getAtomicTypes() as $atomic_count_type) {
+                    if ($atomic_count_type instanceof TNamedObject) {
+                        $count_method_id = new MethodIdentifier(
+                            $atomic_count_type->value,
+                            'count'
+                        );
+
+                        try {
+                            $method_storage = $codebase->methods->getStorage($count_method_id);
+                            return $method_storage->mutation_free;
+                        } catch (\Exception $e) {
+                            // do nothing
+                        }
+                    }
+                }
+            }
+        }
+
+        $function_callable = \Psalm\Internal\Codebase\InternalCallMapHandler::getCallableFromCallMapById(
             $codebase,
             $function_id,
             $args ?: [],
@@ -407,15 +437,19 @@ class Functions
             || (isset($args[0]) && !$args[0]->value instanceof \PhpParser\Node\Expr\Closure);
 
         foreach ($function_callable->params as $i => $param) {
-            if ($param->type && $param->type->hasCallableType() && isset($args[$i])) {
-                foreach ($param->type->getAtomicTypes() as $possible_callable) {
-                    $possible_callable = \Psalm\Internal\Analyzer\TypeAnalyzer::getCallableFromAtomic(
-                        $codebase,
-                        $possible_callable
-                    );
+            if ($type_provider && $param->type && $param->type->hasCallableType() && isset($args[$i])) {
+                $arg_type = $type_provider->getType($args[$i]->value);
 
-                    if ($possible_callable && !$possible_callable->is_pure) {
-                        return false;
+                if ($arg_type) {
+                    foreach ($arg_type->getAtomicTypes() as $possible_callable) {
+                        $possible_callable = CallableTypeComparator::getCallableFromAtomic(
+                            $codebase,
+                            $possible_callable
+                        );
+
+                        if ($possible_callable && !$possible_callable->is_pure) {
+                            return false;
+                        }
                     }
                 }
             }

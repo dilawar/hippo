@@ -17,8 +17,6 @@ use LanguageServerProtocol\TextDocumentItem;
 use LanguageServerProtocol\VersionedTextDocumentIdentifier;
 use Psalm\Codebase;
 use Psalm\Internal\LanguageServer\LanguageServer;
-use function strlen;
-use function strpos;
 use function substr_count;
 
 /**
@@ -134,9 +132,8 @@ class TextDocument
      *
      * @param \LanguageServerProtocol\TextDocumentIdentifier $textDocument The document that was closed
      *
-     * @return void
      */
-    public function didClose(TextDocumentIdentifier $textDocument)
+    public function didClose(TextDocumentIdentifier $textDocument): void
     {
         $file_path = LanguageServer::uriToPath($textDocument->uri);
 
@@ -169,7 +166,7 @@ class TextDocument
             return new Success(null);
         }
 
-        list($reference) = $reference_location;
+        [$reference] = $reference_location;
 
         $code_location = $this->codebase->getSymbolLocation($file_path, $reference);
 
@@ -213,7 +210,7 @@ class TextDocument
             return new Success(null);
         }
 
-        list($reference, $range) = $reference_location;
+        [$reference, $range] = $reference_location;
 
         $symbol_information = $this->codebase->getSymbolInformation($file_path, $reference);
 
@@ -246,6 +243,9 @@ class TextDocument
         $this->server->doAnalysis();
 
         $file_path = LanguageServer::uriToPath($textDocument->uri);
+        if (!$this->codebase->config->isInProjectDirs($file_path)) {
+            return new Success([]);
+        }
 
         try {
             $completion_data = $this->codebase->getCompletionDataAtPosition($file_path, $position);
@@ -262,7 +262,7 @@ class TextDocument
             return new Success([]);
         }
 
-        list($recent_type, $gap, $offset) = $completion_data;
+        [$recent_type, $gap, $offset] = $completion_data;
 
         if ($gap === '->' || $gap === '::') {
             $completion_items = $this->codebase->getCompletionItemsForClassishThing($recent_type, $gap);

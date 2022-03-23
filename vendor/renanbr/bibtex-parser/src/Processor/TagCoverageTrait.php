@@ -16,7 +16,10 @@ trait TagCoverageTrait
     use TagSearchTrait;
 
     /** @var array */
-    private $tagCoverageList = [];
+    private $tagCoverageList = [
+        '_original',
+        '_type',
+    ];
 
     /** @var string */
     private $tagCoverageStrategy = 'blacklist';
@@ -35,8 +38,6 @@ trait TagCoverageTrait
      * Calculates which tags are covered.
      *
      * The search performed internally is case-insensitive.
-     *
-     * @param array $tags
      *
      * @return array
      */
