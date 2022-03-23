@@ -27,8 +27,8 @@ date_default_timezone_set('Asia/Kolkata');
 |
 */
 
-$config['base_url'] = 'https://www.ncbs.res.in/hippo/v1';
-// $config['base_url'] = 'http://ghevar.ncbs.res.in/hippo/v1/';
+// $config['base_url'] = 'https://www.ncbs.res.in/hippo/v1';
+$config['base_url'] = 'http://ghevar.ncbs.res.in/hippo/v1/';
 
 /*
 |--------------------------------------------------------------------------
