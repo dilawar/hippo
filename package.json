@@ -23,7 +23,7 @@
     "sorttable": "^1.0.2",
     "sweetalert2": "^8.18.5",
     "tableexport": "^5.2.0",
-    "tinymce": "^5.10.2",
+    "tinymce": "^5.10.7",
     "vue2": "^1.0.0",
     "xlsx": "^0.17.0"
   },
